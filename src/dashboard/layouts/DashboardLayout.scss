@@ -33,7 +33,10 @@
     height: 100dvh;
     overflow: hidden;
     position: relative;
-    transition: margin-left 0.3s ease;
+    contain: layout paint;
+    will-change: transform;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   &__main {

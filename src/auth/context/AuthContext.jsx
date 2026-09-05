@@ -20,15 +20,64 @@ const AuthContext = createContext({
   refreshProfile: async () => {},
 });
 
+const AUTH_SESSION_KEY = 'aparna_active_session_v1';
+
+const getCachedSession = () => {
+  if (typeof window === 'undefined') return { user: null, profile: null };
+  try {
+    const raw = localStorage.getItem(AUTH_SESSION_KEY);
+    if (!raw) return { user: null, profile: null };
+    const data = JSON.parse(raw);
+    if (data && data.user && data.user.uid) {
+      return {
+        user: data.user,
+        profile: data.profile || null,
+      };
+    }
+  } catch (err) {
+    console.warn('Failed to parse cached auth session:', err);
+  }
+  return { user: null, profile: null };
+};
+
+const saveCachedSession = (user, profile) => {
+  if (typeof window === 'undefined') return;
+  try {
+    if (!user) {
+      localStorage.removeItem(AUTH_SESSION_KEY);
+      return;
+    }
+    const safeUser = {
+      uid: user.uid,
+      email: user.email || '',
+      displayName: user.displayName || profile?.username || '',
+      phoneNumber: user.phoneNumber || profile?.userMobile || '',
+      photoURL: user.photoURL || profile?.photoURL || '',
+    };
+    localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({ user: safeUser, profile }));
+  } catch (err) {
+    console.warn('Failed to save cached auth session:', err);
+  }
+};
+
+const clearCachedSession = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(AUTH_SESSION_KEY);
+  } catch {}
+};
+
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedSession();
+  const [currentUser, setCurrentUser] = useState(cached.user);
+  const [userProfile, setUserProfile] = useState(cached.profile);
+  const [loading, setLoading] = useState(!cached.user);
 
   // Sync or fetch profile from Firestore / Local Cache
   const fetchOrInitProfile = async (user) => {
     if (!user) {
       setUserProfile(null);
+      clearCachedSession();
       return null;
     }
 
@@ -112,6 +161,7 @@ export const AuthProvider = ({ children }) => {
         saveLocalUsers(updatedLocal);
 
         setUserProfile(resolvedProfile);
+        saveCachedSession(user, resolvedProfile);
         return resolvedProfile;
       } else {
         // Create initial profile if missing
@@ -126,11 +176,13 @@ export const AuthProvider = ({ children }) => {
         await withTimeout(setDoc(userDocRef, newModel, { merge: true }), 2500);
         const created = { id: user.uid, ...newModel };
         setUserProfile(created);
+        saveCachedSession(user, created);
         return created;
       }
     } catch (err) {
       console.warn('Profile fetch note (using local representation):', err.message || err);
       setUserProfile(baseProfile);
+      saveCachedSession(user, baseProfile);
       return baseProfile;
     }
   };
@@ -142,10 +194,20 @@ export const AuthProvider = ({ children }) => {
     }
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
       if (user) {
-        await fetchOrInitProfile(user);
+        const safeUser = {
+          uid: user.uid,
+          email: user.email || '',
+          displayName: user.displayName || '',
+          phoneNumber: user.phoneNumber || '',
+          photoURL: user.photoURL || '',
+        };
+        setCurrentUser(safeUser);
+        const resolved = await fetchOrInitProfile(user);
+        saveCachedSession(user, resolved);
       } else {
+        clearCachedSession();
+        setCurrentUser(null);
         setUserProfile(null);
       }
       setLoading(false);
@@ -156,21 +218,26 @@ export const AuthProvider = ({ children }) => {
 
   const refreshProfile = async () => {
     if (currentUser) {
-      return await fetchOrInitProfile(currentUser);
+      const refreshed = await fetchOrInitProfile(currentUser);
+      saveCachedSession(currentUser, refreshed);
+      return refreshed;
     }
     return null;
   };
 
   const logout = async () => {
     try {
+      clearCachedSession();
       if (auth) {
         await signOut(auth);
       }
     } catch (err) {
       console.error('Sign out error:', err);
     } finally {
+      clearCachedSession();
       setCurrentUser(null);
       setUserProfile(null);
+      setLoading(false);
     }
   };
 

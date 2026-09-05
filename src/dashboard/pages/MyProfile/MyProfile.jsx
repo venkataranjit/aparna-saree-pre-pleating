@@ -162,7 +162,7 @@ const measurementValidationSchema = Yup.object({
 });
 
 const MyProfile = () => {
-  const { currentUser, userProfile, isSuperAdmin, role, refreshProfile } =
+  const { currentUser, userProfile, isSuperAdmin, role, refreshProfile, loading: authLoading } =
     useAuth();
   const [measurements, setMeasurements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -178,13 +178,13 @@ const MyProfile = () => {
 
   const currentUid = currentUser?.uid || userProfile?.id;
   const displayName =
-    userProfile?.username || currentUser?.displayName || "Customer";
+    userProfile?.username || currentUser?.displayName || (currentUser?.email ? currentUser.email.split("@")[0] : "");
   const displayEmail =
-    userProfile?.email || currentUser?.email || "No email registered";
+    userProfile?.email || currentUser?.email || "";
   const displayMobile =
     userProfile?.userMobile || currentUser?.phoneNumber || "";
   const displayAddress = userProfile?.userAddress || "";
-  const avatarChar = (displayName.charAt(0) || "C").toUpperCase();
+  const avatarChar = displayName ? displayName.charAt(0).toUpperCase() : "";
 
   const roleLabel =
     isSuperAdmin || role === "superadmin"
@@ -193,7 +193,7 @@ const MyProfile = () => {
       ? "Admin"
       : role === "staff"
       ? "Staff"
-      : "Customer";
+      : (currentUser || userProfile ? "Customer" : "");
 
   // Fetch measurements for the logged-in user
   const fetchMyMeasurements = async () => {
@@ -446,6 +446,14 @@ const MyProfile = () => {
     }
   };
 
+  if (authLoading && !currentUser && !userProfile) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
+        <CircularProgress size={36} sx={{ color: "#d4af37" }} />
+      </Box>
+    );
+  }
+
   return (
     <Box className="my-profile-page">
       {/* Top Header */}
@@ -513,15 +521,15 @@ const MyProfile = () => {
               alt={displayName}
               src={userProfile?.photoURL || currentUser?.photoURL}
             >
-              {avatarChar}
+              {avatarChar || <PersonOutlineIcon sx={{ fontSize: 32 }} />}
             </Avatar>
             <Box>
               <Typography className="user-display-name">
-                {displayName}
+                {displayName || "User Profile"}
               </Typography>
               <Box className="role-badge-chip">
                 <VerifiedUserOutlinedIcon sx={{ fontSize: 14 }} />
-                <span>{roleLabel}</span>
+                <span>{roleLabel || "Customer"}</span>
               </Box>
             </Box>
           </Box>

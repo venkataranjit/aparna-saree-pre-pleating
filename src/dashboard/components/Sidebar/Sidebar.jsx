@@ -107,7 +107,7 @@ const Sidebar = ({
   const displayName =
     userProfile?.username ||
     currentUser?.displayName ||
-    (isSuperAdmin ? "Victory Ranjit" : (currentUser?.email ? currentUser.email.split("@")[0] : "Aparna"));
+    (isSuperAdmin ? "Victory Ranjit" : (currentUser?.email ? currentUser.email.split("@")[0] : (currentUser ? "Customer" : "")));
 
   const roleLabel =
     isSuperAdmin || role === "superadmin"
@@ -116,9 +116,9 @@ const Sidebar = ({
       ? "Admin"
       : role === "staff"
       ? "Staff"
-      : "Customer";
+      : (currentUser || userProfile ? "Customer" : "");
 
-  const avatarChar = (displayName.charAt(0) || "A").toUpperCase();
+  const avatarChar = displayName ? displayName.charAt(0).toUpperCase() : "";
 
   const handleItemClick = async (item, e) => {
     if (item.label === "Logout") {
@@ -176,15 +176,13 @@ const Sidebar = ({
     >
       {/* Top Header with Brand Logo & Toggle Buttons */}
       <Box className="dashboard-sidebar__top-bar">
-        {!collapsed && (
-          <Box className="sidebar-brand-wrap">
-            <img
-              src={textLogo}
-              alt="Aparna Saree Pre-Pleating"
-              className="sidebar-text-logo"
-            />
-          </Box>
-        )}
+        <Box className="sidebar-brand-wrap">
+          <img
+            src={textLogo}
+            alt="Aparna Saree Pre-Pleating"
+            className="sidebar-text-logo"
+          />
+        </Box>
 
         {/* Desktop Collapse Toggle Button */}
         <Tooltip
@@ -198,13 +196,10 @@ const Sidebar = ({
             size="small"
             aria-label="toggle collapse"
           >
-            {collapsed ? (
-              <MenuIcon sx={{ color: "#d4af37 !important", fontSize: 22 }} />
-            ) : (
-              <MenuOpenIcon
-                sx={{ color: "#d4af37 !important", fontSize: 22 }}
-              />
-            )}
+            <MenuOpenIcon
+              className={`collapse-icon ${collapsed ? "rotated" : ""}`}
+              sx={{ color: "#d4af37 !important", fontSize: 22 }}
+            />
           </IconButton>
         </Tooltip>
 
@@ -224,66 +219,42 @@ const Sidebar = ({
         {filteredNavSections.map((section) => (
           <Box key={section.title} className="nav-section-group">
             {/* Section Header with Horizontal Divider Line */}
-            {!collapsed && (
-              <Box className="nav-section-header">
-                <Typography variant="caption" className="section-title">
-                  {section.title}
-                </Typography>
-                <Box className="section-line" />
-              </Box>
-            )}
+            <Box className="nav-section-header">
+              <Typography variant="caption" className="section-title">
+                {section.title}
+              </Typography>
+              <Box className="section-line" />
+            </Box>
 
             {/* Section Items */}
             <List disablePadding className="section-list">
               {section.items.map((item) => {
                 const isLogout = item.label === "Logout";
                 const isActive = !isLogout && isItemActive(item);
-                const buttonContent = (
-                  <ListItemButton
-                    key={item.label}
-                    component={isLogout ? "div" : NavLink}
-                    to={isLogout ? undefined : item.path}
-                    end={isLogout ? undefined : item.end}
-                    onClick={(e) => handleItemClick(item, e)}
-                    className={`nav-item ${isActive ? "active" : ""} ${isLogout ? "nav-item--logout" : ""}`}
-                    sx={{
-                      borderRadius: "10px !important",
-                      margin: "2px 0",
-                      cursor: "pointer",
-                      "&:hover": {
-                        backgroundColor: isLogout ? "rgba(239, 68, 68, 0.15) !important" : "rgb(32 28 16) !important",
-                        borderRadius: "10px !important",
-                        "& .nav-icon svg, & .MuiTypography-root": {
-                          color: isLogout ? "#ef4444 !important" : undefined,
-                        },
-                      },
-                      "&.active, &.Mui-selected": {
-                        backgroundColor: "rgb(32 28 16) !important",
-                        borderRadius: "10px !important",
-                      },
-                    }}
-                  >
-                    <ListItemIcon className="nav-icon">
-                      {item.icon}
-                    </ListItemIcon>
-                    {!collapsed && (
-                      <ListItemText primary={item.label} className="nav-text" />
-                    )}
-                  </ListItemButton>
-                );
 
-
-                return collapsed ? (
+                return (
                   <Tooltip
                     key={item.label}
-                    title={item.label}
+                    title={collapsed ? item.label : ""}
                     placement="right"
                     arrow
+                    disableHoverListener={!collapsed}
+                    disableFocusListener={!collapsed}
+                    disableTouchListener={!collapsed}
                   >
-                    {buttonContent}
+                    <ListItemButton
+                      component={isLogout ? "div" : NavLink}
+                      to={isLogout ? undefined : item.path}
+                      end={isLogout ? undefined : item.end}
+                      onClick={(e) => handleItemClick(item, e)}
+                      className={`nav-item ${isActive ? "active" : ""} ${isLogout ? "nav-item--logout" : ""}`}
+                    >
+                      <ListItemIcon className="nav-icon">
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText primary={item.label} className="nav-text" />
+                    </ListItemButton>
                   </Tooltip>
-                ) : (
-                  buttonContent
                 );
               })}
             </List>
@@ -292,55 +263,43 @@ const Sidebar = ({
       </Box>
 
       {/* Bottom User Profile Section (Pinned to Bottom of Screen) */}
-      <Box className="dashboard-sidebar__profile-bottom">
-        {collapsed ? (
-          <Tooltip title={`${displayName} (${roleLabel}) - My Profile`} placement="right" arrow>
-            <Box
-              className="avatar-wrapper-collapsed"
-              onClick={() => {
-                navigate("/dashboard/profile");
-                if (onCloseMobile) onCloseMobile();
-              }}
-              sx={{ cursor: "pointer" }}
-            >
+      <Tooltip
+        title={collapsed ? `${displayName} (${roleLabel}) - My Profile` : ""}
+        placement="right"
+        arrow
+        disableHoverListener={!collapsed}
+        disableFocusListener={!collapsed}
+        disableTouchListener={!collapsed}
+      >
+        <Box
+          className="dashboard-sidebar__profile-bottom"
+          onClick={() => {
+            navigate("/dashboard/profile");
+            if (onCloseMobile) onCloseMobile();
+          }}
+        >
+          <Box className="profile-inner-row">
+            <Box className="avatar-wrapper">
               <Avatar alt={displayName} className="user-avatar-squircle">
-                {avatarChar}
+                {avatarChar || <PersonOutlineIcon sx={{ fontSize: 20, color: '#000000 !important' }} />}
               </Avatar>
               <span className="online-dot" />
             </Box>
-          </Tooltip>
-        ) : (
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-            <Box
-              className="profile-left"
-              onClick={() => {
-                navigate("/dashboard/profile");
-                if (onCloseMobile) onCloseMobile();
-              }}
-              sx={{ cursor: "pointer", flex: 1, minWidth: 0, mr: 1 }}
-            >
-              <Box className="avatar-wrapper">
-                <Avatar alt={displayName} className="user-avatar-squircle">
-                  {avatarChar}
-                </Avatar>
-                <span className="online-dot" />
-              </Box>
-              <Box className="user-details" sx={{ overflow: "hidden" }}>
-                <Typography className="user-name" noWrap title={displayName}>
-                  {displayName}
-                </Typography>
-                <Box className="role-line">
-                  <VerifiedUserOutlinedIcon
-                    className="verified-icon"
-                    sx={{ color: "#d4af37 !important" }}
-                  />
-                  <Typography className="role-title">{roleLabel}</Typography>
-                </Box>
+
+            <Box className="user-details">
+              <Typography className="user-name" noWrap title={displayName || 'Account'}>
+                {displayName || 'Loading...'}
+              </Typography>
+              <Box className="role-line">
+                <VerifiedUserOutlinedIcon
+                  className="verified-icon"
+                  sx={{ color: "#d4af37 !important" }}
+                />
+                <Typography className="role-title">{roleLabel}</Typography>
               </Box>
             </Box>
 
-            {/* Direct My Profile Icon Button in Profile Card */}
-            <Tooltip title="My Profile" arrow>
+            <Box className="profile-action-btn-wrap">
               <IconButton
                 onClick={(e) => {
                   e.stopPropagation();
@@ -350,28 +309,13 @@ const Sidebar = ({
                 className="profile-quick-nav-btn"
                 size="small"
                 aria-label="my profile"
-                sx={{
-                  color: "rgba(212, 175, 55, 0.9) !important",
-                  padding: "6px",
-                  borderRadius: "8px",
-                  border: "1px solid rgba(212, 175, 55, 0.25)",
-                  backgroundColor: "rgba(212, 175, 55, 0.06)",
-                  transition: "all 0.25s ease",
-                  "&:hover": {
-                    color: "#0a0a0a !important",
-                    backgroundColor: "#d4af37 !important",
-                    borderColor: "#d4af37",
-                    transform: "scale(1.05)",
-                    boxShadow: "0 2px 8px rgba(212, 175, 55, 0.35)",
-                  },
-                }}
               >
                 <PersonOutlineIcon sx={{ fontSize: 20 }} />
               </IconButton>
-            </Tooltip>
+            </Box>
           </Box>
-        )}
-      </Box>
+        </Box>
+      </Tooltip>
 
 
     </Box>

@@ -58,5 +58,34 @@ a,
   backdrop-filter: blur(2.5px);
 }
 
+// Hide scrollbars completely in APK / native Capacitor app and touch screens
+html.capacitor-native,
+body.capacitor-native,
+html.capacitor-native *,
+body.capacitor-native * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  &::-webkit-scrollbar {
+    display: none !important;
+    width: 0px !important;
+    height: 0px !important;
+    background: transparent !important;
+  }
+}
+
+@media (pointer: coarse) {
+  * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  *::-webkit-scrollbar,
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0px !important;
+    height: 0px !important;
+    background: transparent !important;
+  }
+}
+
 
 

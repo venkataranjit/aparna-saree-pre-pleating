@@ -1,0 +1,451 @@
+@use "../../../dashboard/styles/variables" as *;
+
+.register-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100vw;
+  background-color: #000000;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: max(16px, env(safe-area-inset-top, 0px)) 16px
+    max(20px, env(safe-area-inset-bottom, 0px)) 16px;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+
+  // Ambient gold glow backdrops
+  &__glow {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(90px);
+    opacity: 0.16;
+    z-index: 0;
+
+    &--top {
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 520px;
+      height: 380px;
+      background: radial-gradient(
+        circle,
+        $color-gold 0%,
+        rgba(212, 175, 55, 0.2) 60%,
+        transparent 100%
+      );
+    }
+
+    &--bottom {
+      bottom: -150px;
+      right: -80px;
+      width: 440px;
+      height: 340px;
+      background: radial-gradient(
+        circle,
+        #aa851c 0%,
+        rgba(212, 175, 55, 0.15) 70%,
+        transparent 100%
+      );
+      opacity: 0.12;
+    }
+  }
+
+  // Top navigation row
+  &__top-nav {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 8px 12px;
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(212, 175, 55, 0.85);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(212, 175, 55, 0.18);
+      background: rgba(10, 10, 8, 0.6);
+      backdrop-filter: blur(8px);
+      touch-action: manipulation;
+      transition: all 0.22s ease;
+
+      .back-icon {
+        font-size: 1.1rem;
+        color: $color-gold;
+        transition: transform 0.2s ease;
+      }
+
+      &:hover,
+      &:active {
+        color: $color-light-gold;
+        border-color: $color-gold;
+        background: rgba(212, 175, 55, 0.14);
+        box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+
+        .back-icon {
+          transform: translateX(-3px);
+        }
+      }
+    }
+  }
+
+  // Center container
+  &__container {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 0 28px 0;
+    width: 100%;
+  }
+
+  // Luxury Card
+  .register-card {
+    width: 100%;
+    max-width: 780px;
+    background: linear-gradient(
+      160deg,
+      #100f0c 0%,
+      #070706 70%,
+      #040404 100%
+    ) !important;
+    border: 1px solid rgba(212, 175, 55, 0.28) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95),
+      0 0 28px rgba(212, 175, 55, 0.14) !important;
+    position: relative;
+    overflow: hidden;
+    color: $color-light-gold;
+    box-sizing: border-box;
+
+    @media (max-width: 768px) {
+      max-width: 480px;
+    }
+
+    @media (max-width: 480px) {
+      max-width: 100%;
+      border-radius: 14px !important;
+    }
+
+    &__top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        $color-gold 50%,
+        transparent 100%
+      );
+      opacity: 0.9;
+    }
+
+    &__content {
+      padding: 38px 40px 30px 40px !important;
+
+      @media (max-width: 768px) {
+        padding: 28px 24px 24px 24px !important;
+      }
+
+      @media (max-width: 480px) {
+        padding: 24px 18px 20px 18px !important;
+      }
+    }
+
+    &__header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 24px;
+
+      .brand-logo-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+
+        .brand-logo-img {
+          max-width: 360px;
+          object-fit: contain;
+          filter: drop-shadow(0 4px 20px rgba(212, 175, 55, 0.45));
+          transition: transform 0.25s ease;
+
+          @media (max-width: 480px) {
+            height: 95px;
+            max-width: 300px;
+          }
+        }
+      }
+
+      .register-title {
+        color: $color-light-gold !important;
+        font-weight: 800 !important;
+        font-size: 1.75rem !important;
+        letter-spacing: -0.2px;
+        line-height: 1.2;
+        margin-top: 6px;
+        margin-bottom: 0 !important;
+        text-shadow: 0 0 16px rgba(212, 175, 55, 0.35);
+
+        @media (max-width: 480px) {
+          font-size: 1.5rem !important;
+        }
+      }
+    }
+
+    .feedback-alert {
+      margin-bottom: 18px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 500;
+
+      &.error-alert {
+        background-color: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        color: #f87171;
+
+        .MuiAlert-icon {
+          color: #ef4444;
+        }
+      }
+
+      &.success-alert {
+        background-color: rgba(34, 197, 94, 0.12);
+        border: 1px solid rgba(34, 197, 94, 0.35);
+        color: #4ade80;
+
+        .MuiAlert-icon {
+          color: #22c55e;
+        }
+      }
+    }
+
+    // Form inputs
+    .register-form {
+      display: flex;
+      flex-direction: column;
+
+      &__grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px 22px;
+
+        @media (min-width: 768px) {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .input-group {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+
+          .input-label {
+            color: rgba(212, 175, 55, 0.85);
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+          }
+        }
+
+        .full-col {
+          grid-column: 1 / -1;
+        }
+      }
+
+      .luxury-text-field {
+        .MuiOutlinedInput-root {
+          background-color: rgba(0, 0, 0, 0.55);
+          border-radius: 10px;
+          color: $color-light-gold;
+          font-size: 0.9rem;
+          min-height: 48px;
+          transition: all 0.2s ease;
+
+          fieldset {
+            border-color: rgba(212, 175, 55, 0.25);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          }
+
+          &:hover fieldset {
+            border-color: rgba(212, 175, 55, 0.6);
+          }
+
+          &.Mui-focused {
+            background-color: rgba(14, 13, 10, 0.8);
+
+            fieldset {
+              border-color: $color-gold;
+              box-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
+              border-width: 1.5px;
+            }
+          }
+
+          input {
+            padding: 12px 14px 12px 0;
+            color: $color-light-gold;
+
+            &::placeholder {
+              color: rgba(230, 216, 163, 0.35);
+              font-size: 0.86rem;
+            }
+          }
+        }
+
+        .field-icon {
+          color: $color-gold;
+          font-size: 1.25rem;
+          margin-right: 6px;
+        }
+
+        .visibility-btn {
+          color: rgba(212, 175, 55, 0.75);
+          padding: 6px;
+
+          &:hover {
+            color: $color-gold;
+          }
+
+          svg {
+            font-size: 1.2rem;
+          }
+        }
+
+        .MuiFormHelperText-root {
+          color: #f87171 !important;
+          font-size: 0.74rem;
+          font-weight: 500;
+          margin-top: 4px;
+          margin-left: 2px;
+        }
+      }
+
+      .options-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin: -2px 0 2px 0;
+
+        .checkbox-label {
+          margin-left: -6px;
+
+          .MuiTypography-root {
+            color: rgba(230, 216, 163, 0.75);
+            font-size: 0.8rem;
+            font-weight: 500;
+          }
+        }
+
+        .gold-checkbox {
+          color: rgba(212, 175, 55, 0.5);
+          padding: 6px;
+
+          &.Mui-checked {
+            color: $color-gold !important;
+          }
+
+          svg {
+            font-size: 1.15rem;
+          }
+        }
+      }
+
+      .submit-btn {
+        background: linear-gradient(
+          135deg,
+          #d4af37 0%,
+          #aa851c 100%
+        ) !important;
+        color: #000000 !important;
+        font-weight: 800 !important;
+        font-size: 0.92rem !important;
+        letter-spacing: 0.4px;
+        min-height: 48px;
+        border-radius: 10px;
+        box-shadow: 0 4px 18px rgba(212, 175, 55, 0.38) !important;
+        touch-action: manipulation;
+        transition: all 0.22s ease;
+        margin-top: 4px;
+
+        &:hover,
+        &:active {
+          background: linear-gradient(
+            135deg,
+            #e6d8a3 0%,
+            #d4af37 100%
+          ) !important;
+          box-shadow: 0 6px 24px rgba(212, 175, 55, 0.55) !important;
+          transform: translateY(-1px);
+        }
+      }
+
+      .auth-switch-row {
+        text-align: center;
+        margin-top: 8px;
+
+        .switch-prompt {
+          color: rgba(230, 216, 163, 0.75);
+          font-size: 0.84rem;
+
+          .auth-highlight-link {
+            color: $color-gold;
+            font-weight: 700;
+            text-decoration: none;
+            margin-left: 4px;
+            transition: all 0.2s ease;
+
+            &:hover {
+              color: $color-light-gold;
+              text-decoration: underline;
+              text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+            }
+          }
+        }
+      }
+    }
+
+    // Security badge footer
+    &__footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 22px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(212, 175, 55, 0.12);
+      text-align: center;
+
+      .security-icon {
+        color: rgba(212, 175, 55, 0.7);
+        font-size: 0.95rem;
+        flex-shrink: 0;
+      }
+
+      .security-text {
+        color: rgba(230, 216, 163, 0.55) !important;
+        font-size: 0.68rem !important;
+        font-weight: 500;
+        line-height: 1.3;
+      }
+    }
+  }
+}

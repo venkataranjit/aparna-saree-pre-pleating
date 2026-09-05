@@ -1,0 +1,340 @@
+@use '../../styles/variables' as *;
+
+.users-page {
+  padding: 8px 4px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .page-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: $color-light-gold;
+      letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+      color: rgba(230, 216, 163, 0.7);
+      margin-top: 4px;
+      font-size: 0.9rem;
+    }
+
+    .create-user-btn {
+      background: linear-gradient(135deg, #d4af37 0%, #aa851c 100%) !important;
+      color: #000000 !important;
+      font-weight: 700;
+      font-size: 0.88rem;
+      text-transform: none;
+      padding: 8px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3) !important;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: linear-gradient(135deg, #e6d8a3 0%, #d4af37 100%) !important;
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.45) !important;
+      }
+    }
+  }
+
+  .users-feedback-alert {
+    background-color: rgba(10, 10, 10, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: $color-light-gold;
+    border-radius: 8px;
+
+    &.MuiAlert-standardSuccess {
+      border-color: rgba(34, 197, 94, 0.4);
+      color: #4ade80;
+    }
+
+    &.MuiAlert-standardError {
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+  }
+
+  &__toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+
+    .role-filter-tabs {
+      min-height: 40px;
+
+      .MuiTab-root {
+        color: rgba(230, 216, 163, 0.65);
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-transform: none;
+        min-height: 40px;
+        padding: 6px 14px;
+        transition: color 0.2s ease;
+
+        &.Mui-selected {
+          color: $color-gold;
+          font-weight: 800;
+        }
+      }
+
+      .MuiTabs-indicator {
+        background-color: $color-gold;
+        height: 2px;
+        border-radius: 2px;
+      }
+    }
+
+    .users-search-field {
+      width: 280px;
+
+      @media (max-width: 600px) {
+        width: 100%;
+      }
+
+      .MuiOutlinedInput-root {
+        background-color: rgba(15, 15, 15, 0.8);
+        border-radius: 8px;
+        color: $color-light-gold;
+        font-size: 0.86rem;
+
+        fieldset {
+          border-color: rgba(212, 175, 55, 0.25);
+        }
+
+        &:hover fieldset {
+          border-color: rgba(212, 175, 55, 0.5);
+        }
+
+        &.Mui-focused fieldset {
+          border-color: $color-gold;
+          box-shadow: 0 0 10px rgba(212, 175, 55, 0.25);
+        }
+
+        input {
+          padding: 8px 12px;
+
+          &::placeholder {
+            color: rgba(230, 216, 163, 0.4);
+          }
+        }
+      }
+    }
+  }
+
+  .users-table-card {
+    background-color: $bg-card;
+    border: 1px solid $surface-border;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+
+    .users-table {
+      .MuiTableCell-head {
+        background-color: #080808;
+        color: $color-gold;
+        font-weight: 700;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        padding: 14px 18px;
+      }
+
+      .user-table-row {
+        transition: background-color 0.18s ease;
+
+        &:hover {
+          background-color: rgba(212, 175, 55, 0.04);
+        }
+
+        .MuiTableCell-body {
+          color: $color-light-gold;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+          padding: 14px 18px;
+          font-size: 0.88rem;
+        }
+
+        .user-avatar-circle {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(10, 10, 8, 0.9) 100%);
+          border: 1px solid rgba(212, 175, 55, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: $color-light-gold;
+          font-weight: 800;
+          font-size: 0.88rem;
+          flex-shrink: 0;
+        }
+
+        .user-name-text {
+          font-weight: 700;
+          color: $color-light-gold;
+        }
+
+        .user-email-text {
+          color: rgba(230, 216, 163, 0.6);
+        }
+
+        .mobile-cell {
+          color: rgba(230, 216, 163, 0.9);
+        }
+
+        .address-cell {
+          color: rgba(230, 216, 163, 0.75);
+          max-width: 220px;
+        }
+
+        .date-cell {
+          color: rgba(230, 216, 163, 0.55);
+          font-size: 0.82rem;
+        }
+
+        .action-edit-btn {
+          color: rgba(212, 175, 55, 0.85);
+          margin-right: 4px;
+          transition: all 0.2s ease;
+
+          &:hover {
+            color: $color-gold;
+            background-color: rgba(212, 175, 55, 0.15);
+          }
+        }
+
+        .action-delete-btn {
+          color: rgba(239, 68, 68, 0.7);
+          transition: all 0.2s ease;
+
+          &:hover {
+            color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.12);
+          }
+        }
+
+      }
+    }
+  }
+}
+
+// User Creation Modal Dialog
+.create-user-dialog {
+  background-color: #0c0b08 !important;
+  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85) !important;
+
+  /* Dark backdrop when popup is open */
+  ~ .MuiBackdrop-root {
+    background-color: rgba(0, 0, 0, 0.82) !important;
+    backdrop-filter: blur(2px);
+  }
+
+  .dialog-title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+    padding: 16px 22px;
+  }
+
+  .dialog-content-body {
+    padding: 22px !important;
+
+    .form-field-wrap {
+      margin-bottom: 16px;
+
+      .field-label {
+        color: rgba(212, 175, 55, 0.85);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-bottom: 6px;
+      }
+    }
+
+    .luxury-modal-field {
+      .MuiOutlinedInput-root {
+        background-color: rgba(0, 0, 0, 0.6);
+        border-radius: 8px;
+        color: $color-light-gold;
+        font-size: 0.88rem;
+
+        fieldset {
+          border-color: rgba(212, 175, 55, 0.25);
+        }
+
+        &:hover fieldset {
+          border-color: rgba(212, 175, 55, 0.5);
+        }
+
+        &.Mui-focused fieldset {
+          border-color: $color-gold;
+          box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        input {
+          padding: 10px 14px 10px 0;
+          color: $color-light-gold;
+
+          &::placeholder {
+            color: rgba(230, 216, 163, 0.35);
+          }
+        }
+
+        .MuiSelect-select {
+          padding: 10px 14px;
+          color: $color-light-gold;
+        }
+      }
+
+      .MuiFormHelperText-root {
+        color: #f87171 !important;
+        font-size: 0.74rem;
+        margin-top: 4px;
+        margin-left: 2px;
+      }
+    }
+  }
+
+  .dialog-actions-bar {
+    border-top: 1px solid rgba(212, 175, 55, 0.15);
+    padding: 14px 22px;
+    gap: 10px;
+
+    .dialog-cancel-btn {
+      color: rgba(230, 216, 163, 0.7);
+      text-transform: none;
+      font-weight: 600;
+
+      &:hover {
+        color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+    }
+
+    .dialog-submit-btn {
+      background: linear-gradient(135deg, #d4af37 0%, #aa851c 100%) !important;
+      color: #000000 !important;
+      font-weight: 700;
+      text-transform: none;
+      padding: 7px 22px;
+      border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35) !important;
+
+      &:hover {
+        background: linear-gradient(135deg, #e6d8a3 0%, #d4af37 100%) !important;
+      }
+    }
+  }
+}

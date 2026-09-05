@@ -3,6 +3,9 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import Overview from '../pages/Overview/Overview';
 import Bookings from '../pages/Bookings/Bookings';
 import Services from '../pages/Services/Services';
+import Users from '../pages/Users/Users';
+import Customers from '../pages/Customers/Customers';
+import MyProfile from '../pages/MyProfile/MyProfile';
 
 export const dashboardRoutes = [
   {
@@ -23,7 +26,11 @@ export const dashboardRoutes = [
       },
       {
         path: 'customers',
-        element: <Overview />,
+        element: <Customers />,
+      },
+      {
+        path: 'profile',
+        element: <MyProfile />,
       },
       {
         path: 'settings',
@@ -31,7 +38,7 @@ export const dashboardRoutes = [
       },
       {
         path: 'users',
-        element: <Overview />,
+        element: <Users />,
       },
     ],
   },

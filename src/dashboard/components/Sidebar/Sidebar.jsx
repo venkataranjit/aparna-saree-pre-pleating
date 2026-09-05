@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Box,
   List,
@@ -14,6 +14,7 @@ import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
 import BookOnlineOutlinedIcon from "@mui/icons-material/BookOnlineOutlined";
 import DryCleaningOutlinedIcon from "@mui/icons-material/DryCleaningOutlined";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
@@ -22,7 +23,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../../auth/context/AuthContext";
 import textLogo from "../../../assets/text-logo.png";
 import "./Sidebar.scss";
 
@@ -72,6 +74,11 @@ const navSections = [
     title: "SETTINGS",
     items: [
       {
+        label: "My Profile",
+        path: "/dashboard/profile",
+        icon: <PersonOutlineIcon sx={{ color: "#d4af37 !important" }} />,
+      },
+      {
         label: "Manage Users",
         path: "/dashboard/users",
         icon: (
@@ -80,7 +87,7 @@ const navSections = [
       },
       {
         label: "Logout",
-        path: "/landing",
+        path: "/login",
         icon: <LogoutOutlinedIcon sx={{ color: "#d4af37 !important" }} />,
       },
     ],
@@ -94,12 +101,45 @@ const Sidebar = ({
   onCloseMobile,
 }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { currentUser, userProfile, isSuperAdmin, role, logout } = useAuth();
 
-  const handleItemClick = () => {
+  const displayName =
+    userProfile?.username ||
+    currentUser?.displayName ||
+    (isSuperAdmin ? "Victory Ranjit" : (currentUser?.email ? currentUser.email.split("@")[0] : "Aparna"));
+
+  const roleLabel =
+    isSuperAdmin || role === "superadmin"
+      ? "Super Admin"
+      : role === "admin"
+      ? "Admin"
+      : role === "staff"
+      ? "Staff"
+      : "Customer";
+
+  const avatarChar = (displayName.charAt(0) || "A").toUpperCase();
+
+  const handleItemClick = async (item, e) => {
+    if (item.label === "Logout") {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      try {
+        await logout();
+      } catch (err) {
+        console.warn("Logout error:", err);
+      }
+      if (onCloseMobile) onCloseMobile();
+      navigate("/login", { replace: true });
+      return;
+    }
     if (onCloseMobile) {
       onCloseMobile();
     }
   };
+
 
   const isItemActive = (item) => {
     if (item.end) {
@@ -107,6 +147,25 @@ const Sidebar = ({
     }
     return location.pathname.startsWith(item.path);
   };
+
+  // Filter navigation items based on role (hide Manage Users and Customers for customers)
+  const filteredNavSections = useMemo(() => {
+    const userRole = (role || "").toLowerCase();
+    const isCustomer = !isSuperAdmin && (userRole === "customer" || userRole === "");
+
+    return navSections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) => {
+          if (isCustomer && (item.path === "/dashboard/users" || item.path === "/dashboard/customers")) {
+            return false;
+          }
+          return true;
+        }),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [role, isSuperAdmin]);
+
 
   return (
     <Box
@@ -162,7 +221,7 @@ const Sidebar = ({
 
       {/* Scrollable Navigation List with Section Dividers */}
       <Box className="dashboard-sidebar__scroll-area">
-        {navSections.map((section) => (
+        {filteredNavSections.map((section) => (
           <Box key={section.title} className="nav-section-group">
             {/* Section Header with Horizontal Divider Line */}
             {!collapsed && (
@@ -177,21 +236,26 @@ const Sidebar = ({
             {/* Section Items */}
             <List disablePadding className="section-list">
               {section.items.map((item) => {
-                const isActive = isItemActive(item);
+                const isLogout = item.label === "Logout";
+                const isActive = !isLogout && isItemActive(item);
                 const buttonContent = (
                   <ListItemButton
                     key={item.label}
-                    component={NavLink}
-                    to={item.path}
-                    end={item.end}
-                    onClick={handleItemClick}
-                    className={`nav-item ${isActive ? "active" : ""}`}
+                    component={isLogout ? "div" : NavLink}
+                    to={isLogout ? undefined : item.path}
+                    end={isLogout ? undefined : item.end}
+                    onClick={(e) => handleItemClick(item, e)}
+                    className={`nav-item ${isActive ? "active" : ""} ${isLogout ? "nav-item--logout" : ""}`}
                     sx={{
                       borderRadius: "10px !important",
                       margin: "2px 0",
+                      cursor: "pointer",
                       "&:hover": {
-                        backgroundColor: "rgb(32 28 16) !important",
+                        backgroundColor: isLogout ? "rgba(239, 68, 68, 0.15) !important" : "rgb(32 28 16) !important",
                         borderRadius: "10px !important",
+                        "& .nav-icon svg, & .MuiTypography-root": {
+                          color: isLogout ? "#ef4444 !important" : undefined,
+                        },
                       },
                       "&.active, &.Mui-selected": {
                         backgroundColor: "rgb(32 28 16) !important",
@@ -207,6 +271,7 @@ const Sidebar = ({
                     )}
                   </ListItemButton>
                 );
+
 
                 return collapsed ? (
                   <Tooltip
@@ -229,37 +294,86 @@ const Sidebar = ({
       {/* Bottom User Profile Section (Pinned to Bottom of Screen) */}
       <Box className="dashboard-sidebar__profile-bottom">
         {collapsed ? (
-          <Tooltip title="Aparna (Super Admin)" placement="right" arrow>
-            <Box className="avatar-wrapper-collapsed">
-              <Avatar alt="Aparna" className="user-avatar-squircle">
-                A
+          <Tooltip title={`${displayName} (${roleLabel}) - My Profile`} placement="right" arrow>
+            <Box
+              className="avatar-wrapper-collapsed"
+              onClick={() => {
+                navigate("/dashboard/profile");
+                if (onCloseMobile) onCloseMobile();
+              }}
+              sx={{ cursor: "pointer" }}
+            >
+              <Avatar alt={displayName} className="user-avatar-squircle">
+                {avatarChar}
               </Avatar>
               <span className="online-dot" />
             </Box>
           </Tooltip>
         ) : (
-          <>
-            <Box className="profile-left">
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+            <Box
+              className="profile-left"
+              onClick={() => {
+                navigate("/dashboard/profile");
+                if (onCloseMobile) onCloseMobile();
+              }}
+              sx={{ cursor: "pointer", flex: 1, minWidth: 0, mr: 1 }}
+            >
               <Box className="avatar-wrapper">
-                <Avatar alt="Aparna" className="user-avatar-squircle">
-                  A
+                <Avatar alt={displayName} className="user-avatar-squircle">
+                  {avatarChar}
                 </Avatar>
                 <span className="online-dot" />
               </Box>
-              <Box className="user-details">
-                <Typography className="user-name">Aparna</Typography>
+              <Box className="user-details" sx={{ overflow: "hidden" }}>
+                <Typography className="user-name" noWrap title={displayName}>
+                  {displayName}
+                </Typography>
                 <Box className="role-line">
                   <VerifiedUserOutlinedIcon
                     className="verified-icon"
                     sx={{ color: "#d4af37 !important" }}
                   />
-                  <Typography className="role-title">Super Admin</Typography>
+                  <Typography className="role-title">{roleLabel}</Typography>
                 </Box>
               </Box>
             </Box>
-          </>
+
+            {/* Direct My Profile Icon Button in Profile Card */}
+            <Tooltip title="My Profile" arrow>
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate("/dashboard/profile");
+                  if (onCloseMobile) onCloseMobile();
+                }}
+                className="profile-quick-nav-btn"
+                size="small"
+                aria-label="my profile"
+                sx={{
+                  color: "rgba(212, 175, 55, 0.9) !important",
+                  padding: "6px",
+                  borderRadius: "8px",
+                  border: "1px solid rgba(212, 175, 55, 0.25)",
+                  backgroundColor: "rgba(212, 175, 55, 0.06)",
+                  transition: "all 0.25s ease",
+                  "&:hover": {
+                    color: "#0a0a0a !important",
+                    backgroundColor: "#d4af37 !important",
+                    borderColor: "#d4af37",
+                    transform: "scale(1.05)",
+                    boxShadow: "0 2px 8px rgba(212, 175, 55, 0.35)",
+                  },
+                }}
+              >
+                <PersonOutlineIcon sx={{ fontSize: 20 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
         )}
       </Box>
+
+
     </Box>
   );
 };

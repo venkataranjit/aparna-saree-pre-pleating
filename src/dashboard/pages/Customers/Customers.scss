@@ -1,0 +1,662 @@
+@use '../../styles/variables' as *;
+
+.customers-page {
+  padding: 8px 4px;
+
+  /* Header Section matching Dashboard and Users screen */
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .page-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: $color-light-gold;
+      letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+      color: rgba(230, 216, 163, 0.7);
+      margin-top: 4px;
+      font-size: 0.9rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .refresh-btn {
+        border-color: rgba(212, 175, 55, 0.5) !important;
+        color: $color-gold !important;
+        font-weight: 600;
+        text-transform: none;
+        border-radius: 8px;
+        padding: 7px 16px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          border-color: $color-gold !important;
+          background-color: rgba(212, 175, 55, 0.1) !important;
+        }
+      }
+
+      .create-customer-btn {
+        background: linear-gradient(135deg, #d4af37 0%, #aa851c 100%) !important;
+        color: #000000 !important;
+        font-weight: 700;
+        font-size: 0.88rem;
+        text-transform: none;
+        padding: 8px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3) !important;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: linear-gradient(135deg, #e6d8a3 0%, #d4af37 100%) !important;
+          box-shadow: 0 6px 20px rgba(212, 175, 55, 0.45) !important;
+        }
+      }
+    }
+  }
+
+  /* Feedback Alert matching Users screen */
+  .customers-feedback-alert {
+    background-color: rgba(10, 10, 10, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: $color-light-gold;
+    border-radius: 8px;
+
+    &.MuiAlert-standardSuccess {
+      border-color: rgba(34, 197, 94, 0.4);
+      color: #4ade80;
+    }
+
+    &.MuiAlert-standardError {
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+  }
+
+  /* 4 StatCards Grid matching Dashboard Overview */
+  &__stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+
+    @media (max-width: 1100px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Filter Tabs & Search Bar matching Manage Users Toolbar */
+  &__toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+
+    .customer-filter-tabs {
+      min-height: 40px;
+
+      .MuiTab-root {
+        color: rgba(230, 216, 163, 0.65);
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-transform: none;
+        min-height: 40px;
+        padding: 6px 14px;
+        transition: color 0.2s ease;
+
+        &.Mui-selected {
+          color: $color-gold;
+          font-weight: 800;
+        }
+      }
+
+      .MuiTabs-indicator {
+        background-color: $color-gold;
+        height: 2px;
+        border-radius: 2px;
+      }
+    }
+
+    .customers-search-field {
+      width: 280px;
+
+      @media (max-width: 600px) {
+        width: 100%;
+      }
+
+      .MuiOutlinedInput-root {
+        background-color: rgba(15, 15, 15, 0.8);
+        border-radius: 8px;
+        color: $color-light-gold;
+        font-size: 0.86rem;
+
+        fieldset {
+          border-color: rgba(212, 175, 55, 0.25);
+        }
+
+        &:hover fieldset {
+          border-color: rgba(212, 175, 55, 0.5);
+        }
+
+        &.Mui-focused fieldset {
+          border-color: $color-gold;
+          box-shadow: 0 0 10px rgba(212, 175, 55, 0.25);
+        }
+
+        input {
+          padding: 8px 12px;
+
+          &::placeholder {
+            color: rgba(230, 216, 163, 0.4);
+          }
+        }
+      }
+    }
+  }
+
+  /* Main Customers Table Card matching Users.scss */
+  .customers-table-card {
+    background-color: $bg-card;
+    border: 1px solid $surface-border;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+
+    .customers-table {
+      .MuiTableCell-head {
+        background-color: #080808;
+        color: $color-gold;
+        font-weight: 700;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        padding: 14px 18px;
+      }
+
+      .customer-table-row {
+        transition: background-color 0.18s ease;
+
+        &:hover {
+          background-color: rgba(212, 175, 55, 0.04);
+        }
+
+        .MuiTableCell-body {
+          color: $color-light-gold;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+          padding: 14px 18px;
+          font-size: 0.88rem;
+        }
+
+        .user-avatar-circle {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(10, 10, 8, 0.9) 100%);
+          border: 1px solid rgba(212, 175, 55, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: $color-light-gold;
+          font-weight: 800;
+          font-size: 0.88rem;
+          flex-shrink: 0;
+        }
+
+        .user-name-text {
+          font-weight: 700;
+          color: $color-light-gold;
+          font-size: 0.9rem;
+          text-transform: capitalize;
+        }
+
+        .user-email-text {
+          color: rgba(230, 216, 163, 0.6);
+          font-size: 0.78rem;
+        }
+
+        .mobile-cell {
+          color: rgba(230, 216, 163, 0.9);
+          font-size: 0.84rem;
+        }
+
+        .address-cell {
+          color: rgba(230, 216, 163, 0.75);
+          font-size: 0.84rem;
+          max-width: 220px;
+        }
+
+        .date-cell {
+          color: rgba(230, 216, 163, 0.55);
+          font-size: 0.82rem;
+        }
+
+        .measure-chip {
+          transition: all 0.2s ease;
+
+          &--active {
+            background-color: rgba(74, 222, 128, 0.12) !important;
+            color: #4ade80 !important;
+            border: 1px solid rgba(74, 222, 128, 0.35);
+            font-weight: 700;
+            font-size: 0.75rem;
+
+            &:hover {
+              background-color: rgba(74, 222, 128, 0.22) !important;
+            }
+          }
+
+          &--pending {
+            background-color: rgba(212, 175, 55, 0.08) !important;
+            color: rgba(230, 216, 163, 0.7) !important;
+            border: 1px dashed rgba(212, 175, 55, 0.3);
+            font-size: 0.75rem;
+
+            &:hover {
+              background-color: rgba(212, 175, 55, 0.16) !important;
+              color: $color-light-gold !important;
+            }
+          }
+        }
+
+        /* Action Buttons */
+        .action-icon-btn {
+          padding: 5px;
+          border-radius: 6px;
+          transition: all 0.2s ease;
+
+          &--view {
+            color: rgba(230, 216, 163, 0.85);
+            background-color: rgba(230, 216, 163, 0.06);
+            border: 1px solid rgba(230, 216, 163, 0.2);
+
+            &:hover {
+              color: #e6d8a3;
+              background-color: rgba(230, 216, 163, 0.2);
+              border-color: #e6d8a3;
+            }
+          }
+
+          &--measure {
+            color: #4ade80;
+            background-color: rgba(74, 222, 128, 0.06);
+            border: 1px solid rgba(74, 222, 128, 0.25);
+
+            &:hover {
+              color: #86efac;
+              background-color: rgba(74, 222, 128, 0.2);
+              border-color: #4ade80;
+            }
+          }
+
+          &--edit {
+            color: rgba(212, 175, 55, 0.9);
+            background-color: rgba(212, 175, 55, 0.06);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+
+            &:hover {
+              color: $color-gold;
+              background-color: rgba(212, 175, 55, 0.22);
+              border-color: $color-gold;
+            }
+          }
+        }
+      }
+
+      .empty-state-cell {
+        padding: 48px 16px;
+      }
+    }
+  }
+}
+
+/* Modals matching .create-user-dialog in Users.scss */
+.customer-dialog {
+  /* Dark backdrop — makes background more dull when popup is open */
+  .MuiBackdrop-root {
+    background-color: rgba(0, 0, 0, 0.82) !important;
+    backdrop-filter: blur(2px);
+  }
+
+  .MuiPaper-root {
+    background-color: #0c0b08 !important;
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85) !important;
+    color: $color-light-gold;
+    max-height: 90vh !important;
+  }
+
+  .dialog-title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+    padding: 16px 22px;
+
+    .dialog-title {
+      font-weight: 700;
+      color: $color-light-gold;
+      line-height: 1.2;
+      text-transform: capitalize; // capitalize customer name in dialog header
+    }
+
+    .user-avatar-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.35) 0%, rgba(10, 10, 8, 0.95) 100%);
+      border: 1.5px solid rgba(212, 175, 55, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: $color-light-gold;
+      font-weight: 800;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      box-shadow: 0 0 14px rgba(212, 175, 55, 0.25);
+      text-transform: uppercase;
+    }
+  }
+
+  .dialog-content-body {
+    padding: 22px !important;
+  }
+
+  .dialog-actions-bar {
+    border-top: 1px solid rgba(212, 175, 55, 0.15);
+    padding: 14px 22px;
+    gap: 12px;
+
+    .cancel-btn {
+      color: rgba(230, 216, 163, 0.75) !important;
+      text-transform: none;
+      font-weight: 600;
+
+      &:hover {
+        color: $color-light-gold !important;
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+    }
+
+    .submit-btn {
+      background: linear-gradient(135deg, #d4af37 0%, #aa851c 100%) !important;
+      color: #000000 !important;
+      font-weight: 700;
+      text-transform: none;
+      padding: 8px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3) !important;
+
+      &:hover {
+        background: linear-gradient(135deg, #e6d8a3 0%, #d4af37 100%) !important;
+      }
+    }
+  }
+}
+
+/* Custom Form Fields matching Users form styling */
+.custom-form-field {
+  .MuiOutlinedInput-root {
+    background-color: rgba(15, 15, 15, 0.8);
+    border-radius: 8px;
+    color: $color-light-gold;
+
+    fieldset {
+      border-color: rgba(212, 175, 55, 0.25);
+    }
+
+    &:hover fieldset {
+      border-color: rgba(212, 175, 55, 0.5);
+    }
+
+    &.Mui-focused fieldset {
+      border-color: $color-gold;
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.25);
+    }
+
+    input, textarea {
+      color: $color-light-gold;
+      font-size: 0.88rem;
+
+      &::placeholder {
+        color: rgba(230, 216, 163, 0.4);
+      }
+    }
+
+    .MuiSelect-select {
+      color: $color-light-gold;
+      font-size: 0.88rem;
+    }
+
+    .MuiSvgIcon-root {
+      color: $color-gold;
+    }
+  }
+
+  .MuiInputLabel-root {
+    color: rgba(230, 216, 163, 0.7);
+    font-size: 0.85rem;
+
+    &.Mui-focused {
+      color: $color-gold;
+    }
+  }
+
+  .MuiInputAdornment-root {
+    color: $color-gold;
+    font-weight: 600;
+  }
+}
+
+/* Customer Summary & Measurements in View Details Modal */
+.details-summary-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  background-color: rgba(15, 15, 15, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 10px;
+  padding: 14px 16px;
+
+  .summary-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+
+    .item-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: rgba(230, 216, 163, 0.6);
+    }
+
+    .item-value {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: $color-light-gold;
+      word-break: break-word;
+    }
+  }
+}
+
+/* Empty Measurements Box */
+.empty-measurements-box {
+  text-align: center;
+  padding: 32px 16px;
+  border: 1px dashed rgba(212, 175, 55, 0.3);
+  border-radius: 10px;
+  background-color: rgba(15, 15, 15, 0.5);
+}
+
+/* Measurements List Container */
+.measurements-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  padding: 4px 2px 16px 2px;
+}
+
+.measurement-card {
+  background-color: rgba(16, 15, 12, 0.9) !important;
+  border: 1px solid rgba(212, 175, 55, 0.25) !important;
+  border-radius: 12px !important;
+  padding: 16px 18px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  transition: all 0.2s ease;
+  flex-shrink: 0 !important; // Prevent flexbox from squishing cards when multiple are shown
+  overflow: visible !important;
+
+  &:hover {
+    border-color: rgba(212, 175, 55, 0.5) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6) !important;
+  }
+
+  .measure-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+
+    .measure-profile-title {
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: $color-gold;
+      text-transform: capitalize;
+    }
+
+    .dress-size-chip {
+      background-color: rgba(212, 175, 55, 0.15);
+      color: $color-light-gold;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      font-size: 0.75rem;
+      font-weight: 600;
+      height: 24px;
+    }
+
+    .measure-date {
+      font-size: 0.75rem;
+      color: rgba(230, 216, 163, 0.6);
+    }
+
+    .measure-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .measure-action-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+
+      &--edit {
+        color: $color-gold !important;
+        background-color: rgba(212, 175, 55, 0.1);
+        border: 1px solid rgba(212, 175, 55, 0.25);
+
+        &:hover {
+          background-color: rgba(212, 175, 55, 0.25) !important;
+          border-color: $color-gold;
+          transform: translateY(-1px);
+        }
+      }
+
+      &--delete {
+        color: #f87171 !important;
+        background-color: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.25);
+
+        &:hover {
+          background-color: rgba(239, 68, 68, 0.25) !important;
+          border-color: #ef4444;
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+
+  /* Balanced 4-column dimensions grid: Row 1 has 4 items, Row 2 has 4 items including Height & Dress Size */
+  .measure-dimensions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px 12px;
+
+    @media (max-width: 680px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dim-item {
+      background-color: rgba(18, 16, 12, 0.85);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 8px;
+      padding: 9px 12px;
+      min-height: 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: rgba(212, 175, 55, 0.4);
+        background-color: rgba(26, 22, 16, 0.95);
+      }
+
+      .dim-label {
+        font-size: 0.72rem;
+        color: rgba(230, 216, 163, 0.65);
+        text-transform: capitalize;
+        letter-spacing: 0.4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .dim-value {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: $color-light-gold;
+        margin-top: 3px;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .measure-notes-row {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(212, 175, 55, 0.15);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+
+    .measure-notes-text {
+      font-size: 0.82rem;
+      color: rgba(230, 216, 163, 0.85);
+      line-height: 1.45;
+
+      strong {
+        color: $color-gold;
+      }
+    }
+  }
+}

@@ -14,6 +14,8 @@ import Inventory2Icon from '@mui/icons-material/Inventory2';
 import IronIcon from '@mui/icons-material/Iron';
 import CelebrationIcon from '@mui/icons-material/Celebration';
 import AddIcon from '@mui/icons-material/Add';
+import { useAuth } from '../../../auth/context/AuthContext';
+import { USER_ROLES } from '../../../firebase/schema';
 import './Services.scss';
 
 const servicesList = [
@@ -48,6 +50,9 @@ const servicesList = [
 ];
 
 const Services = () => {
+  const { role, isSuperAdmin, canEdit } = useAuth();
+  const userCanEdit = canEdit ?? (isSuperAdmin || role === USER_ROLES.ADMIN || role === USER_ROLES.SUPERADMIN);
+
   return (
     <Box className="services-page">
       <Box className="services-page__header">
@@ -93,11 +98,13 @@ const Services = () => {
                   {svc.price}
                 </Typography>
               </CardContent>
-              <CardActions sx={{ p: 2, pt: 0 }}>
-                <Button size="small" variant="outlined" color="primary" fullWidth className="edit-btn">
-                  Edit Service
-                </Button>
-              </CardActions>
+              {userCanEdit && (
+                <CardActions sx={{ p: 2, pt: 0 }}>
+                  <Button size="small" variant="outlined" color="primary" fullWidth className="edit-btn">
+                    Edit Service
+                  </Button>
+                </CardActions>
+              )}
             </Card>
           </Grid>
         ))}

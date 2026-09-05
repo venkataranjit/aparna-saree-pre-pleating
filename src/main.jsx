@@ -5,6 +5,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import App from './App';
 import theme from './dashboard/theme/theme';
+import './firebase/config';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

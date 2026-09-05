@@ -52,5 +52,11 @@ a,
   user-select: none;
 }
 
+// Global: darken backdrop behind ALL MUI Dialogs across every page
+.MuiDialog-root .MuiBackdrop-root {
+  background-color: rgba(0, 0, 0, 0.82) !important;
+  backdrop-filter: blur(2.5px);
+}
+
 
 

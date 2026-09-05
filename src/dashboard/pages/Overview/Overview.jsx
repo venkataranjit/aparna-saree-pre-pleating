@@ -8,9 +8,15 @@ import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import StatCard from '../../components/StatCard/StatCard';
 import OrdersTable from '../../components/OrdersTable/OrdersTable';
+import { useAuth } from '../../../auth/context/AuthContext';
+import { USER_ROLES } from '../../../firebase/schema';
 import './Overview.scss';
 
 const Overview = () => {
+  const { role, isSuperAdmin } = useAuth();
+  const userRole = (role || '').toLowerCase();
+  const isCustomer = !isSuperAdmin && (userRole === USER_ROLES.CUSTOMER || userRole === 'customer' || userRole === '');
+
   return (
     <Box className="overview-page">
       {/* Header Section with Dashboard Title and Action Buttons */}
@@ -20,19 +26,23 @@ const Overview = () => {
             Dashboard
           </Typography>
           <Typography variant="caption" className="overview-page-caption">
-            Real-time overview of saree pre-pleating operations, orders & revenue
+            {isCustomer
+              ? 'Real-time overview of your saree pre-pleating orders & bookings'
+              : 'Real-time overview of saree pre-pleating operations, orders & revenue'}
           </Typography>
         </Box>
 
         <Stack direction="row" spacing={1.5} className="action-buttons">
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<FileDownloadIcon sx={{ color: '#d4af37 !important' }} />}
-            className="export-btn"
-          >
-            Export Report
-          </Button>
+          {!isCustomer && (
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<FileDownloadIcon sx={{ color: '#d4af37 !important' }} />}
+              className="export-btn"
+            >
+              Export Report
+            </Button>
+          )}
           <Button
             variant="contained"
             color="primary"
@@ -44,8 +54,9 @@ const Overview = () => {
         </Stack>
       </Box>
 
-      {/* Key Metric Stat Cards - Restructured 4 cards on desktop */}
-      <Box className="overview-page__stats-grid">
+      {/* Key Metric Stat Cards - hidden for customer role */}
+      {!isCustomer && (
+        <Box className="overview-page__stats-grid">
         {/* Card 1: Orders with Previous Month on the left (small), Current Month on the right (big) */}
         <StatCard
           title="Orders"
@@ -84,9 +95,7 @@ const Overview = () => {
           icon={<CurrencyRupeeIcon />}
         />
       </Box>
-
-
-
+      )}
 
       {/* Recent Orders Table (Schedule section removed) */}
       <OrdersTable />

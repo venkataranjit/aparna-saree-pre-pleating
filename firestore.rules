@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isBusinessMember(businessId) {
+      return isAuthenticated() && getUserData().businessId == businessId;
+    }
+
+    function hasRole(role) {
+      return isAuthenticated() && getUserData().role == role;
+    }
+
+    function isStaffOrAdmin(businessId) {
+      return isBusinessMember(businessId) && 
+             (getUserData().role in ['superadmin', 'admin', 'staff']);
+    }
+
+    // 1. Businesses Collection
+    match /businesses/{businessId} {
+      allow read: if isAuthenticated();
+      allow write: if hasRole('superadmin');
+    }
+
+    // 2. Users Collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId || hasRole('superadmin'));
+    }
+
+    // 3. Services Collection
+    match /services/{serviceId} {
+      allow read: if true; // Public catalog for storefront & customers
+      allow write: if isStaffOrAdmin(request.resource.data.businessId);
+    }
+
+    // 4. Customers Collection
+    match /customers/{customerId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // 5. Orders Collection
+    match /orders/{orderId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // 6. Measurements Collection (Customer provided, mapped to users)
+    match /measurements/{measurementId} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}

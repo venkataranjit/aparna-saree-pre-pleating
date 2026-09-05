@@ -1,9 +1,24 @@
 import React from 'react';
-import { AppBar, Toolbar, Box, Typography, IconButton } from '@mui/material';
+import { AppBar, Toolbar, Box, Typography, IconButton, Tooltip } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../auth/context/AuthContext';
 import './Header.scss';
 
 const Header = ({ onMobileMenuToggle }) => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.warn('Logout error:', err);
+    }
+    navigate('/login', { replace: true });
+  };
+
   return (
     <AppBar position="sticky" className="dashboard-header">
       <Toolbar className="dashboard-header__toolbar">
@@ -23,8 +38,29 @@ const Header = ({ onMobileMenuToggle }) => {
           </Typography>
         </Box>
 
-        {/* Empty Spacer to maintain perfect center alignment on mobile */}
-        <Box className="mobile-spacer" />
+        {/* Mobile Logout Action */}
+        <Tooltip title="Log Out" arrow>
+          <IconButton
+            onClick={handleLogout}
+            className="mobile-logout-btn"
+            aria-label="logout"
+            sx={{
+              color: '#d4af37 !important',
+              backgroundColor: 'rgba(212, 175, 55, 0.08)',
+              border: '1px solid rgba(212, 175, 55, 0.25)',
+              borderRadius: '10px',
+              width: 44,
+              height: 44,
+              '&:hover': {
+                backgroundColor: 'rgba(239, 68, 68, 0.15) !important',
+                color: '#ef4444 !important',
+                borderColor: '#ef4444',
+              },
+            }}
+          >
+            <LogoutOutlinedIcon sx={{ fontSize: 22 }} />
+          </IconButton>
+        </Tooltip>
       </Toolbar>
     </AppBar>
   );

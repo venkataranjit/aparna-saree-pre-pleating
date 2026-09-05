@@ -1,0 +1,91 @@
+@use '../../styles/variables' as *;
+
+.dashboard-header {
+  flex-shrink: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.96) 0%, rgba(8, 8, 8, 0.98) 100%) !important;
+  border-bottom: 1px solid $surface-border !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(12px);
+
+  // On desktop, the brand logo is located directly in the dashboard overview header
+  @media (min-width: 900px) {
+    display: none !important;
+  }
+
+  &__toolbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 76px;
+    padding: $spacing-xs $spacing-lg;
+    position: relative;
+
+    @media (max-width: 899px) {
+      justify-content: space-between;
+      min-height: calc(58px + env(safe-area-inset-top, 0px));
+      padding: max(8px, env(safe-area-inset-top, 0px)) $spacing-md 8px $spacing-md;
+    }
+  }
+
+  .mobile-menu-trigger {
+    display: none;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background-color: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    transition: $transition-fast;
+    touch-action: manipulation;
+    flex-shrink: 0;
+
+    &:hover,
+    &:active {
+      background-color: rgba(212, 175, 55, 0.22);
+      border-color: $color-gold;
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
+    }
+
+    @media (max-width: 899px) {
+      display: flex;
+    }
+  }
+
+  .mobile-spacer {
+    display: none;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+
+    @media (max-width: 899px) {
+      display: block;
+    }
+  }
+
+  &__title-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    text-align: center;
+    padding: 0 8px;
+  }
+
+  &__title {
+    color: $color-light-gold !important;
+    font-family: $font-family-base !important;
+    font-weight: 800 !important;
+    font-size: 1.25rem !important;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 14px rgba(212, 175, 55, 0.35);
+    line-height: 1.2;
+
+    @media (max-width: 480px) {
+      font-size: 1.1rem !important;
+    }
+  }
+}

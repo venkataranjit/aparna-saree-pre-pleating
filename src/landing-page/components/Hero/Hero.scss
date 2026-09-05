@@ -1,0 +1,40 @@
+@use '../../styles/variables' as *;
+
+.landing-hero {
+  padding: $spacing-2xl 0;
+  text-align: center;
+
+  &__content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: $spacing-2xl $spacing-md;
+    border-radius: $border-radius-lg;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(212, 175, 55, 0.12) 0%,
+      rgba(0, 0, 0, 0.95) 80%
+    );
+    border: 1px solid $surface-border;
+    box-shadow: $box-shadow-gold;
+  }
+
+  &__tagline {
+    color: $color-gold;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: $spacing-sm;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    color: $color-light-gold;
+    font-weight: 800;
+    margin-bottom: $spacing-md;
+  }
+
+  &__subtitle {
+    color: rgba(230, 216, 163, 0.85);
+    line-height: 1.6;
+    margin-bottom: $spacing-xl;
+  }
+}

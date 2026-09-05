@@ -1,0 +1,50 @@
+// Aparna Saree Pre-Pleating - Exclusive Colors: #000000, #d4af37, #e6d8a3
+
+$color-black: #000000;
+$color-gold: #d4af37;
+$color-light-gold: #e6d8a3;
+
+// Semantic Variables
+$primary-color: $color-black;
+$secondary-color: $color-gold;
+$accent-color: $color-light-gold;
+
+// Surfaces & Glassmorphic Backgrounds
+$bg-primary: #000000;
+$bg-secondary: #080808;
+$bg-card: #0f0f0f;
+$bg-card-hover: #141414;
+$surface-gold-tint: rgba(212, 175, 55, 0.08);
+$surface-border: rgba(212, 175, 55, 0.22);
+$surface-border-hover: rgba(212, 175, 55, 0.5);
+
+// Text
+$text-primary: $color-light-gold;
+$text-gold: $color-gold;
+$text-muted: rgba(230, 216, 163, 0.7);
+$text-dark: $color-black;
+
+// Typography
+$font-family-base: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+// Spacing
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 48px;
+
+// Radius & Shadows
+$border-radius-sm: 6px;
+$border-radius-md: 10px;
+$border-radius-lg: 16px;
+$border-radius-full: 9999px;
+
+$box-shadow-gold: 0 4px 20px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(212, 175, 55, 0.2);
+$box-shadow-gold-hover: 0 8px 30px rgba(212, 175, 55, 0.16), 0 0 1px 1px rgba(212, 175, 55, 0.45);
+$glow-gold: 0 0 14px rgba(212, 175, 55, 0.35);
+
+// Transitions
+$transition-base: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-fast: all 0.15s ease-in-out;

@@ -1,0 +1,49 @@
+@use '../../styles/variables' as *;
+
+.bookings-page {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $spacing-md;
+    margin-bottom: $spacing-xl;
+
+    .page-title {
+      color: $color-light-gold;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .create-order-btn {
+      background-color: $color-gold;
+      color: $color-black;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+      touch-action: manipulation;
+
+      &:hover,
+      &:active {
+        background-color: $color-light-gold;
+        color: $color-black;
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.45);
+      }
+    }
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      margin-bottom: $spacing-lg;
+
+      .page-title {
+        font-size: 1.5rem !important;
+      }
+
+      .create-order-btn {
+        width: 100%;
+        min-height: 42px;
+      }
+    }
+  }
+}

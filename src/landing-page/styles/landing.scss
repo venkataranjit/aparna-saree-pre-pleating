@@ -1,0 +1,7 @@
+@use './variables' as *;
+
+.landing-page-root {
+  background-color: $bg-primary;
+  color: $text-primary;
+  min-height: 100vh;
+}

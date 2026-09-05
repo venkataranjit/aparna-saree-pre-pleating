@@ -1,0 +1,9 @@
+@use '../styles/variables' as *;
+
+.landing-page-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: $bg-primary;
+  color: $text-primary;
+}

@@ -1,0 +1,137 @@
+@use '../../styles/variables' as *;
+
+.services-page {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $spacing-md;
+    margin-bottom: $spacing-xl;
+
+    .page-title {
+      color: $color-light-gold;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .page-subtitle {
+      color: rgba(212, 175, 55, 0.8);
+      font-size: 0.88rem;
+      margin-top: 2px;
+    }
+
+    .add-service-btn {
+      background-color: $color-gold;
+      color: $color-black;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+      touch-action: manipulation;
+
+      &:hover,
+      &:active {
+        background-color: $color-light-gold;
+        color: $color-black;
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.45);
+      }
+    }
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      margin-bottom: $spacing-lg;
+
+      .page-title {
+        font-size: 1.5rem !important;
+      }
+
+      .add-service-btn {
+        width: 100%;
+        min-height: 42px;
+      }
+    }
+  }
+
+  &__card {
+    height: 100%;
+    background: linear-gradient(145deg, #0f0f0f 0%, #080808 100%) !important;
+    border: 1px solid $surface-border !important;
+    border-radius: $border-radius-md !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: $transition-base !important;
+    box-shadow: $box-shadow-gold !important;
+
+    &:hover {
+      transform: translateY(-4px);
+      border-color: $color-gold !important;
+      box-shadow: $box-shadow-gold-hover !important;
+      background: linear-gradient(145deg, #141414 0%, #0b0b0b 100%) !important;
+
+      .icon-container {
+        transform: scale(1.1);
+        border-color: $color-gold;
+      }
+    }
+
+    .icon-container {
+      width: 52px;
+      height: 52px;
+      border-radius: $border-radius-sm;
+      background-color: rgba(212, 175, 55, 0.1);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: $spacing-md;
+      transition: $transition-base;
+
+      svg {
+        color: $color-gold !important;
+        fill: $color-gold !important;
+      }
+    }
+
+    .service-name {
+      color: $color-light-gold;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+
+    .service-tag {
+      margin-bottom: $spacing-sm;
+      border-color: rgba(212, 175, 55, 0.4);
+      color: $color-gold;
+      background-color: rgba(212, 175, 55, 0.08);
+      font-weight: 600;
+      font-size: 0.72rem;
+    }
+
+    .service-desc {
+      color: rgba(230, 216, 163, 0.75);
+      font-size: 0.84rem;
+      line-height: 1.5;
+      margin-bottom: $spacing-md;
+    }
+
+    .service-price {
+      color: $color-gold;
+      font-weight: 800;
+      font-size: 1.5rem;
+      letter-spacing: -0.5px;
+    }
+
+    .edit-btn {
+      border-color: rgba(212, 175, 55, 0.4);
+      color: $color-gold;
+
+      &:hover {
+        border-color: $color-gold;
+        background-color: rgba(212, 175, 55, 0.1);
+        color: $color-light-gold;
+      }
+    }
+  }
+}

@@ -1,0 +1,493 @@
+@use '../../styles/variables' as *;
+
+.dashboard-sidebar {
+  width: 260px;
+  background-color: #080808 !important;
+  border-right: 1px solid $surface-border !important;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  position: relative;
+  z-index: 100;
+  user-select: none;
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  overflow: hidden;
+
+  // Mobile Drawer Responsive Styling
+  @media (max-width: 899px) {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    z-index: 1000 !important;
+    width: min(280px, 84vw) !important;
+    transform: translateX(-100%);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+
+    &.mobile-open {
+      transform: translateX(0);
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.95), 0 0 20px rgba(212, 175, 55, 0.15);
+    }
+  }
+
+  // Collapsed Sidebar Mode (Desktop)
+  &.collapsed {
+    width: 76px;
+
+    .desktop-only {
+      margin: 0 auto;
+    }
+
+    .dashboard-sidebar__top-bar {
+      justify-content: center;
+      padding: 12px 0;
+
+      .collapse-toggle-btn {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        margin: 0 auto;
+      }
+    }
+
+    .section-list {
+      padding: 0 !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .nav-item,
+      .MuiListItemButton-root {
+        width: 44px !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        max-width: 44px !important;
+        margin: 4px auto !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box;
+
+        .nav-icon,
+        .MuiListItemIcon-root {
+          min-width: unset !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+
+          svg {
+            font-size: 1.25rem;
+            margin: 0 auto;
+          }
+        }
+
+        &.active,
+        &.Mui-selected {
+          background-color: rgb(32 28 16) !important;
+          border-radius: 10px !important;
+          border: 1px solid rgba(212, 175, 55, 0.55) !important;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 10px rgba(212, 175, 55, 0.2) !important;
+
+          // Remove protruding yellow tab in collapsed mode
+          &::before {
+            display: none !important;
+          }
+        }
+
+        &:hover {
+          background-color: rgb(32 28 16) !important;
+          border-radius: 10px !important;
+          border: 1px solid rgba(212, 175, 55, 0.25) !important;
+          padding-left: 0 !important;
+        }
+      }
+    }
+
+    .dashboard-sidebar__profile-bottom {
+      justify-content: center;
+      padding: 14px 0;
+
+      .avatar-wrapper-collapsed {
+        width: 44px;
+        height: 44px;
+        margin: 0 auto;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .user-avatar-squircle {
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
+          background: linear-gradient(135deg, $color-gold 0%, #9a7b1c 100%);
+          color: $color-black;
+          font-weight: 800;
+          font-size: 1.1rem;
+          border: 1.5px solid $color-gold;
+        }
+
+        .online-dot {
+          position: absolute;
+          top: -2px;
+          right: -2px;
+          width: 10px;
+          height: 10px;
+          background-color: $color-gold;
+          border: 2px solid #060606;
+          border-radius: 50%;
+          box-shadow: 0 0 6px $color-gold;
+        }
+      }
+    }
+  }
+
+  // Top Bar with Collapse / Close Buttons
+  &__top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+    min-height: 54px;
+
+    @media (max-width: 899px) {
+      padding-top: max(14px, env(safe-area-inset-top, 0px));
+      min-height: calc(56px + env(safe-area-inset-top, 0px));
+    }
+
+    .sidebar-brand-wrap {
+      display: flex;
+      align-items: center;
+      max-width: 175px;
+      overflow: hidden;
+
+      .sidebar-text-logo {
+        height: 38px;
+        max-width: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.35));
+        transition: transform 0.22s ease, filter 0.22s ease;
+
+        &:hover {
+          transform: scale(1.03);
+          filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.6));
+        }
+      }
+    }
+
+    .collapse-toggle-btn {
+      color: $color-gold;
+      background-color: rgba(212, 175, 55, 0.08);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: 6px;
+      padding: 5px;
+      transition: $transition-fast;
+
+      &:hover {
+        background-color: rgba(212, 175, 55, 0.2);
+        border-color: $color-gold;
+        box-shadow: 0 0 8px rgba(212, 175, 55, 0.35);
+      }
+
+      @media (max-width: 899px) {
+        display: none;
+      }
+    }
+
+    .mobile-close-btn {
+      display: none;
+      color: $color-gold;
+      background-color: rgba(212, 175, 55, 0.08);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: 8px;
+      padding: 0;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
+      touch-action: manipulation;
+
+      @media (max-width: 899px) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      &:hover,
+      &:active {
+        background-color: rgba(212, 175, 55, 0.2);
+        border-color: $color-gold;
+      }
+    }
+  }
+
+  // Scrollable navigation links
+  &__scroll-area {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: $spacing-sm 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 175, 55, 0.4) transparent;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #d4af37 0%, #9a7b1c 100%);
+      border-radius: 4px;
+      box-shadow: 0 0 4px rgba(212, 175, 55, 0.3);
+
+      &:hover {
+        background: #e6d8a3;
+        box-shadow: 0 0 8px rgba(212, 175, 55, 0.7);
+      }
+    }
+  }
+
+  .nav-section-group {
+    margin-bottom: $spacing-sm;
+
+    .nav-section-header {
+      display: flex;
+      align-items: center;
+      padding: $spacing-sm $spacing-md 6px $spacing-md;
+
+      .section-title {
+        color: rgba(212, 175, 55, 0.55);
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .section-line {
+        flex: 1;
+        height: 1px;
+        background: rgba(212, 175, 55, 0.14);
+        margin-left: 10px;
+      }
+    }
+
+    .section-list {
+      padding: 0 10px !important;
+
+      .nav-item,
+      .MuiListItemButton-root {
+        position: relative;
+        border-radius: 10px !important;
+        padding: 9px 12px !important;
+        margin: 3px 0 !important;
+        color: $color-light-gold;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
+
+        // Rich Gold Icons
+        .nav-icon,
+        .MuiListItemIcon-root {
+          min-width: 36px;
+          color: $color-gold;
+
+          svg {
+            font-size: 1.25rem;
+            color: $color-gold !important;
+            fill: $color-gold !important;
+            transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), filter 0.22s ease;
+          }
+        }
+
+        .nav-text,
+        .MuiListItemText-root {
+          .MuiTypography-root {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: inherit;
+            letter-spacing: 0.2px;
+            transition: color 0.2s ease, text-shadow 0.2s ease;
+          }
+        }
+
+        // Requested Menu Hover Effect
+        &:hover {
+          background-color: rgb(32 28 16) !important;
+          border-radius: 10px !important;
+          border-color: rgba(212, 175, 55, 0.25);
+          color: $color-gold;
+
+          .nav-icon svg,
+          .MuiListItemIcon-root svg {
+            color: $color-gold !important;
+            fill: $color-gold !important;
+            transform: scale(1.08);
+          }
+
+          .nav-text .MuiTypography-root,
+          .MuiListItemText-root .MuiTypography-root {
+            color: $color-gold;
+            font-weight: 600;
+          }
+        }
+
+        &.active,
+        &.Mui-selected {
+          background-color: rgb(32 28 16) !important;
+          border-radius: 10px !important;
+          border-color: rgba(212, 175, 55, 0.55);
+          color: $color-gold;
+          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6), 0 0 10px rgba(212, 175, 55, 0.15);
+
+
+          // Left vertical yellow/gold bar indicator
+          &::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 22px;
+            background-color: $color-gold;
+            border-radius: 0 3px 3px 0;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
+          }
+
+          .nav-icon svg {
+            color: $color-gold !important;
+            fill: $color-gold !important;
+            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.7));
+          }
+
+          .nav-text {
+            .MuiTypography-root {
+              font-weight: 700;
+              color: $color-gold;
+              text-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Bottom Fixed User Profile - Guaranteed at bottom of screen
+  &__profile-bottom {
+    margin-top: auto;
+    padding: 12px 14px;
+    background-color: #060606;
+    border-top: 1px solid rgba(212, 175, 55, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    @media (max-width: 899px) {
+      padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    }
+
+    &:hover {
+      background-color: #0d0d0d;
+    }
+
+    .profile-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .avatar-wrapper {
+        position: relative;
+
+        .user-avatar-squircle {
+          width: 42px;
+          height: 42px;
+          border-radius: 10px;
+          background: linear-gradient(135deg, $color-gold 0%, #9a7b1c 100%);
+          color: $color-black;
+          font-weight: 800;
+          font-size: 1.1rem;
+          border: 1px solid $color-gold;
+        }
+
+        .online-dot {
+          position: absolute;
+          top: -2px;
+          right: -2px;
+          width: 10px;
+          height: 10px;
+          background-color: $color-gold;
+          border: 2px solid #060606;
+          border-radius: 50%;
+          box-shadow: 0 0 6px $color-gold;
+        }
+      }
+
+      .user-details {
+        display: flex;
+        flex-direction: column;
+
+        .user-name {
+          color: $color-light-gold;
+          font-weight: 700;
+          font-size: 0.92rem;
+          line-height: 1.2;
+          letter-spacing: 0.2px;
+        }
+
+        .role-line {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          margin-top: 2px;
+
+          .verified-icon {
+            color: $color-gold !important;
+            font-size: 0.82rem;
+          }
+
+          .role-title {
+            color: $color-gold;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+          }
+        }
+      }
+    }
+
+    .unfold-icon {
+      color: $color-gold !important;
+      font-size: 1.2rem;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+  }
+}

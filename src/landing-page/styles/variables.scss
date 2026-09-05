@@ -1,0 +1,47 @@
+// Aparna Saree Pre-Pleating - Landing Page Color Palette
+// Only: #000000 (Black), #d4af37 (Gold), #e6d8a3 (Light Champagne Gold)
+
+$color-black: #000000;
+$color-gold: #d4af37;
+$color-light-gold: #e6d8a3;
+
+// Semantic Variables
+$primary-color: $color-black;
+$secondary-color: $color-gold;
+$accent-color: $color-light-gold;
+
+// Surfaces
+$bg-primary: $color-black;
+$bg-secondary: #0a0a0a;
+$bg-card: #121212;
+$surface-gold-tint: rgba(212, 175, 55, 0.08);
+$surface-border: rgba(212, 175, 55, 0.25);
+
+// Text
+$text-primary: $color-light-gold;
+$text-gold: $color-gold;
+$text-dark: $color-black;
+
+// Typography
+$font-family-base: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+// Spacing
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 48px;
+
+// Radius & Shadows
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 16px;
+$border-radius-full: 9999px;
+
+$box-shadow-gold: 0 4px 20px rgba(212, 175, 55, 0.15);
+$box-shadow-gold-hover: 0 8px 30px rgba(212, 175, 55, 0.25);
+
+// Transitions
+$transition-base: all 0.25s ease-in-out;
+$transition-fast: all 0.15s ease-in-out;

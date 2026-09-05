@@ -1,0 +1,250 @@
+@use '../../styles/variables' as *;
+
+.stat-card {
+  background: linear-gradient(180deg, #100f0c 0%, #070706 100%);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 12px;
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(212, 175, 55, 0.1);
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 0.22s ease, 
+              box-shadow 0.22s ease,
+              background-color 0.22s ease;
+  min-height: 126px;
+  touch-action: manipulation;
+
+  @media (max-width: 600px) {
+    padding: 14px 16px;
+    min-height: 118px;
+  }
+
+  // Delicate top hairline
+  &__top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.45) 50%, transparent 100%);
+    opacity: 0.6;
+    transition: opacity 0.25s ease;
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: rgba(212, 175, 55, 0.55);
+    background: linear-gradient(180deg, #15130e 0%, #0a0907 100%);
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.9), 0 0 14px rgba(212, 175, 55, 0.16), inset 0 1px 0 rgba(212, 175, 55, 0.25);
+
+    .stat-card__top-bar {
+      opacity: 1;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, $color-gold 50%, transparent 100%);
+    }
+
+    .stat-card__icon-wrap {
+      border-color: rgba(212, 175, 55, 0.45);
+      background: rgba(212, 175, 55, 0.14);
+      transform: scale(1.05);
+
+      svg {
+        filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.6));
+      }
+    }
+
+    .stat-card__value {
+      color: $color-gold !important;
+      text-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+    }
+
+    .stat-card__prev-box {
+      border-color: rgba(212, 175, 55, 0.42);
+      background: rgba(212, 175, 55, 0.14);
+
+      .stat-card__prev-value {
+        color: $color-light-gold !important;
+      }
+    }
+  }
+
+  // Header: Title & Icon
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  &__title {
+    color: rgba(212, 175, 55, 0.8) !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 1.1px;
+    line-height: 1.2 !important;
+  }
+
+  &__icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.22s ease;
+    flex-shrink: 0;
+
+    svg, .MuiSvgIcon-root {
+      color: $color-gold !important;
+      fill: $color-gold !important;
+      font-size: 1.25rem;
+      transition: filter 0.22s ease;
+    }
+  }
+
+  // Value Display Group
+  &__value-group {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 4px 0 10px 0;
+    flex-wrap: wrap;
+  }
+
+  &__value {
+    color: $color-light-gold !important;
+    font-size: 1.95rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.3px;
+    line-height: 1.1 !important;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+
+    @media (max-width: 600px) {
+      font-size: 1.75rem !important;
+    }
+  }
+
+  // Previous month small comparison chip
+  &__prev-box {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 2px 7px;
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 6px;
+    margin-bottom: 2px;
+
+    @media (max-width: 600px) {
+      padding: 2px 5px;
+    }
+
+    .stat-card__prev-value {
+      color: rgba(230, 216, 163, 0.75) !important;
+      font-size: 0.95rem !important;
+      font-weight: 700 !important;
+      line-height: 1 !important;
+      font-variant-numeric: tabular-nums;
+
+      @media (max-width: 600px) {
+        font-size: 0.88rem !important;
+      }
+    }
+
+    .stat-card__prev-label {
+      color: rgba(212, 175, 55, 0.65) !important;
+      font-size: 0.65rem !important;
+      font-weight: 600 !important;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      line-height: 1 !important;
+    }
+  }
+
+
+  // Footer: Status & Trend Badges
+  &__footer {
+    display: flex;
+    align-items: center;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: $border-radius-full;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+
+    .badge-icon {
+      font-size: 0.88rem;
+    }
+
+    .badge-text {
+      font-size: inherit;
+      font-weight: inherit;
+      line-height: 1;
+    }
+
+    &.growth,
+    &.up {
+      background: rgba(212, 175, 55, 0.1);
+      border: 1px solid rgba(212, 175, 55, 0.28);
+      color: $color-light-gold;
+
+      .badge-icon {
+        color: $color-gold !important;
+        fill: $color-gold !important;
+      }
+    }
+
+    &.progress {
+      background: rgba(212, 175, 55, 0.08);
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      color: $color-light-gold;
+
+      .trend-pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: $color-gold;
+        box-shadow: 0 0 6px $color-gold;
+        animation: pulseGlow 1.8s infinite ease-in-out;
+      }
+    }
+
+    &.completed {
+      background: rgba(212, 175, 55, 0.1);
+      border: 1px solid rgba(212, 175, 55, 0.28);
+      color: $color-light-gold;
+
+      .badge-icon {
+        color: $color-gold !important;
+        fill: $color-gold !important;
+      }
+    }
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+

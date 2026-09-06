@@ -2,6 +2,12 @@
 
 .my-profile-page {
   padding: 8px 4px 32px 4px;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 600px) {
+    padding: 4px 0 28px 0;
+  }
 
   /* Header Section */
   &__header {
@@ -12,76 +18,49 @@
     gap: 16px;
     margin-bottom: 24px;
 
+    @media (max-width: 680px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
     .page-title {
       font-size: 1.85rem;
       font-weight: 800;
       color: $color-light-gold;
       letter-spacing: -0.5px;
+      margin: 0;
+
+      @media (max-width: 600px) {
+        font-size: 1.4rem;
+      }
     }
 
     .page-subtitle {
       color: rgba(230, 216, 163, 0.7);
-      margin-top: 4px;
+      margin: 4px 0 0 0;
       font-size: 0.9rem;
+
+      @media (max-width: 600px) {
+        font-size: 0.8rem;
+      }
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
 
-      .refresh-btn {
-        border-color: rgba(212, 175, 55, 0.5) !important;
-        color: $color-gold !important;
-        font-weight: 600;
-        text-transform: none;
-        border-radius: 8px;
-        padding: 7px 16px;
-        transition: all 0.2s ease;
+      @media (max-width: 680px) {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
 
-        &:hover {
-          border-color: $color-gold !important;
-          background-color: rgba(212, 175, 55, 0.1) !important;
-        }
-      }
-
-      .primary-action-btn {
-        background: linear-gradient(
-          135deg,
-          #d4af37 0%,
-          #aa851c 100%
-        ) !important;
-        color: #000000 !important;
-        font-weight: 700;
-        font-size: 0.88rem;
-        text-transform: none;
-        padding: 8px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3) !important;
-        transition: all 0.2s ease;
-
-        &:hover {
-          background: linear-gradient(
-            135deg,
-            #e6d8a3 0%,
-            #d4af37 100%
-          ) !important;
-          box-shadow: 0 6px 20px rgba(212, 175, 55, 0.45) !important;
-        }
-      }
-
-      .edit-profile-btn {
-        border-color: rgba(212, 175, 55, 0.5) !important;
-        color: $color-gold !important;
-        font-weight: 600;
-        text-transform: none;
-        border-radius: 8px;
-        padding: 7px 18px;
-        transition: all 0.2s ease;
-
-        &:hover {
-          border-color: $color-gold !important;
-          background-color: rgba(212, 175, 55, 0.1) !important;
+        .app-btn {
+          flex: 1 1 auto;
+          min-width: 110px;
         }
       }
     }
@@ -142,18 +121,34 @@
     padding: 24px 28px;
     margin-bottom: 28px;
 
+    @media (max-width: 600px) {
+      padding: 18px 16px;
+      margin-bottom: 20px;
+    }
+
     .hero-main-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 20px;
+      gap: 16px;
     }
 
     .hero-identity {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 18px;
+
+      @media (max-width: 600px) {
+        gap: 14px;
+
+        .profile-avatar-large {
+          width: 56px !important;
+          height: 56px !important;
+          font-size: 1.6rem !important;
+          border-radius: 14px !important;
+        }
+      }
 
       .profile-avatar-large {
         width: 72px !important;
@@ -179,10 +174,15 @@
       }
 
       .user-display-name {
+        margin: 0;
         font-size: 1.5rem;
         font-weight: 800;
         color: $color-light-gold;
         line-height: 1.2;
+
+        @media (max-width: 600px) {
+          font-size: 1.25rem;
+        }
       }
 
       .role-badge-chip {
@@ -192,13 +192,17 @@
         background: rgba(212, 175, 55, 0.12);
         border: 1px solid rgba(212, 175, 55, 0.35);
         color: $color-gold;
-        font-size: 0.76rem;
+        font-size: 0.74rem;
         font-weight: 700;
         letter-spacing: 0.5px;
         padding: 3px 10px;
         border-radius: 20px;
         margin-top: 6px;
         text-transform: uppercase;
+
+        svg {
+          font-size: 0.95rem;
+        }
       }
     }
 
@@ -206,13 +210,15 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 20px;
-      margin-top: 24px;
+      margin-top: 22px;
       padding-top: 20px;
       border-top: 1px solid rgba(212, 175, 55, 0.14);
 
       @media (max-width: 768px) {
         grid-template-columns: 1fr;
         gap: 14px;
+        margin-top: 18px;
+        padding-top: 16px;
       }
 
       .info-box {
@@ -231,9 +237,15 @@
           justify-content: center;
           color: $color-gold;
           flex-shrink: 0;
+
+          svg {
+            font-size: 1.15rem;
+          }
         }
 
         .info-label {
+          display: block;
+          margin: 0;
           font-size: 0.72rem;
           font-weight: 700;
           color: rgba(212, 175, 55, 0.75);
@@ -242,10 +254,10 @@
         }
 
         .info-value {
+          margin: 2px 0 0 0;
           font-size: 0.92rem;
           color: $color-light-gold;
           font-weight: 500;
-          margin-top: 2px;
           word-break: break-word;
         }
       }
@@ -260,6 +272,7 @@
     margin-bottom: 18px;
 
     .section-title {
+      margin: 0;
       font-size: 1.25rem;
       font-weight: 700;
       color: $color-light-gold;
@@ -269,7 +282,7 @@
 
       svg {
         color: $color-gold;
-        font-size: 1.4rem;
+        font-size: 1.35rem;
       }
     }
 
@@ -279,6 +292,47 @@
       color: $color-gold;
       font-weight: 700;
       font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 16px;
+    }
+  }
+
+  /* Loading States */
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 64px 24px;
+    background: rgba(14, 13, 10, 0.6) !important;
+    border: 1px dashed rgba(212, 175, 55, 0.3) !important;
+    border-radius: 12px !important;
+    width: 100%;
+    box-sizing: border-box;
+
+    .loading-text {
+      color: rgba(230, 216, 163, 0.85);
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+  }
+
+  &__full-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    min-height: 50vh;
+    width: 100%;
+
+    .loading-text {
+      color: $color-light-gold;
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.3px;
     }
   }
 
@@ -287,30 +341,30 @@
     background: rgba(14, 13, 10, 0.6) !important;
     border: 1px dashed rgba(212, 175, 55, 0.3) !important;
     border-radius: 12px !important;
-    padding: 48px 24px;
+    padding: 40px 20px;
     text-align: center;
     color: $color-light-gold;
 
     .empty-icon {
-      font-size: 48px;
+      font-size: 44px;
       color: $color-gold;
       opacity: 0.5;
       margin-bottom: 12px;
     }
 
     .empty-title {
+      margin: 0 0 6px 0;
       font-size: 1.1rem;
       font-weight: 700;
       color: $color-light-gold;
     }
 
     .empty-desc {
+      margin: 0 auto 20px auto;
       color: rgba(230, 216, 163, 0.65);
       font-size: 0.88rem;
-      margin-top: 6px;
       max-width: 480px;
-      margin-left: auto;
-      margin-right: auto;
+      line-height: 1.5;
     }
   }
 
@@ -318,7 +372,7 @@
   .measurements-grid {
     display: flex;
     flex-direction: column;
-    gap: 22px;
+    gap: 18px;
     width: 100%;
   }
 
@@ -344,7 +398,7 @@
     }
 
     .measure-card-header {
-      padding: 16px 24px;
+      padding: 14px 20px;
       background: linear-gradient(
         90deg,
         rgba(212, 175, 55, 0.08) 0%,
@@ -357,70 +411,72 @@
       flex-wrap: wrap;
       gap: 12px;
 
+      &-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .measure-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: $color-gold;
+
+        svg {
+          font-size: 1.25rem;
+          color: $color-gold;
+        }
+      }
+
       .profile-title-text {
+        margin: 0;
         color: $color-light-gold;
         font-weight: 800;
         font-size: 1.15rem;
         letter-spacing: 0.3px;
       }
 
+      .dress-size-pill {
+        background: rgba(212, 175, 55, 0.12);
+        border: 1px solid rgba(212, 175, 55, 0.35);
+        color: $color-gold;
+        font-size: 0.74rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+
       .card-actions {
         display: flex;
         align-items: center;
-        gap: 10px;
-
-        .action-edit-btn {
-          color: $color-gold !important;
-          border: 1px solid rgba(212, 175, 55, 0.45) !important;
-          background-color: rgba(212, 175, 55, 0.06);
-          border-radius: 8px;
-          text-transform: none;
-          font-weight: 600;
-          font-size: 0.82rem;
-          padding: 5px 14px;
-          transition: all 0.2s ease;
-
-          &:hover {
-            border-color: $color-gold !important;
-            background-color: rgba(212, 175, 55, 0.18) !important;
-          }
-        }
-
-        .action-delete-btn {
-          color: #ef4444 !important;
-          border: 1px solid rgba(239, 68, 68, 0.35) !important;
-          background-color: rgba(239, 68, 68, 0.06);
-          border-radius: 8px;
-          padding: 6px;
-          transition: all 0.2s ease;
-
-          &:hover {
-            border-color: #ef4444 !important;
-            background-color: rgba(239, 68, 68, 0.2) !important;
-          }
-        }
+        gap: 8px;
       }
     }
 
     .measure-card-body {
-      padding: 22px 24px;
+      padding: 20px;
 
       .dimensions-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-        gap: 12px 16px;
+        gap: 12px;
         margin-bottom: 16px;
         width: 100%;
 
         @media (max-width: 600px) {
           grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
         }
 
         .dim-cell {
           background: rgba(0, 0, 0, 0.55);
           border: 1px solid rgba(212, 175, 55, 0.18);
           border-radius: 10px;
-          padding: 12px 14px;
+          padding: 10px 12px;
           transition: all 0.2s ease;
 
           &:hover {
@@ -430,6 +486,8 @@
           }
 
           .dim-name {
+            display: block;
+            margin: 0;
             color: rgba(212, 175, 55, 0.85);
             font-size: 0.72rem;
             font-weight: 700;
@@ -438,10 +496,11 @@
           }
 
           .dim-val {
+            display: block;
+            margin: 4px 0 0 0;
             color: $color-light-gold;
             font-size: 1.15rem;
             font-weight: 800;
-            margin-top: 4px;
             letter-spacing: 0.2px;
           }
         }
@@ -455,6 +514,8 @@
         margin-top: 14px;
 
         .notes-label {
+          display: block;
+          margin: 0;
           font-size: 0.72rem;
           color: rgba(212, 175, 55, 0.9);
           font-weight: 700;
@@ -463,19 +524,35 @@
         }
 
         .notes-content {
+          margin: 4px 0 0 0;
           font-size: 0.92rem;
           color: rgba(230, 216, 163, 0.92);
-          margin-top: 4px;
           line-height: 1.5;
+          word-break: break-word;
         }
       }
 
-      .measure-footer-date {
-        font-size: 0.78rem;
-        color: rgba(230, 216, 163, 0.6);
+      .measure-card-footer {
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(212, 175, 55, 0.12);
         display: flex;
         align-items: center;
-        gap: 6px;
+        justify-content: flex-end;
+
+        .measure-footer-date {
+          margin: 0;
+          font-size: 0.78rem;
+          color: rgba(230, 216, 163, 0.6);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          svg {
+            font-size: 1rem;
+            color: rgba(212, 175, 55, 0.6);
+          }
+        }
       }
     }
   }

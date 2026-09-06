@@ -12,6 +12,9 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import SquareFootOutlinedIcon from "@mui/icons-material/SquareFootOutlined";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import { updatePassword } from "firebase/auth";
+import { auth } from "../../../firebase/config";
 import {
   AppButton,
   AppInput,
@@ -29,6 +32,7 @@ import {
   deleteCustomerMeasurement,
   checkUserUniqueness,
   formatDateSafe,
+  resetUserPassword,
 } from "../../../firebase/dbService";
 import { USER_ROLES } from "../../../firebase/schema";
 import "./MyProfile.scss";
@@ -55,6 +59,9 @@ const profileValidationSchema = Yup.object({
   userAddress: Yup.string()
     .trim()
     .max(200, "Address cannot exceed 200 characters"),
+  newPassword: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .notRequired(),
 });
 
 const DRESS_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "Custom"];
@@ -129,7 +136,9 @@ const measurementValidationSchema = Yup.object({
       (val) => {
         if (!val) return true;
         const num = Number(val);
-        return !Number.isNaN(num) && Number.isInteger(num) && num >= 1 && num <= 30;
+        return (
+          !Number.isNaN(num) && Number.isInteger(num) && num >= 1 && num <= 30
+        );
       }
     ),
   height: Yup.string()
@@ -228,9 +237,10 @@ const MyProfile = () => {
         : "",
       email: displayEmail,
       userAddress: displayAddress,
+      newPassword: "",
     },
     validationSchema: profileValidationSchema,
-    onSubmit: async (values, { setSubmitting }) => {
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
       setFeedback(null);
       try {
         const cleanEmail = values.email.trim().toLowerCase();
@@ -245,11 +255,17 @@ const MyProfile = () => {
 
         if (!uniqueness.isUnique) {
           if (uniqueness.emailExists) {
-            editProfileFormik.setFieldError("email", "This email address is already registered.");
+            editProfileFormik.setFieldError(
+              "email",
+              "This email address is already registered."
+            );
             editProfileFormik.setFieldTouched("email", true, false);
           }
           if (uniqueness.mobileExists) {
-            editProfileFormik.setFieldError("userMobile", "This mobile number is already registered.");
+            editProfileFormik.setFieldError(
+              "userMobile",
+              "This mobile number is already registered."
+            );
             editProfileFormik.setFieldTouched("userMobile", true, false);
           }
           setFeedback({
@@ -272,6 +288,49 @@ const MyProfile = () => {
           await updateUser(currentUid, updatePayload);
         }
 
+        // Update password if provided
+        let pwFeedbackNote = "";
+        if (values.newPassword && values.newPassword.trim()) {
+          const pass = values.newPassword.trim();
+          let passwordUpdated = false;
+
+          // 1. Try direct update on active Firebase Auth session
+          if (auth?.currentUser) {
+            try {
+              await updatePassword(auth.currentUser, pass);
+              passwordUpdated = true;
+              pwFeedbackNote = " Password updated successfully.";
+            } catch (authPwErr) {
+              console.warn("Direct updatePassword note:", authPwErr);
+            }
+          }
+
+          // 2. Fall back to resetUserPassword
+          if (!passwordUpdated) {
+            try {
+              const pwResult = await resetUserPassword({
+                email: cleanEmail,
+                currentPassword: "aparna",
+                newPassword: pass,
+                displayName: values.username.trim(),
+              });
+              if (pwResult?.method === "email_sent") {
+                pwFeedbackNote = ` Note: ${pwResult.message}`;
+              } else {
+                pwFeedbackNote = " Password updated successfully.";
+              }
+            } catch (pwErr) {
+              console.warn("Password reset fallback failed:", pwErr);
+              setFeedback({
+                type: "error",
+                message: `Profile saved, but password update failed: ${pwErr.message}`,
+              });
+              setSubmitting(false);
+              return;
+            }
+          }
+        }
+
         if (refreshProfile) {
           try {
             await refreshProfile();
@@ -280,8 +339,9 @@ const MyProfile = () => {
 
         setFeedback({
           type: "success",
-          message: "Your profile details have been updated successfully!",
+          message: `Your profile details have been updated successfully!${pwFeedbackNote}`,
         });
+        resetForm();
         setOpenEditProfileModal(false);
       } catch (err) {
         console.error("Update profile error:", err);
@@ -296,7 +356,6 @@ const MyProfile = () => {
   });
 
   // addMeasureFormik removed — handled by <MeasurementModal> component via onSave prop.
-
 
   // Edit Measurement Formik
   const editMeasureFormik = useFormik({
@@ -419,8 +478,9 @@ const MyProfile = () => {
 
   if (authLoading && !currentUser && !userProfile) {
     return (
-      <div className="my-profile-page__loading">
-        <AppSpinner size={36} />
+      <div className="my-profile-page__full-loading">
+        <AppSpinner size="lg" color="gold" />
+        <span className="loading-text">Loading profile...</span>
       </div>
     );
   }
@@ -432,14 +492,16 @@ const MyProfile = () => {
         <div>
           <h1 className="page-title">My Profile</h1>
           <p className="page-subtitle">
-            Manage your personal profile details and custom saree pleating measurements
+            Manage your personal profile details and custom saree pleating
+            measurements
           </p>
         </div>
 
         <div className="header-actions">
           <AppButton
             variant="secondary"
-            icon={<RefreshOutlinedIcon />}
+            className="refresh-btn"
+            startIcon={<RefreshOutlinedIcon />}
             onClick={fetchMyMeasurements}
             disabled={loading}
           >
@@ -448,7 +510,8 @@ const MyProfile = () => {
 
           <AppButton
             variant="secondary"
-            icon={<EditOutlinedIcon />}
+            className="edit-profile-btn"
+            startIcon={<EditOutlinedIcon />}
             onClick={() => setOpenEditProfileModal(true)}
           >
             Edit Profile
@@ -456,7 +519,8 @@ const MyProfile = () => {
 
           <AppButton
             variant="primary"
-            icon={<SquareFootOutlinedIcon />}
+            className="primary-action-btn"
+            startIcon={<SquareFootOutlinedIcon />}
             onClick={() => setOpenAddMeasureModal(true)}
           >
             Add Measurement
@@ -466,7 +530,9 @@ const MyProfile = () => {
 
       {/* Global Feedback Alert */}
       {feedback && (
-        <div className={`profile-feedback-alert profile-feedback-alert--${feedback.type}`}>
+        <div
+          className={`profile-feedback-alert profile-feedback-alert--${feedback.type}`}
+        >
           <span>{feedback.message}</span>
           <button
             type="button"
@@ -499,7 +565,8 @@ const MyProfile = () => {
           <AppButton
             variant="secondary"
             size="sm"
-            icon={<EditOutlinedIcon />}
+            className="edit-profile-btn"
+            startIcon={<EditOutlinedIcon />}
             onClick={() => setOpenEditProfileModal(true)}
           >
             Edit My Details
@@ -553,13 +620,15 @@ const MyProfile = () => {
           My Saree Pleating Measurements
         </h3>
         <span className="count-chip">
-          {measurements.length} {measurements.length === 1 ? "Measurement" : "Measurements"}
+          {measurements.length}{" "}
+          {measurements.length === 1 ? "Measurement" : "Measurements"}
         </span>
       </div>
 
-      {loading && measurements.length === 0 ? (
+      {loading ? (
         <div className="my-profile-page__loading">
-          <AppSpinner size={32} />
+          <AppSpinner size="lg" color="gold" />
+          <span className="loading-text">Loading measurement profiles...</span>
         </div>
       ) : measurements.length === 0 ? (
         <div className="empty-measurements-card">
@@ -571,7 +640,8 @@ const MyProfile = () => {
           </p>
           <AppButton
             variant="primary"
-            icon={<SquareFootOutlinedIcon />}
+            className="primary-action-btn"
+            startIcon={<SquareFootOutlinedIcon />}
             onClick={() => setOpenAddMeasureModal(true)}
           >
             Add Your First Measurement
@@ -600,7 +670,8 @@ const MyProfile = () => {
                   <AppButton
                     size="sm"
                     variant="secondary"
-                    icon={<EditOutlinedIcon />}
+                    className="action-edit-btn"
+                    startIcon={<EditOutlinedIcon />}
                     onClick={() => {
                       setSelectedMeasureForEdit(measure);
                       setOpenEditMeasureModal(true);
@@ -611,11 +682,14 @@ const MyProfile = () => {
 
                   <AppButton
                     size="sm"
-                    variant="icon"
-                    icon={<DeleteOutlineIcon />}
+                    variant="danger"
+                    square
+                    className="action-delete-btn"
                     onClick={() => setMeasureToDelete(measure)}
-                    title="Delete Measurement"
-                  />
+                    title="Delete Measurement Profile"
+                  >
+                    <DeleteOutlineIcon style={{ fontSize: 16 }} />
+                  </AppButton>
                 </div>
               </div>
 
@@ -682,15 +756,15 @@ const MyProfile = () => {
                   </div>
                   <div className="dim-cell">
                     <span className="dim-name">Dress Size</span>
-                    <span className="dim-val">
-                      {measure.dressSize || "—"}
-                    </span>
+                    <span className="dim-val">{measure.dressSize || "—"}</span>
                   </div>
                 </div>
 
                 {measure.notes && (
                   <div className="measure-notes-box">
-                    <span className="notes-label">Tailoring & Draping Notes</span>
+                    <span className="notes-label">
+                      Tailoring & Draping Notes
+                    </span>
                     <p className="notes-content">{measure.notes}</p>
                   </div>
                 )}
@@ -698,7 +772,8 @@ const MyProfile = () => {
                 <div className="measure-card-footer">
                   <span className="measure-footer-date">
                     <CalendarTodayOutlinedIcon />
-                    Recorded {formatDateSafe(measure.createdAtDate || measure.createdAt)}
+                    Recorded{" "}
+                    {formatDateSafe(measure.createdAtDate || measure.createdAt)}
                   </span>
                 </div>
               </div>
@@ -712,7 +787,9 @@ const MyProfile = () => {
       {/* ========================================================================= */}
       <AppModal
         open={openEditProfileModal}
-        onClose={() => !editProfileFormik.isSubmitting && setOpenEditProfileModal(false)}
+        onClose={() =>
+          !editProfileFormik.isSubmitting && setOpenEditProfileModal(false)
+        }
         title="Edit My Profile Details"
         subtitle="Update your contact information and delivery address"
         maxWidth="sm"
@@ -782,20 +859,19 @@ const MyProfile = () => {
             onChange={editProfileFormik.handleChange}
             onBlur={editProfileFormik.handleBlur}
             error={
-              editProfileFormik.touched.email &&
-              editProfileFormik.errors.email
+              editProfileFormik.touched.email && editProfileFormik.errors.email
             }
             disabled={editProfileFormik.isSubmitting}
             startAdornment={<EmailOutlinedIcon />}
           />
 
           <AppInput
-            label="Delivery / Residential Address"
+            label="Address"
             multiline
             rows={3}
             id="profile-address"
             name="userAddress"
-            placeholder="Door number, street name, landmark, pincode..."
+            placeholder="Enter your address"
             value={editProfileFormik.values.userAddress}
             onChange={editProfileFormik.handleChange}
             onBlur={editProfileFormik.handleBlur}
@@ -805,9 +881,26 @@ const MyProfile = () => {
             }
             disabled={editProfileFormik.isSubmitting}
           />
+
+          <AppInput
+            label="Change Password (Optional)"
+            id="profile-newPassword"
+            name="newPassword"
+            type="password"
+            placeholder="Leave blank to keep current password"
+            value={editProfileFormik.values.newPassword}
+            onChange={editProfileFormik.handleChange}
+            onBlur={editProfileFormik.handleBlur}
+            error={
+              editProfileFormik.touched.newPassword &&
+              editProfileFormik.errors.newPassword
+            }
+            disabled={editProfileFormik.isSubmitting}
+            helperText="Enter a new password (min 6 characters) to update. Leave blank to keep existing password."
+            startAdornment={<LockOutlinedIcon />}
+          />
         </form>
       </AppModal>
-
 
       {/* ========================================================================= */}
       {/* 2. Modal: Add Measurement Profile (reusable MeasurementModal component)    */}
@@ -846,9 +939,13 @@ const MyProfile = () => {
       {/* ========================================================================= */}
       <AppModal
         open={openEditMeasureModal}
-        onClose={() => !editMeasureFormik.isSubmitting && setOpenEditMeasureModal(false)}
+        onClose={() =>
+          !editMeasureFormik.isSubmitting && setOpenEditMeasureModal(false)
+        }
         title="Edit Measurement Profile"
-        subtitle={selectedMeasureForEdit?.title || "Modify pleat and sizing parameters"}
+        subtitle={
+          selectedMeasureForEdit?.title || "Modify pleat and sizing parameters"
+        }
         maxWidth="md"
         actions={
           <>
@@ -890,7 +987,7 @@ const MyProfile = () => {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
               gap: "12px",
             }}
           >
@@ -1029,8 +1126,7 @@ const MyProfile = () => {
             onChange={editMeasureFormik.handleChange}
             onBlur={editMeasureFormik.handleBlur}
             error={
-              editMeasureFormik.touched.notes &&
-              editMeasureFormik.errors.notes
+              editMeasureFormik.touched.notes && editMeasureFormik.errors.notes
             }
             disabled={editMeasureFormik.isSubmitting}
           />

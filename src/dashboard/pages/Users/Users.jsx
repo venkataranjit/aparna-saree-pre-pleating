@@ -108,14 +108,23 @@ const Users = () => {
     isSuperAdmin,
     canEdit,
     canDelete,
+    canManageUsers,
   } = useAuth();
+
+  const userRoleLower = (role || "").toLowerCase();
+  const hasAccessToUsers =
+    canManageUsers ??
+    (isSuperAdmin ||
+      userRoleLower === "superadmin" ||
+      userRoleLower === "admin");
+
   const userCanEdit =
     canEdit ??
     (isSuperAdmin ||
-      (role || "").toLowerCase() === "admin" ||
-      (role || "").toLowerCase() === "superadmin");
+      userRoleLower === "admin" ||
+      userRoleLower === "superadmin");
   const userCanDelete =
-    canDelete ?? (isSuperAdmin || (role || "").toLowerCase() === "superadmin");
+    canDelete ?? (isSuperAdmin || userRoleLower === "superadmin");
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -143,6 +152,10 @@ const Users = () => {
 
   // Load all users from Firestore with local cache fallback
   const fetchUsers = async () => {
+    if (!hasAccessToUsers) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const data = await getAllUsers();
@@ -166,8 +179,10 @@ const Users = () => {
   };
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (hasAccessToUsers) {
+      fetchUsers();
+    }
+  }, [hasAccessToUsers]);
 
   const handleOpenEdit = (user) => {
     setSelectedUser(user);
@@ -468,14 +483,9 @@ const Users = () => {
     );
   }, [sortedUsers, page, rowsPerPage]);
 
-  const userRoleLower = (role || "").toLowerCase();
-  const isCustomerOnly =
-    !isSuperAdmin &&
-    (userRoleLower === USER_ROLES.CUSTOMER ||
-      userRoleLower === "customer" ||
-      userRoleLower === "");
-
-  if (isCustomerOnly) {
+  // Restrict access: only Super Admin and Admin can access the Users screen.
+  // Staff and Customers are redirected immediately to /dashboard.
+  if (!hasAccessToUsers) {
     return <Navigate to="/dashboard" replace />;
   }
 

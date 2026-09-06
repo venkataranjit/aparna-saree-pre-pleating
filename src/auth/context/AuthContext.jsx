@@ -14,6 +14,7 @@ const AuthContext = createContext({
   canEdit: false,
   canDelete: false,
   canAdd: false,
+  canManageUsers: false,
   role: USER_ROLES.CUSTOMER,
   loading: true,
   logout: async () => {},
@@ -254,6 +255,7 @@ export const AuthProvider = ({ children }) => {
   const canEdit = isSuperAdmin || role === USER_ROLES.ADMIN;
   const canDelete = isSuperAdmin || role === USER_ROLES.ADMIN;
   const canAdd = isSuperAdmin || role === USER_ROLES.ADMIN || role === USER_ROLES.STAFF;
+  const canManageUsers = isSuperAdmin || role === USER_ROLES.ADMIN;
 
   const value = {
     currentUser,
@@ -264,6 +266,7 @@ export const AuthProvider = ({ children }) => {
     canEdit,
     canDelete,
     canAdd,
+    canManageUsers,
     role,
     loading,
     logout,

@@ -88,7 +88,7 @@ const Sidebar = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, userProfile, isSuperAdmin, role, logout } = useAuth();
+  const { currentUser, userProfile, isSuperAdmin, role, canManageUsers, logout } = useAuth();
 
   const displayName =
     userProfile?.username ||
@@ -141,28 +141,34 @@ const Sidebar = ({
     return location.pathname.startsWith(item.path);
   };
 
-  // Filter navigation items based on role (hide Manage Users and Customers for customers)
+  // Filter navigation items based on role:
+  // - Manage Users is accessible ONLY to Super Admin and Admin (hidden from Staff and Customers)
+  // - Customers is accessible to Super Admin, Admin, and Staff (hidden from Customers)
   const filteredNavSections = useMemo(() => {
     const userRole = (role || "").toLowerCase();
     const isCustomer =
       !isSuperAdmin && (userRole === "customer" || userRole === "");
+    const canAccessUsers =
+      canManageUsers ??
+      (isSuperAdmin ||
+        userRole === "superadmin" ||
+        userRole === "admin");
 
     return navSections
       .map((section) => ({
         ...section,
         items: section.items.filter((item) => {
-          if (
-            isCustomer &&
-            (item.path === "/dashboard/users" ||
-              item.path === "/dashboard/customers")
-          ) {
+          if (item.path === "/dashboard/users" && !canAccessUsers) {
+            return false;
+          }
+          if (item.path === "/dashboard/customers" && isCustomer) {
             return false;
           }
           return true;
         }),
       }))
       .filter((section) => section.items.length > 0);
-  }, [role, isSuperAdmin]);
+  }, [role, isSuperAdmin, canManageUsers]);
 
   return (
     <aside

@@ -21,6 +21,7 @@ import SquareFootOutlinedIcon from "@mui/icons-material/SquareFootOutlined";
 import PendingActionsOutlinedIcon from "@mui/icons-material/PendingActionsOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import StatCard from "../../components/StatCard/StatCard";
 import { useAuth } from "../../../auth/context/AuthContext";
 import {
@@ -36,6 +37,8 @@ import {
   formatDateSafe,
   formatModifiedDate,
   getTimestampMillis,
+  createAuthUser,
+  resetUserPassword,
 } from "../../../firebase/dbService";
 import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
 import {
@@ -55,6 +58,7 @@ import {
   AppTablePagination,
 } from "../../../components/common";
 import "./Customers.scss";
+import { MeasurementModal } from "../../components/MeasurementModal/MeasurementModal";
 
 // Validation schema for creating or editing a customer
 const customerValidationSchema = Yup.object({
@@ -174,8 +178,15 @@ const measurementValidationSchema = Yup.object({
 });
 
 const Customers = () => {
-  const { currentUser, userProfile, role, isSuperAdmin, canEdit, canDelete } =
-    useAuth();
+  const {
+    currentUser,
+    refreshProfile,
+    userProfile,
+    role,
+    isSuperAdmin,
+    canEdit,
+    canDelete,
+  } = useAuth();
   const userRole = (role || "").toLowerCase();
   const isCustomer =
     !isSuperAdmin &&
@@ -337,8 +348,13 @@ const Customers = () => {
       userMobile: selectedCustomer?.userMobile || "",
       email: selectedCustomer?.email || "",
       userAddress: selectedCustomer?.userAddress || "",
+      newPassword: "",
     },
-    validationSchema: customerValidationSchema,
+    validationSchema: customerValidationSchema.shape({
+      newPassword: Yup.string()
+        .min(6, "Password must be at least 6 characters")
+        .notRequired(),
+    }),
     onSubmit: async (values, { setSubmitting }) => {
       setFeedback(null);
       try {
@@ -385,6 +401,32 @@ const Customers = () => {
 
         const updatedDoc = await updateUser(selectedCustomer.id, updatePayload);
 
+        // Reset password if a new one was provided
+        let pwFeedbackNote = "";
+        if (values.newPassword && values.newPassword.trim()) {
+          try {
+            const pwResult = await resetUserPassword({
+              email: cleanEmail,
+              currentPassword: "aparna",
+              newPassword: values.newPassword.trim(),
+              displayName: values.username.trim(),
+            });
+            if (pwResult?.method === "email_sent") {
+              pwFeedbackNote = ` Note: ${pwResult.message}`;
+            } else {
+              pwFeedbackNote = " Password updated successfully.";
+            }
+          } catch (pwErr) {
+            console.warn("Password update note:", pwErr);
+            setFeedback({
+              type: "error",
+              message: `Profile saved, but password update failed: ${pwErr.message}`,
+            });
+            setSubmitting(false);
+            return;
+          }
+        }
+
         setCustomers((prev) =>
           prev.map((c) =>
             c.id === selectedCustomer.id ||
@@ -406,7 +448,7 @@ const Customers = () => {
 
         setFeedback({
           type: "success",
-          message: `Customer "${values.username.trim()}" updated successfully!`,
+          message: `Customer "${values.username.trim()}" updated successfully!${pwFeedbackNote}`,
         });
         setOpenEditModal(false);
       } catch (err) {
@@ -420,6 +462,7 @@ const Customers = () => {
       }
     },
   });
+
 
   // Create Customer Formik
   const createFormik = useFormik({
@@ -465,7 +508,34 @@ const Customers = () => {
           return;
         }
 
+        let authUid;
+        try {
+          const authResult = await createAuthUser({
+            email: cleanEmail,
+            password: "aparna",
+            displayName: values.username.trim(),
+          });
+          authUid = authResult.uid;
+        } catch (authErr) {
+          console.warn("Firebase Auth creation note:", authErr);
+          if (authErr.code === "auth/email-already-in-use") {
+            createFormik.setFieldError(
+              "email",
+              "This email address is already registered in Authentication."
+            );
+            createFormik.setFieldTouched("email", true, false);
+            setFeedback({
+              type: "error",
+              message: `The email "${cleanEmail}" is already registered in Firebase Authentication.`,
+            });
+            setSubmitting(false);
+            return;
+          }
+          authUid = "user-" + Date.now();
+        }
+
         const newCustomerData = {
+          id: authUid,
           username: values.username.trim(),
           email: cleanEmail,
           userMobile: cleanMobile,
@@ -477,7 +547,7 @@ const Customers = () => {
         setCustomers((prev) => [
           {
             ...newCustomerData,
-            id: created.id,
+            id: created.id || authUid,
             createdAt: formatDateSafe(new Date()),
           },
           ...prev,
@@ -501,74 +571,8 @@ const Customers = () => {
     },
   });
 
-  // Add Measurement Formik
-  const measureFormik = useFormik({
-    enableReinitialize: true,
-    initialValues: {
-      title: customerForMeasure?.username
-        ? `${customerForMeasure.username} Measurements`
-        : "Standard Saree Pleats",
-      pallu: "",
-      shoulderToRightTight: "",
-      chest: "",
-      hip: "",
-      firstPleatSize: "",
-      noOfChestPleats: "",
-      height: "",
-      dressSize: "M",
-      notes: "",
-    },
-    validationSchema: measurementValidationSchema,
-    onSubmit: async (values, { resetForm, setSubmitting }) => {
-      setFeedback(null);
-      try {
-        const customerId = customerForMeasure?.id;
-        if (!customerId)
-          throw new Error("Customer ID is required to record measurements.");
+  // measureFormik removed — handled by <MeasurementModal> component via onSave prop.
 
-        const measurementPayload = {
-          userId: customerId,
-          title: values.title.trim(),
-          pallu: values.pallu.trim() || null,
-          shoulderToRightTight: values.shoulderToRightTight.trim() || null,
-          chest: values.chest.trim() || null,
-          hip: values.hip.trim() || null,
-          firstPleatSize: values.firstPleatSize.trim() || null,
-          noOfChestPleats: values.noOfChestPleats.trim() || null,
-          height: values.height.trim() || null,
-          dressSize: values.dressSize.trim() || null,
-          notes: values.notes.trim(),
-        };
-
-        const saved = await createCustomerMeasurement(measurementPayload);
-
-        setMeasurementsMap((prev) => {
-          const userList = prev[customerId] ? [...prev[customerId]] : [];
-          return {
-            ...prev,
-            [customerId]: [saved, ...userList],
-          };
-        });
-
-        setFeedback({
-          type: "success",
-          message: `Measurement profile "${values.title.trim()}" added successfully for ${
-            customerForMeasure.username
-          }!`,
-        });
-        resetForm();
-        setOpenAddMeasureModal(false);
-      } catch (err) {
-        console.error("Add measurement error:", err);
-        setFeedback({
-          type: "error",
-          message: err.message || "Failed to save measurement profile.",
-        });
-      } finally {
-        setSubmitting(false);
-      }
-    },
-  });
 
   // Open Edit Measurement Modal
   const handleOpenEditMeasure = (measure) => {
@@ -787,7 +791,10 @@ const Customers = () => {
       label: `With Measurements (${customersWithMeasurements})`,
       value: "MEASURED",
     },
-    { label: `Pending (${pendingMeasurementsCount})`, value: "PENDING" },
+    {
+      label: `Pending Measurements(${pendingMeasurementsCount})`,
+      value: "PENDING",
+    },
   ];
 
   return (
@@ -879,19 +886,19 @@ const Customers = () => {
           icon={<StraightenOutlinedIcon />}
         />
         <StatCard
-          title="Measurement Records"
+          title="Total Measurements"
           value={String(totalMeasurementsCount)}
           change="Multi-profile Records"
           trendType="completed"
           icon={<SquareFootOutlinedIcon />}
         />
         <StatCard
-          title="Pending Profiles"
+          title="Pending Measurements"
           value={String(pendingMeasurementsCount)}
           change={
             pendingMeasurementsCount > 0
               ? "Awaiting Measurement"
-              : "All Profiles Complete"
+              : "All Profiles Completed"
           }
           trendType={pendingMeasurementsCount > 0 ? "pending" : "completed"}
           icon={<PendingActionsOutlinedIcon />}
@@ -996,7 +1003,7 @@ const Customers = () => {
             </AppTableHead>
 
             <AppTableBody>
-              {loading && customers.length === 0 ? (
+              {loading ? (
                 <AppTableRow>
                   <AppTableCell
                     colSpan={7}
@@ -1247,7 +1254,7 @@ const Customers = () => {
             required
             id="create-username"
             name="username"
-            placeholder="e.g. Sravanti Reddy"
+            placeholder="e.g. Aparna"
             value={createFormik.values.username}
             onChange={createFormik.handleChange}
             onBlur={createFormik.handleBlur}
@@ -1280,7 +1287,7 @@ const Customers = () => {
             id="create-email"
             name="email"
             type="email"
-            placeholder="e.g. sravanti@example.com"
+            placeholder="e.g. aparna@example.com"
             value={createFormik.values.email}
             onChange={createFormik.handleChange}
             onBlur={createFormik.handleBlur}
@@ -1290,7 +1297,7 @@ const Customers = () => {
           />
 
           <AppInput
-            label="Delivery Address / City (Optional)"
+            label="Address"
             id="create-userAddress"
             name="userAddress"
             placeholder="e.g. Jubilee Hills, Hyderabad"
@@ -1303,6 +1310,18 @@ const Customers = () => {
             }
             disabled={createFormik.isSubmitting}
             startAdornment={<LocationOnOutlinedIcon />}
+          />
+
+          <AppInput
+            label="Temporary Password (Locked to default)"
+            required
+            id="create-password"
+            name="password"
+            type="text"
+            value="aparna"
+            disabled={true}
+            helperText="Temporary password is permanently locked to 'aparna' for all new customer accounts"
+            startAdornment={<LockOutlinedIcon />}
           />
         </form>
       </AppModal>
@@ -1393,6 +1412,21 @@ const Customers = () => {
             }
             disabled={editFormik.isSubmitting}
             startAdornment={<LocationOnOutlinedIcon />}
+          />
+
+          <AppInput
+            label="Reset Password (Optional)"
+            id="edit-newPassword"
+            name="newPassword"
+            type="password"
+            placeholder="Leave blank to keep current password"
+            value={editFormik.values.newPassword}
+            onChange={editFormik.handleChange}
+            onBlur={editFormik.handleBlur}
+            error={editFormik.touched.newPassword && editFormik.errors.newPassword}
+            disabled={editFormik.isSubmitting}
+            helperText="Enter a new password to reset. Leave blank to keep existing password."
+            startAdornment={<LockOutlinedIcon />}
           />
         </form>
       </AppModal>
@@ -1689,194 +1723,52 @@ const Customers = () => {
         )}
       </AppModal>
 
+
       {/* ========================================================================= */}
-      {/* 4. Modal: Add Measurement Profile Dialog                                  */}
+      {/* 4. Modal: Add Measurement Profile (reusable MeasurementModal component)    */}
       {/* ========================================================================= */}
-      <AppModal
+      <MeasurementModal
         open={openAddMeasureModal}
-        onClose={() =>
-          !measureFormik.isSubmitting && setOpenAddMeasureModal(false)
-        }
-        title="Add Saree Measurement Profile"
-        subtitle={`Recording measurements for ${
-          customerForMeasure?.username || "Customer"
-        }`}
-        maxWidth="md"
-        actions={
-          <>
-            <AppButton
-              variant="secondary"
-              onClick={() => setOpenAddMeasureModal(false)}
-              disabled={measureFormik.isSubmitting}
-            >
-              Cancel
-            </AppButton>
-            <AppButton
-              variant="primary"
-              onClick={measureFormik.handleSubmit}
-              loading={measureFormik.isSubmitting}
-            >
-              Save Measurements
-            </AppButton>
-          </>
-        }
-      >
-        <form
-          onSubmit={measureFormik.handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
-        >
-          <AppInput
-            label="Measurement Profile Title (e.g. Bridal Silk Saree)"
-            required
-            id="measure-title"
-            name="title"
-            placeholder="e.g. Kanjeevaram Saree / Reception Saree"
-            value={measureFormik.values.title}
-            onChange={measureFormik.handleChange}
-            onBlur={measureFormik.handleBlur}
-            error={measureFormik.touched.title && measureFormik.errors.title}
-            disabled={measureFormik.isSubmitting}
-          />
+        onClose={() => setOpenAddMeasureModal(false)}
+        subtitle={`Recording measurements for ${customerForMeasure?.username || "Customer"}`}
+        initialValues={{
+          title: customerForMeasure?.username
+            ? `${customerForMeasure.username} Measurements`
+            : "Standard Saree Pleats",
+        }}
+        onSave={async (values) => {
+          const customerId = customerForMeasure?.id;
+          if (!customerId)
+            throw new Error("Customer ID is required to record measurements.");
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-              gap: "12px",
-            }}
-          >
-            <AppInput
-              label="Pallu Length (inches)"
-              id="measure-pallu"
-              name="pallu"
-              placeholder="e.g. 38"
-              value={measureFormik.values.pallu}
-              onChange={measureFormik.handleChange}
-              onBlur={measureFormik.handleBlur}
-              error={measureFormik.touched.pallu && measureFormik.errors.pallu}
-              disabled={measureFormik.isSubmitting}
-            />
+          const measurementPayload = {
+            userId: customerId,
+            title: values.title.trim(),
+            pallu: values.pallu.trim() || null,
+            shoulderToRightTight: values.shoulderToRightTight.trim() || null,
+            chest: values.chest.trim() || null,
+            hip: values.hip.trim() || null,
+            firstPleatSize: values.firstPleatSize.trim() || null,
+            noOfChestPleats: values.noOfChestPleats.trim() || null,
+            height: values.height.trim() || null,
+            dressSize: values.dressSize.trim() || null,
+            notes: values.notes.trim(),
+          };
 
-            <AppInput
-              label="Shoulder to Tight (in)"
-              id="measure-shoulder"
-              name="shoulderToRightTight"
-              placeholder="e.g. 14"
-              value={measureFormik.values.shoulderToRightTight}
-              onChange={measureFormik.handleChange}
-              onBlur={measureFormik.handleBlur}
-              error={
-                measureFormik.touched.shoulderToRightTight &&
-                measureFormik.errors.shoulderToRightTight
-              }
-              disabled={measureFormik.isSubmitting}
-            />
+          const saved = await createCustomerMeasurement(measurementPayload);
 
-            <AppInput
-              label="Chest (inches)"
-              id="measure-chest"
-              name="chest"
-              placeholder="e.g. 36"
-              value={measureFormik.values.chest}
-              onChange={measureFormik.handleChange}
-              onBlur={measureFormik.handleBlur}
-              error={measureFormik.touched.chest && measureFormik.errors.chest}
-              disabled={measureFormik.isSubmitting}
-            />
+          setMeasurementsMap((prev) => {
+            const userList = prev[customerId] ? [...prev[customerId]] : [];
+            return { ...prev, [customerId]: [saved, ...userList] };
+          });
 
-            <AppInput
-              label="Hip (inches)"
-              id="measure-hip"
-              name="hip"
-              placeholder="e.g. 40"
-              value={measureFormik.values.hip}
-              onChange={measureFormik.handleChange}
-              onBlur={measureFormik.handleBlur}
-              error={measureFormik.touched.hip && measureFormik.errors.hip}
-              disabled={measureFormik.isSubmitting}
-            />
+          setFeedback({
+            type: "success",
+            message: `Measurement profile "${values.title.trim()}" added successfully for ${customerForMeasure.username}!`,
+          });
+        }}
+      />
 
-            <AppInput
-              label="First Pleat Size (in)"
-              id="measure-firstPleat"
-              name="firstPleatSize"
-              placeholder="e.g. 5.5"
-              value={measureFormik.values.firstPleatSize}
-              onChange={measureFormik.handleChange}
-              onBlur={measureFormik.handleBlur}
-              error={
-                measureFormik.touched.firstPleatSize &&
-                measureFormik.errors.firstPleatSize
-              }
-              disabled={measureFormik.isSubmitting}
-            />
-
-            <AppInput
-              label="Chest Pleats (count)"
-              id="measure-noOfChestPleats"
-              name="noOfChestPleats"
-              placeholder="e.g. 5"
-              value={measureFormik.values.noOfChestPleats}
-              onChange={measureFormik.handleChange}
-              onBlur={measureFormik.handleBlur}
-              error={
-                measureFormik.touched.noOfChestPleats &&
-                measureFormik.errors.noOfChestPleats
-              }
-              disabled={measureFormik.isSubmitting}
-            />
-
-            <AppInput
-              label="Height (cm / ft)"
-              id="measure-height"
-              name="height"
-              placeholder="e.g. 160"
-              value={measureFormik.values.height}
-              onChange={measureFormik.handleChange}
-              onBlur={measureFormik.handleBlur}
-              error={
-                measureFormik.touched.height && measureFormik.errors.height
-              }
-              disabled={measureFormik.isSubmitting}
-            />
-
-            <AppInput
-              select
-              label="Dress Size"
-              id="measure-dressSize"
-              name="dressSize"
-              value={measureFormik.values.dressSize}
-              onChange={measureFormik.handleChange}
-              onBlur={measureFormik.handleBlur}
-              error={
-                measureFormik.touched.dressSize &&
-                measureFormik.errors.dressSize
-              }
-              disabled={measureFormik.isSubmitting}
-            >
-              {DRESS_SIZES.map((sz) => (
-                <option key={sz} value={sz}>
-                  {sz}
-                </option>
-              ))}
-            </AppInput>
-          </div>
-
-          <AppInput
-            multiline
-            rows={2}
-            label="Special Tailoring Notes (Optional)"
-            id="measure-notes"
-            name="notes"
-            placeholder="e.g. Extra pins for heavy silk border, left-side drape..."
-            value={measureFormik.values.notes}
-            onChange={measureFormik.handleChange}
-            onBlur={measureFormik.handleBlur}
-            error={measureFormik.touched.notes && measureFormik.errors.notes}
-            disabled={measureFormik.isSubmitting}
-          />
-        </form>
-      </AppModal>
 
       {/* ========================================================================= */}
       {/* 5. Modal: Edit Measurement Profile Dialog                                 */}

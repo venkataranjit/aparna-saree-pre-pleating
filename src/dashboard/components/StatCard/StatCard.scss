@@ -230,7 +230,10 @@
     }
 
     &.growth,
-    &.up {
+    &.up,
+    &.completed,
+    &.progress,
+    &.pending {
       background: rgba(212, 175, 55, 0.1);
       border: 1px solid rgba(212, 175, 55, 0.28);
       color: $color-light-gold;
@@ -239,19 +242,6 @@
       .badge-icon {
         color: $color-gold !important;
         fill: $color-gold !important;
-      }
-    }
-
-    &.progress,
-    &.pending {
-      background: rgba(245, 158, 11, 0.14);
-      border: 1px solid rgba(245, 158, 11, 0.35);
-      color: #fbbf24;
-
-      .trend-icon,
-      .badge-icon {
-        color: #fbbf24 !important;
-        fill: #fbbf24 !important;
       }
 
       .trend-pulse-dot {
@@ -260,23 +250,11 @@
         min-width: 6px;
         min-height: 6px;
         border-radius: 50%;
-        background-color: #fbbf24;
-        box-shadow: 0 0 6px rgba(245, 158, 11, 0.7);
+        background-color: $color-gold;
+        box-shadow: 0 0 6px rgba(212, 175, 55, 0.7);
         flex-shrink: 0;
         display: inline-block;
         animation: pulseGlow 1.8s infinite ease-in-out;
-      }
-    }
-
-    &.completed {
-      background: rgba(212, 175, 55, 0.1);
-      border: 1px solid rgba(212, 175, 55, 0.28);
-      color: $color-light-gold;
-
-      .trend-icon,
-      .badge-icon {
-        color: $color-gold !important;
-        fill: $color-gold !important;
       }
     }
   }

@@ -14,7 +14,15 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, updateProfile, signOut } from 'firebase/auth';
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signOut,
+  signInWithEmailAndPassword,
+  updatePassword,
+  sendPasswordResetEmail,
+} from 'firebase/auth';
 import { db, firebaseConfig } from './config';
 import {
   COLLECTIONS,
@@ -497,6 +505,78 @@ export const createAuthUser = async ({ email, password, displayName }) => {
     throw err;
   }
 };
+
+/**
+ * Reset a user's password via a secondary Firebase app instance.
+ * Signs in the user on the secondary app using their current email + current password,
+ * then updates to the new password. Admin session is never affected.
+ *
+ * @param {Object} params
+ * @param {string} params.email         - The user's email address
+ * @param {string} params.currentPassword - Their current password (needed for re-auth)
+ * @param {string} params.newPassword   - The new password to set
+ */
+export const resetUserPassword = async ({ email, currentPassword = 'aparna', newPassword, displayName }) => {
+  const secondaryAppName = 'SecondaryAuthAdminApp';
+  let secondaryApp;
+  const existingApps = getApps();
+  const found = existingApps.find((a) => a.name === secondaryAppName);
+  if (found) {
+    secondaryApp = found;
+  } else {
+    secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
+  }
+
+  const secondaryAuth = getAuth(secondaryApp);
+  const cleanEmail = email.trim();
+
+  try {
+    // 1. Try to sign in with default/current password and update directly
+    try {
+      const cred = await signInWithEmailAndPassword(secondaryAuth, cleanEmail, currentPassword);
+      await updatePassword(cred.user, newPassword);
+      return {
+        method: 'updated',
+        message: 'Password updated successfully!',
+      };
+    } catch (authErr) {
+      // 2. If user doesn't exist in Firebase Auth (created in Firestore only), create their Auth account
+      if (
+        authErr.code === 'auth/user-not-found' ||
+        authErr.code === 'auth/invalid-credential' ||
+        authErr.code === 'auth/wrong-password'
+      ) {
+        try {
+          const newCred = await createUserWithEmailAndPassword(secondaryAuth, cleanEmail, newPassword);
+          if (displayName && newCred.user) {
+            await updateProfile(newCred.user, { displayName: displayName.trim() }).catch(() => {});
+          }
+          return {
+            method: 'created',
+            message: 'Firebase Auth account created with the new password!',
+          };
+        } catch (createErr) {
+          if (createErr.code === 'auth/email-already-in-use') {
+            // User exists in Firebase Auth but current password was not 'aparna'.
+            // Fall back to sending an official password reset link.
+            await sendPasswordResetEmail(secondaryAuth, cleanEmail);
+            return {
+              method: 'email_sent',
+              message: `A password reset link has been sent to ${cleanEmail}.`,
+            };
+          }
+          throw createErr;
+        }
+      } else {
+        throw authErr;
+      }
+    }
+  } finally {
+    await signOut(secondaryAuth).catch(() => {});
+  }
+};
+
+
 
 /**
  * Normalizes an email address for comparison (trimmed and lowercase)

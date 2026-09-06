@@ -32,6 +32,7 @@ import {
 } from "../../../firebase/dbService";
 import { USER_ROLES } from "../../../firebase/schema";
 import "./MyProfile.scss";
+import { MeasurementModal } from "../../components/MeasurementModal/MeasurementModal";
 
 // Validation schema for editing personal profile
 const profileValidationSchema = Yup.object({
@@ -294,60 +295,8 @@ const MyProfile = () => {
     },
   });
 
-  // Add Measurement Formik
-  const addMeasureFormik = useFormik({
-    initialValues: {
-      title: "",
-      pallu: "",
-      shoulderToRightTight: "",
-      chest: "",
-      hip: "",
-      firstPleatSize: "",
-      noOfChestPleats: "",
-      height: "",
-      dressSize: "M",
-      notes: "",
-    },
-    validationSchema: measurementValidationSchema,
-    onSubmit: async (values, { resetForm, setSubmitting }) => {
-      setFeedback(null);
-      try {
-        const measurementPayload = {
-          userId: currentUid,
-          customerName: displayName,
-          customerMobile: displayMobile,
-          title: values.title.trim(),
-          pallu: values.pallu.trim() || null,
-          shoulderToRightTight: values.shoulderToRightTight.trim() || null,
-          chest: values.chest.trim() || null,
-          hip: values.hip.trim() || null,
-          firstPleatSize: values.firstPleatSize.trim() || null,
-          noOfChestPleats: values.noOfChestPleats.trim() || null,
-          height: values.height.trim() || null,
-          dressSize: values.dressSize.trim() || null,
-          notes: values.notes.trim(),
-        };
+  // addMeasureFormik removed — handled by <MeasurementModal> component via onSave prop.
 
-        const saved = await createCustomerMeasurement(measurementPayload);
-        setMeasurements((prev) => [saved, ...prev]);
-
-        setFeedback({
-          type: "success",
-          message: `Measurement profile "${values.title.trim()}" added successfully!`,
-        });
-        resetForm();
-        setOpenAddMeasureModal(false);
-      } catch (err) {
-        console.error("Add measurement error:", err);
-        setFeedback({
-          type: "error",
-          message: err.message || "Failed to save measurement profile.",
-        });
-      } finally {
-        setSubmitting(false);
-      }
-    },
-  });
 
   // Edit Measurement Formik
   const editMeasureFormik = useFormik({
@@ -859,206 +808,38 @@ const MyProfile = () => {
         </form>
       </AppModal>
 
+
       {/* ========================================================================= */}
-      {/* 2. Modal: Add Measurement Profile Dialog                                  */}
+      {/* 2. Modal: Add Measurement Profile (reusable MeasurementModal component)    */}
       {/* ========================================================================= */}
-      <AppModal
+      <MeasurementModal
         open={openAddMeasureModal}
-        onClose={() => !addMeasureFormik.isSubmitting && setOpenAddMeasureModal(false)}
-        title="Add Saree Pleating Measurement"
-        subtitle="Save custom draping & pleating dimensions to your profile"
-        maxWidth="md"
-        actions={
-          <>
-            <AppButton
-              variant="secondary"
-              onClick={() => setOpenAddMeasureModal(false)}
-              disabled={addMeasureFormik.isSubmitting}
-            >
-              Cancel
-            </AppButton>
-            <AppButton
-              variant="primary"
-              onClick={addMeasureFormik.handleSubmit}
-              loading={addMeasureFormik.isSubmitting}
-            >
-              Save Measurement
-            </AppButton>
-          </>
-        }
-      >
-        <form
-          onSubmit={addMeasureFormik.handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
-        >
-          <AppInput
-            label="Measurement Profile Title"
-            required
-            id="add-measure-title"
-            name="title"
-            placeholder="e.g. Bridal Silk Saree, Reception Draping, Kanchi Pleats"
-            value={addMeasureFormik.values.title}
-            onChange={addMeasureFormik.handleChange}
-            onBlur={addMeasureFormik.handleBlur}
-            error={
-              addMeasureFormik.touched.title && addMeasureFormik.errors.title
-            }
-            disabled={addMeasureFormik.isSubmitting}
-          />
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "12px",
-            }}
-          >
-            <AppInput
-              label="Pallu Length (Inches)"
-              id="add-measure-pallu"
-              name="pallu"
-              placeholder="e.g. 38"
-              value={addMeasureFormik.values.pallu}
-              onChange={addMeasureFormik.handleChange}
-              onBlur={addMeasureFormik.handleBlur}
-              error={
-                addMeasureFormik.touched.pallu && addMeasureFormik.errors.pallu
-              }
-              disabled={addMeasureFormik.isSubmitting}
-              endAdornment={<span>in</span>}
-            />
-
-            <AppInput
-              label="Shoulder to Tight (Inches)"
-              id="add-measure-shoulder"
-              name="shoulderToRightTight"
-              placeholder="e.g. 14"
-              value={addMeasureFormik.values.shoulderToRightTight}
-              onChange={addMeasureFormik.handleChange}
-              onBlur={addMeasureFormik.handleBlur}
-              error={
-                addMeasureFormik.touched.shoulderToRightTight &&
-                addMeasureFormik.errors.shoulderToRightTight
-              }
-              disabled={addMeasureFormik.isSubmitting}
-              endAdornment={<span>in</span>}
-            />
-
-            <AppInput
-              label="Chest Size (Inches)"
-              id="add-measure-chest"
-              name="chest"
-              placeholder="e.g. 36"
-              value={addMeasureFormik.values.chest}
-              onChange={addMeasureFormik.handleChange}
-              onBlur={addMeasureFormik.handleBlur}
-              error={
-                addMeasureFormik.touched.chest && addMeasureFormik.errors.chest
-              }
-              disabled={addMeasureFormik.isSubmitting}
-              endAdornment={<span>in</span>}
-            />
-
-            <AppInput
-              label="Hip Size (Inches)"
-              id="add-measure-hip"
-              name="hip"
-              placeholder="e.g. 40"
-              value={addMeasureFormik.values.hip}
-              onChange={addMeasureFormik.handleChange}
-              onBlur={addMeasureFormik.handleBlur}
-              error={
-                addMeasureFormik.touched.hip && addMeasureFormik.errors.hip
-              }
-              disabled={addMeasureFormik.isSubmitting}
-              endAdornment={<span>in</span>}
-            />
-
-            <AppInput
-              label="First Pleat Size (Inches)"
-              id="add-measure-first-pleat"
-              name="firstPleatSize"
-              placeholder="e.g. 5.5"
-              value={addMeasureFormik.values.firstPleatSize}
-              onChange={addMeasureFormik.handleChange}
-              onBlur={addMeasureFormik.handleBlur}
-              error={
-                addMeasureFormik.touched.firstPleatSize &&
-                addMeasureFormik.errors.firstPleatSize
-              }
-              disabled={addMeasureFormik.isSubmitting}
-              endAdornment={<span>in</span>}
-            />
-
-            <AppInput
-              label="Number of Chest Pleats"
-              id="add-measure-chest-pleats"
-              name="noOfChestPleats"
-              placeholder="e.g. 5"
-              value={addMeasureFormik.values.noOfChestPleats}
-              onChange={addMeasureFormik.handleChange}
-              onBlur={addMeasureFormik.handleBlur}
-              error={
-                addMeasureFormik.touched.noOfChestPleats &&
-                addMeasureFormik.errors.noOfChestPleats
-              }
-              disabled={addMeasureFormik.isSubmitting}
-              endAdornment={<span>pleats</span>}
-            />
-
-            <AppInput
-              label="Height (cm / ft)"
-              id="add-measure-height"
-              name="height"
-              placeholder="e.g. 158 cm or 5'3"
-              value={addMeasureFormik.values.height}
-              onChange={addMeasureFormik.handleChange}
-              onBlur={addMeasureFormik.handleBlur}
-              error={
-                addMeasureFormik.touched.height && addMeasureFormik.errors.height
-              }
-              disabled={addMeasureFormik.isSubmitting}
-            />
-
-            <AppInput
-              select
-              label="Standard Dress Size"
-              id="add-measure-dress-size"
-              name="dressSize"
-              value={addMeasureFormik.values.dressSize}
-              onChange={addMeasureFormik.handleChange}
-              onBlur={addMeasureFormik.handleBlur}
-              error={
-                addMeasureFormik.touched.dressSize &&
-                addMeasureFormik.errors.dressSize
-              }
-              disabled={addMeasureFormik.isSubmitting}
-            >
-              {DRESS_SIZES.map((sz) => (
-                <option key={sz} value={sz}>
-                  {sz}
-                </option>
-              ))}
-            </AppInput>
-          </div>
-
-          <AppInput
-            multiline
-            rows={3}
-            label="Special Tailoring & Draping Notes (Optional)"
-            id="add-measure-notes"
-            name="notes"
-            placeholder="e.g. Extra pins for heavy silk border, left-side drape, pin at waist..."
-            value={addMeasureFormik.values.notes}
-            onChange={addMeasureFormik.handleChange}
-            onBlur={addMeasureFormik.handleBlur}
-            error={
-              addMeasureFormik.touched.notes && addMeasureFormik.errors.notes
-            }
-            disabled={addMeasureFormik.isSubmitting}
-          />
-        </form>
-      </AppModal>
+        onClose={() => setOpenAddMeasureModal(false)}
+        subtitle={`Recording measurements for ${displayName || "My Profile"}`}
+        onSave={async (values) => {
+          const measurementPayload = {
+            userId: currentUid,
+            customerName: displayName,
+            customerMobile: displayMobile,
+            title: values.title.trim(),
+            pallu: values.pallu.trim() || null,
+            shoulderToRightTight: values.shoulderToRightTight.trim() || null,
+            chest: values.chest.trim() || null,
+            hip: values.hip.trim() || null,
+            firstPleatSize: values.firstPleatSize.trim() || null,
+            noOfChestPleats: values.noOfChestPleats.trim() || null,
+            height: values.height.trim() || null,
+            dressSize: values.dressSize.trim() || null,
+            notes: values.notes.trim(),
+          };
+          const saved = await createCustomerMeasurement(measurementPayload);
+          setMeasurements((prev) => [saved, ...prev]);
+          setFeedback({
+            type: "success",
+            message: `Measurement profile "${values.title.trim()}" added successfully!`,
+          });
+        }}
+      />
 
       {/* ========================================================================= */}
       {/* 3. Modal: Edit Measurement Profile Dialog                                 */}

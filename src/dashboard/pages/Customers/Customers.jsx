@@ -1,26 +1,27 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Navigate } from 'react-router-dom';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
-import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
-import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
-import StraightenOutlinedIcon from '@mui/icons-material/StraightenOutlined';
-import PhoneIphoneOutlinedIcon from '@mui/icons-material/PhoneIphoneOutlined';
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
-import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
-import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
-import CloseIcon from '@mui/icons-material/Close';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
-import NotesOutlinedIcon from '@mui/icons-material/NotesOutlined';
-import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import StatCard from '../../components/StatCard/StatCard';
-import { useAuth } from '../../../auth/context/AuthContext';
+import React, { useState, useEffect, useMemo } from "react";
+import { Navigate } from "react-router-dom";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
+import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import StraightenOutlinedIcon from "@mui/icons-material/StraightenOutlined";
+import PhoneIphoneOutlinedIcon from "@mui/icons-material/PhoneIphoneOutlined";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import CloseIcon from "@mui/icons-material/Close";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import NotesOutlinedIcon from "@mui/icons-material/NotesOutlined";
+import SquareFootOutlinedIcon from "@mui/icons-material/SquareFootOutlined";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import StatCard from "../../components/StatCard/StatCard";
+import { useAuth } from "../../../auth/context/AuthContext";
 import {
   getAllUsers,
   createUser,
@@ -31,8 +32,8 @@ import {
   updateMeasurement,
   deleteCustomerMeasurement,
   formatDateSafe,
-} from '../../../firebase/dbService';
-import { USER_ROLES, SUPERADMIN_EMAIL } from '../../../firebase/schema';
+} from "../../../firebase/dbService";
+import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
 import {
   AppButton,
   AppInput,
@@ -40,99 +41,145 @@ import {
   AppBadge,
   AppTabs,
   AppSpinner,
-} from '../../../components/common';
-import './Customers.scss';
+} from "../../../components/common";
+import "./Customers.scss";
 
 // Validation schema for creating or editing a customer
 const customerValidationSchema = Yup.object({
   username: Yup.string()
     .trim()
-    .min(2, 'Name must be at least 2 characters')
-    .max(60, 'Name cannot exceed 60 characters')
-    .required('Customer Name is required'),
+    .min(2, "Name must be at least 2 characters")
+    .max(60, "Name cannot exceed 60 characters")
+    .required("Customer Name is required"),
   userMobile: Yup.string()
     .trim()
-    .matches(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number')
-    .required('Mobile Number is required'),
+    .matches(
+      /^[6-9]\d{9}$/,
+      "Please enter a valid 10-digit Indian mobile number"
+    )
+    .required("Mobile Number is required"),
   email: Yup.string()
     .trim()
-    .email('Please enter a valid email address')
-    .required('Email Address is required'),
-  userAddress: Yup.string().trim().max(150, 'Address cannot exceed 150 characters'),
+    .email("Please enter a valid email address")
+    .required("Email Address is required"),
+  userAddress: Yup.string()
+    .trim()
+    .max(150, "Address cannot exceed 150 characters"),
 });
 
-const DRESS_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Custom'];
+const DRESS_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "Custom"];
 
 // Validation schema for adding/editing a measurement profile with strict validation
 const measurementValidationSchema = Yup.object({
   title: Yup.string()
     .trim()
-    .min(2, 'Measurement title must be at least 2 characters')
-    .max(60, 'Title cannot exceed 60 characters')
-    .required('Measurement title is required (e.g. Bridal Silk Saree)'),
+    .min(2, "Measurement title must be at least 2 characters")
+    .max(60, "Title cannot exceed 60 characters")
+    .required("Measurement title is required (e.g. Bridal Silk Saree)"),
   pallu: Yup.string()
     .trim()
-    .test('is-valid-pallu', 'Pallu length must be a valid positive number (e.g. 38 or 38.5)', (val) => {
-      if (!val) return true;
-      const num = Number(val);
-      return !Number.isNaN(num) && num > 0 && num <= 200;
-    }),
+    .test(
+      "is-valid-pallu",
+      "Pallu length must be a valid positive number (e.g. 38 or 38.5)",
+      (val) => {
+        if (!val) return true;
+        const num = Number(val);
+        return !Number.isNaN(num) && num > 0 && num <= 200;
+      }
+    ),
   shoulderToRightTight: Yup.string()
     .trim()
-    .test('is-valid-shoulder', 'Shoulder measurement must be a valid positive number (e.g. 14)', (val) => {
-      if (!val) return true;
-      const num = Number(val);
-      return !Number.isNaN(num) && num > 0 && num <= 100;
-    }),
+    .test(
+      "is-valid-shoulder",
+      "Shoulder measurement must be a valid positive number (e.g. 14)",
+      (val) => {
+        if (!val) return true;
+        const num = Number(val);
+        return !Number.isNaN(num) && num > 0 && num <= 100;
+      }
+    ),
   chest: Yup.string()
     .trim()
-    .test('is-valid-chest', 'Chest size must be a valid positive number (e.g. 36)', (val) => {
-      if (!val) return true;
-      const num = Number(val);
-      return !Number.isNaN(num) && num > 0 && num <= 100;
-    }),
+    .test(
+      "is-valid-chest",
+      "Chest size must be a valid positive number (e.g. 36)",
+      (val) => {
+        if (!val) return true;
+        const num = Number(val);
+        return !Number.isNaN(num) && num > 0 && num <= 100;
+      }
+    ),
   hip: Yup.string()
     .trim()
-    .test('is-valid-hip', 'Hip size must be a valid positive number (e.g. 40)', (val) => {
-      if (!val) return true;
-      const num = Number(val);
-      return !Number.isNaN(num) && num > 0 && num <= 120;
-    }),
+    .test(
+      "is-valid-hip",
+      "Hip size must be a valid positive number (e.g. 40)",
+      (val) => {
+        if (!val) return true;
+        const num = Number(val);
+        return !Number.isNaN(num) && num > 0 && num <= 120;
+      }
+    ),
   firstPleatSize: Yup.string()
     .trim()
-    .test('is-valid-pleat', 'First pleat size must be a valid positive number (e.g. 5.5)', (val) => {
-      if (!val) return true;
-      const num = Number(val);
-      return !Number.isNaN(num) && num > 0 && num <= 50;
-    }),
+    .test(
+      "is-valid-pleat",
+      "First pleat size must be a valid positive number (e.g. 5.5)",
+      (val) => {
+        if (!val) return true;
+        const num = Number(val);
+        return !Number.isNaN(num) && num > 0 && num <= 50;
+      }
+    ),
   noOfChestPleats: Yup.string()
     .trim()
-    .test('is-valid-pleats-count', 'Chest pleats count must be a positive integer (e.g. 5)', (val) => {
-      if (!val) return true;
-      const num = Number(val);
-      return !Number.isNaN(num) && Number.isInteger(num) && num > 0 && num <= 30;
-    }),
+    .test(
+      "is-valid-pleats-count",
+      "Chest pleats count must be a positive integer (e.g. 5)",
+      (val) => {
+        if (!val) return true;
+        const num = Number(val);
+        return (
+          !Number.isNaN(num) && Number.isInteger(num) && num > 0 && num <= 30
+        );
+      }
+    ),
   height: Yup.string()
     .trim()
-    .test('is-valid-height', 'Height must be a valid positive number (e.g. 150 or 5.5)', (val) => {
-      if (!val) return true;
-      const num = Number(val);
-      return !Number.isNaN(num) && num > 0 && num <= 300;
-    }),
+    .test(
+      "is-valid-height",
+      "Height must be a valid positive number (e.g. 150 or 5.5)",
+      (val) => {
+        if (!val) return true;
+        const num = Number(val);
+        return !Number.isNaN(num) && num > 0 && num <= 300;
+      }
+    ),
   dressSize: Yup.string()
     .trim()
-    .oneOf(DRESS_SIZES, 'Please select a valid dress size'),
-  notes: Yup.string()
-    .trim()
-    .max(300, 'Notes cannot exceed 300 characters'),
+    .oneOf(DRESS_SIZES, "Please select a valid dress size"),
+  notes: Yup.string().trim().max(300, "Notes cannot exceed 300 characters"),
 });
 
 const Customers = () => {
-  const { currentUser, userProfile, role, isSuperAdmin, canEdit, canDelete } = useAuth();
-  const userRole = (role || '').toLowerCase();
-  const isCustomer = !isSuperAdmin && (userRole === USER_ROLES.CUSTOMER || userRole === 'customer' || userRole === '');
-  const userCanEdit = canEdit ?? (isSuperAdmin || userRole === USER_ROLES.ADMIN || userRole === USER_ROLES.SUPERADMIN);
-  const userCanDelete = canDelete ?? (isSuperAdmin || userRole === USER_ROLES.ADMIN || userRole === USER_ROLES.SUPERADMIN);
+  const { currentUser, userProfile, role, isSuperAdmin, canEdit, canDelete } =
+    useAuth();
+  const userRole = (role || "").toLowerCase();
+  const isCustomer =
+    !isSuperAdmin &&
+    (userRole === USER_ROLES.CUSTOMER ||
+      userRole === "customer" ||
+      userRole === "");
+  const userCanEdit =
+    canEdit ??
+    (isSuperAdmin ||
+      userRole === USER_ROLES.ADMIN ||
+      userRole === USER_ROLES.SUPERADMIN);
+  const userCanDelete =
+    canDelete ??
+    (isSuperAdmin ||
+      userRole === USER_ROLES.ADMIN ||
+      userRole === USER_ROLES.SUPERADMIN);
 
   // If customer accesses Customers screen, redirect to /dashboard
   if (isCustomer) {
@@ -143,8 +190,8 @@ const Customers = () => {
   const [measurementsMap, setMeasurementsMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('ALL');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("ALL");
 
   // Modal Dialog states
   const [dialogOpen, setDialogOpen] = useState(false); // Add Customer Modal
@@ -183,10 +230,14 @@ const Customers = () => {
       if (records && records.length > 0) {
         const onlyCustomers = records
           .filter((u) => {
-            const email = (u.email || '').toLowerCase().trim();
+            const email = (u.email || "").toLowerCase().trim();
             if (email === SUPERADMIN_EMAIL.toLowerCase()) return false;
-            const r = (u.role || '').toLowerCase();
-            if (r === USER_ROLES.SUPERADMIN || r === USER_ROLES.ADMIN || r === USER_ROLES.STAFF) {
+            const r = (u.role || "").toLowerCase();
+            if (
+              r === USER_ROLES.SUPERADMIN ||
+              r === USER_ROLES.ADMIN ||
+              r === USER_ROLES.STAFF
+            ) {
               return false;
             }
             return true;
@@ -194,19 +245,23 @@ const Customers = () => {
           .map((u) => ({
             ...u,
             role: USER_ROLES.CUSTOMER,
-            createdAt: formatDateSafe(u.createdAt, 'Recent'),
+            createdAt: formatDateSafe(u.createdAt, "Recent"),
           }));
         setCustomers(onlyCustomers);
       } else {
         setCustomers([]);
       }
     } catch (err) {
-      console.warn('Error fetching customers from Firebase:', err);
+      console.warn("Error fetching customers from Firebase:", err);
       const cached = getLocalUsers().filter((u) => {
-        const email = (u.email || '').toLowerCase().trim();
+        const email = (u.email || "").toLowerCase().trim();
         if (email === SUPERADMIN_EMAIL.toLowerCase()) return false;
-        const r = (u.role || '').toLowerCase();
-        return r !== USER_ROLES.SUPERADMIN && r !== USER_ROLES.ADMIN && r !== USER_ROLES.STAFF;
+        const r = (u.role || "").toLowerCase();
+        return (
+          r !== USER_ROLES.SUPERADMIN &&
+          r !== USER_ROLES.ADMIN &&
+          r !== USER_ROLES.STAFF
+        );
       });
       setCustomers(cached || []);
     } finally {
@@ -241,10 +296,10 @@ const Customers = () => {
   const editFormik = useFormik({
     enableReinitialize: true,
     initialValues: {
-      username: selectedCustomer?.username || '',
-      userMobile: selectedCustomer?.userMobile || '',
-      email: selectedCustomer?.email || '',
-      userAddress: selectedCustomer?.userAddress || '',
+      username: selectedCustomer?.username || "",
+      userMobile: selectedCustomer?.userMobile || "",
+      email: selectedCustomer?.email || "",
+      userAddress: selectedCustomer?.userAddress || "",
     },
     validationSchema: customerValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -263,7 +318,8 @@ const Customers = () => {
 
         setCustomers((prev) =>
           prev.map((c) =>
-            c.id === selectedCustomer.id || (c.email && c.email.toLowerCase() === cleanEmail)
+            c.id === selectedCustomer.id ||
+            (c.email && c.email.toLowerCase() === cleanEmail)
               ? { ...c, ...updatePayload, id: updatedDoc.id || c.id }
               : c
           )
@@ -280,15 +336,15 @@ const Customers = () => {
         }
 
         setFeedback({
-          type: 'success',
+          type: "success",
           message: `Customer "${values.username.trim()}" updated successfully!`,
         });
         setOpenEditModal(false);
       } catch (err) {
-        console.error('Update customer error:', err);
+        console.error("Update customer error:", err);
         setFeedback({
-          type: 'error',
-          message: err.message || 'Failed to update customer.',
+          type: "error",
+          message: err.message || "Failed to update customer.",
         });
       } finally {
         setSubmitting(false);
@@ -299,10 +355,10 @@ const Customers = () => {
   // Create Customer Formik
   const createFormik = useFormik({
     initialValues: {
-      username: '',
-      userMobile: '',
-      email: '',
-      userAddress: '',
+      username: "",
+      userMobile: "",
+      email: "",
+      userAddress: "",
     },
     validationSchema: customerValidationSchema,
     onSubmit: async (values, { resetForm, setSubmitting }) => {
@@ -322,22 +378,22 @@ const Customers = () => {
           {
             ...newCustomerData,
             id: created.id,
-            createdAt: new Date().toLocaleDateString('en-IN'),
+            createdAt: new Date().toLocaleDateString("en-IN"),
           },
           ...prev,
         ]);
 
         setFeedback({
-          type: 'success',
+          type: "success",
           message: `Customer "${values.username.trim()}" registered successfully!`,
         });
         resetForm();
         setDialogOpen(false);
       } catch (err) {
-        console.error('Customer registration error:', err);
+        console.error("Customer registration error:", err);
         setFeedback({
-          type: 'error',
-          message: err.message || 'Failed to create customer record.',
+          type: "error",
+          message: err.message || "Failed to create customer record.",
         });
       } finally {
         setSubmitting(false);
@@ -351,23 +407,24 @@ const Customers = () => {
     initialValues: {
       title: customerForMeasure?.username
         ? `${customerForMeasure.username} Measurements`
-        : 'Standard Saree Pleats',
-      pallu: '',
-      shoulderToRightTight: '',
-      chest: '',
-      hip: '',
-      firstPleatSize: '',
-      noOfChestPleats: '',
-      height: '',
-      dressSize: 'M',
-      notes: '',
+        : "Standard Saree Pleats",
+      pallu: "",
+      shoulderToRightTight: "",
+      chest: "",
+      hip: "",
+      firstPleatSize: "",
+      noOfChestPleats: "",
+      height: "",
+      dressSize: "M",
+      notes: "",
     },
     validationSchema: measurementValidationSchema,
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       setFeedback(null);
       try {
         const customerId = customerForMeasure?.id;
-        if (!customerId) throw new Error('Customer ID is required to record measurements.');
+        if (!customerId)
+          throw new Error("Customer ID is required to record measurements.");
 
         const measurementPayload = {
           userId: customerId,
@@ -394,16 +451,18 @@ const Customers = () => {
         });
 
         setFeedback({
-          type: 'success',
-          message: `Measurement profile "${values.title.trim()}" added successfully for ${customerForMeasure.username}!`,
+          type: "success",
+          message: `Measurement profile "${values.title.trim()}" added successfully for ${
+            customerForMeasure.username
+          }!`,
         });
         resetForm();
         setOpenAddMeasureModal(false);
       } catch (err) {
-        console.error('Add measurement error:', err);
+        console.error("Add measurement error:", err);
         setFeedback({
-          type: 'error',
-          message: err.message || 'Failed to save measurement profile.',
+          type: "error",
+          message: err.message || "Failed to save measurement profile.",
         });
       } finally {
         setSubmitting(false);
@@ -422,25 +481,44 @@ const Customers = () => {
   const editMeasureFormik = useFormik({
     enableReinitialize: true,
     initialValues: {
-      title: selectedMeasureForEdit?.title || '',
-      pallu: selectedMeasureForEdit?.pallu != null ? String(selectedMeasureForEdit.pallu) : '',
-      shoulderToRightTight: selectedMeasureForEdit?.shoulderToRightTight != null
-        ? String(selectedMeasureForEdit.shoulderToRightTight) : '',
-      chest: selectedMeasureForEdit?.chest != null ? String(selectedMeasureForEdit.chest) : '',
-      hip: selectedMeasureForEdit?.hip != null ? String(selectedMeasureForEdit.hip) : '',
-      firstPleatSize: selectedMeasureForEdit?.firstPleatSize != null
-        ? String(selectedMeasureForEdit.firstPleatSize) : '',
-      noOfChestPleats: selectedMeasureForEdit?.noOfChestPleats != null
-        ? String(selectedMeasureForEdit.noOfChestPleats) : '',
-      height: selectedMeasureForEdit?.height != null ? String(selectedMeasureForEdit.height) : '',
-      dressSize: selectedMeasureForEdit?.dressSize || 'M',
-      notes: selectedMeasureForEdit?.notes || '',
+      title: selectedMeasureForEdit?.title || "",
+      pallu:
+        selectedMeasureForEdit?.pallu != null
+          ? String(selectedMeasureForEdit.pallu)
+          : "",
+      shoulderToRightTight:
+        selectedMeasureForEdit?.shoulderToRightTight != null
+          ? String(selectedMeasureForEdit.shoulderToRightTight)
+          : "",
+      chest:
+        selectedMeasureForEdit?.chest != null
+          ? String(selectedMeasureForEdit.chest)
+          : "",
+      hip:
+        selectedMeasureForEdit?.hip != null
+          ? String(selectedMeasureForEdit.hip)
+          : "",
+      firstPleatSize:
+        selectedMeasureForEdit?.firstPleatSize != null
+          ? String(selectedMeasureForEdit.firstPleatSize)
+          : "",
+      noOfChestPleats:
+        selectedMeasureForEdit?.noOfChestPleats != null
+          ? String(selectedMeasureForEdit.noOfChestPleats)
+          : "",
+      height:
+        selectedMeasureForEdit?.height != null
+          ? String(selectedMeasureForEdit.height)
+          : "",
+      dressSize: selectedMeasureForEdit?.dressSize || "M",
+      notes: selectedMeasureForEdit?.notes || "",
     },
     validationSchema: measurementValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       setFeedback(null);
       try {
-        if (!selectedMeasureForEdit?.id) throw new Error('Measurement ID is required to update.');
+        if (!selectedMeasureForEdit?.id)
+          throw new Error("Measurement ID is required to update.");
         const customerId = selectedMeasureForEdit.userId || customerForView?.id;
 
         const updatePayload = {
@@ -453,10 +531,13 @@ const Customers = () => {
           noOfChestPleats: values.noOfChestPleats?.trim() || null,
           height: values.height?.trim() || null,
           dressSize: values.dressSize?.trim() || null,
-          notes: values.notes?.trim() || '',
+          notes: values.notes?.trim() || "",
         };
 
-        const updatedRecord = await updateMeasurement(selectedMeasureForEdit.id, updatePayload);
+        const updatedRecord = await updateMeasurement(
+          selectedMeasureForEdit.id,
+          updatePayload
+        );
 
         setMeasurementsMap((prev) => {
           const userList = prev[customerId] ? [...prev[customerId]] : [];
@@ -464,23 +545,30 @@ const Customers = () => {
             ...prev,
             [customerId]: userList.map((m) =>
               m.id === selectedMeasureForEdit.id
-                ? { ...m, ...updatePayload, ...(typeof updatedRecord === 'object' && updatedRecord !== null ? updatedRecord : {}) }
+                ? {
+                    ...m,
+                    ...updatePayload,
+                    ...(typeof updatedRecord === "object" &&
+                    updatedRecord !== null
+                      ? updatedRecord
+                      : {}),
+                  }
                 : m
             ),
           };
         });
 
         setFeedback({
-          type: 'success',
+          type: "success",
           message: `Measurement profile "${values.title.trim()}" updated successfully!`,
         });
         setOpenEditMeasureModal(false);
         setSelectedMeasureForEdit(null);
       } catch (err) {
-        console.error('Update measurement error:', err);
+        console.error("Update measurement error:", err);
         setFeedback({
-          type: 'error',
-          message: err.message || 'Failed to update measurement profile.',
+          type: "error",
+          message: err.message || "Failed to update measurement profile.",
         });
       } finally {
         setSubmitting(false);
@@ -496,22 +584,26 @@ const Customers = () => {
     try {
       await deleteCustomerMeasurement(measurementId);
       setMeasurementsMap((prev) => {
-        const userList = (prev[customerId] || []).filter((m) => m.id !== measurementId);
+        const userList = (prev[customerId] || []).filter(
+          (m) => m.id !== measurementId
+        );
         return {
           ...prev,
           [customerId]: userList,
         };
       });
       setFeedback({
-        type: 'success',
-        message: `Measurement profile "${title || 'Profile'}" removed successfully.`,
+        type: "success",
+        message: `Measurement profile "${
+          title || "Profile"
+        }" removed successfully.`,
       });
       setMeasureToDelete(null);
     } catch (err) {
-      console.error('Delete measurement error:', err);
+      console.error("Delete measurement error:", err);
       setFeedback({
-        type: 'error',
-        message: 'Failed to delete measurement profile.',
+        type: "error",
+        message: "Failed to delete measurement profile.",
       });
     } finally {
       setDeletingMeasureId(null);
@@ -524,16 +616,16 @@ const Customers = () => {
       const term = searchTerm.toLowerCase().trim();
       const matchesSearch =
         !term ||
-        (item.username || '').toLowerCase().includes(term) ||
-        (item.email || '').toLowerCase().includes(term) ||
-        (item.userMobile || '').includes(term) ||
-        (item.userAddress || '').toLowerCase().includes(term);
+        (item.username || "").toLowerCase().includes(term) ||
+        (item.email || "").toLowerCase().includes(term) ||
+        (item.userMobile || "").includes(term) ||
+        (item.userAddress || "").toLowerCase().includes(term);
 
       const hasMeasurements = (measurementsMap[item.id] || []).length > 0;
       const matchesTab =
-        activeTab === 'ALL' ||
-        (activeTab === 'MEASURED' && hasMeasurements) ||
-        (activeTab === 'PENDING' && !hasMeasurements);
+        activeTab === "ALL" ||
+        (activeTab === "MEASURED" && hasMeasurements) ||
+        (activeTab === "PENDING" && !hasMeasurements);
 
       return matchesSearch && matchesTab;
     });
@@ -542,17 +634,25 @@ const Customers = () => {
   // Metrics calculations
   const totalCustomersCount = customers.length;
   const customersWithMeasurements = useMemo(() => {
-    return customers.filter((c) => (measurementsMap[c.id] || []).length > 0).length;
+    return customers.filter((c) => (measurementsMap[c.id] || []).length > 0)
+      .length;
   }, [customers, measurementsMap]);
-  const pendingMeasurementsCount = totalCustomersCount - customersWithMeasurements;
+  const pendingMeasurementsCount =
+    totalCustomersCount - customersWithMeasurements;
   const totalMeasurementsCount = useMemo(() => {
-    return Object.values(measurementsMap).reduce((acc, list) => acc + (list?.length || 0), 0);
+    return Object.values(measurementsMap).reduce(
+      (acc, list) => acc + (list?.length || 0),
+      0
+    );
   }, [measurementsMap]);
 
   const customerTabs = [
-    { label: `All Customers (${customers.length})`, value: 'ALL' },
-    { label: `With Measurements (${customersWithMeasurements})`, value: 'MEASURED' },
-    { label: `Pending (${pendingMeasurementsCount})`, value: 'PENDING' },
+    { label: `All Customers (${customers.length})`, value: "ALL" },
+    {
+      label: `With Measurements (${customersWithMeasurements})`,
+      value: "MEASURED",
+    },
+    { label: `Pending (${pendingMeasurementsCount})`, value: "PENDING" },
   ];
 
   return (
@@ -560,11 +660,10 @@ const Customers = () => {
       {/* Top Header matching Dashboard and Users */}
       <div className="customers-page__header">
         <div>
-          <h1 className="page-title">
-            Customers
-          </h1>
+          <h1 className="page-title">Customers</h1>
           <p className="page-subtitle">
-            View customer profiles, contact info, and manage tailoring measurements
+            View customer profiles, contact info, and manage tailoring
+            measurements
           </p>
         </div>
 
@@ -577,7 +676,7 @@ const Customers = () => {
             disabled={loading}
             className="refresh-btn"
           >
-            {loading ? 'Refreshing...' : 'Refresh'}
+            {loading ? "Refreshing..." : "Refresh"}
           </AppButton>
 
           <AppButton
@@ -597,8 +696,10 @@ const Customers = () => {
 
       {/* Global Alert Feedback */}
       {feedback && (
-        <div className={`customers-feedback-alert customers-feedback-alert--${feedback.type}`}>
-          {feedback.type === 'success' ? (
+        <div
+          className={`customers-feedback-alert customers-feedback-alert--${feedback.type}`}
+        >
+          {feedback.type === "success" ? (
             <CheckCircleOutlineIcon fontSize="small" />
           ) : (
             <ErrorOutlineIcon fontSize="small" />
@@ -608,11 +709,11 @@ const Customers = () => {
             type="button"
             onClick={() => setFeedback(null)}
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'inherit',
-              cursor: 'pointer',
-              fontWeight: 'bold',
+              background: "transparent",
+              border: "none",
+              color: "inherit",
+              cursor: "pointer",
+              fontWeight: "bold",
             }}
           >
             ✕
@@ -632,7 +733,13 @@ const Customers = () => {
         <StatCard
           title="With Measurements"
           value={String(customersWithMeasurements)}
-          change={totalCustomersCount > 0 ? `${Math.round((customersWithMeasurements / totalCustomersCount) * 100)}% Profile Rate` : '0%'}
+          change={
+            totalCustomersCount > 0
+              ? `${Math.round(
+                  (customersWithMeasurements / totalCustomersCount) * 100
+                )}% Profile Rate`
+              : "0%"
+          }
           trendType="up"
           icon={<StraightenOutlinedIcon />}
         />
@@ -647,7 +754,7 @@ const Customers = () => {
           title="Pending Profiles"
           value={String(pendingMeasurementsCount)}
           change="Awaiting Measurements"
-          trendType={pendingMeasurementsCount > 0 ? 'progress' : 'completed'}
+          trendType={pendingMeasurementsCount > 0 ? "progress" : "completed"}
           icon={<StraightenOutlinedIcon />}
         />
       </div>
@@ -679,21 +786,29 @@ const Customers = () => {
                 <th>CUSTOMER</th>
                 <th>CONTACT DETAILS</th>
                 <th>DELIVERY ADDRESS</th>
-                <th style={{ textAlign: 'center' }}>MEASUREMENTS</th>
+                <th style={{ textAlign: "center" }}>MEASUREMENTS</th>
                 <th>JOINED DATE</th>
-                <th style={{ textAlign: 'right', minWidth: 140 }}>
-                  ACTIONS
-                </th>
+                <th style={{ textAlign: "right", minWidth: 140 }}>ACTIONS</th>
               </tr>
             </thead>
 
             <tbody>
               {loading && customers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '48px 16px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                  <td
+                    colSpan={6}
+                    style={{ textAlign: "center", padding: "48px 16px" }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 12,
+                      }}
+                    >
                       <AppSpinner size="lg" color="gold" />
-                      <span style={{ color: '#e6d8a3', fontSize: '0.9rem' }}>
+                      <span style={{ color: "#e6d8a3", fontSize: "0.9rem" }}>
                         Loading customer directory...
                       </span>
                     </div>
@@ -702,12 +817,32 @@ const Customers = () => {
               ) : filteredCustomers.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="empty-state-cell">
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                      <PeopleOutlineIcon style={{ fontSize: 44, color: '#d4af37', opacity: 0.5 }} />
-                      <span style={{ color: '#e6d8a3', fontWeight: 600, fontSize: '0.95rem' }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <PeopleOutlineIcon
+                        style={{ fontSize: 44, color: "#d4af37", opacity: 0.5 }}
+                      />
+                      <span
+                        style={{
+                          color: "#e6d8a3",
+                          fontWeight: 600,
+                          fontSize: "0.95rem",
+                        }}
+                      >
                         No customers found matching your criteria.
                       </span>
-                      <span style={{ color: 'rgba(230, 216, 163, 0.6)', fontSize: '0.8rem' }}>
+                      <span
+                        style={{
+                          color: "rgba(230, 216, 163, 0.6)",
+                          fontSize: "0.8rem",
+                        }}
+                      >
                         Click "Add Customer" to create the first client profile.
                       </span>
                     </div>
@@ -715,7 +850,11 @@ const Customers = () => {
                 </tr>
               ) : (
                 filteredCustomers.map((user) => {
-                  const initial = (user.username?.charAt(0) || user.email?.charAt(0) || 'C').toUpperCase();
+                  const initial = (
+                    user.username?.charAt(0) ||
+                    user.email?.charAt(0) ||
+                    "C"
+                  ).toUpperCase();
                   const userMeasures = measurementsMap[user.id] || [];
                   const measureCount = userMeasures.length;
 
@@ -723,12 +862,20 @@ const Customers = () => {
                     <tr key={user.id} className="customer-table-row">
                       {/* Customer Avatar & Name */}
                       <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                          }}
+                        >
                           <div className="user-avatar-circle">{initial}</div>
                           <div>
-                            <div className="user-name-text">{user.username || 'Customer'}</div>
+                            <div className="user-name-text">
+                              {user.username || "Customer"}
+                            </div>
                             <div className="user-email-text">
-                              {user.email || 'No email registered'}
+                              {user.email || "No email registered"}
                             </div>
                           </div>
                         </div>
@@ -736,35 +883,44 @@ const Customers = () => {
 
                       {/* Phone Number */}
                       <td className="mobile-cell">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <PhoneIphoneOutlinedIcon style={{ fontSize: 16, color: '#d4af37' }} />
-                          <span style={{ fontFamily: 'monospace' }}>
-                            {user.userMobile || '—'}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
+                          <PhoneIphoneOutlinedIcon
+                            style={{ fontSize: 16, color: "#d4af37" }}
+                          />
+                          <span style={{ fontFamily: "monospace" }}>
+                            {user.userMobile || "—"}
                           </span>
                         </div>
                       </td>
 
                       {/* Delivery Address */}
                       <td className="address-cell">
-                        {user.userAddress || '—'}
+                        {user.userAddress || "—"}
                       </td>
 
                       {/* Saree Measurement Status */}
-                      <td style={{ textAlign: 'center' }}>
+                      <td style={{ textAlign: "center" }}>
                         {measureCount > 0 ? (
                           <span
                             onClick={() => handleOpenViewDetails(user)}
-                            style={{ cursor: 'pointer' }}
+                            style={{ cursor: "pointer" }}
                             title="View Measurements"
                           >
                             <AppBadge variant="completed">
-                              ✓ {measureCount} Profile{measureCount > 1 ? 's' : ''}
+                              ✓ {measureCount} Profile
+                              {measureCount > 1 ? "s" : ""}
                             </AppBadge>
                           </span>
                         ) : (
                           <span
                             onClick={() => handleOpenAddMeasure(user)}
-                            style={{ cursor: 'pointer' }}
+                            style={{ cursor: "pointer" }}
                             title="Add Measurement"
                           >
                             <AppBadge variant="pending">
@@ -776,11 +932,11 @@ const Customers = () => {
 
                       {/* Joined Date */}
                       <td className="date-cell">
-                        {user.createdAt || 'Recent'}
+                        {user.createdAt || "Recent"}
                       </td>
 
                       {/* Row Action Buttons */}
-                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                         <div className="action-btns">
                           {/* 1. View Details Button */}
                           <AppButton
@@ -852,7 +1008,10 @@ const Customers = () => {
           </>
         }
       >
-        <form onSubmit={createFormik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <form
+          onSubmit={createFormik.handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
           <AppInput
             label="Customer Full Name"
             required
@@ -862,7 +1021,9 @@ const Customers = () => {
             value={createFormik.values.username}
             onChange={createFormik.handleChange}
             onBlur={createFormik.handleBlur}
-            error={createFormik.touched.username && createFormik.errors.username}
+            error={
+              createFormik.touched.username && createFormik.errors.username
+            }
             disabled={createFormik.isSubmitting}
             startAdornment={<PersonOutlineIcon />}
           />
@@ -876,7 +1037,9 @@ const Customers = () => {
             value={createFormik.values.userMobile}
             onChange={createFormik.handleChange}
             onBlur={createFormik.handleBlur}
-            error={createFormik.touched.userMobile && createFormik.errors.userMobile}
+            error={
+              createFormik.touched.userMobile && createFormik.errors.userMobile
+            }
             disabled={createFormik.isSubmitting}
             startAdornment={<PhoneIphoneOutlinedIcon />}
           />
@@ -904,7 +1067,10 @@ const Customers = () => {
             value={createFormik.values.userAddress}
             onChange={createFormik.handleChange}
             onBlur={createFormik.handleBlur}
-            error={createFormik.touched.userAddress && createFormik.errors.userAddress}
+            error={
+              createFormik.touched.userAddress &&
+              createFormik.errors.userAddress
+            }
             disabled={createFormik.isSubmitting}
             startAdornment={<LocationOnOutlinedIcon />}
           />
@@ -939,7 +1105,10 @@ const Customers = () => {
           </>
         }
       >
-        <form onSubmit={editFormik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <form
+          onSubmit={editFormik.handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
           <AppInput
             label="Customer Full Name"
             required
@@ -961,7 +1130,9 @@ const Customers = () => {
             value={editFormik.values.userMobile}
             onChange={editFormik.handleChange}
             onBlur={editFormik.handleBlur}
-            error={editFormik.touched.userMobile && editFormik.errors.userMobile}
+            error={
+              editFormik.touched.userMobile && editFormik.errors.userMobile
+            }
             disabled={editFormik.isSubmitting}
             startAdornment={<PhoneIphoneOutlinedIcon />}
           />
@@ -987,7 +1158,9 @@ const Customers = () => {
             value={editFormik.values.userAddress}
             onChange={editFormik.handleChange}
             onBlur={editFormik.handleBlur}
-            error={editFormik.touched.userAddress && editFormik.errors.userAddress}
+            error={
+              editFormik.touched.userAddress && editFormik.errors.userAddress
+            }
             disabled={editFormik.isSubmitting}
             startAdornment={<LocationOnOutlinedIcon />}
           />
@@ -1000,7 +1173,7 @@ const Customers = () => {
       <AppModal
         open={openViewDetailsModal}
         onClose={() => setOpenViewDetailsModal(false)}
-        title={customerForView?.username || 'Customer Profile'}
+        title={customerForView?.username || "Customer Profile"}
         subtitle="Customer contact info & tailored saree measurement specifications"
         maxWidth="md"
         actions={
@@ -1025,58 +1198,110 @@ const Customers = () => {
         }
       >
         {customerForView && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+          >
             {/* Customer Summary Card */}
             <div className="details-summary-card">
               <div className="summary-item">
-                <PhoneIphoneOutlinedIcon style={{ fontSize: 20, color: '#d4af37' }} />
+                <PhoneIphoneOutlinedIcon
+                  style={{ fontSize: 20, color: "#d4af37" }}
+                />
                 <div>
                   <div className="item-label">Phone</div>
-                  <div className="item-value">{customerForView.userMobile || '—'}</div>
+                  <div className="item-value">
+                    {customerForView.userMobile || "—"}
+                  </div>
                 </div>
               </div>
 
               <div className="summary-item">
-                <EmailOutlinedIcon style={{ fontSize: 20, color: '#d4af37' }} />
+                <EmailOutlinedIcon style={{ fontSize: 20, color: "#d4af37" }} />
                 <div>
                   <div className="item-label">Email</div>
-                  <div className="item-value">{customerForView.email || '—'}</div>
+                  <div className="item-value">
+                    {customerForView.email || "—"}
+                  </div>
                 </div>
               </div>
 
               <div className="summary-item">
-                <LocationOnOutlinedIcon style={{ fontSize: 20, color: '#d4af37' }} />
+                <LocationOnOutlinedIcon
+                  style={{ fontSize: 20, color: "#d4af37" }}
+                />
                 <div>
                   <div className="item-label">Address</div>
-                  <div className="item-value">{customerForView.userAddress || '—'}</div>
+                  <div className="item-value">
+                    {customerForView.userAddress || "—"}
+                  </div>
                 </div>
               </div>
 
               <div className="summary-item">
-                <CalendarTodayOutlinedIcon style={{ fontSize: 20, color: '#d4af37' }} />
+                <CalendarTodayOutlinedIcon
+                  style={{ fontSize: 20, color: "#d4af37" }}
+                />
                 <div>
                   <div className="item-label">Joined</div>
-                  <div className="item-value">{customerForView.createdAt || 'Recent'}</div>
+                  <div className="item-value">
+                    {customerForView.createdAt || "Recent"}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Measurement Profiles Title */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
-              <span style={{ fontWeight: 700, color: '#e6d8a3', fontSize: '0.95rem' }}>
-                Saree Measurement Profiles ({measurementsMap[customerForView.id]?.length || 0})
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: 4,
+              }}
+            >
+              <span
+                style={{
+                  fontWeight: 700,
+                  color: "#e6d8a3",
+                  fontSize: "0.95rem",
+                }}
+              >
+                Saree Measurement Profiles (
+                {measurementsMap[customerForView.id]?.length || 0})
               </span>
             </div>
 
             {/* List of Measurement Cards */}
-            {(!measurementsMap[customerForView.id] || measurementsMap[customerForView.id].length === 0) ? (
+            {!measurementsMap[customerForView.id] ||
+            measurementsMap[customerForView.id].length === 0 ? (
               <div className="empty-measurements-box">
-                <StraightenOutlinedIcon style={{ fontSize: 36, color: '#d4af37', opacity: 0.5, marginBottom: 8 }} />
-                <div style={{ color: '#e6d8a3', fontWeight: 600, fontSize: '0.9rem' }}>
+                <StraightenOutlinedIcon
+                  style={{
+                    fontSize: 36,
+                    color: "#d4af37",
+                    opacity: 0.5,
+                    marginBottom: 8,
+                  }}
+                />
+                <div
+                  style={{
+                    color: "#e6d8a3",
+                    fontWeight: 600,
+                    fontSize: "0.9rem",
+                  }}
+                >
                   No saree measurements recorded for this customer yet.
                 </div>
-                <p style={{ color: 'rgba(230, 216, 163, 0.6)', fontSize: '0.8rem', marginTop: 4, marginBottom: 12 }}>
-                  Add a measurement profile so pre-pleating orders can be tailored to exact body fit.
+                <p
+                  style={{
+                    color: "rgba(230, 216, 163, 0.6)",
+                    fontSize: "0.8rem",
+                    marginTop: 4,
+                    marginBottom: 12,
+                  }}
+                >
+                  Add a measurement profile so pre-pleating orders can be
+                  tailored to exact body fit.
                 </p>
                 <AppButton
                   variant="primary"
@@ -1095,7 +1320,13 @@ const Customers = () => {
                 {measurementsMap[customerForView.id].map((measure, idx) => (
                   <div key={measure.id || idx} className="measurement-card">
                     <div className="measure-card-header">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
                         <span className="measure-profile-title">
                           {measure.title || `Measurement Profile #${idx + 1}`}
                         </span>
@@ -1108,7 +1339,9 @@ const Customers = () => {
 
                       <div className="measure-actions">
                         <span className="measure-date">
-                          {measure.createdAt ? formatDateSafe(measure.createdAt) : ''}
+                          {measure.createdAt
+                            ? formatDateSafe(measure.createdAt)
+                            : ""}
                         </span>
 
                         {userCanEdit && (
@@ -1144,48 +1377,75 @@ const Customers = () => {
                     <div className="measure-dimensions-grid">
                       <div className="dim-item">
                         <span className="dim-label">Pallu Length</span>
-                        <span className="dim-value">{measure.pallu ? `${measure.pallu}"` : '—'}</span>
+                        <span className="dim-value">
+                          {measure.pallu ? `${measure.pallu}"` : "—"}
+                        </span>
                       </div>
 
                       <div className="dim-item">
                         <span className="dim-label">Shoulder to Tight</span>
-                        <span className="dim-value">{measure.shoulderToRightTight ? `${measure.shoulderToRightTight}"` : '—'}</span>
+                        <span className="dim-value">
+                          {measure.shoulderToRightTight
+                            ? `${measure.shoulderToRightTight}"`
+                            : "—"}
+                        </span>
                       </div>
 
                       <div className="dim-item">
                         <span className="dim-label">Chest Size</span>
-                        <span className="dim-value">{measure.chest ? `${measure.chest}"` : '—'}</span>
+                        <span className="dim-value">
+                          {measure.chest ? `${measure.chest}"` : "—"}
+                        </span>
                       </div>
 
                       <div className="dim-item">
                         <span className="dim-label">Hip Size</span>
-                        <span className="dim-value">{measure.hip ? `${measure.hip}"` : '—'}</span>
+                        <span className="dim-value">
+                          {measure.hip ? `${measure.hip}"` : "—"}
+                        </span>
                       </div>
 
                       <div className="dim-item">
                         <span className="dim-label">First Pleat Width</span>
-                        <span className="dim-value">{measure.firstPleatSize ? `${measure.firstPleatSize}"` : '—'}</span>
+                        <span className="dim-value">
+                          {measure.firstPleatSize
+                            ? `${measure.firstPleatSize}"`
+                            : "—"}
+                        </span>
                       </div>
 
                       <div className="dim-item">
                         <span className="dim-label">Chest Pleats</span>
-                        <span className="dim-value">{measure.noOfChestPleats || '—'}</span>
+                        <span className="dim-value">
+                          {measure.noOfChestPleats || "—"}
+                        </span>
                       </div>
 
                       <div className="dim-item">
                         <span className="dim-label">Customer Height</span>
-                        <span className="dim-value">{measure.height ? `${measure.height}` : '—'}</span>
+                        <span className="dim-value">
+                          {measure.height ? `${measure.height}` : "—"}
+                        </span>
                       </div>
 
                       <div className="dim-item">
                         <span className="dim-label">Dress Size</span>
-                        <span className="dim-value">{measure.dressSize || '—'}</span>
+                        <span className="dim-value">
+                          {measure.dressSize || "—"}
+                        </span>
                       </div>
                     </div>
 
                     {measure.notes && (
                       <div className="measure-notes-row">
-                        <NotesOutlinedIcon style={{ fontSize: 16, color: '#d4af37', flexShrink: 0, marginTop: 2 }} />
+                        <NotesOutlinedIcon
+                          style={{
+                            fontSize: 16,
+                            color: "#d4af37",
+                            flexShrink: 0,
+                            marginTop: 2,
+                          }}
+                        />
                         <span className="measure-notes-text">
                           <strong>Notes:</strong> {measure.notes}
                         </span>
@@ -1204,9 +1464,13 @@ const Customers = () => {
       {/* ========================================================================= */}
       <AppModal
         open={openAddMeasureModal}
-        onClose={() => !measureFormik.isSubmitting && setOpenAddMeasureModal(false)}
+        onClose={() =>
+          !measureFormik.isSubmitting && setOpenAddMeasureModal(false)
+        }
         title="Add Saree Measurement Profile"
-        subtitle={`Recording measurements for ${customerForMeasure?.username || 'Customer'}`}
+        subtitle={`Recording measurements for ${
+          customerForMeasure?.username || "Customer"
+        }`}
         maxWidth="md"
         actions={
           <>
@@ -1227,7 +1491,10 @@ const Customers = () => {
           </>
         }
       >
-        <form onSubmit={measureFormik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <form
+          onSubmit={measureFormik.handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
           <AppInput
             label="Measurement Profile Title (e.g. Bridal Silk Saree)"
             required
@@ -1241,7 +1508,13 @@ const Customers = () => {
             disabled={measureFormik.isSubmitting}
           />
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+              gap: "12px",
+            }}
+          >
             <AppInput
               label="Pallu Length (inches)"
               id="measure-pallu"
@@ -1262,7 +1535,10 @@ const Customers = () => {
               value={measureFormik.values.shoulderToRightTight}
               onChange={measureFormik.handleChange}
               onBlur={measureFormik.handleBlur}
-              error={measureFormik.touched.shoulderToRightTight && measureFormik.errors.shoulderToRightTight}
+              error={
+                measureFormik.touched.shoulderToRightTight &&
+                measureFormik.errors.shoulderToRightTight
+              }
               disabled={measureFormik.isSubmitting}
             />
 
@@ -1298,7 +1574,10 @@ const Customers = () => {
               value={measureFormik.values.firstPleatSize}
               onChange={measureFormik.handleChange}
               onBlur={measureFormik.handleBlur}
-              error={measureFormik.touched.firstPleatSize && measureFormik.errors.firstPleatSize}
+              error={
+                measureFormik.touched.firstPleatSize &&
+                measureFormik.errors.firstPleatSize
+              }
               disabled={measureFormik.isSubmitting}
             />
 
@@ -1310,7 +1589,10 @@ const Customers = () => {
               value={measureFormik.values.noOfChestPleats}
               onChange={measureFormik.handleChange}
               onBlur={measureFormik.handleBlur}
-              error={measureFormik.touched.noOfChestPleats && measureFormik.errors.noOfChestPleats}
+              error={
+                measureFormik.touched.noOfChestPleats &&
+                measureFormik.errors.noOfChestPleats
+              }
               disabled={measureFormik.isSubmitting}
             />
 
@@ -1322,7 +1604,9 @@ const Customers = () => {
               value={measureFormik.values.height}
               onChange={measureFormik.handleChange}
               onBlur={measureFormik.handleBlur}
-              error={measureFormik.touched.height && measureFormik.errors.height}
+              error={
+                measureFormik.touched.height && measureFormik.errors.height
+              }
               disabled={measureFormik.isSubmitting}
             />
 
@@ -1334,7 +1618,10 @@ const Customers = () => {
               value={measureFormik.values.dressSize}
               onChange={measureFormik.handleChange}
               onBlur={measureFormik.handleBlur}
-              error={measureFormik.touched.dressSize && measureFormik.errors.dressSize}
+              error={
+                measureFormik.touched.dressSize &&
+                measureFormik.errors.dressSize
+              }
               disabled={measureFormik.isSubmitting}
             >
               {DRESS_SIZES.map((sz) => (
@@ -1366,9 +1653,13 @@ const Customers = () => {
       {/* ========================================================================= */}
       <AppModal
         open={openEditMeasureModal}
-        onClose={() => !editMeasureFormik.isSubmitting && setOpenEditMeasureModal(false)}
+        onClose={() =>
+          !editMeasureFormik.isSubmitting && setOpenEditMeasureModal(false)
+        }
         title="Edit Measurement Profile"
-        subtitle={selectedMeasureForEdit?.title || 'Modify pleat and sizing parameters'}
+        subtitle={
+          selectedMeasureForEdit?.title || "Modify pleat and sizing parameters"
+        }
         maxWidth="md"
         actions={
           <>
@@ -1389,7 +1680,10 @@ const Customers = () => {
           </>
         }
       >
-        <form onSubmit={editMeasureFormik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <form
+          onSubmit={editMeasureFormik.handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
           <AppInput
             label="Profile Title"
             required
@@ -1398,11 +1692,19 @@ const Customers = () => {
             value={editMeasureFormik.values.title}
             onChange={editMeasureFormik.handleChange}
             onBlur={editMeasureFormik.handleBlur}
-            error={editMeasureFormik.touched.title && editMeasureFormik.errors.title}
+            error={
+              editMeasureFormik.touched.title && editMeasureFormik.errors.title
+            }
             disabled={editMeasureFormik.isSubmitting}
           />
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+              gap: "12px",
+            }}
+          >
             <AppInput
               label="Pallu Length (inches)"
               id="edit-measure-pallu"
@@ -1410,7 +1712,10 @@ const Customers = () => {
               value={editMeasureFormik.values.pallu}
               onChange={editMeasureFormik.handleChange}
               onBlur={editMeasureFormik.handleBlur}
-              error={editMeasureFormik.touched.pallu && editMeasureFormik.errors.pallu}
+              error={
+                editMeasureFormik.touched.pallu &&
+                editMeasureFormik.errors.pallu
+              }
               disabled={editMeasureFormik.isSubmitting}
             />
 
@@ -1421,7 +1726,10 @@ const Customers = () => {
               value={editMeasureFormik.values.shoulderToRightTight}
               onChange={editMeasureFormik.handleChange}
               onBlur={editMeasureFormik.handleBlur}
-              error={editMeasureFormik.touched.shoulderToRightTight && editMeasureFormik.errors.shoulderToRightTight}
+              error={
+                editMeasureFormik.touched.shoulderToRightTight &&
+                editMeasureFormik.errors.shoulderToRightTight
+              }
               disabled={editMeasureFormik.isSubmitting}
             />
 
@@ -1432,7 +1740,10 @@ const Customers = () => {
               value={editMeasureFormik.values.chest}
               onChange={editMeasureFormik.handleChange}
               onBlur={editMeasureFormik.handleBlur}
-              error={editMeasureFormik.touched.chest && editMeasureFormik.errors.chest}
+              error={
+                editMeasureFormik.touched.chest &&
+                editMeasureFormik.errors.chest
+              }
               disabled={editMeasureFormik.isSubmitting}
             />
 
@@ -1443,7 +1754,9 @@ const Customers = () => {
               value={editMeasureFormik.values.hip}
               onChange={editMeasureFormik.handleChange}
               onBlur={editMeasureFormik.handleBlur}
-              error={editMeasureFormik.touched.hip && editMeasureFormik.errors.hip}
+              error={
+                editMeasureFormik.touched.hip && editMeasureFormik.errors.hip
+              }
               disabled={editMeasureFormik.isSubmitting}
             />
 
@@ -1454,7 +1767,10 @@ const Customers = () => {
               value={editMeasureFormik.values.firstPleatSize}
               onChange={editMeasureFormik.handleChange}
               onBlur={editMeasureFormik.handleBlur}
-              error={editMeasureFormik.touched.firstPleatSize && editMeasureFormik.errors.firstPleatSize}
+              error={
+                editMeasureFormik.touched.firstPleatSize &&
+                editMeasureFormik.errors.firstPleatSize
+              }
               disabled={editMeasureFormik.isSubmitting}
             />
 
@@ -1465,7 +1781,10 @@ const Customers = () => {
               value={editMeasureFormik.values.noOfChestPleats}
               onChange={editMeasureFormik.handleChange}
               onBlur={editMeasureFormik.handleBlur}
-              error={editMeasureFormik.touched.noOfChestPleats && editMeasureFormik.errors.noOfChestPleats}
+              error={
+                editMeasureFormik.touched.noOfChestPleats &&
+                editMeasureFormik.errors.noOfChestPleats
+              }
               disabled={editMeasureFormik.isSubmitting}
             />
 
@@ -1476,7 +1795,10 @@ const Customers = () => {
               value={editMeasureFormik.values.height}
               onChange={editMeasureFormik.handleChange}
               onBlur={editMeasureFormik.handleBlur}
-              error={editMeasureFormik.touched.height && editMeasureFormik.errors.height}
+              error={
+                editMeasureFormik.touched.height &&
+                editMeasureFormik.errors.height
+              }
               disabled={editMeasureFormik.isSubmitting}
             />
 
@@ -1488,7 +1810,10 @@ const Customers = () => {
               value={editMeasureFormik.values.dressSize}
               onChange={editMeasureFormik.handleChange}
               onBlur={editMeasureFormik.handleBlur}
-              error={editMeasureFormik.touched.dressSize && editMeasureFormik.errors.dressSize}
+              error={
+                editMeasureFormik.touched.dressSize &&
+                editMeasureFormik.errors.dressSize
+              }
               disabled={editMeasureFormik.isSubmitting}
             >
               {DRESS_SIZES.map((sz) => (
@@ -1508,7 +1833,9 @@ const Customers = () => {
             value={editMeasureFormik.values.notes}
             onChange={editMeasureFormik.handleChange}
             onBlur={editMeasureFormik.handleBlur}
-            error={editMeasureFormik.touched.notes && editMeasureFormik.errors.notes}
+            error={
+              editMeasureFormik.touched.notes && editMeasureFormik.errors.notes
+            }
             disabled={editMeasureFormik.isSubmitting}
           />
         </form>
@@ -1541,11 +1868,28 @@ const Customers = () => {
           </>
         }
       >
-        <p style={{ color: '#e6d8a3', fontSize: '0.95rem', marginBottom: 10, marginTop: 0 }}>
-          Are you sure you want to remove measurement profile{' '}
-          <strong style={{ color: '#d4af37' }}>"{measureToDelete?.title || 'this profile'}"</strong>?
+        <p
+          style={{
+            color: "#e6d8a3",
+            fontSize: "0.95rem",
+            marginBottom: 10,
+            marginTop: 0,
+          }}
+        >
+          Are you sure you want to remove measurement profile{" "}
+          <strong style={{ color: "#d4af37" }}>
+            "{measureToDelete?.title || "this profile"}"
+          </strong>
+          ?
         </p>
-        <p style={{ color: 'rgba(230, 216, 163, 0.65)', fontSize: '0.82rem', lineHeight: 1.5, margin: 0 }}>
+        <p
+          style={{
+            color: "rgba(230, 216, 163, 0.65)",
+            fontSize: "0.82rem",
+            lineHeight: 1.5,
+            margin: 0,
+          }}
+        >
           This will permanently delete this tailoring specification.
         </p>
       </AppModal>

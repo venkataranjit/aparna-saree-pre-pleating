@@ -31,6 +31,7 @@ import {
   createCustomerMeasurement,
   updateMeasurement,
   deleteCustomerMeasurement,
+  checkUserUniqueness,
   formatDateSafe,
 } from "../../../firebase/dbService";
 import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
@@ -306,9 +307,35 @@ const Customers = () => {
       setFeedback(null);
       try {
         const cleanEmail = values.email.trim().toLowerCase();
+        const cleanMobile = String(values.userMobile).trim();
+
+        // Validate uniqueness excluding current selected customer
+        const uniqueness = await checkUserUniqueness({
+          email: cleanEmail,
+          userMobile: cleanMobile,
+          excludeUserId: selectedCustomer?.id,
+        });
+
+        if (!uniqueness.isUnique) {
+          if (uniqueness.emailExists) {
+            editFormik.setFieldError("email", "This email address is already registered.");
+            editFormik.setFieldTouched("email", true, false);
+          }
+          if (uniqueness.mobileExists) {
+            editFormik.setFieldError("userMobile", "This mobile number is already registered.");
+            editFormik.setFieldTouched("userMobile", true, false);
+          }
+          setFeedback({
+            type: "error",
+            message: uniqueness.message,
+          });
+          setSubmitting(false);
+          return;
+        }
+
         const updatePayload = {
           username: values.username.trim(),
-          userMobile: String(values.userMobile).trim(),
+          userMobile: cleanMobile,
           email: cleanEmail,
           userAddress: values.userAddress.trim(),
           role: USER_ROLES.CUSTOMER,
@@ -365,10 +392,35 @@ const Customers = () => {
       setFeedback(null);
       try {
         const cleanEmail = values.email.trim().toLowerCase();
+        const cleanMobile = String(values.userMobile).trim();
+
+        // Validate uniqueness before creating customer
+        const uniqueness = await checkUserUniqueness({
+          email: cleanEmail,
+          userMobile: cleanMobile,
+        });
+
+        if (!uniqueness.isUnique) {
+          if (uniqueness.emailExists) {
+            createFormik.setFieldError("email", "This email address is already registered.");
+            createFormik.setFieldTouched("email", true, false);
+          }
+          if (uniqueness.mobileExists) {
+            createFormik.setFieldError("userMobile", "This mobile number is already registered.");
+            createFormik.setFieldTouched("userMobile", true, false);
+          }
+          setFeedback({
+            type: "error",
+            message: uniqueness.message,
+          });
+          setSubmitting(false);
+          return;
+        }
+
         const newCustomerData = {
           username: values.username.trim(),
           email: cleanEmail,
-          userMobile: String(values.userMobile).trim(),
+          userMobile: cleanMobile,
           userAddress: values.userAddress.trim(),
           role: USER_ROLES.CUSTOMER,
         };

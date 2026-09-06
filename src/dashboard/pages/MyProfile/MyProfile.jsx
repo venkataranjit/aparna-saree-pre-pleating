@@ -27,6 +27,7 @@ import {
   createCustomerMeasurement,
   updateMeasurement,
   deleteCustomerMeasurement,
+  checkUserUniqueness,
   formatDateSafe,
 } from "../../../firebase/dbService";
 import { USER_ROLES } from "../../../firebase/schema";
@@ -232,9 +233,35 @@ const MyProfile = () => {
       setFeedback(null);
       try {
         const cleanEmail = values.email.trim().toLowerCase();
+        const cleanMobile = String(values.userMobile).trim();
+
+        // Validate uniqueness excluding current user's profile
+        const uniqueness = await checkUserUniqueness({
+          email: cleanEmail,
+          userMobile: cleanMobile,
+          excludeUserId: currentUid,
+        });
+
+        if (!uniqueness.isUnique) {
+          if (uniqueness.emailExists) {
+            editProfileFormik.setFieldError("email", "This email address is already registered.");
+            editProfileFormik.setFieldTouched("email", true, false);
+          }
+          if (uniqueness.mobileExists) {
+            editProfileFormik.setFieldError("userMobile", "This mobile number is already registered.");
+            editProfileFormik.setFieldTouched("userMobile", true, false);
+          }
+          setFeedback({
+            type: "error",
+            message: uniqueness.message,
+          });
+          setSubmitting(false);
+          return;
+        }
+
         const updatePayload = {
           username: values.username.trim(),
-          userMobile: String(values.userMobile).trim(),
+          userMobile: cleanMobile,
           email: cleanEmail,
           userAddress: values.userAddress.trim(),
           role: userProfile?.role || USER_ROLES.CUSTOMER,

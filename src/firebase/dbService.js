@@ -289,10 +289,153 @@ export const createAuthUser = async ({ email, password, displayName }) => {
 };
 
 /**
+ * Normalizes an email address for comparison (trimmed and lowercase)
+ * @param {string} email
+ * @returns {string}
+ */
+export const normalizeEmail = (email) => {
+  if (!email) return '';
+  return String(email).trim().toLowerCase();
+};
+
+/**
+ * Normalizes a mobile number for comparison (extracts last 10 digits)
+ * @param {string|number} mobile
+ * @returns {string}
+ */
+export const normalizeMobile = (mobile) => {
+  if (!mobile) return '';
+  const digits = String(mobile).replace(/\D/g, '');
+  return digits.length >= 10 ? digits.slice(-10) : digits;
+};
+
+/**
+ * Check if a user with the specified email or mobile already exists.
+ * Verifies across both local storage cache and Firestore remote collections.
+ *
+ * @param {Object} params
+ * @param {string} [params.email] - Email address to verify
+ * @param {string|number} [params.userMobile] - Mobile number to verify
+ * @param {string} [params.excludeUserId] - User ID to exclude (for edit scenarios)
+ * @returns {Promise<{ isUnique: boolean, emailExists: boolean, mobileExists: boolean, message: string|null, conflictingUser: Object|null }>}
+ */
+export const checkUserUniqueness = async ({ email, userMobile, excludeUserId = null }) => {
+  const cleanEmail = normalizeEmail(email);
+  const cleanMobile = normalizeMobile(userMobile);
+
+  let emailExists = false;
+  let mobileExists = false;
+  let conflictingUser = null;
+
+  // 1. Check in cached / full user list
+  try {
+    const allUsers = await getAllUsers();
+    for (const u of allUsers) {
+      if (excludeUserId) {
+        const uId = String(u.id || u.uid || '');
+        if (uId === String(excludeUserId)) {
+          continue;
+        }
+      }
+
+      const uEmail = normalizeEmail(u.email);
+      const uMobile = normalizeMobile(u.userMobile || u.mobile || u.phone);
+
+      if (cleanEmail && uEmail && uEmail === cleanEmail) {
+        emailExists = true;
+        conflictingUser = u;
+      }
+      if (cleanMobile && uMobile && uMobile === cleanMobile) {
+        mobileExists = true;
+        conflictingUser = u;
+      }
+      if (emailExists && mobileExists) break;
+    }
+  } catch (err) {
+    console.warn('getAllUsers in checkUserUniqueness note:', err);
+  }
+
+  // 2. Query Firestore directly for email if not found yet
+  if (!emailExists && cleanEmail) {
+    try {
+      const qEmail = query(
+        collection(db, COLLECTIONS.USERS),
+        where('email', '==', cleanEmail)
+      );
+      const snap = await withTimeout(getDocs(qEmail), 2500, null);
+      if (snap && !snap.empty) {
+        for (const d of snap.docs) {
+          const docData = d.data();
+          const docId = String(d.id || docData.uid || docData.id || '');
+          if (!excludeUserId || docId !== String(excludeUserId)) {
+            emailExists = true;
+            conflictingUser = { id: d.id, ...docData };
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Firestore email uniqueness query note:', e);
+    }
+  }
+
+  // 3. Query Firestore directly for mobile if not found yet
+  if (!mobileExists && cleanMobile) {
+    try {
+      const qMobile = query(
+        collection(db, COLLECTIONS.USERS),
+        where('userMobile', '==', cleanMobile)
+      );
+      const snap = await withTimeout(getDocs(qMobile), 2500, null);
+      if (snap && !snap.empty) {
+        for (const d of snap.docs) {
+          const docData = d.data();
+          const docId = String(d.id || docData.uid || docData.id || '');
+          if (!excludeUserId || docId !== String(excludeUserId)) {
+            mobileExists = true;
+            conflictingUser = { id: d.id, ...docData };
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Firestore mobile uniqueness query note:', e);
+    }
+  }
+
+  let message = null;
+  if (emailExists && mobileExists) {
+    message = `Both Email "${cleanEmail}" and Mobile Number "${cleanMobile}" are already registered. Each user must have a unique email and mobile number.`;
+  } else if (emailExists) {
+    message = `Email "${cleanEmail}" is already registered. Each user must have a unique email address.`;
+  } else if (mobileExists) {
+    message = `Mobile number "${cleanMobile}" is already registered. Each user must have a unique mobile number.`;
+  }
+
+  return {
+    isUnique: !emailExists && !mobileExists,
+    emailExists,
+    mobileExists,
+    message,
+    conflictingUser,
+  };
+};
+
+/**
  * Create a new user record directly (for Admin / Staff user creation)
  * @param {Object} userData
  */
 export const createUser = async (userData) => {
+  // Validate uniqueness before creation
+  const uniqueness = await checkUserUniqueness({
+    email: userData.email,
+    userMobile: userData.userMobile,
+  });
+
+  if (!uniqueness.isUnique) {
+    throw new Error(uniqueness.message);
+  }
+
   const model = createUserModel(userData);
   const tempId = 'user-' + Date.now();
   const localItem = { id: tempId, ...model, createdAt: new Date().toLocaleDateString('en-IN') };
@@ -477,6 +620,20 @@ export const updateUserRole = async (userId, newRole) => {
  */
 export const updateUser = async (userId, updatedData) => {
   const cleanEmail = String(updatedData.email || '').trim().toLowerCase();
+  const cleanMobile = String(updatedData.userMobile || '').trim();
+
+  // Validate uniqueness excluding current user
+  if (cleanEmail || cleanMobile) {
+    const uniqueness = await checkUserUniqueness({
+      email: cleanEmail,
+      userMobile: cleanMobile,
+      excludeUserId: userId,
+    });
+    if (!uniqueness.isUnique) {
+      throw new Error(uniqueness.message);
+    }
+  }
+
   let targetDocRef = userId ? doc(db, COLLECTIONS.USERS, userId) : null;
   let existingData = null;
 

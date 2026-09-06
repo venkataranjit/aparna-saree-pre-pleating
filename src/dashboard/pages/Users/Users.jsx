@@ -23,6 +23,7 @@ import {
   updateUser,
   getLocalUsers,
   createAuthUser,
+  checkUserUniqueness,
   formatDateSafe,
 } from "../../../firebase/dbService";
 import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
@@ -171,10 +172,37 @@ const Users = () => {
       if (!selectedUser) return;
       setFeedback(null);
       try {
+        const cleanEmail = values.email.trim().toLowerCase();
+        const cleanMobile = String(values.userMobile).trim();
+
+        // Validate uniqueness excluding current selected user
+        const uniqueness = await checkUserUniqueness({
+          email: cleanEmail,
+          userMobile: cleanMobile,
+          excludeUserId: selectedUser.id,
+        });
+
+        if (!uniqueness.isUnique) {
+          if (uniqueness.emailExists) {
+            editFormik.setFieldError("email", "This email address is already registered.");
+            editFormik.setFieldTouched("email", true, false);
+          }
+          if (uniqueness.mobileExists) {
+            editFormik.setFieldError("userMobile", "This mobile number is already registered.");
+            editFormik.setFieldTouched("userMobile", true, false);
+          }
+          setFeedback({
+            type: "error",
+            message: uniqueness.message,
+          });
+          setSubmitting(false);
+          return;
+        }
+
         const updatedFields = {
           username: values.username.trim(),
-          userMobile: String(values.userMobile).trim(),
-          email: values.email.trim().toLowerCase(),
+          userMobile: cleanMobile,
+          email: cleanEmail,
           userAddress: values.userAddress.trim(),
           role:
             selectedUser.email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()
@@ -226,7 +254,31 @@ const Users = () => {
       setFeedback(null);
       try {
         const cleanEmail = values.email.trim().toLowerCase();
+        const cleanMobile = String(values.userMobile).trim();
         const isSuper = cleanEmail === SUPERADMIN_EMAIL.toLowerCase();
+
+        // Validate email and mobile uniqueness before proceeding
+        const uniqueness = await checkUserUniqueness({
+          email: cleanEmail,
+          userMobile: cleanMobile,
+        });
+
+        if (!uniqueness.isUnique) {
+          if (uniqueness.emailExists) {
+            formik.setFieldError("email", "This email address is already registered.");
+            formik.setFieldTouched("email", true, false);
+          }
+          if (uniqueness.mobileExists) {
+            formik.setFieldError("userMobile", "This mobile number is already registered.");
+            formik.setFieldTouched("userMobile", true, false);
+          }
+          setFeedback({
+            type: "error",
+            message: uniqueness.message,
+          });
+          setSubmitting(false);
+          return;
+        }
 
         let authUid;
         try {
@@ -395,9 +447,7 @@ const Users = () => {
       {/* Header section */}
       <div className="users-page__header">
         <div>
-          <h1 className="page-title">
-            Manage Users
-          </h1>
+          <h1 className="page-title">Manage Users</h1>
           <p className="page-subtitle">
             Configure team members, staff permissions, and customer profiles
           </p>
@@ -432,7 +482,7 @@ const Users = () => {
         <div
           className={`users-feedback-alert users-feedback-alert--${feedback.type}`}
         >
-          {feedback.type === 'success' ? (
+          {feedback.type === "success" ? (
             <CheckCircleOutlineIcon fontSize="small" />
           ) : (
             <ErrorOutlineIcon fontSize="small" />
@@ -442,11 +492,11 @@ const Users = () => {
             type="button"
             onClick={() => setFeedback(null)}
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'inherit',
-              cursor: 'pointer',
-              fontWeight: 'bold',
+              background: "transparent",
+              border: "none",
+              color: "inherit",
+              cursor: "pointer",
+              fontWeight: "bold",
             }}
           >
             ✕
@@ -480,18 +530,19 @@ const Users = () => {
               <tr>
                 <th>User</th>
                 <th>Mobile Number</th>
-                <th>Address / Location</th>
+                <th>Address</th>
                 <th>Assigned Role</th>
                 <th>Created On</th>
-                <th style={{ textAlign: "right", minWidth: 100 }}>
-                  Actions
-                </th>
+                <th style={{ textAlign: "right", minWidth: 100 }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: "center", padding: "48px 16px" }}>
+                  <td
+                    colSpan={6}
+                    style={{ textAlign: "center", padding: "48px 16px" }}
+                  >
                     <div
                       style={{
                         display: "flex",
@@ -519,14 +570,22 @@ const Users = () => {
                       }}
                     >
                       <PersonOutlineIcon
-                        style={{ fontSize: 40, color: "rgba(212, 175, 55, 0.4)" }}
+                        style={{
+                          fontSize: 40,
+                          color: "rgba(212, 175, 55, 0.4)",
+                        }}
                       />
                       <span style={{ color: "#e6d8a3", fontWeight: 600 }}>
                         {users.length === 0
                           ? "No users found in Firebase"
                           : "No users found matching your filter criteria"}
                       </span>
-                      <span style={{ color: "rgba(230, 216, 163, 0.6)", fontSize: "0.8rem" }}>
+                      <span
+                        style={{
+                          color: "rgba(230, 216, 163, 0.6)",
+                          fontSize: "0.8rem",
+                        }}
+                      >
                         {users.length === 0
                           ? 'Click "Create New User" to register a new user into Firebase.'
                           : "Try changing your search term or role filter."}
@@ -550,9 +609,7 @@ const Users = () => {
                             {u.username?.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <div className="user-name-text">
-                              {u.username}
-                            </div>
+                            <div className="user-name-text">{u.username}</div>
                             <div className="user-email-text">
                               {u.email || "No email specified"}
                             </div>
@@ -575,13 +632,9 @@ const Users = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="address-cell">
-                        {u.userAddress || "—"}
-                      </td>
+                      <td className="address-cell">{u.userAddress || "—"}</td>
                       <td>
-                        <AppBadge variant={u.role}>
-                          {u.role}
-                        </AppBadge>
+                        <AppBadge variant={u.role}>{u.role}</AppBadge>
                       </td>
                       <td className="date-cell">
                         {formatDateSafe(u.createdAt)}
@@ -664,7 +717,10 @@ const Users = () => {
           </>
         }
       >
-        <form onSubmit={formik.handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <form
+          onSubmit={formik.handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
           <AppInput
             label="Full Name"
             required
@@ -721,13 +777,17 @@ const Users = () => {
             error={formik.touched.role && formik.errors.role}
             disabled={formik.isSubmitting}
           >
-            <option value={USER_ROLES.ADMIN}>Admin (Operations & Orders)</option>
-            <option value={USER_ROLES.STAFF}>Staff (Pleating & Handling)</option>
+            <option value={USER_ROLES.ADMIN}>
+              Admin (Operations & Orders)
+            </option>
+            <option value={USER_ROLES.STAFF}>
+              Staff (Pleating & Handling)
+            </option>
             <option value={USER_ROLES.CUSTOMER}>Customer (Default)</option>
           </AppInput>
 
           <AppInput
-            label="Address / Location (Optional)"
+            label="Address"
             id="userAddress"
             name="userAddress"
             placeholder="e.g. Banjara Hills, Hyderabad"
@@ -781,7 +841,10 @@ const Users = () => {
           </>
         }
       >
-        <form onSubmit={editFormik.handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <form
+          onSubmit={editFormik.handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
           <AppInput
             label="Full Name"
             required
@@ -805,7 +868,9 @@ const Users = () => {
             value={editFormik.values.userMobile}
             onChange={editFormik.handleChange}
             onBlur={editFormik.handleBlur}
-            error={editFormik.touched.userMobile && editFormik.errors.userMobile}
+            error={
+              editFormik.touched.userMobile && editFormik.errors.userMobile
+            }
             disabled={editFormik.isSubmitting}
             startAdornment={<PhoneIphoneOutlinedIcon />}
           />
@@ -822,18 +887,21 @@ const Users = () => {
             onBlur={editFormik.handleBlur}
             error={editFormik.touched.email && editFormik.errors.email}
             helperText={
-              selectedUser?.email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()
+              selectedUser?.email?.toLowerCase() ===
+              SUPERADMIN_EMAIL.toLowerCase()
                 ? "Super Admin primary email is locked."
                 : editFormik.touched.email && editFormik.errors.email
             }
             disabled={
               editFormik.isSubmitting ||
-              selectedUser?.email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()
+              selectedUser?.email?.toLowerCase() ===
+                SUPERADMIN_EMAIL.toLowerCase()
             }
             startAdornment={<EmailOutlinedIcon />}
           />
 
-          {selectedUser?.email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase() ||
+          {selectedUser?.email?.toLowerCase() ===
+            SUPERADMIN_EMAIL.toLowerCase() ||
           selectedUser?.role === USER_ROLES.SUPERADMIN ? (
             <AppInput
               label="Assigned Role"
@@ -854,21 +922,27 @@ const Users = () => {
               error={editFormik.touched.role && editFormik.errors.role}
               disabled={editFormik.isSubmitting}
             >
-              <option value={USER_ROLES.ADMIN}>Admin (Operations & Orders)</option>
-              <option value={USER_ROLES.STAFF}>Staff (Pleating & Handling)</option>
+              <option value={USER_ROLES.ADMIN}>
+                Admin (Operations & Orders)
+              </option>
+              <option value={USER_ROLES.STAFF}>
+                Staff (Pleating & Handling)
+              </option>
               <option value={USER_ROLES.CUSTOMER}>Customer (Default)</option>
             </AppInput>
           )}
 
           <AppInput
-            label="Address / Location (Optional)"
+            label="Address"
             id="edit-userAddress"
             name="userAddress"
             placeholder="e.g. Banjara Hills, Hyderabad"
             value={editFormik.values.userAddress}
             onChange={editFormik.handleChange}
             onBlur={editFormik.handleBlur}
-            error={editFormik.touched.userAddress && editFormik.errors.userAddress}
+            error={
+              editFormik.touched.userAddress && editFormik.errors.userAddress
+            }
             disabled={editFormik.isSubmitting}
             startAdornment={<LocationOnOutlinedIcon />}
           />
@@ -902,15 +976,30 @@ const Users = () => {
           </>
         }
       >
-        <p style={{ color: "#e6d8a3", fontSize: "0.95rem", marginBottom: 12, marginTop: 0 }}>
+        <p
+          style={{
+            color: "#e6d8a3",
+            fontSize: "0.95rem",
+            marginBottom: 12,
+            marginTop: 0,
+          }}
+        >
           Are you sure you want to remove user{" "}
           <strong style={{ color: "#d4af37" }}>
             "{userToDelete?.name || "this user"}"
           </strong>{" "}
           from Firebase?
         </p>
-        <p style={{ color: "rgba(230, 216, 163, 0.65)", fontSize: "0.82rem", lineHeight: 1.5, margin: 0 }}>
-          This will permanently remove the user from the database and invalidate their access.
+        <p
+          style={{
+            color: "rgba(230, 216, 163, 0.65)",
+            fontSize: "0.82rem",
+            lineHeight: 1.5,
+            margin: 0,
+          }}
+        >
+          This will permanently remove the user from the database and invalidate
+          their access.
         </p>
       </AppModal>
     </div>

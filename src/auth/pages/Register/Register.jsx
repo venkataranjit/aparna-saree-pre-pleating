@@ -4,7 +4,7 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { auth } from "../../../firebase/config";
-import { createUserProfile } from "../../../firebase/dbService";
+import { createUserProfile, checkUserUniqueness } from "../../../firebase/dbService";
 import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
 import { useAuth } from "../../context/AuthContext";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -88,6 +88,28 @@ const Register = () => {
 
       try {
         const cleanEmail = values.email.trim().toLowerCase();
+        const cleanMobile = values.userMobile.trim();
+
+        // Validate uniqueness of email and mobile before proceeding with registration
+        const uniqueness = await checkUserUniqueness({
+          email: cleanEmail,
+          userMobile: cleanMobile,
+        });
+
+        if (!uniqueness.isUnique) {
+          if (uniqueness.emailExists) {
+            formik.setFieldError("email", "An account with this email address already exists.");
+            formik.setFieldTouched("email", true, false);
+          }
+          if (uniqueness.mobileExists) {
+            formik.setFieldError("userMobile", "An account with this mobile number already exists.");
+            formik.setFieldTouched("userMobile", true, false);
+          }
+          setError(uniqueness.message);
+          setSubmitting(false);
+          return;
+        }
+
         const userCredential = await createUserWithEmailAndPassword(
           auth,
           cleanEmail,
@@ -263,7 +285,7 @@ const Register = () => {
 
                 {/* Address Input */}
                 <AppInput
-                  label="Address / Location (Optional)"
+                  label="Address"
                   id="userAddress"
                   name="userAddress"
                   placeholder="e.g. Jubilee Hills, Hyderabad"

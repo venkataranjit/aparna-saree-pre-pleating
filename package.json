@@ -4,10 +4,15 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "vite --mode dev",
+    "dev:prod": "vite --mode prod",
+    "build": "vite build --mode prod",
+    "build:dev": "vite build --mode dev",
+    "build:prod": "vite build --mode prod",
     "preview": "vite preview",
-    "build:apk": "node scripts/build-apk.mjs",
+    "build:apk": "node scripts/build-apk.mjs --mode prod",
+    "build:apk:dev": "node scripts/build-apk.mjs --mode dev",
+    "build:apk:prod": "node scripts/build-apk.mjs --mode prod",
     "cap:sync": "cap sync android",
     "cap:open": "cap open android"
   },

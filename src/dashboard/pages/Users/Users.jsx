@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
@@ -35,6 +35,14 @@ import {
   AppBadge,
   AppTabs,
   AppSpinner,
+  AppTable,
+  AppTableContainer,
+  AppTableHead,
+  AppTableBody,
+  AppTableRow,
+  AppTableCell,
+  AppTableSortLabel,
+  AppTablePagination,
 } from "../../../components/common";
 import "./Users.scss";
 
@@ -119,6 +127,19 @@ const Users = () => {
   const [activeTab, setActiveTab] = useState("ALL");
   const [userToDelete, setUserToDelete] = useState(null);
   const [deletingUser, setDeletingUser] = useState(false);
+
+  // Sorting and Pagination states
+  const [sortField, setSortField] = useState("createdAt");
+  const [sortDirection, setSortDirection] = useState("desc");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const handleRequestSort = (field) => {
+    const isAsc = sortField === field && sortDirection === "asc";
+    setSortDirection(isAsc ? "desc" : "asc");
+    setSortField(field);
+    setPage(0);
+  };
 
   // Load all users from Firestore with local cache fallback
   const fetchUsers = async () => {
@@ -404,17 +425,48 @@ const Users = () => {
     }
   };
 
-  const filteredUsers = users.filter((u) => {
-    const matchesTab =
-      activeTab === "ALL" || u.role?.toLowerCase() === activeTab.toLowerCase();
-    const query = searchQuery.toLowerCase();
-    const matchesSearch =
-      !query ||
-      u.username?.toLowerCase().includes(query) ||
-      u.userMobile?.includes(query) ||
-      u.email?.toLowerCase().includes(query);
-    return matchesTab && matchesSearch;
-  });
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      const matchesTab =
+        activeTab === "ALL" ||
+        u.role?.toLowerCase() === activeTab.toLowerCase();
+      const query = searchQuery.toLowerCase();
+      const matchesSearch =
+        !query ||
+        u.username?.toLowerCase().includes(query) ||
+        u.userMobile?.includes(query) ||
+        u.email?.toLowerCase().includes(query);
+      return matchesTab && matchesSearch;
+    });
+  }, [users, activeTab, searchQuery]);
+
+  const sortedUsers = useMemo(() => {
+    return [...filteredUsers].sort((a, b) => {
+      let aVal = a[sortField] ?? "";
+      let bVal = b[sortField] ?? "";
+
+      if (sortField === "createdAt" || sortField === "updatedAt") {
+        const aTime = aVal?.toDate
+          ? aVal.toDate().getTime()
+          : new Date(aVal || 0).getTime() || 0;
+        const bTime = bVal?.toDate
+          ? bVal.toDate().getTime()
+          : new Date(bVal || 0).getTime() || 0;
+        return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
+      }
+
+      return sortDirection === "asc"
+        ? String(aVal).localeCompare(String(bVal))
+        : String(bVal).localeCompare(String(aVal));
+    });
+  }, [filteredUsers, sortField, sortDirection]);
+
+  const paginatedUsers = useMemo(() => {
+    return sortedUsers.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
+  }, [sortedUsers, page, rowsPerPage]);
 
   const userRoleLower = (role || "").toLowerCase();
   const isCustomerOnly =
@@ -562,23 +614,81 @@ const Users = () => {
 
       {/* Users Table Card */}
       <div className="users-table-card">
-        <div className="table-responsive">
-          <table className="users-table">
-            <thead>
-              <tr>
-                <th>User Name</th>
-                <th>Mobile Number</th>
-                <th>Address</th>
-                <th>Assigned Role</th>
-                <th>Created On</th>
-                <th>Modified On</th>
-                <th style={{ textAlign: "right", minWidth: 100 }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+        <AppTableContainer className="table-responsive">
+          <AppTable className="users-table">
+            <AppTableHead>
+              <AppTableRow>
+                <AppTableCell head>
+                  <AppTableSortLabel
+                    active={sortField === "username"}
+                    direction={sortField === "username" ? sortDirection : "asc"}
+                    onClick={() => handleRequestSort("username")}
+                  >
+                    User Name
+                  </AppTableSortLabel>
+                </AppTableCell>
+                <AppTableCell head>
+                  <AppTableSortLabel
+                    active={sortField === "userMobile"}
+                    direction={
+                      sortField === "userMobile" ? sortDirection : "asc"
+                    }
+                    onClick={() => handleRequestSort("userMobile")}
+                  >
+                    Mobile Number
+                  </AppTableSortLabel>
+                </AppTableCell>
+                <AppTableCell head>
+                  <AppTableSortLabel
+                    active={sortField === "userAddress"}
+                    direction={
+                      sortField === "userAddress" ? sortDirection : "asc"
+                    }
+                    onClick={() => handleRequestSort("userAddress")}
+                  >
+                    Address
+                  </AppTableSortLabel>
+                </AppTableCell>
+                <AppTableCell head>
+                  <AppTableSortLabel
+                    active={sortField === "role"}
+                    direction={sortField === "role" ? sortDirection : "asc"}
+                    onClick={() => handleRequestSort("role")}
+                  >
+                    Assigned Role
+                  </AppTableSortLabel>
+                </AppTableCell>
+                <AppTableCell head>
+                  <AppTableSortLabel
+                    active={sortField === "createdAt"}
+                    direction={
+                      sortField === "createdAt" ? sortDirection : "asc"
+                    }
+                    onClick={() => handleRequestSort("createdAt")}
+                  >
+                    Created On
+                  </AppTableSortLabel>
+                </AppTableCell>
+                <AppTableCell head>
+                  <AppTableSortLabel
+                    active={sortField === "updatedAt"}
+                    direction={
+                      sortField === "updatedAt" ? sortDirection : "asc"
+                    }
+                    onClick={() => handleRequestSort("updatedAt")}
+                  >
+                    Modified On
+                  </AppTableSortLabel>
+                </AppTableCell>
+                <AppTableCell head style={{ textAlign: "right", minWidth: 100 }}>
+                  Actions
+                </AppTableCell>
+              </AppTableRow>
+            </AppTableHead>
+            <AppTableBody>
               {loading ? (
-                <tr>
-                  <td
+                <AppTableRow>
+                  <AppTableCell
                     colSpan={7}
                     style={{ textAlign: "center", padding: "48px 16px" }}
                   >
@@ -595,11 +705,11 @@ const Users = () => {
                         Loading users from Firebase...
                       </span>
                     </div>
-                  </td>
-                </tr>
+                  </AppTableCell>
+                </AppTableRow>
               ) : filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="empty-state-cell">
+                <AppTableRow>
+                  <AppTableCell colSpan={7} className="empty-state-cell">
                     <div
                       style={{
                         display: "flex",
@@ -630,13 +740,13 @@ const Users = () => {
                           : "Try changing your search term or role filter."}
                       </span>
                     </div>
-                  </td>
-                </tr>
+                  </AppTableCell>
+                </AppTableRow>
               ) : (
-                filteredUsers.map((u) => {
+                paginatedUsers.map((u) => {
                   return (
-                    <tr key={u.id} className="user-table-row">
-                      <td>
+                    <AppTableRow key={u.id} className="user-table-row">
+                      <AppTableCell>
                         <div
                           style={{
                             display: "flex",
@@ -654,8 +764,8 @@ const Users = () => {
                             </div>
                           </div>
                         </div>
-                      </td>
-                      <td className="mobile-cell">
+                      </AppTableCell>
+                      <AppTableCell className="mobile-cell">
                         <div
                           style={{
                             display: "flex",
@@ -670,16 +780,20 @@ const Users = () => {
                             {u.userMobile || "—"}
                           </span>
                         </div>
-                      </td>
-                      <td className="address-cell">{u.userAddress || "—"}</td>
-                      <td>{renderRoleBadge(u)}</td>
-                      <td className="date-cell">
+                      </AppTableCell>
+                      <AppTableCell className="address-cell">
+                        {u.userAddress || "—"}
+                      </AppTableCell>
+                      <AppTableCell>{renderRoleBadge(u)}</AppTableCell>
+                      <AppTableCell className="date-cell">
                         {formatDateSafe(u.createdAt)}
-                      </td>
-                      <td className="date-cell">
+                      </AppTableCell>
+                      <AppTableCell className="date-cell">
                         {formatModifiedDate(u.updatedAt, u.createdAt)}
-                      </td>
-                      <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                      </AppTableCell>
+                      <AppTableCell
+                        style={{ textAlign: "right", whiteSpace: "nowrap" }}
+                      >
                         <div className="action-btns">
                           {userCanEdit && (
                             <AppButton
@@ -719,14 +833,25 @@ const Users = () => {
                             </span>
                           )}
                         </div>
-                      </td>
-                    </tr>
+                      </AppTableCell>
+                    </AppTableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
-        </div>
+            </AppTableBody>
+          </AppTable>
+        </AppTableContainer>
+        <AppTablePagination
+          count={filteredUsers.length}
+          page={page}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+        />
       </div>
 
       {/* ========================================================================= */}

@@ -1,4 +1,4 @@
-@use '../../styles/variables' as *;
+@use "../../styles/variables" as *;
 
 .dashboard-sidebar {
   width: 260px;
@@ -22,7 +22,8 @@
   backface-visibility: hidden;
   transform: translateZ(0);
   will-change: width;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   // Mobile Drawer Responsive Styling
   @media (max-width: 899px) {
@@ -41,7 +42,8 @@
 
     &.mobile-open {
       transform: translateX(0);
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.95), 0 0 20px rgba(212, 175, 55, 0.15);
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.95),
+        0 0 20px rgba(212, 175, 55, 0.15);
     }
   }
 
@@ -68,7 +70,8 @@
       white-space: nowrap;
       opacity: 1;
       transform: translateX(0);
-      transition: opacity 0.22s ease, max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.22s ease;
+      transition: opacity 0.22s ease,
+        max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.22s ease;
 
       .sidebar-text-logo {
         height: 38px;
@@ -90,7 +93,8 @@
       border: 1px solid rgba(212, 175, 55, 0.25);
       border-radius: 8px;
       padding: 6px;
-      transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      transition: background-color 0.2s ease, border-color 0.2s ease,
+        box-shadow 0.2s ease;
 
       .collapse-icon {
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -180,7 +184,10 @@
       white-space: nowrap;
       max-height: 36px;
       opacity: 1;
-      transition: opacity 0.2s ease, max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 0.2s ease,
+        max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
       .section-title {
         color: rgba(212, 175, 55, 0.55);
@@ -221,7 +228,10 @@
         white-space: nowrap;
         background-color: transparent;
         text-decoration: none;
-        transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease,
+          box-shadow 0.2s ease, width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+          padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+          margin 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
         // Rich Gold Icons
         .nav-icon {
@@ -254,7 +264,8 @@
           max-width: 170px;
           opacity: 1;
           transform: translateX(0);
-          transition: opacity 0.2s ease 0.04s, max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease;
+          transition: opacity 0.2s ease 0.04s,
+            max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease;
 
           .nav-text-label {
             font-size: 0.88rem;
@@ -294,11 +305,12 @@
           border-radius: 10px !important;
           border-color: rgba(212, 175, 55, 0.55) !important;
           color: $color-gold;
-          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6), 0 0 10px rgba(212, 175, 55, 0.15);
+          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6),
+            0 0 10px rgba(212, 175, 55, 0.15);
 
           // Left vertical yellow/gold bar indicator
           &::before {
-            content: '';
+            content: "";
             position: absolute;
             left: 0;
             top: 50%;
@@ -354,7 +366,8 @@
     border-top: 1px solid rgba(212, 175, 55, 0.18);
     display: flex;
     align-items: center;
-    transition: background-color 0.2s ease, padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.2s ease,
+      padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     flex-shrink: 0;
     overflow: hidden;
@@ -372,7 +385,8 @@
       align-items: center;
       width: 100%;
       gap: 10px;
-      transition: gap 0.3s cubic-bezier(0.4, 0, 0.2, 1), justify-content 0.3s ease;
+      transition: gap 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        justify-content 0.3s ease;
     }
 
     .avatar-wrapper {
@@ -388,13 +402,19 @@
         align-items: center;
         justify-content: center;
         text-align: center;
-        background: linear-gradient(135deg, $color-gold 0%, #b89324 50%, #8c6e14 100%);
+        background: linear-gradient(
+          135deg,
+          $color-gold 0%,
+          #b89324 50%,
+          #8c6e14 100%
+        );
         color: #060606;
         font-weight: 800;
         font-size: 1.18rem;
         text-transform: uppercase;
         border: 1.5px solid rgba(212, 175, 55, 0.8);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45),
+          inset 0 1px 1px rgba(255, 255, 255, 0.35);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         user-select: none;
         overflow: hidden;
@@ -446,7 +466,8 @@
       opacity: 1;
       max-width: 130px;
       transform: translateX(0);
-      transition: opacity 0.2s ease 0.04s, max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease;
+      transition: opacity 0.2s ease 0.04s,
+        max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease;
 
       .user-name {
         color: $color-light-gold;
@@ -472,31 +493,6 @@
           font-size: 0.72rem;
           font-weight: 600;
           letter-spacing: 0.3px;
-        }
-      }
-    }
-
-    .profile-action-btn-wrap {
-      flex-shrink: 0;
-      opacity: 1;
-      max-width: 36px;
-      overflow: hidden;
-      transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-      .profile-quick-nav-btn {
-        color: rgba(212, 175, 55, 0.9) !important;
-        padding: 6px;
-        border-radius: 8px;
-        border: 1px solid rgba(212, 175, 55, 0.25);
-        background-color: rgba(212, 175, 55, 0.06);
-        transition: all 0.2s ease;
-
-        &:hover {
-          color: #0a0a0a !important;
-          background-color: #d4af37 !important;
-          border-color: #d4af37;
-          transform: scale(1.05);
-          box-shadow: 0 2px 8px rgba(212, 175, 55, 0.35);
         }
       }
     }
@@ -553,7 +549,8 @@
           opacity: 0 !important;
           transform: translateX(-8px) !important;
           pointer-events: none;
-          transition: opacity 0.12s ease, max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.12s ease;
+          transition: opacity 0.12s ease,
+            max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.12s ease;
         }
 
         &.active {
@@ -581,14 +578,16 @@
         opacity: 0 !important;
         transform: translateX(-8px) !important;
         pointer-events: none;
-        transition: opacity 0.12s ease, max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.12s ease;
+        transition: opacity 0.12s ease,
+          max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.12s ease;
       }
 
       .profile-action-btn-wrap {
         max-width: 0 !important;
         opacity: 0 !important;
         pointer-events: none;
-        transition: opacity 0.12s ease, max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: opacity 0.12s ease,
+          max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       }
     }
   }

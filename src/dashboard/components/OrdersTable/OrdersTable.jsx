@@ -1,10 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import SearchIcon from "@mui/icons-material/Search";
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import OrderDetailsModal from "../OrderDetailsModal/OrderDetailsModal";
-import { AppButton } from "../../../components/common";
+import {
+  AppButton,
+  AppTable,
+  AppTableContainer,
+  AppTableHead,
+  AppTableBody,
+  AppTableRow,
+  AppTableCell,
+  AppTableSortLabel,
+  AppTablePagination,
+} from "../../../components/common";
 import { formatDateSafe } from "../../../firebase/dbService";
 import "./OrdersTable.scss";
 
@@ -148,15 +158,52 @@ const OrdersTable = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  const filteredOrders = orders.filter((order) => {
-    const matchesFilter =
-      activeFilter === "All" || order.status === activeFilter;
-    const matchesSearch =
-      order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.sareeType.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+  // Sorting and Pagination states
+  const [sortField, setSortField] = useState("id");
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const handleRequestSort = (field) => {
+    const isAsc = sortField === field && sortDirection === "asc";
+    setSortDirection(isAsc ? "desc" : "asc");
+    setSortField(field);
+    setPage(0);
+  };
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      const matchesFilter =
+        activeFilter === "All" || order.status === activeFilter;
+      const matchesSearch =
+        order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.sareeType.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesFilter && matchesSearch;
+    });
+  }, [orders, activeFilter, searchQuery]);
+
+  const sortedOrders = useMemo(() => {
+    return [...filteredOrders].sort((a, b) => {
+      let aVal = a[sortField] ?? "";
+      let bVal = b[sortField] ?? "";
+      if (sortField === "amount") {
+        aVal = parseInt(String(aVal).replace(/[^0-9]/g, ""), 10) || 0;
+        bVal = parseInt(String(bVal).replace(/[^0-9]/g, ""), 10) || 0;
+        return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+      }
+      return sortDirection === "asc"
+        ? String(aVal).localeCompare(String(bVal))
+        : String(bVal).localeCompare(String(aVal));
+    });
+  }, [filteredOrders, sortField, sortDirection]);
+
+  const paginatedOrders = useMemo(() => {
+    return sortedOrders.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
+  }, [sortedOrders, page, rowsPerPage]);
 
   return (
     <div className="orders-table-card">
@@ -208,57 +255,120 @@ const OrdersTable = () => {
       </div>
 
       {/* Table */}
-      <div className="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th className="table-head-cell">Order ID</th>
-              <th className="table-head-cell">Customer</th>
-              <th className="table-head-cell">Service</th>
-              <th className="table-head-cell">Saree Fabric</th>
-              <th className="table-head-cell">Date</th>
-              <th className="table-head-cell">Amount</th>
-              <th className="table-head-cell">Status</th>
-              <th className="table-head-cell" style={{ textAlign: 'right' }}>
+      <AppTableContainer className="table-wrapper">
+        <AppTable>
+          <AppTableHead>
+            <AppTableRow>
+              <AppTableCell head className="table-head-cell">
+                <AppTableSortLabel
+                  active={sortField === "id"}
+                  direction={sortField === "id" ? sortDirection : "asc"}
+                  onClick={() => handleRequestSort("id")}
+                >
+                  Order ID
+                </AppTableSortLabel>
+              </AppTableCell>
+              <AppTableCell head className="table-head-cell">
+                <AppTableSortLabel
+                  active={sortField === "customer"}
+                  direction={sortField === "customer" ? sortDirection : "asc"}
+                  onClick={() => handleRequestSort("customer")}
+                >
+                  Customer
+                </AppTableSortLabel>
+              </AppTableCell>
+              <AppTableCell head className="table-head-cell">
+                <AppTableSortLabel
+                  active={sortField === "service"}
+                  direction={sortField === "service" ? sortDirection : "asc"}
+                  onClick={() => handleRequestSort("service")}
+                >
+                  Service
+                </AppTableSortLabel>
+              </AppTableCell>
+              <AppTableCell head className="table-head-cell">
+                <AppTableSortLabel
+                  active={sortField === "sareeType"}
+                  direction={sortField === "sareeType" ? sortDirection : "asc"}
+                  onClick={() => handleRequestSort("sareeType")}
+                >
+                  Saree Fabric
+                </AppTableSortLabel>
+              </AppTableCell>
+              <AppTableCell head className="table-head-cell">
+                <AppTableSortLabel
+                  active={sortField === "date"}
+                  direction={sortField === "date" ? sortDirection : "asc"}
+                  onClick={() => handleRequestSort("date")}
+                >
+                  Date
+                </AppTableSortLabel>
+              </AppTableCell>
+              <AppTableCell head className="table-head-cell">
+                <AppTableSortLabel
+                  active={sortField === "amount"}
+                  direction={sortField === "amount" ? sortDirection : "asc"}
+                  onClick={() => handleRequestSort("amount")}
+                >
+                  Amount
+                </AppTableSortLabel>
+              </AppTableCell>
+              <AppTableCell head className="table-head-cell">
+                <AppTableSortLabel
+                  active={sortField === "status"}
+                  direction={sortField === "status" ? sortDirection : "asc"}
+                  onClick={() => handleRequestSort("status")}
+                >
+                  Status
+                </AppTableSortLabel>
+              </AppTableCell>
+              <AppTableCell
+                head
+                className="table-head-cell"
+                style={{ textAlign: 'right' }}
+              >
                 Action
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+              </AppTableCell>
+            </AppTableRow>
+          </AppTableHead>
+          <AppTableBody>
             {filteredOrders.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="empty-cell">
+              <AppTableRow>
+                <AppTableCell colSpan={8} className="empty-cell">
                   No bookings found matching criteria.
-                </td>
-              </tr>
+                </AppTableCell>
+              </AppTableRow>
             ) : (
-              filteredOrders.map((order) => (
-                <tr key={order.id} className="table-row-item">
-                  <td className="table-body-cell order-id">
+              paginatedOrders.map((order) => (
+                <AppTableRow key={order.id} className="table-row-item">
+                  <AppTableCell className="table-body-cell order-id">
                     {order.id}
-                  </td>
-                  <td className="table-body-cell customer-name">
+                  </AppTableCell>
+                  <AppTableCell className="table-body-cell customer-name">
                     {order.customer}
-                  </td>
-                  <td className="table-body-cell">
+                  </AppTableCell>
+                  <AppTableCell className="table-body-cell">
                     {order.service}
-                  </td>
-                  <td className="table-body-cell saree-fabric">
+                  </AppTableCell>
+                  <AppTableCell className="table-body-cell saree-fabric">
                     {order.sareeType}
-                  </td>
-                  <td className="table-body-cell date-cell">
+                  </AppTableCell>
+                  <AppTableCell className="table-body-cell date-cell">
                     {formatDateSafe(order.date)}
-                  </td>
-                  <td className="table-body-cell amount-cell">
+                  </AppTableCell>
+                  <AppTableCell className="table-body-cell amount-cell">
                     {order.amount}
-                  </td>
-                  <td className="table-body-cell">
+                  </AppTableCell>
+                  <AppTableCell className="table-body-cell">
                     <span className={`status-pill ${order.status}`}>
                       <span className="dot" />
                       {order.status.replace("-", " ")}
                     </span>
-                  </td>
-                  <td className="table-body-cell" style={{ textAlign: 'right' }}>
+                  </AppTableCell>
+                  <AppTableCell
+                    className="table-body-cell"
+                    style={{ textAlign: 'right' }}
+                  >
                     <AppButton
                       size="sm"
                       variant="secondary"
@@ -268,13 +378,24 @@ const OrdersTable = () => {
                     >
                       Details
                     </AppButton>
-                  </td>
-                </tr>
+                  </AppTableCell>
+                </AppTableRow>
               ))
             )}
-          </tbody>
-        </table>
-      </div>
+          </AppTableBody>
+        </AppTable>
+        <AppTablePagination
+          count={filteredOrders.length}
+          page={page}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[5, 10, 20]}
+        />
+      </AppTableContainer>
 
       {/* Order Details Popup Modal */}
       <OrderDetailsModal

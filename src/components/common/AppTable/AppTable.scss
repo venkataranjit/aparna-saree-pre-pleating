@@ -1,0 +1,179 @@
+@use '../../../dashboard/styles/variables.scss' as *;
+
+.app-table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background-color: transparent;
+  border-radius: inherit;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #050505;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #d4af37 0%, #9a7b1c 100%);
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.7);
+
+    &:hover {
+      background: linear-gradient(90deg, #e6d8a3 0%, #d4af37 100%);
+    }
+  }
+}
+
+.app-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: transparent;
+  font-family: $font-family-base;
+}
+
+.app-table-head {
+  background-color: #080808;
+}
+
+.app-table-body {
+  background-color: transparent;
+}
+
+.app-table-row {
+  transition: background-color 0.18s ease;
+
+  &:hover {
+    background-color: rgba(212, 175, 55, 0.04);
+  }
+}
+
+.app-table-cell {
+  color: $color-light-gold;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  font-family: $font-family-base;
+  font-size: 0.88rem;
+  padding: 14px 18px;
+
+  @include mobile {
+    font-size: 0.78rem;
+    padding: 10px 12px;
+  }
+
+  &--head {
+    background-color: #080808;
+    color: $color-gold;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+
+    @include mobile {
+      font-size: 0.7rem;
+      padding: 10px 12px;
+    }
+  }
+}
+
+.app-table-sort-label {
+  color: inherit !important;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #ffffff !important;
+
+    svg {
+      opacity: 0.85 !important;
+      color: $color-gold !important;
+    }
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: $color-gold !important;
+    opacity: 0.45;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  &--active {
+    color: #ffffff !important;
+
+    svg {
+      opacity: 1 !important;
+      color: $color-gold !important;
+    }
+  }
+}
+
+.app-table-pagination {
+  color: $color-light-gold !important;
+  border-top: 1px solid rgba(212, 175, 55, 0.15) !important;
+  background-color: #080808 !important;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 4px 12px;
+
+  @include mobile {
+    padding: 4px 6px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: rgba(230, 216, 163, 0.7);
+
+    @include mobile {
+      font-size: 0.72rem;
+    }
+  }
+
+  select {
+    color: $color-gold !important;
+    background-color: #121212 !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 0.82rem;
+    cursor: pointer;
+
+    @include mobile {
+      font-size: 0.72rem;
+    }
+  }
+
+  button {
+    color: $color-gold !important;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(212, 175, 55, 0.12);
+      color: #ffffff !important;
+    }
+
+    &:disabled {
+      color: rgba(212, 175, 55, 0.25) !important;
+      opacity: 0.4;
+    }
+
+    svg {
+      font-size: 20px;
+
+      @include mobile {
+        font-size: 18px;
+      }
+    }
+  }
+}

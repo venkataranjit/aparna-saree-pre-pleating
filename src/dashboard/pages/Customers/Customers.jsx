@@ -42,6 +42,14 @@ import {
   AppBadge,
   AppTabs,
   AppSpinner,
+  AppTable,
+  AppTableContainer,
+  AppTableHead,
+  AppTableBody,
+  AppTableRow,
+  AppTableCell,
+  AppTableSortLabel,
+  AppTablePagination,
 } from "../../../components/common";
 import "./Customers.scss";
 
@@ -193,6 +201,19 @@ const Customers = () => {
   const [feedback, setFeedback] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("ALL");
+
+  // Sorting and Pagination states
+  const [sortField, setSortField] = useState("createdAt");
+  const [sortDirection, setSortDirection] = useState("desc");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const handleRequestSort = (field) => {
+    const isAsc = sortField === field && sortDirection === "asc";
+    setSortDirection(isAsc ? "desc" : "asc");
+    setSortField(field);
+    setPage(0);
+  };
 
   // Modal Dialog states
   const [dialogOpen, setDialogOpen] = useState(false); // Add Customer Modal
@@ -683,6 +704,39 @@ const Customers = () => {
     });
   }, [customers, searchTerm, activeTab, measurementsMap]);
 
+  const sortedCustomers = useMemo(() => {
+    return [...filteredCustomers].sort((a, b) => {
+      if (sortField === "measureCount") {
+        const aCount = (measurementsMap[a.id] || []).length;
+        const bCount = (measurementsMap[b.id] || []).length;
+        return sortDirection === "asc" ? aCount - bCount : bCount - aCount;
+      }
+      if (sortField === "createdAt") {
+        const aVal = a.createdAt;
+        const bVal = b.createdAt;
+        const aTime = aVal?.toDate
+          ? aVal.toDate().getTime()
+          : new Date(aVal || 0).getTime() || 0;
+        const bTime = bVal?.toDate
+          ? bVal.toDate().getTime()
+          : new Date(bVal || 0).getTime() || 0;
+        return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
+      }
+      const aVal = a[sortField] ?? "";
+      const bVal = b[sortField] ?? "";
+      return sortDirection === "asc"
+        ? String(aVal).localeCompare(String(bVal))
+        : String(bVal).localeCompare(String(aVal));
+    });
+  }, [filteredCustomers, sortField, sortDirection, measurementsMap]);
+
+  const paginatedCustomers = useMemo(() => {
+    return sortedCustomers.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
+  }, [sortedCustomers, page, rowsPerPage]);
+
   // Metrics calculations
   const totalCustomersCount = customers.length;
   const customersWithMeasurements = useMemo(() => {
@@ -831,23 +885,68 @@ const Customers = () => {
 
       {/* Main Customers Table Card */}
       <div className="customers-table-card">
-        <div className="table-responsive">
-          <table className="customers-table">
-            <thead>
-              <tr>
-                <th>CUSTOMER</th>
-                <th>CONTACT DETAILS</th>
-                <th>DELIVERY ADDRESS</th>
-                <th style={{ textAlign: "center" }}>MEASUREMENTS</th>
-                <th>JOINED DATE</th>
-                <th style={{ textAlign: "right", minWidth: 140 }}>ACTIONS</th>
-              </tr>
-            </thead>
+        <AppTableContainer className="table-responsive">
+          <AppTable className="customers-table">
+            <AppTableHead>
+              <AppTableRow>
+                <AppTableCell head>
+                  <AppTableSortLabel
+                    active={sortField === "username"}
+                    direction={sortField === "username" ? sortDirection : "asc"}
+                    onClick={() => handleRequestSort("username")}
+                  >
+                    CUSTOMER
+                  </AppTableSortLabel>
+                </AppTableCell>
+                <AppTableCell head>
+                  <AppTableSortLabel
+                    active={sortField === "userMobile"}
+                    direction={sortField === "userMobile" ? sortDirection : "asc"}
+                    onClick={() => handleRequestSort("userMobile")}
+                  >
+                    CONTACT DETAILS
+                  </AppTableSortLabel>
+                </AppTableCell>
+                <AppTableCell head>
+                  <AppTableSortLabel
+                    active={sortField === "userAddress"}
+                    direction={sortField === "userAddress" ? sortDirection : "asc"}
+                    onClick={() => handleRequestSort("userAddress")}
+                  >
+                    DELIVERY ADDRESS
+                  </AppTableSortLabel>
+                </AppTableCell>
+                <AppTableCell head style={{ textAlign: "center" }}>
+                  <AppTableSortLabel
+                    active={sortField === "measureCount"}
+                    direction={sortField === "measureCount" ? sortDirection : "asc"}
+                    onClick={() => handleRequestSort("measureCount")}
+                  >
+                    MEASUREMENTS
+                  </AppTableSortLabel>
+                </AppTableCell>
+                <AppTableCell head>
+                  <AppTableSortLabel
+                    active={sortField === "createdAt"}
+                    direction={sortField === "createdAt" ? sortDirection : "asc"}
+                    onClick={() => handleRequestSort("createdAt")}
+                  >
+                    JOINED DATE
+                  </AppTableSortLabel>
+                </AppTableCell>
+                <AppTableCell
+                  head
+                  style={{ textAlign: "right", minWidth: 140 }}
+                >
+                  ACTIONS
+                </AppTableCell>
+              </AppTableRow>
+            </AppTableHead>
 
-            <tbody>
+            <AppTableBody>
               {loading && customers.length === 0 ? (
-                <tr>
-                  <td
+                <AppTableRow>
+                  <AppTableCell
                     colSpan={6}
                     style={{ textAlign: "center", padding: "48px 16px" }}
                   >
@@ -864,11 +963,11 @@ const Customers = () => {
                         Loading customer directory...
                       </span>
                     </div>
-                  </td>
-                </tr>
+                  </AppTableCell>
+                </AppTableRow>
               ) : filteredCustomers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="empty-state-cell">
+                <AppTableRow>
+                  <AppTableCell colSpan={6} className="empty-state-cell">
                     <div
                       style={{
                         display: "flex",
@@ -898,10 +997,10 @@ const Customers = () => {
                         Click "Add Customer" to create the first client profile.
                       </span>
                     </div>
-                  </td>
-                </tr>
+                  </AppTableCell>
+                </AppTableRow>
               ) : (
-                filteredCustomers.map((user) => {
+                paginatedCustomers.map((user) => {
                   const initial = (
                     user.username?.charAt(0) ||
                     user.email?.charAt(0) ||
@@ -911,9 +1010,9 @@ const Customers = () => {
                   const measureCount = userMeasures.length;
 
                   return (
-                    <tr key={user.id} className="customer-table-row">
+                    <AppTableRow key={user.id} className="customer-table-row">
                       {/* Customer Avatar & Name */}
-                      <td>
+                      <AppTableCell>
                         <div
                           style={{
                             display: "flex",
@@ -931,10 +1030,10 @@ const Customers = () => {
                             </div>
                           </div>
                         </div>
-                      </td>
+                      </AppTableCell>
 
                       {/* Phone Number */}
-                      <td className="mobile-cell">
+                      <AppTableCell className="mobile-cell">
                         <div
                           style={{
                             display: "flex",
@@ -949,15 +1048,15 @@ const Customers = () => {
                             {user.userMobile || "—"}
                           </span>
                         </div>
-                      </td>
+                      </AppTableCell>
 
                       {/* Delivery Address */}
-                      <td className="address-cell">
+                      <AppTableCell className="address-cell">
                         {user.userAddress || "—"}
-                      </td>
+                      </AppTableCell>
 
                       {/* Saree Measurement Status */}
-                      <td style={{ textAlign: "center" }}>
+                      <AppTableCell style={{ textAlign: "center" }}>
                         {measureCount > 0 ? (
                           <span
                             onClick={() => handleOpenViewDetails(user)}
@@ -980,15 +1079,17 @@ const Customers = () => {
                             </AppBadge>
                           </span>
                         )}
-                      </td>
+                      </AppTableCell>
 
                       {/* Joined Date */}
-                      <td className="date-cell">
+                      <AppTableCell className="date-cell">
                         {formatDateSafe(user.createdAt)}
-                      </td>
+                      </AppTableCell>
 
                       {/* Row Action Buttons */}
-                      <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                      <AppTableCell
+                        style={{ textAlign: "right", whiteSpace: "nowrap" }}
+                      >
                         <div className="action-btns">
                           {/* 1. View Details Button */}
                           <AppButton
@@ -1022,14 +1123,25 @@ const Customers = () => {
                             </AppButton>
                           )}
                         </div>
-                      </td>
-                    </tr>
+                      </AppTableCell>
+                    </AppTableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
-        </div>
+            </AppTableBody>
+          </AppTable>
+        </AppTableContainer>
+        <AppTablePagination
+          count={filteredCustomers.length}
+          page={page}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+        />
       </div>
 
       {/* ========================================================================= */}

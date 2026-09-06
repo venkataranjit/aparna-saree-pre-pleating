@@ -93,7 +93,13 @@ const Sidebar = ({
   const displayName =
     userProfile?.username ||
     currentUser?.displayName ||
-    (isSuperAdmin ? "Victory Ranjit" : (currentUser?.email ? currentUser.email.split("@")[0] : (currentUser ? "Customer" : "")));
+    (isSuperAdmin
+      ? "Victory Ranjit"
+      : currentUser?.email
+      ? currentUser.email.split("@")[0]
+      : currentUser
+      ? "Customer"
+      : "");
 
   const roleLabel =
     isSuperAdmin || role === "superadmin"
@@ -102,7 +108,9 @@ const Sidebar = ({
       ? "Admin"
       : role === "staff"
       ? "Staff"
-      : (currentUser || userProfile ? "Customer" : "");
+      : currentUser || userProfile
+      ? "Customer"
+      : "";
 
   const avatarChar = displayName ? displayName.charAt(0).toUpperCase() : "";
 
@@ -136,13 +144,18 @@ const Sidebar = ({
   // Filter navigation items based on role (hide Manage Users and Customers for customers)
   const filteredNavSections = useMemo(() => {
     const userRole = (role || "").toLowerCase();
-    const isCustomer = !isSuperAdmin && (userRole === "customer" || userRole === "");
+    const isCustomer =
+      !isSuperAdmin && (userRole === "customer" || userRole === "");
 
     return navSections
       .map((section) => ({
         ...section,
         items: section.items.filter((item) => {
-          if (isCustomer && (item.path === "/dashboard/users" || item.path === "/dashboard/customers")) {
+          if (
+            isCustomer &&
+            (item.path === "/dashboard/users" ||
+              item.path === "/dashboard/customers")
+          ) {
             return false;
           }
           return true;
@@ -202,9 +215,7 @@ const Sidebar = ({
           <div key={section.title} className="nav-section-group">
             {/* Section Header with Horizontal Divider Line */}
             <div className="nav-section-header">
-              <span className="section-title">
-                {section.title}
-              </span>
+              <span className="section-title">{section.title}</span>
               <div className="section-line" />
             </div>
 
@@ -216,9 +227,7 @@ const Sidebar = ({
 
                 const itemContent = (
                   <>
-                    <span className="nav-icon">
-                      {item.icon}
-                    </span>
+                    <span className="nav-icon">{item.icon}</span>
                     <span className="nav-text">
                       <span className="nav-text-label">{item.label}</span>
                     </span>
@@ -293,28 +302,13 @@ const Sidebar = ({
             </div>
 
             <div className="user-details">
-              <span className="user-name" title={displayName || 'Account'}>
-                {displayName || 'Loading...'}
+              <span className="user-name" title={displayName || "Account"}>
+                {displayName || "Loading..."}
               </span>
               <div className="role-line">
                 <VerifiedUserOutlinedIcon className="verified-icon" />
                 <span className="role-title">{roleLabel}</span>
               </div>
-            </div>
-
-            <div className="profile-action-btn-wrap">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate("/dashboard/profile");
-                  if (onCloseMobile) onCloseMobile();
-                }}
-                className="profile-quick-nav-btn"
-                aria-label="my profile"
-              >
-                <PersonOutlineIcon />
-              </button>
             </div>
           </div>
         </div>

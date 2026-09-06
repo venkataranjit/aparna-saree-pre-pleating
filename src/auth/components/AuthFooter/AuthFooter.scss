@@ -3,14 +3,14 @@
 .auth-footer {
   width: 100%;
   max-width: 1200px;
-  margin: 0 auto;
-  padding-top: 10px;
-  padding-bottom: 6px;
+  margin: 16px auto 0 auto;
+  padding-top: 12px;
+  padding-bottom: 8px;
   border-top: 1px solid rgba(212, 175, 55, 0.16);
   position: relative;
   box-sizing: border-box;
   flex-shrink: 0;
-  z-index: 2;
+  z-index: 10;
 
   &::before {
     content: "";

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, CircularProgress } from '@mui/material';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar/Sidebar';
 import Header from '../components/Header/Header';
 import { useAuth } from '../../auth/context/AuthContext';
+import { AppSpinner } from '../../components/common';
 import './DashboardLayout.scss';
 
 const DashboardLayout = () => {
@@ -33,23 +33,14 @@ const DashboardLayout = () => {
   // If loading without any cached user session, render minimal loader to prevent identity flicker
   if (loading && !currentUser && !userProfile) {
     return (
-      <Box
-        sx={{
-          height: '100dvh',
-          width: '100vw',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#080808',
-        }}
-      >
-        <CircularProgress sx={{ color: '#d4af37' }} size={36} thickness={4} />
-      </Box>
+      <div className="dashboard-loading-screen">
+        <AppSpinner size="lg" color="gold" />
+      </div>
     );
   }
 
   return (
-    <Box className={`dashboard-layout ${collapsed ? 'is-collapsed' : ''}`}>
+    <div className={`dashboard-layout ${collapsed ? 'is-collapsed' : ''}`}>
       {/* Sidebar with desktop collapse and mobile drawer support */}
       <Sidebar
         collapsed={collapsed}
@@ -60,16 +51,16 @@ const DashboardLayout = () => {
 
       {/* Backdrop overlay for mobile drawer */}
       {mobileOpen && (
-        <Box className="mobile-backdrop" onClick={closeMobileSidebar} />
+        <div className="mobile-backdrop" onClick={closeMobileSidebar} />
       )}
 
-      <Box className="dashboard-layout__content-wrapper">
+      <div className="dashboard-layout__content-wrapper">
         <Header onMobileMenuToggle={toggleMobileSidebar} />
-        <Box component="main" className="dashboard-layout__main">
+        <main className="dashboard-layout__main">
           <Outlet />
-        </Box>
-      </Box>
-    </Box>
+        </main>
+      </div>
+    </div>
   );
 };
 

@@ -1,18 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  TextField,
-  Button,
-  IconButton,
-  InputAdornment,
-  FormControlLabel,
-  Checkbox,
-  Alert,
-  CircularProgress,
-} from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   signInWithEmailAndPassword,
@@ -34,6 +20,7 @@ import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SecurityIcon from '@mui/icons-material/Security';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import { AppButton, AppInput, AppSpinner } from '../../../components/common';
 import brandLogo from '../../../assets/logo.png';
 import './Login.scss';
 
@@ -425,7 +412,7 @@ const Login = () => {
   };
 
   return (
-    <Box className="login-screen">
+    <div className="login-screen">
       {/* Invisible reCAPTCHA container for Phone Auth */}
       <div id="recaptcha-container"></div>
 
@@ -434,115 +421,107 @@ const Login = () => {
       <div className="login-screen__glow login-screen__glow--bottom" />
 
       {/* Top back navigation link */}
-      <Box className="login-screen__top-nav">
+      <div className="login-screen__top-nav">
         <Link to="/landing" className="back-link">
           <ArrowBackIcon className="back-icon" />
           <span>Return to Storefront</span>
         </Link>
-      </Box>
+      </div>
 
       {/* Centered Login Card */}
-      <Box className="login-screen__container">
-        <Card className="login-card">
+      <div className="login-screen__container">
+        <div className="login-card">
           <div className="login-card__top-bar" />
 
-          <CardContent className="login-card__content">
+          <div className="login-card__content">
             {/* Brand Crest & Header */}
-            <Box className="login-card__header">
-              <Box className="brand-logo-wrap">
+            <div className="login-card__header">
+              <div className="brand-logo-wrap">
                 <img
                   src={brandLogo}
                   alt="Aparna Saree Pre-Pleating"
                   className="brand-logo-img"
                 />
-              </Box>
-              <Typography variant="h4" className="login-title">
+              </div>
+              <h1 className="login-title">
                 Login
-              </Typography>
-            </Box>
+              </h1>
+            </div>
 
             {/* Method Switcher Tabs (Email vs Phone OTP) */}
-            <Box className="login-method-switch">
-              <Button
+            <div className="login-method-switch">
+              <button
                 type="button"
                 className={`method-tab-btn ${loginMethod === 'email' ? 'active' : ''}`}
                 onClick={() => {
                   setLoginMethod('email');
                   setError('');
                 }}
-                startIcon={<EmailOutlinedIcon sx={{ fontSize: 18 }} />}
               >
-                Email
-              </Button>
-              <Button
+                <EmailOutlinedIcon />
+                <span>Email</span>
+              </button>
+              <button
                 type="button"
                 className={`method-tab-btn ${loginMethod === 'phone' ? 'active' : ''}`}
                 onClick={() => {
                   setLoginMethod('phone');
                   setError('');
                 }}
-                startIcon={<PhoneIphoneOutlinedIcon sx={{ fontSize: 18 }} />}
               >
-                Phone OTP
-              </Button>
-            </Box>
+                <PhoneIphoneOutlinedIcon />
+                <span>Phone OTP</span>
+              </button>
+            </div>
 
             {/* Error / Success Feedback */}
             {error && (
-              <Alert severity="error" className="feedback-alert error-alert" onClose={() => setError('')}>
-                {error}
-              </Alert>
+              <div className="feedback-alert error-alert">
+                <span>{error}</span>
+                <button
+                  type="button"
+                  className="alert-close-btn"
+                  onClick={() => setError('')}
+                >
+                  &times;
+                </button>
+              </div>
             )}
 
             {successMsg && (
-              <Alert severity="success" className="feedback-alert success-alert">
-                {successMsg}
-              </Alert>
+              <div className="feedback-alert success-alert">
+                <span>{successMsg}</span>
+              </div>
             )}
 
             {/* =================================================================== */}
             {/* 1. Email & Password Form */}
             {/* =================================================================== */}
             {loginMethod === 'email' && (
-              <Box component="form" onSubmit={handleEmailSignIn} className="login-form" noValidate>
+              <form onSubmit={handleEmailSignIn} className="login-form" noValidate>
                 {/* Email Input */}
-                <Box className="input-group">
-                  <Typography component="label" className="input-label">
-                    Email Address
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    id="login-email"
-                    name="email"
-                    type="email"
-                    placeholder="admin@aparnasaree.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={loading || googleLoading}
-                    autoComplete="email"
-                    className="luxury-text-field"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <EmailOutlinedIcon className="field-icon" />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
+                <AppInput
+                  label="Email Address"
+                  id="login-email"
+                  name="email"
+                  type="email"
+                  placeholder="admin@aparnasaree.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading || googleLoading}
+                  autoComplete="email"
+                  startAdornment={<EmailOutlinedIcon />}
+                />
 
                 {/* Password Input */}
-                <Box className="input-group">
-                  <Box className="password-header-row">
-                    <Typography component="label" className="input-label">
-                      Password
-                    </Typography>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div className="password-header-row">
+                    <span className="input-label-text">Password</span>
                     <Link to="/forgot-password" className="forgot-link-btn">
                       Forgot Password?
                     </Link>
-                  </Box>
-                  <TextField
-                    fullWidth
+                  </div>
+                  <AppInput
                     id="login-password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
@@ -551,120 +530,84 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading || googleLoading}
                     autoComplete="current-password"
-                    className="luxury-text-field"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LockOutlinedIcon className="field-icon" />
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            aria-label="toggle password visibility"
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
-                            className="visibility-btn"
-                          >
-                            {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
+                    startAdornment={<LockOutlinedIcon />}
+                    endAdornment={
+                      <button
+                        type="button"
+                        className="visibility-toggle-btn"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
+                      </button>
+                    }
                   />
-                </Box>
+                </div>
 
                 {/* Remember Me Checkbox */}
-                <Box className="options-row">
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
-                        className="gold-checkbox"
-                      />
-                    }
-                    label="Remember this device"
-                    className="checkbox-label"
-                  />
-                </Box>
+                <div className="options-row">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="gold-checkbox"
+                    />
+                    <span>Remember this device</span>
+                  </label>
+                </div>
 
                 {/* Primary Sign In Button */}
-                <Button
+                <AppButton
                   type="submit"
-                  variant="contained"
+                  variant="primary"
                   fullWidth
-                  disabled={loading || googleLoading}
+                  loading={loading}
                   className="submit-btn"
                 >
-                  {loading ? (
-                    <CircularProgress size={22} sx={{ color: '#000000' }} />
-                  ) : (
-                    <span>Sign In</span>
-                  )}
-                </Button>
-              </Box>
+                  Sign In
+                </AppButton>
+              </form>
             )}
 
             {/* =================================================================== */}
             {/* 2. Phone Number OTP Form */}
             {/* =================================================================== */}
             {loginMethod === 'phone' && (
-              <Box className="login-form">
+              <div className="login-form">
                 {!otpSent ? (
                   // Step 2A: Enter Mobile Number
-                  <Box component="form" onSubmit={handleSendOtp}>
-                    <Box className="input-group">
-                      <Typography component="label" className="input-label">
-                        Mobile Number (10 Digits)
-                      </Typography>
-                      <TextField
-                        fullWidth
-                        id="phone-number"
-                        type="tel"
-                        placeholder="9848012345"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        disabled={loading || googleLoading}
-                        autoComplete="tel"
-                        className="luxury-text-field"
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start" sx={{ color: '#d4af37', fontWeight: 700 }}>
-                              +91
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                      <Typography variant="caption" sx={{ color: 'rgba(230, 216, 163, 0.65)', mt: 0.5 }}>
-                        We will send a 6-digit OTP code to your phone via SMS.
-                      </Typography>
-                    </Box>
-
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      fullWidth
+                  <form onSubmit={handleSendOtp}>
+                    <AppInput
+                      label="Mobile Number (10 Digits)"
+                      id="phone-number"
+                      type="tel"
+                      placeholder="9848012345"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
                       disabled={loading || googleLoading}
-                      className="submit-btn"
-                      sx={{ mt: 2 }}
-                    >
-                      {loading ? (
-                        <CircularProgress size={22} sx={{ color: '#000000' }} />
-                      ) : (
-                        <span>Send OTP Code</span>
-                      )}
-                    </Button>
-                  </Box>
+                      autoComplete="tel"
+                      startAdornment={<span>+91</span>}
+                      hint="We will send a 6-digit OTP code to your phone via SMS."
+                    />
+
+                    <div style={{ marginTop: '16px' }}>
+                      <AppButton
+                        type="submit"
+                        variant="primary"
+                        fullWidth
+                        loading={loading}
+                        className="submit-btn"
+                      >
+                        Send OTP Code
+                      </AppButton>
+                    </div>
+                  </form>
                 ) : (
                   // Step 2B: Enter 6-Digit OTP in 6 distinct boxes
-                  <Box component="form" onSubmit={handleVerifyOtp} className="otp-verification-section">
-                    <Box className="otp-header-row">
-                      <Typography component="label" className="input-label">
-                        Enter 6-Digit OTP
-                      </Typography>
-                      <Button
-                        size="small"
+                  <form onSubmit={handleVerifyOtp} className="otp-verification-section">
+                    <div className="otp-header-row">
+                      <span className="input-label-text">Enter 6-Digit OTP</span>
+                      <button
                         type="button"
                         onClick={() => {
                           setOtpSent(false);
@@ -674,11 +617,11 @@ const Login = () => {
                         className="change-phone-btn"
                       >
                         Change Number
-                      </Button>
-                    </Box>
+                      </button>
+                    </div>
 
                     {/* 6 OTP Boxes */}
-                    <Box className={`otp-boxes-container ${otpError ? 'has-error' : ''}`} onPaste={handleOtpPaste}>
+                    <div className={`otp-boxes-container ${otpError ? 'has-error' : ''}`} onPaste={handleOtpPaste}>
                       {otpDigits.map((digit, index) => (
                         <input
                           key={index}
@@ -696,85 +639,82 @@ const Login = () => {
                           aria-label={`OTP digit ${index + 1}`}
                         />
                       ))}
-                    </Box>
+                    </div>
 
-                    <Typography variant="caption" className="otp-instruction-text">
+                    <span className="otp-instruction-text">
                       Sent to +91 {phone.trim()}
-                    </Typography>
+                    </span>
 
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      fullWidth
-                      disabled={loading || googleLoading || otpDigits.join('').length !== 6}
-                      className="submit-btn"
-                      sx={{ mt: 2.5 }}
-                    >
-                      {loading ? (
-                        <CircularProgress size={22} sx={{ color: '#000000' }} />
-                      ) : (
-                        <span>Verify & Sign In</span>
-                      )}
-                    </Button>
+                    <div style={{ marginTop: '18px' }}>
+                      <AppButton
+                        type="submit"
+                        variant="primary"
+                        fullWidth
+                        loading={loading}
+                        disabled={loading || googleLoading || otpDigits.join('').length !== 6}
+                        className="submit-btn"
+                      >
+                        Verify & Sign In
+                      </AppButton>
+                    </div>
 
-                    <Box sx={{ textAlign: 'center', mt: 2 }}>
-                      <Button
-                        size="small"
+                    <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                      <button
                         type="button"
                         onClick={handleSendOtp}
                         disabled={loading}
                         className="resend-otp-btn"
                       >
                         Resend OTP Code
-                      </Button>
-                    </Box>
-                  </Box>
+                      </button>
+                    </div>
+                  </form>
                 )}
-              </Box>
+              </div>
             )}
 
             {/* =================================================================== */}
             {/* 3. Divider & Google Sign-In */}
             {/* =================================================================== */}
-            <Box className="auth-divider">
+            <div className="auth-divider">
               <span>OR CONTINUE WITH</span>
-            </Box>
+            </div>
 
-            <Button
-              variant="outlined"
+            <AppButton
+              variant="secondary"
               fullWidth
               onClick={handleGoogleSignIn}
               disabled={loading || googleLoading}
               className="google-sign-in-btn"
-              startIcon={googleLoading ? <CircularProgress size={18} sx={{ color: '#d4af37' }} /> : <GoogleIcon />}
+              icon={googleLoading ? <AppSpinner size={18} /> : <GoogleIcon />}
             >
-              <span>{googleLoading ? 'Signing in with Google...' : 'Sign in with Google'}</span>
-            </Button>
+              {googleLoading ? 'Signing in with Google...' : 'Sign in with Google'}
+            </AppButton>
 
             {/* Link to Register */}
-            <Box className="auth-switch-row">
-              <Typography variant="body2" className="switch-prompt">
+            <div className="auth-switch-row">
+              <p className="switch-prompt">
                 Don't have an account?{' '}
                 <Link to="/register" className="auth-highlight-link">
                   Create Account
                 </Link>
-              </Typography>
-            </Box>
+              </p>
+            </div>
 
             {/* Footer Security Badge */}
-            <Box className="login-card__footer">
+            <div className="login-card__footer">
               <SecurityIcon className="security-icon" />
-              <Typography variant="caption" className="security-text">
+              <span className="security-text">
                 Protected by 256-bit Firebase Authentication & End-to-End Encryption
-              </Typography>
-            </Box>
+              </span>
+            </div>
 
             {/* Invisible reCAPTCHA container required for Firebase Phone Auth */}
             <div id="recaptcha-container"></div>
-          </CardContent>
-        </Card>
-      </Box>
-    </Box>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

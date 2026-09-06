@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Typography, Button, Grid, Stack } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import DryCleaningOutlinedIcon from '@mui/icons-material/DryCleaningOutlined';
@@ -8,6 +7,7 @@ import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import StatCard from '../../components/StatCard/StatCard';
 import OrdersTable from '../../components/OrdersTable/OrdersTable';
+import { AppButton } from '../../../components/common';
 import { useAuth } from '../../../auth/context/AuthContext';
 import { USER_ROLES } from '../../../firebase/schema';
 import './Overview.scss';
@@ -18,88 +18,86 @@ const Overview = () => {
   const isCustomer = !isSuperAdmin && (userRole === USER_ROLES.CUSTOMER || userRole === 'customer' || userRole === '');
 
   return (
-    <Box className="overview-page">
+    <div className="overview-page">
       {/* Header Section with Dashboard Title and Action Buttons */}
-      <Box className="overview-page__header">
-        <Box className="overview-header-title-wrap">
-          <Typography variant="h4" className="overview-page-title">
+      <div className="overview-page__header">
+        <div className="overview-header-title-wrap">
+          <h1 className="overview-page-title">
             Dashboard
-          </Typography>
-          <Typography variant="caption" className="overview-page-caption">
+          </h1>
+          <p className="overview-page-caption">
             {isCustomer
               ? 'Real-time overview of your saree pre-pleating orders & bookings'
               : 'Real-time overview of saree pre-pleating operations, orders & revenue'}
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
-        <Stack direction="row" spacing={1.5} className="action-buttons">
+        <div className="action-buttons">
           {!isCustomer && (
-            <Button
-              variant="outlined"
-              color="primary"
-              startIcon={<FileDownloadIcon sx={{ color: '#d4af37 !important' }} />}
+            <AppButton
+              variant="secondary"
+              startIcon={<FileDownloadIcon />}
               className="export-btn"
             >
               Export Report
-            </Button>
+            </AppButton>
           )}
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon sx={{ color: '#000000 !important' }} />}
+          <AppButton
+            variant="primary"
+            startIcon={<AddIcon />}
             className="new-booking-btn"
           >
             New Booking
-          </Button>
-        </Stack>
-      </Box>
+          </AppButton>
+        </div>
+      </div>
 
       {/* Key Metric Stat Cards - hidden for customer role */}
       {!isCustomer && (
-        <Box className="overview-page__stats-grid">
-        {/* Card 1: Orders with Previous Month on the left (small), Current Month on the right (big) */}
-        <StatCard
-          title="Orders"
-          value="148"
-          prevValue="116"
-          change="+27.6% this month"
-          trendType="up"
-          icon={<ReceiptLongOutlinedIcon />}
-        />
+        <div className="overview-page__stats-grid">
+          {/* Card 1: Orders */}
+          <StatCard
+            title="Orders"
+            value="148"
+            prevValue="116"
+            change="+27.6% this month"
+            trendType="up"
+            icon={<ReceiptLongOutlinedIcon />}
+          />
 
-        {/* Card 2: Services */}
-        <StatCard
-          title="Services"
-          value="8"
-          change="All Active Offerings"
-          trendType="completed"
-          icon={<DryCleaningOutlinedIcon />}
-        />
+          {/* Card 2: Services */}
+          <StatCard
+            title="Services"
+            value="8"
+            change="All Active Offerings"
+            trendType="completed"
+            icon={<DryCleaningOutlinedIcon />}
+          />
 
-        {/* Card 3: Customers */}
-        <StatCard
-          title="Customers"
-          value="342"
-          change="+28 new this month"
-          trendType="up"
-          icon={<PeopleOutlineIcon />}
-        />
+          {/* Card 3: Customers */}
+          <StatCard
+            title="Customers"
+            value="342"
+            change="+28 new this month"
+            trendType="up"
+            icon={<PeopleOutlineIcon />}
+          />
 
-        {/* Card 4: Monthly Revenue with Previous Month on the left (small), Current Month on the right (big) */}
-        <StatCard
-          title="Monthly Revenue"
-          value="₹84,500"
-          prevValue="₹69,200"
-          change="+22.1% this month"
-          trendType="up"
-          icon={<CurrencyRupeeIcon />}
-        />
-      </Box>
+          {/* Card 4: Monthly Revenue */}
+          <StatCard
+            title="Monthly Revenue"
+            value="₹84,500"
+            prevValue="₹69,200"
+            change="+22.1% this month"
+            trendType="up"
+            icon={<CurrencyRupeeIcon />}
+          />
+        </div>
       )}
 
-      {/* Recent Orders Table (Schedule section removed) */}
+      {/* Recent Orders Table */}
       <OrdersTable />
-    </Box>
+    </div>
   );
 };
 

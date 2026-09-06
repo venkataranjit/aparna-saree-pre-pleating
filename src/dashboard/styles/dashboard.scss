@@ -7,7 +7,7 @@
 }
 
 // Global SVG icon color safeguard - strictly NO white icons
-.MuiSvgIcon-root {
+svg {
   color: inherit;
   fill: currentColor;
 }

@@ -82,6 +82,15 @@
   }
 }
 
+.dashboard-loading-screen {
+  height: 100dvh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #080808;
+}
+
 @keyframes backdropFade {
   from { opacity: 0; }
   to { opacity: 1; }

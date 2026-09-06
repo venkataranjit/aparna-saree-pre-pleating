@@ -87,6 +87,11 @@
     text-transform: uppercase;
     letter-spacing: 1.1px;
     line-height: 1.2 !important;
+
+    @media (max-width: 600px) {
+      font-size: 0.66rem !important;
+      letter-spacing: 0.7px;
+    }
   }
 
   &__icon-wrap {
@@ -101,11 +106,21 @@
     transition: all 0.22s ease;
     flex-shrink: 0;
 
-    svg, .MuiSvgIcon-root {
+    @media (max-width: 600px) {
+      width: 32px;
+      height: 32px;
+      border-radius: 7px;
+    }
+
+    svg {
       color: $color-gold !important;
       fill: $color-gold !important;
       font-size: 1.25rem;
       transition: filter 0.22s ease;
+
+      @media (max-width: 600px) {
+        font-size: 1.1rem;
+      }
     }
   }
 
@@ -116,6 +131,11 @@
     gap: 8px;
     margin: 4px 0 10px 0;
     flex-wrap: wrap;
+
+    @media (max-width: 600px) {
+      margin: 2px 0 6px 0;
+      gap: 6px;
+    }
   }
 
   &__value {
@@ -128,7 +148,11 @@
     transition: color 0.2s ease, text-shadow 0.2s ease;
 
     @media (max-width: 600px) {
-      font-size: 1.75rem !important;
+      font-size: 1.55rem !important;
+    }
+
+    @media (max-width: 400px) {
+      font-size: 1.35rem !important;
     }
   }
 

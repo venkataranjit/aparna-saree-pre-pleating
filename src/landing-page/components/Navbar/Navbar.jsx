@@ -1,30 +1,25 @@
 import React from 'react';
-import { AppBar, Toolbar, Box, Button, Container } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { AppButton } from '../../../components/common';
 import logo from '../../../assets/logo.png';
 import './Navbar.scss';
 
 const Navbar = () => {
   return (
-    <AppBar position="static" elevation={0} className="landing-navbar">
-      <Container maxWidth="lg">
-        <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-          <Box component={RouterLink} to="/" className="landing-navbar__brand">
-            <img src={logo} alt="Aparna Saree Pre-Pleating" />
-          </Box>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              component={RouterLink}
-              to="/dashboard"
-            >
+    <header className="landing-navbar">
+      <div className="landing-navbar__container">
+        <Link to="/" className="landing-navbar__brand">
+          <img src={logo} alt="Aparna Saree Pre-Pleating" />
+        </Link>
+        <div className="landing-navbar__actions">
+          <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+            <AppButton variant="primary">
               Go to Dashboard
-            </Button>
-          </Box>
-        </Toolbar>
-      </Container>
-    </AppBar>
+            </AppButton>
+          </Link>
+        </div>
+      </div>
+    </header>
   );
 };
 

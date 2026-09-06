@@ -1,0 +1,70 @@
+@use '../../../dashboard/styles/variables.scss' as *;
+
+.app-spinner {
+  display: inline-block;
+  animation: app-spinner-rotate 0.9s linear infinite;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  circle {
+    stroke: currentColor;
+    stroke-linecap: round;
+    animation: app-spinner-dash 1.4s ease-in-out infinite;
+  }
+
+  &--gold {
+    color: $color-gold;
+  }
+
+  &--black {
+    color: $color-black;
+  }
+
+  &--light {
+    color: $color-light-gold;
+  }
+
+  &--inherit {
+    color: inherit;
+  }
+
+  &--sm {
+    width: 16px;
+    height: 16px;
+  }
+
+  &--md {
+    width: 22px;
+    height: 22px;
+  }
+
+  &--lg {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@keyframes app-spinner-rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes app-spinner-dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}

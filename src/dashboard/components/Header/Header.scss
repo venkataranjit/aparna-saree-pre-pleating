@@ -39,9 +39,16 @@
     border-radius: 10px;
     background-color: rgba(212, 175, 55, 0.08);
     border: 1px solid rgba(212, 175, 55, 0.25);
+    color: $color-gold;
+    cursor: pointer;
     transition: $transition-fast;
     touch-action: manipulation;
     flex-shrink: 0;
+
+    svg {
+      color: $color-gold;
+      font-size: 26px;
+    }
 
     &:hover,
     &:active {
@@ -53,16 +60,56 @@
     @media (max-width: 899px) {
       display: flex;
     }
+
+    @media (max-width: 480px) {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      min-height: 38px;
+      svg {
+        font-size: 22px;
+      }
+    }
   }
 
-  .mobile-spacer {
-    display: none;
+  .mobile-logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 44px;
     height: 44px;
+    padding: 0;
+    border-radius: 10px;
+    background-color: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    color: $color-gold;
+    cursor: pointer;
+    transition: $transition-fast;
+    outline: none;
     flex-shrink: 0;
 
-    @media (max-width: 899px) {
-      display: block;
+    svg {
+      font-size: 22px;
+      color: $color-gold;
+      transition: $transition-fast;
+    }
+
+    &:hover {
+      background-color: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      color: #ef4444;
+
+      svg {
+        color: #ef4444;
+      }
+    }
+
+    @media (max-width: 480px) {
+      width: 38px;
+      height: 38px;
+      svg {
+        font-size: 19px;
+      }
     }
   }
 

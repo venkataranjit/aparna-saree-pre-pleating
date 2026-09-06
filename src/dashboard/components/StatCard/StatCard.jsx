@@ -1,5 +1,4 @@
 import React from 'react';
-import { Card, CardContent, Typography, Box } from '@mui/material';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CheckIcon from '@mui/icons-material/Check';
 import './StatCard.scss';
@@ -15,61 +14,59 @@ const StatCard = ({
 }) => {
   const renderTrendIcon = () => {
     if (trendType === 'completed') {
-      return <CheckIcon className="trend-icon" sx={{ color: '#d4af37 !important' }} />;
+      return <CheckIcon className="trend-icon" />;
     }
     if (trendType === 'progress') {
       return <span className="trend-pulse-dot" />;
     }
-    return <TrendingUpIcon className="trend-icon" sx={{ color: '#d4af37 !important' }} />;
+    return <TrendingUpIcon className="trend-icon" />;
   };
 
   return (
-    <Box className="stat-card">
+    <div className="stat-card">
       <div className="stat-card__top-bar" />
       
       {/* Header: Title and Icon Badge */}
-      <Box className="stat-card__header">
-        <Typography className="stat-card__title">{title}</Typography>
-        <Box className="stat-card__icon-wrap">
+      <div className="stat-card__header">
+        <span className="stat-card__title">{title}</span>
+        <div className="stat-card__icon-wrap">
           {icon}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      {/* Central Metric Value Group: Prev Month on the left (small), Current Month on the right (big) */}
-      <Box className="stat-card__value-group">
+      {/* Central Metric Value Group */}
+      <div className="stat-card__value-group">
         {prevValue && (
-          <Box className="stat-card__prev-box" title="Previous Month">
-            <Typography className="stat-card__prev-value">
+          <div className="stat-card__prev-box" title="Previous Month">
+            <span className="stat-card__prev-value">
               {prevValue}
-            </Typography>
+            </span>
             {prevLabel && (
-              <Typography className="stat-card__prev-label">
+              <span className="stat-card__prev-label">
                 {prevLabel}
-              </Typography>
+              </span>
             )}
-          </Box>
+          </div>
         )}
 
-        <Typography className="stat-card__value">
+        <span className="stat-card__value">
           {value}
-        </Typography>
-      </Box>
+        </span>
+      </div>
 
       {/* Footer: Trend / Status Pill */}
       {change && (
-        <Box className="stat-card__footer">
-          <Box className={`stat-card__badge ${trendType}`}>
+        <div className="stat-card__footer">
+          <div className={`stat-card__badge ${trendType}`}>
             {renderTrendIcon()}
-            <Typography component="span" className="badge-text">
+            <span className="badge-text">
               {change}
-            </Typography>
-          </Box>
-        </Box>
+            </span>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
 
-
 export default StatCard;
-

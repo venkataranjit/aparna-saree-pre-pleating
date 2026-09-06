@@ -55,45 +55,56 @@
 
       .search-field {
         width: 240px;
+        position: relative;
+        display: flex;
+        align-items: center;
 
         @media (max-width: 768px) {
           flex: 1;
           width: auto;
         }
 
-        .MuiOutlinedInput-root {
+        .search-input {
           background-color: rgba(0, 0, 0, 0.5);
+          border: 1px solid rgba(212, 175, 55, 0.25);
           border-radius: $border-radius-sm;
           color: $color-light-gold;
           font-size: 0.85rem;
-          min-height: 42px;
+          min-height: 40px;
+          padding: 8px 14px 8px 36px;
+          width: 100%;
+          outline: none;
+          font-family: $font-family-base;
+          transition: $transition-fast;
 
-          fieldset {
-            border-color: rgba(212, 175, 55, 0.25);
+          @media (max-width: 600px) {
+            font-size: 0.78rem;
+            min-height: 36px;
+            padding: 6px 12px 6px 32px;
           }
 
-          &:hover fieldset {
-            border-color: $color-gold;
+          &::placeholder {
+            color: rgba(230, 216, 163, 0.4);
           }
 
-          &.Mui-focused fieldset {
+          &:focus {
             border-color: $color-gold;
             box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
-          }
-
-          input {
-            padding: 8.5px 14px 8.5px 0;
-
-            &::placeholder {
-              color: rgba(230, 216, 163, 0.4);
-            }
           }
         }
 
         .search-icon {
+          position: absolute;
+          left: 10px;
           color: $color-gold !important;
           fill: $color-gold !important;
-          font-size: 1.2rem;
+          font-size: 1.15rem;
+          pointer-events: none;
+
+          @media (max-width: 600px) {
+            left: 8px;
+            font-size: 1rem;
+          }
         }
       }
 

@@ -1,24 +1,10 @@
 import React, { useState } from "react";
-import {
-  Paper,
-  Typography,
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-  Button,
-  TextField,
-  InputAdornment,
-  Stack,
-} from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import OrderDetailsModal from "../OrderDetailsModal/OrderDetailsModal";
+import { AppButton } from "../../../components/common";
 import "./OrdersTable.scss";
 
 const initialOrders = [
@@ -59,93 +45,111 @@ const initialOrders = [
     deliveryType: "Doorstep Delivery",
     address: "Flat 302, Green Meadows, Jubilee Hills, Hyderabad",
     status: "in-progress",
-    paymentStatus: "Advance Paid (₹500 / ₹350 due at delivery)",
-    baseAmount: "₹750",
-    addonAmount: "₹100 (Steam Pressing)",
-    amount: "₹850",
+    paymentStatus: "Pending Cash on Delivery",
+    baseAmount: "₹650",
+    addonAmount: "₹150 (Urgent Delivery)",
+    amount: "₹800",
     notes:
-      "Delicate georgette fabric. Use low temperature steam iron only. Deliver before 4 PM on Sep 6.",
+      "Delicate antique thread work. Avoid high direct heat on pallu tassels.",
   },
   {
     id: "ORD-103",
-    customer: "Deepa Krishnan",
-    phone: "+91 94401 98765",
-    email: "deepa.k@yahoo.com",
-    service: "Pallu Pinning & Pleating",
-    sareeType: "Tussar Silk",
+    customer: "Kavitha Raman",
+    phone: "+91 97001 11223",
+    email: "kavitha.raman@tcs.com",
+    service: "Draping Assistance (On-site)",
+    sareeType: "Soft Silk",
     pleatCount: '5 Front Pleats (6" width)',
-    palluStyle: 'Shoulder Pleats Only (34" length)',
-    packaging: "Neat Protective Polybag",
+    palluStyle: "Single Pleat Pinned",
+    packaging: "Breathable Non-woven Bag",
     date: "2026-09-03",
-    eventDate: "2026-09-07 (Family Function)",
-    deliveryType: "Store Pickup",
-    address: "Cyber Towers Lane, Madhapur, Hyderabad",
-    status: "pending",
-    paymentStatus: "Payment Pending at Pickup",
-    baseAmount: "₹600",
+    eventDate: "2026-09-05 (Housewarming)",
+    deliveryType: "Staff Draping at Venue",
+    address: "House 18, Phase 2, Gachibowli, Hyderabad",
+    status: "completed",
+    paymentStatus: "Paid Online",
+    baseAmount: "₹1,500",
     addonAmount: "₹0",
-    amount: "₹600",
-    notes:
-      "Awaiting customer confirmation on exact pallu length before final pressing.",
+    amount: "₹1,500",
+    notes: "Draper needs to arrive by 6:30 AM sharp at venue.",
   },
   {
     id: "ORD-104",
-    customer: "Sneha Patel",
-    phone: "+91 97033 11223",
-    email: "sneha.patel@gmail.com",
-    service: "Box Folding & Travel Pack",
-    sareeType: "Chanderi Cotton Silk",
-    pleatCount: '6 Front Pleats (5" width)',
-    palluStyle: 'Neat Pin-fold (36" length)',
-    packaging: "Compact Anti-wrinkle Travel Box Fold",
+    customer: "Sneha Varma",
+    phone: "+91 98480 99887",
+    email: "sneha.v@gmail.com",
+    service: "Standard Saree Pre-Pleating",
+    sareeType: "Chiffon Designer Saree",
+    pleatCount: '8 Sleek Pleats (4" width)',
+    palluStyle: "Narrow Accordion Fold (32\")",
+    packaging: "Standard Poly Wrap",
     date: "2026-09-02",
-    eventDate: "2026-09-05 (Destination Wedding)",
+    eventDate: "2026-09-07 (Reception)",
     deliveryType: "Store Pickup",
-    address: "Near Botanical Garden, Kondapur, Hyderabad",
-    status: "completed",
-    paymentStatus: "Paid in Full (Card)",
-    baseAmount: "₹600",
-    addonAmount: "₹150 (Travel Box Pack)",
-    amount: "₹750",
-    notes:
-      "Packed ready for flight luggage. Anti-wrinkle folding confirmed by client.",
+    address: "Villa 12, Palm Springs, Madhapur, Hyderabad",
+    status: "pending",
+    paymentStatus: "Advance Paid (₹200 / ₹450 Balance)",
+    baseAmount: "₹450",
+    addonAmount: "₹0",
+    amount: "₹450",
+    notes: "Fabric tends to slip, reinforced invisible pins recommended.",
   },
   {
     id: "ORD-105",
-    customer: "Meenakshi Sundaram",
+    customer: "Divya Teja",
     phone: "+91 91234 56789",
-    email: "meenakshi.s@gmail.com",
-    service: "Bridal Kanjeevaram Draping",
-    sareeType: "Pure Handloom Silk",
-    pleatCount: '8 Front Pleats (4.5" width)',
-    palluStyle: "Traditional Temple Border Pleats",
-    packaging: "Deluxe Hardcase Saree Box + Fragrance Mist",
+    email: "divya.teja@yahoo.co.in",
+    service: "Bridal Saree Pre-Pleating + Box Fold",
+    sareeType: "Gadwal Pattu",
+    pleatCount: '6 Front Pleats (5" width)',
+    palluStyle: 'Royal Fan Pleats (40" length)',
+    packaging: "Rigid Hardboard Box + Butter Paper Wrap",
     date: "2026-09-01",
-    eventDate: "2026-09-05 (Wedding Ceremony)",
-    deliveryType: "VIP Doorstep Delivery",
-    address: "Financial District, Gachibowli, Hyderabad",
+    eventDate: "2026-09-09 (Engagement)",
+    deliveryType: "Doorstep Delivery",
+    address: "Apt 501, Lake Breeze, Kondapur, Hyderabad",
     status: "completed",
-    paymentStatus: "Paid in Full (NetBanking)",
-    baseAmount: "₹1,150",
-    addonAmount: "₹250 (Deluxe Box & Fragrance Mist)",
-    amount: "₹1,400",
+    paymentStatus: "Paid via GPay",
+    baseAmount: "₹1,000",
+    addonAmount: "₹200 (Box Pack)",
+    amount: "₹1,200",
     notes:
-      "Heritage saree with heavy pallu. Handled with protective cotton lining and safety golden pins.",
+      "Contrasting blouse delivered along with saree. Pin at exact waist measurement 30\".",
+  },
+  {
+    id: "ORD-106",
+    customer: "Meenakshi Sundaram",
+    phone: "+91 90000 33445",
+    email: "meena.sundaram@gmail.com",
+    service: "Pre-Pleating & Ironing",
+    sareeType: "Organza Floral",
+    pleatCount: '6 Wide Pleats (6" width)',
+    palluStyle: "Floating Pallu with Shoulder Pleats",
+    packaging: "Standard Hanger Garment Bag",
+    date: "2026-08-30",
+    eventDate: "2026-09-04 (College Farewell)",
+    deliveryType: "Store Pickup",
+    address: "H.No 3-4-102, Barkatpura, Hyderabad",
+    status: "cancelled",
+    paymentStatus: "Refunded to Source",
+    baseAmount: "₹650",
+    addonAmount: "₹0",
+    amount: "₹650",
+    notes: "Order cancelled by customer due to event postponement.",
   },
 ];
 
-const filterOptions = ["All", "In Progress", "Completed", "Pending"];
+const filterOptions = ["All", "completed", "in-progress", "pending", "cancelled"];
 
 const OrdersTable = () => {
+  const [orders] = useState(initialOrders);
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  const filteredOrders = initialOrders.filter((order) => {
+  const filteredOrders = orders.filter((order) => {
     const matchesFilter =
-      activeFilter === "All" ||
-      order.status.toLowerCase() ===
-        activeFilter.toLowerCase().replace(" ", "-");
+      activeFilter === "All" || order.status === activeFilter;
     const matchesSearch =
       order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -154,126 +158,122 @@ const OrdersTable = () => {
   });
 
   return (
-    <Paper className="orders-table-card">
+    <div className="orders-table-card">
       {/* Table Header & Controls */}
-      <Box className="orders-table-card__top">
-        <Box>
-          <Typography variant="h6" className="title">
+      <div className="orders-table-card__top">
+        <div>
+          <h3 className="title">
             Recent Orders
-          </Typography>
-          <Typography variant="caption" className="subtitle">
+          </h3>
+          <p className="subtitle">
             Manage your recent orders
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
         {/* Search Bar & Action */}
-        <Box className="controls-row">
-          <TextField
-            size="small"
-            placeholder="Search booking or client..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-field"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon className="search-icon" />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <Button
-            variant="outlined"
-            size="small"
-            color="primary"
+        <div className="controls-row">
+          <div className="search-field">
+            <SearchIcon className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search booking or client..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </div>
+          <AppButton
+            variant="secondary"
+            size="sm"
             className="view-all-btn"
           >
             View All
-          </Button>
-        </Box>
-      </Box>
+          </AppButton>
+        </div>
+      </div>
 
       {/* Filter Tabs */}
-      <Stack direction="row" spacing={1} className="filter-chips-row">
+      <div className="filter-chips-row">
         {filterOptions.map((filter) => (
-          <Chip
+          <button
             key={filter}
-            label={filter}
-            size="small"
-            clickable
+            type="button"
             onClick={() => setActiveFilter(filter)}
             className={`filter-chip ${activeFilter === filter ? "active" : ""}`}
-          />
+          >
+            {filter}
+          </button>
         ))}
-      </Stack>
+      </div>
 
       {/* Table */}
-      <TableContainer className="table-wrapper">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell className="table-head-cell">Order ID</TableCell>
-              <TableCell className="table-head-cell">Customer</TableCell>
-              <TableCell className="table-head-cell">Service</TableCell>
-              <TableCell className="table-head-cell">Saree Fabric</TableCell>
-              <TableCell className="table-head-cell">Date</TableCell>
-              <TableCell className="table-head-cell">Amount</TableCell>
-              <TableCell className="table-head-cell">Status</TableCell>
-              <TableCell className="table-head-cell" align="right">
+      <div className="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th className="table-head-cell">Order ID</th>
+              <th className="table-head-cell">Customer</th>
+              <th className="table-head-cell">Service</th>
+              <th className="table-head-cell">Saree Fabric</th>
+              <th className="table-head-cell">Date</th>
+              <th className="table-head-cell">Amount</th>
+              <th className="table-head-cell">Status</th>
+              <th className="table-head-cell" style={{ textAlign: 'right' }}>
                 Action
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
             {filteredOrders.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="empty-cell">
+              <tr>
+                <td colSpan={8} className="empty-cell">
                   No bookings found matching criteria.
-                </TableCell>
-              </TableRow>
+                </td>
+              </tr>
             ) : (
               filteredOrders.map((order) => (
-                <TableRow key={order.id} className="table-row-item">
-                  <TableCell className="table-body-cell order-id">
+                <tr key={order.id} className="table-row-item">
+                  <td className="table-body-cell order-id">
                     {order.id}
-                  </TableCell>
-                  <TableCell className="table-body-cell customer-name">
+                  </td>
+                  <td className="table-body-cell customer-name">
                     {order.customer}
-                  </TableCell>
-                  <TableCell className="table-body-cell">
+                  </td>
+                  <td className="table-body-cell">
                     {order.service}
-                  </TableCell>
-                  <TableCell className="table-body-cell saree-fabric">
+                  </td>
+                  <td className="table-body-cell saree-fabric">
                     {order.sareeType}
-                  </TableCell>
-                  <TableCell className="table-body-cell date-cell">
+                  </td>
+                  <td className="table-body-cell date-cell">
                     {order.date}
-                  </TableCell>
-                  <TableCell className="table-body-cell amount-cell">
+                  </td>
+                  <td className="table-body-cell amount-cell">
                     {order.amount}
-                  </TableCell>
-                  <TableCell className="table-body-cell">
+                  </td>
+                  <td className="table-body-cell">
                     <span className={`status-pill ${order.status}`}>
                       <span className="dot" />
                       {order.status.replace("-", " ")}
                     </span>
-                  </TableCell>
-                  <TableCell className="table-body-cell" align="right">
-                    <Button
-                      size="small"
+                  </td>
+                  <td className="table-body-cell" style={{ textAlign: 'right' }}>
+                    <AppButton
+                      size="sm"
+                      variant="secondary"
                       startIcon={<VisibilityIcon className="action-icon" />}
                       className="details-btn"
                       onClick={() => setSelectedOrder(order)}
                     >
                       Details
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                    </AppButton>
+                  </td>
+                </tr>
               ))
             )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+          </tbody>
+        </table>
+      </div>
 
       {/* Order Details Popup Modal */}
       <OrderDetailsModal
@@ -281,7 +281,7 @@ const OrdersTable = () => {
         onClose={() => setSelectedOrder(null)}
         order={selectedOrder}
       />
-    </Paper>
+    </div>
   );
 };
 

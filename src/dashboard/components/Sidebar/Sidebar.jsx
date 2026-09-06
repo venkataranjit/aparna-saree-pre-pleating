@@ -1,24 +1,12 @@
 import React, { useMemo } from "react";
-import {
-  Box,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-  Avatar,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
+import { Tooltip } from "@mui/material";
 import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
 import BookOnlineOutlinedIcon from "@mui/icons-material/BookOnlineOutlined";
 import DryCleaningOutlinedIcon from "@mui/icons-material/DryCleaningOutlined";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
-import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
@@ -35,7 +23,7 @@ const navSections = [
       {
         label: "Overview",
         path: "/dashboard",
-        icon: <GridViewOutlinedIcon sx={{ color: "#d4af37 !important" }} />,
+        icon: <GridViewOutlinedIcon />,
         end: true,
       },
     ],
@@ -46,17 +34,17 @@ const navSections = [
       {
         label: "Orders",
         path: "/dashboard/bookings",
-        icon: <BookOnlineOutlinedIcon sx={{ color: "#d4af37 !important" }} />,
+        icon: <BookOnlineOutlinedIcon />,
       },
       {
         label: "Services",
         path: "/dashboard/services",
-        icon: <DryCleaningOutlinedIcon sx={{ color: "#d4af37 !important" }} />,
+        icon: <DryCleaningOutlinedIcon />,
       },
       {
         label: "Customers",
         path: "/dashboard/customers",
-        icon: <PeopleOutlineIcon sx={{ color: "#d4af37 !important" }} />,
+        icon: <PeopleOutlineIcon />,
       },
     ],
   },
@@ -66,7 +54,7 @@ const navSections = [
       {
         label: "Landing Page",
         path: "/landing",
-        icon: <StorefrontOutlinedIcon sx={{ color: "#d4af37 !important" }} />,
+        icon: <StorefrontOutlinedIcon />,
       },
     ],
   },
@@ -76,19 +64,17 @@ const navSections = [
       {
         label: "My Profile",
         path: "/dashboard/profile",
-        icon: <PersonOutlineIcon sx={{ color: "#d4af37 !important" }} />,
+        icon: <PersonOutlineIcon />,
       },
       {
         label: "Manage Users",
         path: "/dashboard/users",
-        icon: (
-          <ManageAccountsOutlinedIcon sx={{ color: "#d4af37 !important" }} />
-        ),
+        icon: <ManageAccountsOutlinedIcon />,
       },
       {
         label: "Logout",
         path: "/login",
-        icon: <LogoutOutlinedIcon sx={{ color: "#d4af37 !important" }} />,
+        icon: <LogoutOutlinedIcon />,
       },
     ],
   },
@@ -140,7 +126,6 @@ const Sidebar = ({
     }
   };
 
-
   const isItemActive = (item) => {
     if (item.end) {
       return location.pathname === item.path;
@@ -166,23 +151,21 @@ const Sidebar = ({
       .filter((section) => section.items.length > 0);
   }, [role, isSuperAdmin]);
 
-
   return (
-    <Box
-      component="aside"
+    <aside
       className={`dashboard-sidebar ${collapsed ? "collapsed" : ""} ${
         mobileOpen ? "mobile-open" : ""
       }`}
     >
       {/* Top Header with Brand Logo & Toggle Buttons */}
-      <Box className="dashboard-sidebar__top-bar">
-        <Box className="sidebar-brand-wrap">
+      <div className="dashboard-sidebar__top-bar">
+        <div className="sidebar-brand-wrap">
           <img
             src={textLogo}
             alt="Aparna Saree Pre-Pleating"
             className="sidebar-text-logo"
           />
-        </Box>
+        </div>
 
         {/* Desktop Collapse Toggle Button */}
         <Tooltip
@@ -190,47 +173,57 @@ const Sidebar = ({
           placement="right"
           arrow
         >
-          <IconButton
+          <button
+            type="button"
             onClick={onToggleCollapse}
             className="collapse-toggle-btn desktop-only"
-            size="small"
             aria-label="toggle collapse"
           >
             <MenuOpenIcon
               className={`collapse-icon ${collapsed ? "rotated" : ""}`}
-              sx={{ color: "#d4af37 !important", fontSize: 22 }}
             />
-          </IconButton>
+          </button>
         </Tooltip>
 
         {/* Mobile Close Button (visible only when mobile drawer is open) */}
-        <IconButton
+        <button
+          type="button"
           onClick={onCloseMobile}
           className="mobile-close-btn"
-          size="small"
           aria-label="close menu"
         >
-          <CloseIcon sx={{ color: "#d4af37 !important", fontSize: 22 }} />
-        </IconButton>
-      </Box>
+          <CloseIcon />
+        </button>
+      </div>
 
       {/* Scrollable Navigation List with Section Dividers */}
-      <Box className="dashboard-sidebar__scroll-area">
+      <div className="dashboard-sidebar__scroll-area">
         {filteredNavSections.map((section) => (
-          <Box key={section.title} className="nav-section-group">
+          <div key={section.title} className="nav-section-group">
             {/* Section Header with Horizontal Divider Line */}
-            <Box className="nav-section-header">
-              <Typography variant="caption" className="section-title">
+            <div className="nav-section-header">
+              <span className="section-title">
                 {section.title}
-              </Typography>
-              <Box className="section-line" />
-            </Box>
+              </span>
+              <div className="section-line" />
+            </div>
 
             {/* Section Items */}
-            <List disablePadding className="section-list">
+            <nav className="section-list">
               {section.items.map((item) => {
                 const isLogout = item.label === "Logout";
                 const isActive = !isLogout && isItemActive(item);
+
+                const itemContent = (
+                  <>
+                    <span className="nav-icon">
+                      {item.icon}
+                    </span>
+                    <span className="nav-text">
+                      <span className="nav-text-label">{item.label}</span>
+                    </span>
+                  </>
+                );
 
                 return (
                   <Tooltip
@@ -242,25 +235,32 @@ const Sidebar = ({
                     disableFocusListener={!collapsed}
                     disableTouchListener={!collapsed}
                   >
-                    <ListItemButton
-                      component={isLogout ? "div" : NavLink}
-                      to={isLogout ? undefined : item.path}
-                      end={isLogout ? undefined : item.end}
-                      onClick={(e) => handleItemClick(item, e)}
-                      className={`nav-item ${isActive ? "active" : ""} ${isLogout ? "nav-item--logout" : ""}`}
-                    >
-                      <ListItemIcon className="nav-icon">
-                        {item.icon}
-                      </ListItemIcon>
-                      <ListItemText primary={item.label} className="nav-text" />
-                    </ListItemButton>
+                    {isLogout ? (
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => handleItemClick(item, e)}
+                        className={`nav-item nav-item--logout`}
+                      >
+                        {itemContent}
+                      </div>
+                    ) : (
+                      <NavLink
+                        to={item.path}
+                        end={item.end}
+                        onClick={(e) => handleItemClick(item, e)}
+                        className={`nav-item ${isActive ? "active" : ""}`}
+                      >
+                        {itemContent}
+                      </NavLink>
+                    )}
                   </Tooltip>
                 );
               })}
-            </List>
-          </Box>
+            </nav>
+          </div>
         ))}
-      </Box>
+      </div>
 
       {/* Bottom User Profile Section (Pinned to Bottom of Screen) */}
       <Tooltip
@@ -271,54 +271,51 @@ const Sidebar = ({
         disableFocusListener={!collapsed}
         disableTouchListener={!collapsed}
       >
-        <Box
+        <div
           className="dashboard-sidebar__profile-bottom"
           onClick={() => {
             navigate("/dashboard/profile");
             if (onCloseMobile) onCloseMobile();
           }}
+          role="button"
+          tabIndex={0}
         >
-          <Box className="profile-inner-row">
-            <Box className="avatar-wrapper">
-              <Avatar alt={displayName} className="user-avatar-squircle">
-                {avatarChar || <PersonOutlineIcon sx={{ fontSize: 20, color: '#000000 !important' }} />}
-              </Avatar>
+          <div className="profile-inner-row">
+            <div className="avatar-wrapper">
+              <div className="user-avatar-squircle">
+                {avatarChar || <PersonOutlineIcon />}
+              </div>
               <span className="online-dot" />
-            </Box>
+            </div>
 
-            <Box className="user-details">
-              <Typography className="user-name" noWrap title={displayName || 'Account'}>
+            <div className="user-details">
+              <span className="user-name" title={displayName || 'Account'}>
                 {displayName || 'Loading...'}
-              </Typography>
-              <Box className="role-line">
-                <VerifiedUserOutlinedIcon
-                  className="verified-icon"
-                  sx={{ color: "#d4af37 !important" }}
-                />
-                <Typography className="role-title">{roleLabel}</Typography>
-              </Box>
-            </Box>
+              </span>
+              <div className="role-line">
+                <VerifiedUserOutlinedIcon className="verified-icon" />
+                <span className="role-title">{roleLabel}</span>
+              </div>
+            </div>
 
-            <Box className="profile-action-btn-wrap">
-              <IconButton
+            <div className="profile-action-btn-wrap">
+              <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate("/dashboard/profile");
                   if (onCloseMobile) onCloseMobile();
                 }}
                 className="profile-quick-nav-btn"
-                size="small"
                 aria-label="my profile"
               >
-                <PersonOutlineIcon sx={{ fontSize: 20 }} />
-              </IconButton>
-            </Box>
-          </Box>
-        </Box>
+                <PersonOutlineIcon />
+              </button>
+            </div>
+          </div>
+        </div>
       </Tooltip>
-
-
-    </Box>
+    </aside>
   );
 };
 

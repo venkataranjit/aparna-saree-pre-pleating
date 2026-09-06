@@ -41,10 +41,13 @@ body,
 // Mobile touch optimization: eliminate blue highlight and text selection callouts on controls
 button,
 a,
-.MuiButton-root,
-.MuiIconButton-root,
-.MuiListItemButton-root,
-.MuiChip-root {
+input,
+select,
+textarea,
+[role="button"],
+.app-btn,
+.app-tab-btn,
+.app-badge {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   -webkit-touch-callout: none;
@@ -52,10 +55,30 @@ a,
   user-select: none;
 }
 
-// Global: darken backdrop behind ALL MUI Dialogs across every page
-.MuiDialog-root .MuiBackdrop-root {
-  background-color: rgba(0, 0, 0, 0.82) !important;
-  backdrop-filter: blur(2.5px);
+// Mobile responsive typography scale
+@media (max-width: 768px) {
+  html,
+  body {
+    font-size: 13.5px;
+  }
+  h1 { font-size: 22px !important; }
+  h2 { font-size: 19px !important; }
+  h3 { font-size: 16px !important; }
+  h4 { font-size: 14.5px !important; }
+  p, span, label {
+    font-size: 0.96em;
+  }
+}
+
+@media (max-width: 480px) {
+  html,
+  body {
+    font-size: 13px;
+  }
+  h1 { font-size: 20px !important; }
+  h2 { font-size: 17.5px !important; }
+  h3 { font-size: 15px !important; }
+  h4 { font-size: 13.5px !important; }
 }
 
 // Hide scrollbars completely in APK / native Capacitor app and touch screens

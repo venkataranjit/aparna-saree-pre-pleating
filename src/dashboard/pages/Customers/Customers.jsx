@@ -1,32 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
-import {
-  Box,
-  Typography,
-  Button,
-  Card,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  MenuItem,
-  IconButton,
-  InputAdornment,
-  Alert,
-  CircularProgress,
-  Tooltip,
-  Tabs,
-  Tab,
-  Stack,
-} from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
@@ -45,6 +18,7 @@ import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined
 import NotesOutlinedIcon from '@mui/icons-material/NotesOutlined';
 import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import StatCard from '../../components/StatCard/StatCard';
 import { useAuth } from '../../../auth/context/AuthContext';
 import {
@@ -59,6 +33,14 @@ import {
   formatDateSafe,
 } from '../../../firebase/dbService';
 import { USER_ROLES, SUPERADMIN_EMAIL } from '../../../firebase/schema';
+import {
+  AppButton,
+  AppInput,
+  AppModal,
+  AppBadge,
+  AppTabs,
+  AppSpinner,
+} from '../../../components/common';
 import './Customers.scss';
 
 // Validation schema for creating or editing a customer
@@ -177,7 +159,7 @@ const Customers = () => {
   const [customerForView, setCustomerForView] = useState(null);
   const [selectedMeasureForEdit, setSelectedMeasureForEdit] = useState(null);
   const [deletingMeasureId, setDeletingMeasureId] = useState(null);
-  const [measureToDelete, setMeasureToDelete] = useState(null); // In-app confirmation popup
+  const [measureToDelete, setMeasureToDelete] = useState(null);
 
   // Fetch only Customer details and their measurements
   const fetchCustomers = async () => {
@@ -403,7 +385,6 @@ const Customers = () => {
 
         const saved = await createCustomerMeasurement(measurementPayload);
 
-        // Update local measurements state
         setMeasurementsMap((prev) => {
           const userList = prev[customerId] ? [...prev[customerId]] : [];
           return {
@@ -442,7 +423,6 @@ const Customers = () => {
     enableReinitialize: true,
     initialValues: {
       title: selectedMeasureForEdit?.title || '',
-      // Convert numeric values (stored by old sanitizeMeasure) to strings for text inputs
       pallu: selectedMeasureForEdit?.pallu != null ? String(selectedMeasureForEdit.pallu) : '',
       shoulderToRightTight: selectedMeasureForEdit?.shoulderToRightTight != null
         ? String(selectedMeasureForEdit.shoulderToRightTight) : '',
@@ -478,7 +458,6 @@ const Customers = () => {
 
         const updatedRecord = await updateMeasurement(selectedMeasureForEdit.id, updatePayload);
 
-        // Update local measurements state with the returned updated record
         setMeasurementsMap((prev) => {
           const userList = prev[customerId] ? [...prev[customerId]] : [];
           return {
@@ -509,7 +488,7 @@ const Customers = () => {
     },
   });
 
-  // Confirm and execute measurement deletion from custom popup (no browser alert/confirm)
+  // Confirm and execute measurement deletion from custom popup
   const confirmDeleteMeasurement = async () => {
     if (!userCanDelete || !measureToDelete) return;
     const { id: measurementId, userId: customerId, title } = measureToDelete;
@@ -570,33 +549,41 @@ const Customers = () => {
     return Object.values(measurementsMap).reduce((acc, list) => acc + (list?.length || 0), 0);
   }, [measurementsMap]);
 
-  return (
-    <Box className="customers-page">
-      {/* Top Header matching Dashboard and Users */}
-      <Box className="customers-page__header">
-        <Box>
-          <Typography variant="h4" component="h1" className="page-title">
-            Customers
-          </Typography>
-          <Typography variant="body2" className="page-subtitle">
-            View customer profiles, contact info, and manage tailoring measurements
-          </Typography>
-        </Box>
+  const customerTabs = [
+    { label: `All Customers (${customers.length})`, value: 'ALL' },
+    { label: `With Measurements (${customersWithMeasurements})`, value: 'MEASURED' },
+    { label: `Pending (${pendingMeasurementsCount})`, value: 'PENDING' },
+  ];
 
-        <Stack direction="row" spacing={1.5} className="header-actions">
-          <Button
-            variant="outlined"
-            startIcon={<RefreshOutlinedIcon sx={{ color: '#d4af37' }} />}
+  return (
+    <div className="customers-page">
+      {/* Top Header matching Dashboard and Users */}
+      <div className="customers-page__header">
+        <div>
+          <h1 className="page-title">
+            Customers
+          </h1>
+          <p className="page-subtitle">
+            View customer profiles, contact info, and manage tailoring measurements
+          </p>
+        </div>
+
+        <div className="header-actions">
+          <AppButton
+            variant="secondary"
+            size="md"
+            startIcon={<RefreshOutlinedIcon />}
             onClick={fetchCustomers}
             disabled={loading}
             className="refresh-btn"
           >
             {loading ? 'Refreshing...' : 'Refresh'}
-          </Button>
+          </AppButton>
 
-          <Button
-            variant="contained"
-            startIcon={<PersonAddOutlinedIcon sx={{ color: '#000000 !important' }} />}
+          <AppButton
+            variant="primary"
+            size="md"
+            startIcon={<PersonAddOutlinedIcon />}
             onClick={() => {
               setFeedback(null);
               setDialogOpen(true);
@@ -604,24 +591,37 @@ const Customers = () => {
             className="create-customer-btn"
           >
             Add Customer
-          </Button>
-        </Stack>
-      </Box>
+          </AppButton>
+        </div>
+      </div>
 
       {/* Global Alert Feedback */}
       {feedback && (
-        <Alert
-          severity={feedback.type}
-          onClose={() => setFeedback(null)}
-          className="customers-feedback-alert"
-          sx={{ mb: 3 }}
-        >
-          {feedback.message}
-        </Alert>
+        <div className={`customers-feedback-alert customers-feedback-alert--${feedback.type}`}>
+          {feedback.type === 'success' ? (
+            <CheckCircleOutlineIcon fontSize="small" />
+          ) : (
+            <ErrorOutlineIcon fontSize="small" />
+          )}
+          <span style={{ flex: 1 }}>{feedback.message}</span>
+          <button
+            type="button"
+            onClick={() => setFeedback(null)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'inherit',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+            }}
+          >
+            ✕
+          </button>
+        </div>
       )}
 
       {/* 4 StatCards matching Dashboard Overview Grid */}
-      <Box className="customers-page__stats-grid">
+      <div className="customers-page__stats-grid">
         <StatCard
           title="Customers"
           value={String(totalCustomersCount)}
@@ -650,84 +650,69 @@ const Customers = () => {
           trendType={pendingMeasurementsCount > 0 ? 'progress' : 'completed'}
           icon={<StraightenOutlinedIcon />}
         />
-      </Box>
+      </div>
 
       {/* Filter Tabs & Search Bar matching Manage Users Toolbar */}
-      <Box className="customers-page__toolbar">
-        <Tabs
+      <div className="customers-page__toolbar">
+        <AppTabs
+          tabs={customerTabs}
           value={activeTab}
-          onChange={(e, val) => setActiveTab(val)}
-          className="customer-filter-tabs"
-        >
-          <Tab label={`All Customers (${customers.length})`} value="ALL" />
-          <Tab label={`With Measurements (${customersWithMeasurements})`} value="MEASURED" />
-          <Tab label={`Pending (${pendingMeasurementsCount})`} value="PENDING" />
-        </Tabs>
-
-        <TextField
-          placeholder="Search by name, mobile, email, address..."
-          size="small"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="customers-search-field"
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchOutlinedIcon sx={{ color: '#d4af37' }} />
-              </InputAdornment>
-            ),
-            endAdornment: searchTerm && (
-              <InputAdornment position="end">
-                <IconButton size="small" onClick={() => setSearchTerm('')} sx={{ color: '#e6d8a3' }}>
-                  <CloseIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
+          onChange={(val) => setActiveTab(val)}
         />
-      </Box>
 
-      {/* Main Customers Table Card matching Users.jsx */}
-      <Card className="customers-table-card">
-        <TableContainer>
-          <Table className="customers-table">
-            <TableHead>
-              <TableRow>
-                <TableCell>CUSTOMER</TableCell>
-                <TableCell>CONTACT DETAILS</TableCell>
-                <TableCell>DELIVERY ADDRESS</TableCell>
-                <TableCell align="center">MEASUREMENTS</TableCell>
-                <TableCell>JOINED DATE</TableCell>
-                <TableCell align="right" sx={{ minWidth: 140 }}>
+        <div className="customers-search-field">
+          <AppInput
+            placeholder="Search by name, mobile, email, address..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            startAdornment={<SearchOutlinedIcon />}
+          />
+        </div>
+      </div>
+
+      {/* Main Customers Table Card */}
+      <div className="customers-table-card">
+        <div className="table-responsive">
+          <table className="customers-table">
+            <thead>
+              <tr>
+                <th>CUSTOMER</th>
+                <th>CONTACT DETAILS</th>
+                <th>DELIVERY ADDRESS</th>
+                <th style={{ textAlign: 'center' }}>MEASUREMENTS</th>
+                <th>JOINED DATE</th>
+                <th style={{ textAlign: 'right', minWidth: 140 }}>
                   ACTIONS
-                </TableCell>
-              </TableRow>
-            </TableHead>
+                </th>
+              </tr>
+            </thead>
 
-            <TableBody>
+            <tbody>
               {loading && customers.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 6, color: '#e6d8a3' }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                      <CircularProgress size={32} sx={{ color: '#d4af37' }} />
-                      <Typography variant="body2" sx={{ color: '#e6d8a3' }}>
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '48px 16px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                      <AppSpinner size="lg" color="gold" />
+                      <span style={{ color: '#e6d8a3', fontSize: '0.9rem' }}>
                         Loading customer directory...
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                </TableRow>
+                      </span>
+                    </div>
+                  </td>
+                </tr>
               ) : filteredCustomers.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} align="center" className="empty-state-cell">
-                    <PeopleOutlineIcon sx={{ fontSize: 44, color: '#d4af37', opacity: 0.5, mb: 1 }} />
-                    <Typography variant="body1" sx={{ color: '#e6d8a3', fontWeight: 600 }}>
-                      No customers found matching your criteria.
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: 'rgba(230, 216, 163, 0.6)', mt: 0.5 }}>
-                      Click "Add Customer" to create the first client profile.
-                    </Typography>
-                  </TableCell>
-                </TableRow>
+                <tr>
+                  <td colSpan={6} className="empty-state-cell">
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                      <PeopleOutlineIcon style={{ fontSize: 44, color: '#d4af37', opacity: 0.5 }} />
+                      <span style={{ color: '#e6d8a3', fontWeight: 600, fontSize: '0.95rem' }}>
+                        No customers found matching your criteria.
+                      </span>
+                      <span style={{ color: 'rgba(230, 216, 163, 0.6)', fontSize: '0.8rem' }}>
+                        Click "Add Customer" to create the first client profile.
+                      </span>
+                    </div>
+                  </td>
+                </tr>
               ) : (
                 filteredCustomers.map((user) => {
                   const initial = (user.username?.charAt(0) || user.email?.charAt(0) || 'C').toUpperCase();
@@ -735,1070 +720,836 @@ const Customers = () => {
                   const measureCount = userMeasures.length;
 
                   return (
-                    <TableRow key={user.id} className="customer-table-row">
-                      {/* Customer Avatar & Name matching Users.jsx */}
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                          <Box className="user-avatar-circle">{initial}</Box>
-                          <Box>
-                            <Typography className="user-name-text">{user.username || 'Customer'}</Typography>
-                            <Typography variant="caption" className="user-email-text" sx={{ display: 'block' }}>
+                    <tr key={user.id} className="customer-table-row">
+                      {/* Customer Avatar & Name */}
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div className="user-avatar-circle">{initial}</div>
+                          <div>
+                            <div className="user-name-text">{user.username || 'Customer'}</div>
+                            <div className="user-email-text">
                               {user.email || 'No email registered'}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </TableCell>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
 
-                      {/* Contact Details */}
-                      <TableCell>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3 }}>
-                          <Typography className="mobile-cell">
-                            <PhoneIphoneOutlinedIcon sx={{ fontSize: 13, mr: 0.5, verticalAlign: 'middle', color: '#d4af37' }} />
-                            {user.userMobile ? `+91 ${user.userMobile}` : '—'}
-                          </Typography>
-                        </Box>
-                      </TableCell>
+                      {/* Phone Number */}
+                      <td className="mobile-cell">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <PhoneIphoneOutlinedIcon style={{ fontSize: 16, color: '#d4af37' }} />
+                          <span style={{ fontFamily: 'monospace' }}>
+                            {user.userMobile || '—'}
+                          </span>
+                        </div>
+                      </td>
 
-                      {/* Address */}
-                      <TableCell>
-                        <Typography className="address-cell">
-                          {user.userAddress ? (
-                            <>
-                              <LocationOnOutlinedIcon sx={{ fontSize: 13, mr: 0.5, verticalAlign: 'middle', color: '#d4af37' }} />
-                              {user.userAddress}
-                            </>
-                          ) : (
-                            '—'
-                          )}
-                        </Typography>
-                      </TableCell>
+                      {/* Delivery Address */}
+                      <td className="address-cell">
+                        {user.userAddress || '—'}
+                      </td>
 
-                      {/* Measurements Chip */}
-                      <TableCell align="center">
-                        <Tooltip title="Click to view all measurements for this customer" arrow>
-                          <Chip
-                            icon={<StraightenOutlinedIcon sx={{ fontSize: '13px !important' }} />}
-                            label={measureCount > 0 ? `${measureCount} ${measureCount === 1 ? 'Profile' : 'Profiles'}` : 'No Measurements'}
-                            size="small"
+                      {/* Saree Measurement Status */}
+                      <td style={{ textAlign: 'center' }}>
+                        {measureCount > 0 ? (
+                          <span
                             onClick={() => handleOpenViewDetails(user)}
-                            className={`measure-chip ${measureCount > 0 ? 'measure-chip--active' : 'measure-chip--pending'}`}
-                            sx={{ cursor: 'pointer' }}
-                          />
-                        </Tooltip>
-                      </TableCell>
+                            style={{ cursor: 'pointer' }}
+                            title="View Measurements"
+                          >
+                            <AppBadge variant="completed">
+                              ✓ {measureCount} Profile{measureCount > 1 ? 's' : ''}
+                            </AppBadge>
+                          </span>
+                        ) : (
+                          <span
+                            onClick={() => handleOpenAddMeasure(user)}
+                            style={{ cursor: 'pointer' }}
+                            title="Add Measurement"
+                          >
+                            <AppBadge variant="pending">
+                              + Add Measurements
+                            </AppBadge>
+                          </span>
+                        )}
+                      </td>
 
                       {/* Joined Date */}
-                      <TableCell>
-                        <Typography className="date-cell">{formatDateSafe(user.createdAt)}</Typography>
-                      </TableCell>
+                      <td className="date-cell">
+                        {user.createdAt || 'Recent'}
+                      </td>
 
-                      {/* Actions: View Details, Add Measurement, Edit */}
-                      <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                        <Box sx={{ display: 'inline-flex', gap: 0.8 }}>
-                          {/* View Customer Details Icon */}
-                          <Tooltip title="View Details & Measurements" arrow>
-                            <IconButton
-                              size="small"
-                              className="action-icon-btn action-icon-btn--view"
-                              onClick={() => handleOpenViewDetails(user)}
-                            >
-                              <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />
-                            </IconButton>
-                          </Tooltip>
+                      {/* Row Action Buttons */}
+                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <div className="action-btns">
+                          {/* 1. View Details Button */}
+                          <AppButton
+                            variant="secondary"
+                            size="sm"
+                            title="View Customer Profile & Measurements"
+                            onClick={() => handleOpenViewDetails(user)}
+                          >
+                            <VisibilityOutlinedIcon style={{ fontSize: 16 }} />
+                          </AppButton>
 
-                          {/* Add Measurement Icon */}
-                          <Tooltip title="Add Measurement Profile" arrow>
-                            <IconButton
-                              size="small"
-                              className="action-icon-btn action-icon-btn--measure"
-                              onClick={() => handleOpenAddMeasure(user)}
-                            >
-                              <StraightenOutlinedIcon sx={{ fontSize: 18 }} />
-                            </IconButton>
-                          </Tooltip>
+                          {/* 2. Add Measurement Shortcut */}
+                          <AppButton
+                            variant="secondary"
+                            size="sm"
+                            title="Add Measurement Profile"
+                            onClick={() => handleOpenAddMeasure(user)}
+                          >
+                            <StraightenOutlinedIcon style={{ fontSize: 16 }} />
+                          </AppButton>
 
-                          {/* Edit Customer Details Icon */}
+                          {/* 3. Edit Customer Info */}
                           {userCanEdit && (
-                            <Tooltip title="Edit Customer Details" arrow>
-                              <IconButton
-                                size="small"
-                                className="action-icon-btn action-icon-btn--edit"
-                                onClick={() => handleOpenEdit(user)}
-                              >
-                                <EditOutlinedIcon sx={{ fontSize: 18 }} />
-                              </IconButton>
-                            </Tooltip>
+                            <AppButton
+                              variant="secondary"
+                              size="sm"
+                              title="Edit Customer Info"
+                              onClick={() => handleOpenEdit(user)}
+                            >
+                              <EditOutlinedIcon style={{ fontSize: 16 }} />
+                            </AppButton>
                           )}
-                        </Box>
-                      </TableCell>
-                    </TableRow>
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })
               )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Card>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       {/* ========================================================================= */}
-      {/* MODAL 1: VIEW CUSTOMER DETAILS & MULTIPLE MEASUREMENTS                    */}
+      {/* 1. Modal: Add New Customer Dialog                                         */}
       {/* ========================================================================= */}
-      <Dialog
+      <AppModal
+        open={dialogOpen}
+        onClose={() => !createFormik.isSubmitting && setDialogOpen(false)}
+        title="Register New Customer"
+        subtitle="Enter customer contact details below."
+        maxWidth="sm"
+        actions={
+          <>
+            <AppButton
+              variant="secondary"
+              onClick={() => setDialogOpen(false)}
+              disabled={createFormik.isSubmitting}
+            >
+              Cancel
+            </AppButton>
+            <AppButton
+              variant="primary"
+              onClick={createFormik.handleSubmit}
+              loading={createFormik.isSubmitting}
+            >
+              Add Customer
+            </AppButton>
+          </>
+        }
+      >
+        <form onSubmit={createFormik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <AppInput
+            label="Customer Full Name"
+            required
+            id="create-username"
+            name="username"
+            placeholder="e.g. Sravanti Reddy"
+            value={createFormik.values.username}
+            onChange={createFormik.handleChange}
+            onBlur={createFormik.handleBlur}
+            error={createFormik.touched.username && createFormik.errors.username}
+            disabled={createFormik.isSubmitting}
+            startAdornment={<PersonOutlineIcon />}
+          />
+
+          <AppInput
+            label="10-Digit Mobile Number"
+            required
+            id="create-userMobile"
+            name="userMobile"
+            placeholder="e.g. 9848012345"
+            value={createFormik.values.userMobile}
+            onChange={createFormik.handleChange}
+            onBlur={createFormik.handleBlur}
+            error={createFormik.touched.userMobile && createFormik.errors.userMobile}
+            disabled={createFormik.isSubmitting}
+            startAdornment={<PhoneIphoneOutlinedIcon />}
+          />
+
+          <AppInput
+            label="Email Address"
+            required
+            id="create-email"
+            name="email"
+            type="email"
+            placeholder="e.g. sravanti@example.com"
+            value={createFormik.values.email}
+            onChange={createFormik.handleChange}
+            onBlur={createFormik.handleBlur}
+            error={createFormik.touched.email && createFormik.errors.email}
+            disabled={createFormik.isSubmitting}
+            startAdornment={<EmailOutlinedIcon />}
+          />
+
+          <AppInput
+            label="Delivery Address / City (Optional)"
+            id="create-userAddress"
+            name="userAddress"
+            placeholder="e.g. Jubilee Hills, Hyderabad"
+            value={createFormik.values.userAddress}
+            onChange={createFormik.handleChange}
+            onBlur={createFormik.handleBlur}
+            error={createFormik.touched.userAddress && createFormik.errors.userAddress}
+            disabled={createFormik.isSubmitting}
+            startAdornment={<LocationOnOutlinedIcon />}
+          />
+        </form>
+      </AppModal>
+
+      {/* ========================================================================= */}
+      {/* 2. Modal: Edit Customer Dialog                                            */}
+      {/* ========================================================================= */}
+      <AppModal
+        open={openEditModal}
+        onClose={() => !editFormik.isSubmitting && setOpenEditModal(false)}
+        title="Edit Customer Profile"
+        subtitle="Update contact and location information."
+        maxWidth="sm"
+        actions={
+          <>
+            <AppButton
+              variant="secondary"
+              onClick={() => setOpenEditModal(false)}
+              disabled={editFormik.isSubmitting}
+            >
+              Cancel
+            </AppButton>
+            <AppButton
+              variant="primary"
+              onClick={editFormik.handleSubmit}
+              loading={editFormik.isSubmitting}
+            >
+              Save Changes
+            </AppButton>
+          </>
+        }
+      >
+        <form onSubmit={editFormik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <AppInput
+            label="Customer Full Name"
+            required
+            id="edit-username"
+            name="username"
+            value={editFormik.values.username}
+            onChange={editFormik.handleChange}
+            onBlur={editFormik.handleBlur}
+            error={editFormik.touched.username && editFormik.errors.username}
+            disabled={editFormik.isSubmitting}
+            startAdornment={<PersonOutlineIcon />}
+          />
+
+          <AppInput
+            label="10-Digit Mobile Number"
+            required
+            id="edit-userMobile"
+            name="userMobile"
+            value={editFormik.values.userMobile}
+            onChange={editFormik.handleChange}
+            onBlur={editFormik.handleBlur}
+            error={editFormik.touched.userMobile && editFormik.errors.userMobile}
+            disabled={editFormik.isSubmitting}
+            startAdornment={<PhoneIphoneOutlinedIcon />}
+          />
+
+          <AppInput
+            label="Email Address"
+            required
+            id="edit-email"
+            name="email"
+            type="email"
+            value={editFormik.values.email}
+            onChange={editFormik.handleChange}
+            onBlur={editFormik.handleBlur}
+            error={editFormik.touched.email && editFormik.errors.email}
+            disabled={editFormik.isSubmitting}
+            startAdornment={<EmailOutlinedIcon />}
+          />
+
+          <AppInput
+            label="Delivery Address / City"
+            id="edit-userAddress"
+            name="userAddress"
+            value={editFormik.values.userAddress}
+            onChange={editFormik.handleChange}
+            onBlur={editFormik.handleBlur}
+            error={editFormik.touched.userAddress && editFormik.errors.userAddress}
+            disabled={editFormik.isSubmitting}
+            startAdornment={<LocationOnOutlinedIcon />}
+          />
+        </form>
+      </AppModal>
+
+      {/* ========================================================================= */}
+      {/* 3. Modal: View Customer Details & Measurement Profiles                    */}
+      {/* ========================================================================= */}
+      <AppModal
         open={openViewDetailsModal}
         onClose={() => setOpenViewDetailsModal(false)}
+        title={customerForView?.username || 'Customer Profile'}
+        subtitle="Customer contact info & tailored saree measurement specifications"
         maxWidth="md"
-        fullWidth
-        className="customer-dialog"
-        PaperProps={{
-          sx: {
-            maxWidth: '940px !important',
-            width: '100%',
-            maxHeight: '90vh !important',
-          },
-        }}
-      >
-        <DialogTitle className="dialog-title-bar">
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box className="user-avatar-circle">
-              {(customerForView?.username?.charAt(0) || 'C').toUpperCase()}
-            </Box>
-            <Box>
-              <Typography variant="h6" className="dialog-title">
-                {customerForView?.username || 'Customer Profile'}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(230, 216, 163, 0.6)' }}>
-                Customer ID: {customerForView?.id || '—'} • Joined {formatDateSafe(customerForView?.createdAt)}
-              </Typography>
-            </Box>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<EditOutlinedIcon sx={{ color: '#d4af37', fontSize: 16 }} />}
-              onClick={() => handleOpenEdit(customerForView || customers[0])}
-              sx={{
-                color: '#d4af37',
-                borderColor: 'rgba(212, 175, 55, 0.4)',
-                fontSize: '0.8rem',
-                textTransform: 'none',
-                borderRadius: '8px',
-                px: 1.5,
-                '&:hover': {
-                  borderColor: '#d4af37',
-                  backgroundColor: 'rgba(212, 175, 55, 0.1)',
-                },
-              }}
-            >
-              Edit Details
-            </Button>
-            <IconButton onClick={() => setOpenViewDetailsModal(false)} sx={{ color: '#e6d8a3' }}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-
-        <DialogContent className="dialog-content-body">
-          {/* Customer Profile Summary Card */}
-          <Box className="details-summary-card">
-            <Box className="summary-item">
-              <PhoneIphoneOutlinedIcon sx={{ color: '#d4af37', fontSize: 18 }} />
-              <Box>
-                <Typography className="item-label">Mobile Number</Typography>
-                <Typography className="item-value">
-                  {customerForView?.userMobile ? `+91 ${customerForView.userMobile}` : 'Not provided'}
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box className="summary-item">
-              <EmailOutlinedIcon sx={{ color: '#d4af37', fontSize: 18 }} />
-              <Box>
-                <Typography className="item-label">Email Address</Typography>
-                <Typography className="item-value">{customerForView?.email || 'Not provided'}</Typography>
-              </Box>
-            </Box>
-
-            <Box className="summary-item">
-              <LocationOnOutlinedIcon sx={{ color: '#d4af37', fontSize: 18 }} />
-              <Box>
-                <Typography className="item-label">Address</Typography>
-                <Typography className="item-value">{customerForView?.userAddress || 'No address provided'}</Typography>
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Section Header: Measurements List & Add Action */}
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 3.5, mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <StraightenOutlinedIcon sx={{ color: '#d4af37', fontSize: 22 }} />
-              <Typography variant="subtitle1" sx={{ color: '#e6d8a3', fontWeight: 700 }}>
-                Measurement Profiles ({customerForView ? (measurementsMap[customerForView.id] || []).length : 0})
-              </Typography>
-            </Box>
-
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<SquareFootOutlinedIcon sx={{ color: '#000000 !important' }} />}
+        actions={
+          <>
+            <AppButton
+              variant="secondary"
               onClick={() => {
-                setCustomerForMeasure(customerForView);
-                setOpenAddMeasureModal(true);
+                setOpenViewDetailsModal(false);
+                handleOpenAddMeasure(customerForView);
               }}
-              className="create-customer-btn"
-              sx={{ padding: '5px 14px', fontSize: '0.8rem' }}
+              startIcon={<StraightenOutlinedIcon />}
             >
-              + Add Measurement
-            </Button>
-          </Box>
-
-          {/* Measurement Profiles List */}
-          {customerForView && (measurementsMap[customerForView.id] || []).length === 0 ? (
-            <Box className="empty-measurements-box">
-              <StraightenOutlinedIcon sx={{ fontSize: 40, color: '#d4af37', opacity: 0.4, mb: 1 }} />
-              <Typography variant="body2" sx={{ color: '#e6d8a3', fontWeight: 600 }}>
-                No measurements recorded yet for this customer.
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(230, 216, 163, 0.6)', mt: 0.5, display: 'block' }}>
-                Each customer can have multiple measurements for different sarees and draping styles.
-              </Typography>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<SquareFootOutlinedIcon />}
-                onClick={() => {
-                  setCustomerForMeasure(customerForView);
-                  setOpenAddMeasureModal(true);
-                }}
-                sx={{
-                  mt: 2,
-                  color: '#d4af37',
-                  borderColor: 'rgba(212, 175, 55, 0.4)',
-                  '&:hover': { borderColor: '#d4af37', backgroundColor: 'rgba(212, 175, 55, 0.1)' },
-                }}
-              >
-                Record First Measurement
-              </Button>
-            </Box>
-          ) : (
-            <Box className="measurements-list-container">
-              {customerForView &&
-                (measurementsMap[customerForView.id] || []).map((measure, idx) => (
-                  <Card key={measure.id || idx} className="measurement-card">
-                    {/* Card Header */}
-                    <Box className="measure-card-header">
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography className="measure-profile-title">
-                          {measure.title || `Measurement Profile #${idx + 1}`}
-                        </Typography>
-                        {measure.dressSize && (
-                          <Chip label={`Size: ${measure.dressSize}`} size="small" className="dress-size-chip" />
-                        )}
-                      </Box>
-
-                      <Box className="measure-actions">
-                        <Typography className="measure-date">
-                          <CalendarTodayOutlinedIcon sx={{ fontSize: 13, mr: 0.4, verticalAlign: 'middle' }} />
-                          {formatDateSafe(measure.createdAtDate || measure.createdAt, 'Saved')}
-                        </Typography>
-
-                        {/* Edit Measurement Profile Button */}
-                        {userCanEdit && (
-                          <Tooltip title="Edit this measurement profile" arrow>
-                            <IconButton
-                              size="small"
-                              className="measure-action-btn measure-action-btn--edit"
-                              onClick={() => handleOpenEditMeasure(measure)}
-                            >
-                              <EditOutlinedIcon sx={{ fontSize: 16 }} />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-
-                        {/* Delete Measurement Profile Button (Opens custom confirmation popup) */}
-                        {userCanDelete && (
-                          <Tooltip title="Delete this measurement profile" arrow>
-                            <IconButton
-                              size="small"
-                              className="measure-action-btn measure-action-btn--delete"
-                              onClick={() =>
-                                setMeasureToDelete({
-                                  id: measure.id,
-                                  title: measure.title,
-                                  userId: customerForView?.id,
-                                })
-                              }
-                              disabled={deletingMeasureId === measure.id}
-                            >
-                              {deletingMeasureId === measure.id ? (
-                                <CircularProgress size={14} sx={{ color: '#f87171' }} />
-                              ) : (
-                                <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-                              )}
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      </Box>
-                    </Box>
-
-                    {/* Dimensions Grid */}
-                    <Box className="measure-dimensions-grid">
-                      <Box className="dim-item">
-                        <Typography className="dim-label">Pallu Length</Typography>
-                        <Typography className="dim-value">
-                          {measure.pallu != null && measure.pallu !== '' ? `${measure.pallu}"` : '—'}
-                        </Typography>
-                      </Box>
-                      <Box className="dim-item">
-                        <Typography className="dim-label">Shoulder to Tight</Typography>
-                        <Typography className="dim-value">
-                          {measure.shoulderToRightTight != null && measure.shoulderToRightTight !== ''
-                            ? `${measure.shoulderToRightTight}"`
-                            : '—'}
-                        </Typography>
-                      </Box>
-                      <Box className="dim-item">
-                        <Typography className="dim-label">Chest Size</Typography>
-                        <Typography className="dim-value">
-                          {measure.chest != null && measure.chest !== '' ? `${measure.chest}"` : '—'}
-                        </Typography>
-                      </Box>
-                      <Box className="dim-item">
-                        <Typography className="dim-label">Hip Size</Typography>
-                        <Typography className="dim-value">
-                          {measure.hip != null && measure.hip !== '' ? `${measure.hip}"` : '—'}
-                        </Typography>
-                      </Box>
-                      <Box className="dim-item">
-                        <Typography className="dim-label">1st Pleat Size</Typography>
-                        <Typography className="dim-value">
-                          {measure.firstPleatSize != null && measure.firstPleatSize !== ''
-                            ? `${measure.firstPleatSize}"`
-                            : '—'}
-                        </Typography>
-                      </Box>
-                      <Box className="dim-item">
-                        <Typography className="dim-label">Chest Pleats</Typography>
-                        <Typography className="dim-value">
-                          {measure.noOfChestPleats != null && measure.noOfChestPleats !== '' ? measure.noOfChestPleats : '—'}
-                        </Typography>
-                      </Box>
-                      <Box className="dim-item">
-                        <Typography className="dim-label">Height</Typography>
-                        <Typography className="dim-value">
-                          {measure.height != null && measure.height !== '' ? measure.height : '—'}
-                        </Typography>
-                      </Box>
-                      <Box className="dim-item">
-                        <Typography className="dim-label">Dress Size</Typography>
-                        <Typography className="dim-value">
-                          {measure.dressSize != null && measure.dressSize !== '' ? measure.dressSize : '—'}
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    {/* Notes */}
-                    {measure.notes && (
-                      <Box className="measure-notes-row">
-                        <NotesOutlinedIcon sx={{ fontSize: 16, color: '#d4af37', mt: 0.3 }} />
-                        <Typography className="measure-notes-text">
-                          <strong>Notes:</strong> {measure.notes}
-                        </Typography>
-                      </Box>
-                    )}
-                  </Card>
-                ))}
-            </Box>
-          )}
-        </DialogContent>
-
-        <DialogActions className="dialog-actions-bar">
-          <Button onClick={() => setOpenViewDetailsModal(false)} className="cancel-btn">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* ========================================================================= */}
-      {/* MODAL 2: ADD NEW MEASUREMENT FOR CUSTOMER                                 */}
-      {/* ========================================================================= */}
-      <Dialog
-        open={openAddMeasureModal}
-        onClose={() => setOpenAddMeasureModal(false)}
-        maxWidth="sm"
-        fullWidth
-        className="customer-dialog"
+              Add New Measurement Profile
+            </AppButton>
+            <AppButton
+              variant="primary"
+              onClick={() => setOpenViewDetailsModal(false)}
+            >
+              Close
+            </AppButton>
+          </>
+        }
       >
-        <DialogTitle className="dialog-title-bar">
-          <Box>
-            <Typography variant="h6" className="dialog-title">
-              Add Measurement Profile
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(230, 216, 163, 0.6)' }}>
-              Customer: <strong>{customerForMeasure?.username}</strong> ({customerForMeasure?.userMobile ? `+91 ${customerForMeasure.userMobile}` : customerForMeasure?.email})
-            </Typography>
-          </Box>
-          <IconButton onClick={() => setOpenAddMeasureModal(false)} sx={{ color: '#e6d8a3' }}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
+        {customerForView && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Customer Summary Card */}
+            <div className="details-summary-card">
+              <div className="summary-item">
+                <PhoneIphoneOutlinedIcon style={{ fontSize: 20, color: '#d4af37' }} />
+                <div>
+                  <div className="item-label">Phone</div>
+                  <div className="item-value">{customerForView.userMobile || '—'}</div>
+                </div>
+              </div>
 
-        <form onSubmit={measureFormik.handleSubmit}>
-          <DialogContent className="dialog-content-body">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.2 }}>
-              {/* Profile Title */}
-              <TextField
-                fullWidth
-                label="Measurement Profile Title *"
-                placeholder="e.g. Bridal Silk Saree, Kanchipuram Pleats, Reception Draping"
-                name="title"
-                value={measureFormik.values.title}
-                onChange={measureFormik.handleChange}
-                onBlur={measureFormik.handleBlur}
-                error={measureFormik.touched.title && Boolean(measureFormik.errors.title)}
-                helperText={measureFormik.touched.title && measureFormik.errors.title}
-                className="custom-form-field"
-                size="small"
-              />
+              <div className="summary-item">
+                <EmailOutlinedIcon style={{ fontSize: 20, color: '#d4af37' }} />
+                <div>
+                  <div className="item-label">Email</div>
+                  <div className="item-value">{customerForView.email || '—'}</div>
+                </div>
+              </div>
 
-              {/* Row 1: Pallu & Shoulder */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <TextField
-                  label="Pallu Length (inches)"
-                  placeholder="e.g. 38"
-                  name="pallu"
-                  value={measureFormik.values.pallu}
-                  onChange={measureFormik.handleChange}
-                  onBlur={measureFormik.handleBlur}
-                  error={measureFormik.touched.pallu && Boolean(measureFormik.errors.pallu)}
-                  helperText={measureFormik.touched.pallu && measureFormik.errors.pallu}
-                  className="custom-form-field"
-                  size="small"
-                />
-                <TextField
-                  label="Shoulder to Tight (inches)"
-                  placeholder="e.g. 14"
-                  name="shoulderToRightTight"
-                  value={measureFormik.values.shoulderToRightTight}
-                  onChange={measureFormik.handleChange}
-                  onBlur={measureFormik.handleBlur}
-                  error={measureFormik.touched.shoulderToRightTight && Boolean(measureFormik.errors.shoulderToRightTight)}
-                  helperText={measureFormik.touched.shoulderToRightTight && measureFormik.errors.shoulderToRightTight}
-                  className="custom-form-field"
-                  size="small"
-                />
-              </Box>
+              <div className="summary-item">
+                <LocationOnOutlinedIcon style={{ fontSize: 20, color: '#d4af37' }} />
+                <div>
+                  <div className="item-label">Address</div>
+                  <div className="item-value">{customerForView.userAddress || '—'}</div>
+                </div>
+              </div>
 
-              {/* Row 2: Chest & Hip */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <TextField
-                  label="Chest Size (inches)"
-                  placeholder="e.g. 36"
-                  name="chest"
-                  value={measureFormik.values.chest}
-                  onChange={measureFormik.handleChange}
-                  onBlur={measureFormik.handleBlur}
-                  error={measureFormik.touched.chest && Boolean(measureFormik.errors.chest)}
-                  helperText={measureFormik.touched.chest && measureFormik.errors.chest}
-                  className="custom-form-field"
-                  size="small"
-                />
-                <TextField
-                  label="Hip Size (inches)"
-                  placeholder="e.g. 40"
-                  name="hip"
-                  value={measureFormik.values.hip}
-                  onChange={measureFormik.handleChange}
-                  onBlur={measureFormik.handleBlur}
-                  error={measureFormik.touched.hip && Boolean(measureFormik.errors.hip)}
-                  helperText={measureFormik.touched.hip && measureFormik.errors.hip}
-                  className="custom-form-field"
-                  size="small"
-                />
-              </Box>
+              <div className="summary-item">
+                <CalendarTodayOutlinedIcon style={{ fontSize: 20, color: '#d4af37' }} />
+                <div>
+                  <div className="item-label">Joined</div>
+                  <div className="item-value">{customerForView.createdAt || 'Recent'}</div>
+                </div>
+              </div>
+            </div>
 
-              {/* Row 3: First Pleat & Chest Pleats */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <TextField
-                  label="First Pleat Size (inches)"
-                  placeholder="e.g. 6.5"
-                  name="firstPleatSize"
-                  value={measureFormik.values.firstPleatSize}
-                  onChange={measureFormik.handleChange}
-                  onBlur={measureFormik.handleBlur}
-                  error={measureFormik.touched.firstPleatSize && Boolean(measureFormik.errors.firstPleatSize)}
-                  helperText={measureFormik.touched.firstPleatSize && measureFormik.errors.firstPleatSize}
-                  className="custom-form-field"
-                  size="small"
-                />
-                <TextField
-                  label="No. of Chest Pleats"
-                  placeholder="e.g. 5"
-                  name="noOfChestPleats"
-                  value={measureFormik.values.noOfChestPleats}
-                  onChange={measureFormik.handleChange}
-                  onBlur={measureFormik.handleBlur}
-                  error={measureFormik.touched.noOfChestPleats && Boolean(measureFormik.errors.noOfChestPleats)}
-                  helperText={measureFormik.touched.noOfChestPleats && measureFormik.errors.noOfChestPleats}
-                  className="custom-form-field"
-                  size="small"
-                />
-              </Box>
+            {/* Measurement Profiles Title */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+              <span style={{ fontWeight: 700, color: '#e6d8a3', fontSize: '0.95rem' }}>
+                Saree Measurement Profiles ({measurementsMap[customerForView.id]?.length || 0})
+              </span>
+            </div>
 
-              {/* Row 4: Height & Dress Size */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <TextField
-                  label="Height (inches/cm)"
-                  placeholder="e.g. 165 or 65"
-                  name="height"
-                  value={measureFormik.values.height}
-                  onChange={measureFormik.handleChange}
-                  onBlur={measureFormik.handleBlur}
-                  error={measureFormik.touched.height && Boolean(measureFormik.errors.height)}
-                  helperText={measureFormik.touched.height && measureFormik.errors.height}
-                  className="custom-form-field"
-                  size="small"
-                />
-                <TextField
-                  select
-                  label="Dress Size"
-                  name="dressSize"
-                  value={measureFormik.values.dressSize}
-                  onChange={measureFormik.handleChange}
-                  onBlur={measureFormik.handleBlur}
-                  error={measureFormik.touched.dressSize && Boolean(measureFormik.errors.dressSize)}
-                  helperText={measureFormik.touched.dressSize && measureFormik.errors.dressSize}
-                  className="custom-form-field"
-                  size="small"
+            {/* List of Measurement Cards */}
+            {(!measurementsMap[customerForView.id] || measurementsMap[customerForView.id].length === 0) ? (
+              <div className="empty-measurements-box">
+                <StraightenOutlinedIcon style={{ fontSize: 36, color: '#d4af37', opacity: 0.5, marginBottom: 8 }} />
+                <div style={{ color: '#e6d8a3', fontWeight: 600, fontSize: '0.9rem' }}>
+                  No saree measurements recorded for this customer yet.
+                </div>
+                <p style={{ color: 'rgba(230, 216, 163, 0.6)', fontSize: '0.8rem', marginTop: 4, marginBottom: 12 }}>
+                  Add a measurement profile so pre-pleating orders can be tailored to exact body fit.
+                </p>
+                <AppButton
+                  variant="primary"
+                  size="sm"
+                  startIcon={<StraightenOutlinedIcon />}
+                  onClick={() => {
+                    setOpenViewDetailsModal(false);
+                    handleOpenAddMeasure(customerForView);
+                  }}
                 >
-                  {DRESS_SIZES.map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {s}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
+                  Record Measurements Now
+                </AppButton>
+              </div>
+            ) : (
+              <div className="measurements-list-container">
+                {measurementsMap[customerForView.id].map((measure, idx) => (
+                  <div key={measure.id || idx} className="measurement-card">
+                    <div className="measure-card-header">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span className="measure-profile-title">
+                          {measure.title || `Measurement Profile #${idx + 1}`}
+                        </span>
+                        {measure.dressSize && (
+                          <AppBadge variant="neutral">
+                            Size: {measure.dressSize}
+                          </AppBadge>
+                        )}
+                      </div>
 
-              {/* Notes */}
-              <TextField
-                fullWidth
-                multiline
-                rows={2.5}
-                label="Tailoring & Draping Notes"
-                placeholder="Specific pin positions, pleat stiffness, or custom preferences..."
-                name="notes"
-                value={measureFormik.values.notes}
-                onChange={measureFormik.handleChange}
-                onBlur={measureFormik.handleBlur}
-                error={measureFormik.touched.notes && Boolean(measureFormik.errors.notes)}
-                helperText={measureFormik.touched.notes && measureFormik.errors.notes}
-                className="custom-form-field"
-                size="small"
-              />
-            </Box>
-          </DialogContent>
+                      <div className="measure-actions">
+                        <span className="measure-date">
+                          {measure.createdAt ? formatDateSafe(measure.createdAt) : ''}
+                        </span>
 
-          <DialogActions className="dialog-actions-bar">
-            <Button
+                        {userCanEdit && (
+                          <button
+                            type="button"
+                            className="measure-action-btn measure-action-btn--edit"
+                            title="Edit Measurement"
+                            onClick={() => handleOpenEditMeasure(measure)}
+                          >
+                            <EditOutlinedIcon style={{ fontSize: 16 }} />
+                          </button>
+                        )}
+
+                        {userCanDelete && (
+                          <button
+                            type="button"
+                            className="measure-action-btn measure-action-btn--delete"
+                            title="Delete Measurement"
+                            onClick={() =>
+                              setMeasureToDelete({
+                                id: measure.id,
+                                userId: customerForView.id,
+                                title: measure.title,
+                              })
+                            }
+                          >
+                            <DeleteOutlineIcon style={{ fontSize: 16 }} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="measure-dimensions-grid">
+                      <div className="dim-item">
+                        <span className="dim-label">Pallu Length</span>
+                        <span className="dim-value">{measure.pallu ? `${measure.pallu}"` : '—'}</span>
+                      </div>
+
+                      <div className="dim-item">
+                        <span className="dim-label">Shoulder to Tight</span>
+                        <span className="dim-value">{measure.shoulderToRightTight ? `${measure.shoulderToRightTight}"` : '—'}</span>
+                      </div>
+
+                      <div className="dim-item">
+                        <span className="dim-label">Chest Size</span>
+                        <span className="dim-value">{measure.chest ? `${measure.chest}"` : '—'}</span>
+                      </div>
+
+                      <div className="dim-item">
+                        <span className="dim-label">Hip Size</span>
+                        <span className="dim-value">{measure.hip ? `${measure.hip}"` : '—'}</span>
+                      </div>
+
+                      <div className="dim-item">
+                        <span className="dim-label">First Pleat Width</span>
+                        <span className="dim-value">{measure.firstPleatSize ? `${measure.firstPleatSize}"` : '—'}</span>
+                      </div>
+
+                      <div className="dim-item">
+                        <span className="dim-label">Chest Pleats</span>
+                        <span className="dim-value">{measure.noOfChestPleats || '—'}</span>
+                      </div>
+
+                      <div className="dim-item">
+                        <span className="dim-label">Customer Height</span>
+                        <span className="dim-value">{measure.height ? `${measure.height}` : '—'}</span>
+                      </div>
+
+                      <div className="dim-item">
+                        <span className="dim-label">Dress Size</span>
+                        <span className="dim-value">{measure.dressSize || '—'}</span>
+                      </div>
+                    </div>
+
+                    {measure.notes && (
+                      <div className="measure-notes-row">
+                        <NotesOutlinedIcon style={{ fontSize: 16, color: '#d4af37', flexShrink: 0, marginTop: 2 }} />
+                        <span className="measure-notes-text">
+                          <strong>Notes:</strong> {measure.notes}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </AppModal>
+
+      {/* ========================================================================= */}
+      {/* 4. Modal: Add Measurement Profile Dialog                                  */}
+      {/* ========================================================================= */}
+      <AppModal
+        open={openAddMeasureModal}
+        onClose={() => !measureFormik.isSubmitting && setOpenAddMeasureModal(false)}
+        title="Add Saree Measurement Profile"
+        subtitle={`Recording measurements for ${customerForMeasure?.username || 'Customer'}`}
+        maxWidth="md"
+        actions={
+          <>
+            <AppButton
+              variant="secondary"
               onClick={() => setOpenAddMeasureModal(false)}
-              className="cancel-btn"
               disabled={measureFormik.isSubmitting}
             >
               Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              className="submit-btn"
+            </AppButton>
+            <AppButton
+              variant="primary"
+              onClick={measureFormik.handleSubmit}
+              loading={measureFormik.isSubmitting}
+            >
+              Save Measurements
+            </AppButton>
+          </>
+        }
+      >
+        <form onSubmit={measureFormik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <AppInput
+            label="Measurement Profile Title (e.g. Bridal Silk Saree)"
+            required
+            id="measure-title"
+            name="title"
+            placeholder="e.g. Kanjeevaram Saree / Reception Saree"
+            value={measureFormik.values.title}
+            onChange={measureFormik.handleChange}
+            onBlur={measureFormik.handleBlur}
+            error={measureFormik.touched.title && measureFormik.errors.title}
+            disabled={measureFormik.isSubmitting}
+          />
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+            <AppInput
+              label="Pallu Length (inches)"
+              id="measure-pallu"
+              name="pallu"
+              placeholder="e.g. 38"
+              value={measureFormik.values.pallu}
+              onChange={measureFormik.handleChange}
+              onBlur={measureFormik.handleBlur}
+              error={measureFormik.touched.pallu && measureFormik.errors.pallu}
               disabled={measureFormik.isSubmitting}
-              startIcon={measureFormik.isSubmitting ? <CircularProgress size={16} sx={{ color: '#000000' }} /> : null}
+            />
+
+            <AppInput
+              label="Shoulder to Tight (in)"
+              id="measure-shoulder"
+              name="shoulderToRightTight"
+              placeholder="e.g. 14"
+              value={measureFormik.values.shoulderToRightTight}
+              onChange={measureFormik.handleChange}
+              onBlur={measureFormik.handleBlur}
+              error={measureFormik.touched.shoulderToRightTight && measureFormik.errors.shoulderToRightTight}
+              disabled={measureFormik.isSubmitting}
+            />
+
+            <AppInput
+              label="Chest (inches)"
+              id="measure-chest"
+              name="chest"
+              placeholder="e.g. 36"
+              value={measureFormik.values.chest}
+              onChange={measureFormik.handleChange}
+              onBlur={measureFormik.handleBlur}
+              error={measureFormik.touched.chest && measureFormik.errors.chest}
+              disabled={measureFormik.isSubmitting}
+            />
+
+            <AppInput
+              label="Hip (inches)"
+              id="measure-hip"
+              name="hip"
+              placeholder="e.g. 40"
+              value={measureFormik.values.hip}
+              onChange={measureFormik.handleChange}
+              onBlur={measureFormik.handleBlur}
+              error={measureFormik.touched.hip && measureFormik.errors.hip}
+              disabled={measureFormik.isSubmitting}
+            />
+
+            <AppInput
+              label="First Pleat Size (in)"
+              id="measure-firstPleat"
+              name="firstPleatSize"
+              placeholder="e.g. 5.5"
+              value={measureFormik.values.firstPleatSize}
+              onChange={measureFormik.handleChange}
+              onBlur={measureFormik.handleBlur}
+              error={measureFormik.touched.firstPleatSize && measureFormik.errors.firstPleatSize}
+              disabled={measureFormik.isSubmitting}
+            />
+
+            <AppInput
+              label="Chest Pleats (count)"
+              id="measure-noOfChestPleats"
+              name="noOfChestPleats"
+              placeholder="e.g. 5"
+              value={measureFormik.values.noOfChestPleats}
+              onChange={measureFormik.handleChange}
+              onBlur={measureFormik.handleBlur}
+              error={measureFormik.touched.noOfChestPleats && measureFormik.errors.noOfChestPleats}
+              disabled={measureFormik.isSubmitting}
+            />
+
+            <AppInput
+              label="Height (cm / ft)"
+              id="measure-height"
+              name="height"
+              placeholder="e.g. 160"
+              value={measureFormik.values.height}
+              onChange={measureFormik.handleChange}
+              onBlur={measureFormik.handleBlur}
+              error={measureFormik.touched.height && measureFormik.errors.height}
+              disabled={measureFormik.isSubmitting}
+            />
+
+            <AppInput
+              select
+              label="Dress Size"
+              id="measure-dressSize"
+              name="dressSize"
+              value={measureFormik.values.dressSize}
+              onChange={measureFormik.handleChange}
+              onBlur={measureFormik.handleBlur}
+              error={measureFormik.touched.dressSize && measureFormik.errors.dressSize}
+              disabled={measureFormik.isSubmitting}
             >
-              {measureFormik.isSubmitting ? 'Saving...' : 'Save Measurement Profile'}
-            </Button>
-          </DialogActions>
+              {DRESS_SIZES.map((sz) => (
+                <option key={sz} value={sz}>
+                  {sz}
+                </option>
+              ))}
+            </AppInput>
+          </div>
+
+          <AppInput
+            multiline
+            rows={2}
+            label="Special Tailoring Notes (Optional)"
+            id="measure-notes"
+            name="notes"
+            placeholder="e.g. Extra pins for heavy silk border, left-side drape..."
+            value={measureFormik.values.notes}
+            onChange={measureFormik.handleChange}
+            onBlur={measureFormik.handleBlur}
+            error={measureFormik.touched.notes && measureFormik.errors.notes}
+            disabled={measureFormik.isSubmitting}
+          />
         </form>
-      </Dialog>
+      </AppModal>
 
       {/* ========================================================================= */}
-      {/* MODAL 3: EDIT CUSTOMER DETAILS                                            */}
+      {/* 5. Modal: Edit Measurement Profile Dialog                                 */}
       {/* ========================================================================= */}
-      <Dialog
-        open={openEditModal}
-        onClose={() => setOpenEditModal(false)}
-        maxWidth="sm"
-        fullWidth
-        className="customer-dialog"
-      >
-        <DialogTitle className="dialog-title-bar">
-          <Typography variant="h6" className="dialog-title">
-            Edit Customer Details
-          </Typography>
-          <IconButton onClick={() => setOpenEditModal(false)} sx={{ color: '#e6d8a3' }}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <form onSubmit={editFormik.handleSubmit}>
-          <DialogContent className="dialog-content-body">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-              <TextField
-                fullWidth
-                label="Customer Full Name *"
-                name="username"
-                value={editFormik.values.username}
-                onChange={editFormik.handleChange}
-                onBlur={editFormik.handleBlur}
-                error={editFormik.touched.username && Boolean(editFormik.errors.username)}
-                helperText={editFormik.touched.username && editFormik.errors.username}
-                className="custom-form-field"
-                size="small"
-              />
-
-              <TextField
-                fullWidth
-                label="10-Digit Indian Mobile Number *"
-                name="userMobile"
-                value={editFormik.values.userMobile}
-                onChange={editFormik.handleChange}
-                onBlur={editFormik.handleBlur}
-                error={editFormik.touched.userMobile && Boolean(editFormik.errors.userMobile)}
-                helperText={editFormik.touched.userMobile && editFormik.errors.userMobile}
-                className="custom-form-field"
-                size="small"
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">+91</InputAdornment>,
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="Email Address *"
-                name="email"
-                type="email"
-                value={editFormik.values.email}
-                onChange={editFormik.handleChange}
-                onBlur={editFormik.handleBlur}
-                error={editFormik.touched.email && Boolean(editFormik.errors.email)}
-                helperText={editFormik.touched.email && editFormik.errors.email}
-                className="custom-form-field"
-                size="small"
-              />
-
-              <TextField
-                fullWidth
-                multiline
-                rows={2.5}
-                label="Delivery Address"
-                name="userAddress"
-                value={editFormik.values.userAddress}
-                onChange={editFormik.handleChange}
-                onBlur={editFormik.handleBlur}
-                error={editFormik.touched.userAddress && Boolean(editFormik.errors.userAddress)}
-                helperText={editFormik.touched.userAddress && editFormik.errors.userAddress}
-                className="custom-form-field"
-                size="small"
-              />
-            </Box>
-          </DialogContent>
-
-          <DialogActions className="dialog-actions-bar">
-            <Button
-              onClick={() => setOpenEditModal(false)}
-              className="cancel-btn"
-              disabled={editFormik.isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              className="submit-btn"
-              disabled={editFormik.isSubmitting}
-              startIcon={editFormik.isSubmitting ? <CircularProgress size={16} sx={{ color: '#000000' }} /> : null}
-            >
-              {editFormik.isSubmitting ? 'Saving...' : 'Update Customer'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-
-      {/* ========================================================================= */}
-      {/* MODAL 4: ADD NEW CUSTOMER                                                 */}
-      {/* ========================================================================= */}
-      <Dialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        className="customer-dialog"
-      >
-        <DialogTitle className="dialog-title-bar">
-          <Typography variant="h6" className="dialog-title">
-            Register New Customer
-          </Typography>
-          <IconButton onClick={() => setDialogOpen(false)} sx={{ color: '#e6d8a3' }}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <form onSubmit={createFormik.handleSubmit}>
-          <DialogContent className="dialog-content-body">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-              <TextField
-                fullWidth
-                label="Customer Full Name *"
-                name="username"
-                value={createFormik.values.username}
-                onChange={createFormik.handleChange}
-                onBlur={createFormik.handleBlur}
-                error={createFormik.touched.username && Boolean(createFormik.errors.username)}
-                helperText={createFormik.touched.username && createFormik.errors.username}
-                className="custom-form-field"
-                size="small"
-              />
-
-              <TextField
-                fullWidth
-                label="10-Digit Indian Mobile Number *"
-                name="userMobile"
-                value={createFormik.values.userMobile}
-                onChange={createFormik.handleChange}
-                onBlur={createFormik.handleBlur}
-                error={createFormik.touched.userMobile && Boolean(createFormik.errors.userMobile)}
-                helperText={createFormik.touched.userMobile && createFormik.errors.userMobile}
-                className="custom-form-field"
-                size="small"
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">+91</InputAdornment>,
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="Email Address *"
-                name="email"
-                type="email"
-                value={createFormik.values.email}
-                onChange={createFormik.handleChange}
-                onBlur={createFormik.handleBlur}
-                error={createFormik.touched.email && Boolean(createFormik.errors.email)}
-                helperText={createFormik.touched.email && createFormik.errors.email}
-                className="custom-form-field"
-                size="small"
-              />
-
-              <TextField
-                fullWidth
-                multiline
-                rows={2.5}
-                label="Delivery Address"
-                name="userAddress"
-                value={createFormik.values.userAddress}
-                onChange={createFormik.handleChange}
-                onBlur={createFormik.handleBlur}
-                error={createFormik.touched.userAddress && Boolean(createFormik.errors.userAddress)}
-                helperText={createFormik.touched.userAddress && createFormik.errors.userAddress}
-                className="custom-form-field"
-                size="small"
-              />
-            </Box>
-          </DialogContent>
-
-          <DialogActions className="dialog-actions-bar">
-            <Button
-              onClick={() => setDialogOpen(false)}
-              className="cancel-btn"
-              disabled={createFormik.isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              className="submit-btn"
-              disabled={createFormik.isSubmitting}
-              startIcon={createFormik.isSubmitting ? <CircularProgress size={16} sx={{ color: '#000000' }} /> : null}
-            >
-              {createFormik.isSubmitting ? 'Creating...' : 'Register Customer'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-
-      {/* ========================================================================= */}
-      {/* MODAL 5: EDIT MEASUREMENT PROFILE                                         */}
-      {/* ========================================================================= */}
-      <Dialog
+      <AppModal
         open={openEditMeasureModal}
         onClose={() => !editMeasureFormik.isSubmitting && setOpenEditMeasureModal(false)}
-        maxWidth="sm"
-        fullWidth
-        className="customer-dialog"
-      >
-        <DialogTitle className="dialog-title-bar">
-          <Box>
-            <Typography variant="h6" className="dialog-title">
-              Edit Measurement Profile
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(230, 216, 163, 0.6)' }}>
-              Customer: <strong>{customerForView?.username}</strong>
-            </Typography>
-          </Box>
-          <IconButton
-            onClick={() => !editMeasureFormik.isSubmitting && setOpenEditMeasureModal(false)}
-            sx={{ color: '#e6d8a3' }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <form onSubmit={editMeasureFormik.handleSubmit}>
-          <DialogContent className="dialog-content-body">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.2 }}>
-              {/* Profile Title */}
-              <TextField
-                fullWidth
-                label="Measurement Profile Title *"
-                placeholder="e.g. Bridal Silk Saree, Reception Draping"
-                name="title"
-                value={editMeasureFormik.values.title}
-                onChange={editMeasureFormik.handleChange}
-                onBlur={editMeasureFormik.handleBlur}
-                error={editMeasureFormik.touched.title && Boolean(editMeasureFormik.errors.title)}
-                helperText={editMeasureFormik.touched.title && editMeasureFormik.errors.title}
-                className="custom-form-field"
-                size="small"
-              />
-
-              {/* Row 1: Pallu & Shoulder */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <TextField
-                  label="Pallu Length (inches)"
-                  placeholder="e.g. 38"
-                  name="pallu"
-                  value={editMeasureFormik.values.pallu}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={editMeasureFormik.touched.pallu && Boolean(editMeasureFormik.errors.pallu)}
-                  helperText={editMeasureFormik.touched.pallu && editMeasureFormik.errors.pallu}
-                  className="custom-form-field"
-                  size="small"
-                />
-                <TextField
-                  label="Shoulder to Tight (inches)"
-                  placeholder="e.g. 14"
-                  name="shoulderToRightTight"
-                  value={editMeasureFormik.values.shoulderToRightTight}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={editMeasureFormik.touched.shoulderToRightTight && Boolean(editMeasureFormik.errors.shoulderToRightTight)}
-                  helperText={editMeasureFormik.touched.shoulderToRightTight && editMeasureFormik.errors.shoulderToRightTight}
-                  className="custom-form-field"
-                  size="small"
-                />
-              </Box>
-
-              {/* Row 2: Chest & Hip */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <TextField
-                  label="Chest Size (inches)"
-                  placeholder="e.g. 36"
-                  name="chest"
-                  value={editMeasureFormik.values.chest}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={editMeasureFormik.touched.chest && Boolean(editMeasureFormik.errors.chest)}
-                  helperText={editMeasureFormik.touched.chest && editMeasureFormik.errors.chest}
-                  className="custom-form-field"
-                  size="small"
-                />
-                <TextField
-                  label="Hip Size (inches)"
-                  placeholder="e.g. 40"
-                  name="hip"
-                  value={editMeasureFormik.values.hip}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={editMeasureFormik.touched.hip && Boolean(editMeasureFormik.errors.hip)}
-                  helperText={editMeasureFormik.touched.hip && editMeasureFormik.errors.hip}
-                  className="custom-form-field"
-                  size="small"
-                />
-              </Box>
-
-              {/* Row 3: First Pleat & Chest Pleats */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <TextField
-                  label="First Pleat Size (inches)"
-                  placeholder="e.g. 6.5"
-                  name="firstPleatSize"
-                  value={editMeasureFormik.values.firstPleatSize}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={editMeasureFormik.touched.firstPleatSize && Boolean(editMeasureFormik.errors.firstPleatSize)}
-                  helperText={editMeasureFormik.touched.firstPleatSize && editMeasureFormik.errors.firstPleatSize}
-                  className="custom-form-field"
-                  size="small"
-                />
-                <TextField
-                  label="No. of Chest Pleats"
-                  placeholder="e.g. 5"
-                  name="noOfChestPleats"
-                  value={editMeasureFormik.values.noOfChestPleats}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={editMeasureFormik.touched.noOfChestPleats && Boolean(editMeasureFormik.errors.noOfChestPleats)}
-                  helperText={editMeasureFormik.touched.noOfChestPleats && editMeasureFormik.errors.noOfChestPleats}
-                  className="custom-form-field"
-                  size="small"
-                />
-              </Box>
-
-              {/* Row 4: Height & Dress Size */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <TextField
-                  label="Height (inches/cm)"
-                  placeholder="e.g. 165 or 65"
-                  name="height"
-                  value={editMeasureFormik.values.height}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={editMeasureFormik.touched.height && Boolean(editMeasureFormik.errors.height)}
-                  helperText={editMeasureFormik.touched.height && editMeasureFormik.errors.height}
-                  className="custom-form-field"
-                  size="small"
-                />
-                <TextField
-                  select
-                  label="Dress Size"
-                  name="dressSize"
-                  value={editMeasureFormik.values.dressSize}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={editMeasureFormik.touched.dressSize && Boolean(editMeasureFormik.errors.dressSize)}
-                  helperText={editMeasureFormik.touched.dressSize && editMeasureFormik.errors.dressSize}
-                  className="custom-form-field"
-                  size="small"
-                >
-                  {DRESS_SIZES.map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {s}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
-
-              {/* Notes */}
-              <TextField
-                fullWidth
-                multiline
-                rows={2.5}
-                label="Tailoring & Draping Notes"
-                placeholder="Specific pin positions, pleat stiffness, or custom preferences..."
-                name="notes"
-                value={editMeasureFormik.values.notes}
-                onChange={editMeasureFormik.handleChange}
-                onBlur={editMeasureFormik.handleBlur}
-                error={editMeasureFormik.touched.notes && Boolean(editMeasureFormik.errors.notes)}
-                helperText={editMeasureFormik.touched.notes && editMeasureFormik.errors.notes}
-                className="custom-form-field"
-                size="small"
-              />
-            </Box>
-          </DialogContent>
-
-          <DialogActions className="dialog-actions-bar">
-            <Button
+        title="Edit Measurement Profile"
+        subtitle={selectedMeasureForEdit?.title || 'Modify pleat and sizing parameters'}
+        maxWidth="md"
+        actions={
+          <>
+            <AppButton
+              variant="secondary"
               onClick={() => setOpenEditMeasureModal(false)}
-              className="cancel-btn"
               disabled={editMeasureFormik.isSubmitting}
             >
               Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              className="submit-btn"
-              disabled={editMeasureFormik.isSubmitting}
-              startIcon={
-                editMeasureFormik.isSubmitting ? <CircularProgress size={16} sx={{ color: '#000000' }} /> : null
-              }
+            </AppButton>
+            <AppButton
+              variant="primary"
+              onClick={editMeasureFormik.handleSubmit}
+              loading={editMeasureFormik.isSubmitting}
             >
-              {editMeasureFormik.isSubmitting ? 'Updating...' : 'Update Measurement Profile'}
-            </Button>
-          </DialogActions>
+              Save Changes
+            </AppButton>
+          </>
+        }
+      >
+        <form onSubmit={editMeasureFormik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <AppInput
+            label="Profile Title"
+            required
+            id="edit-measure-title"
+            name="title"
+            value={editMeasureFormik.values.title}
+            onChange={editMeasureFormik.handleChange}
+            onBlur={editMeasureFormik.handleBlur}
+            error={editMeasureFormik.touched.title && editMeasureFormik.errors.title}
+            disabled={editMeasureFormik.isSubmitting}
+          />
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+            <AppInput
+              label="Pallu Length (inches)"
+              id="edit-measure-pallu"
+              name="pallu"
+              value={editMeasureFormik.values.pallu}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={editMeasureFormik.touched.pallu && editMeasureFormik.errors.pallu}
+              disabled={editMeasureFormik.isSubmitting}
+            />
+
+            <AppInput
+              label="Shoulder to Tight (in)"
+              id="edit-measure-shoulder"
+              name="shoulderToRightTight"
+              value={editMeasureFormik.values.shoulderToRightTight}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={editMeasureFormik.touched.shoulderToRightTight && editMeasureFormik.errors.shoulderToRightTight}
+              disabled={editMeasureFormik.isSubmitting}
+            />
+
+            <AppInput
+              label="Chest (inches)"
+              id="edit-measure-chest"
+              name="chest"
+              value={editMeasureFormik.values.chest}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={editMeasureFormik.touched.chest && editMeasureFormik.errors.chest}
+              disabled={editMeasureFormik.isSubmitting}
+            />
+
+            <AppInput
+              label="Hip (inches)"
+              id="edit-measure-hip"
+              name="hip"
+              value={editMeasureFormik.values.hip}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={editMeasureFormik.touched.hip && editMeasureFormik.errors.hip}
+              disabled={editMeasureFormik.isSubmitting}
+            />
+
+            <AppInput
+              label="First Pleat Size (in)"
+              id="edit-measure-firstPleat"
+              name="firstPleatSize"
+              value={editMeasureFormik.values.firstPleatSize}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={editMeasureFormik.touched.firstPleatSize && editMeasureFormik.errors.firstPleatSize}
+              disabled={editMeasureFormik.isSubmitting}
+            />
+
+            <AppInput
+              label="Chest Pleats (count)"
+              id="edit-measure-noOfChestPleats"
+              name="noOfChestPleats"
+              value={editMeasureFormik.values.noOfChestPleats}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={editMeasureFormik.touched.noOfChestPleats && editMeasureFormik.errors.noOfChestPleats}
+              disabled={editMeasureFormik.isSubmitting}
+            />
+
+            <AppInput
+              label="Height (cm / ft)"
+              id="edit-measure-height"
+              name="height"
+              value={editMeasureFormik.values.height}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={editMeasureFormik.touched.height && editMeasureFormik.errors.height}
+              disabled={editMeasureFormik.isSubmitting}
+            />
+
+            <AppInput
+              select
+              label="Dress Size"
+              id="edit-measure-dressSize"
+              name="dressSize"
+              value={editMeasureFormik.values.dressSize}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={editMeasureFormik.touched.dressSize && editMeasureFormik.errors.dressSize}
+              disabled={editMeasureFormik.isSubmitting}
+            >
+              {DRESS_SIZES.map((sz) => (
+                <option key={sz} value={sz}>
+                  {sz}
+                </option>
+              ))}
+            </AppInput>
+          </div>
+
+          <AppInput
+            multiline
+            rows={2}
+            label="Special Tailoring Notes"
+            id="edit-measure-notes"
+            name="notes"
+            value={editMeasureFormik.values.notes}
+            onChange={editMeasureFormik.handleChange}
+            onBlur={editMeasureFormik.handleBlur}
+            error={editMeasureFormik.touched.notes && editMeasureFormik.errors.notes}
+            disabled={editMeasureFormik.isSubmitting}
+          />
         </form>
-      </Dialog>
+      </AppModal>
 
       {/* ========================================================================= */}
-      {/* MODAL 6: CUSTOM DELETE CONFIRMATION POPUP (NO SYSTEM POPUP)               */}
+      {/* 6. Modal: In-App Delete Confirmation Popup                                */}
       {/* ========================================================================= */}
-      <Dialog
+      <AppModal
         open={Boolean(measureToDelete)}
         onClose={() => !deletingMeasureId && setMeasureToDelete(null)}
+        title="Delete Measurement Profile"
         maxWidth="xs"
-        fullWidth
-        className="customer-dialog"
+        actions={
+          <>
+            <AppButton
+              variant="secondary"
+              onClick={() => setMeasureToDelete(null)}
+              disabled={Boolean(deletingMeasureId)}
+            >
+              Cancel
+            </AppButton>
+            <AppButton
+              variant="danger"
+              onClick={confirmDeleteMeasurement}
+              loading={Boolean(deletingMeasureId)}
+            >
+              Delete Profile
+            </AppButton>
+          </>
+        }
       >
-        <DialogTitle className="dialog-title-bar">
-          <Typography variant="h6" className="dialog-title" sx={{ color: '#f87171 !important' }}>
-            Delete Measurement Profile
-          </Typography>
-          <IconButton
-            onClick={() => !deletingMeasureId && setMeasureToDelete(null)}
-            sx={{ color: '#e6d8a3' }}
-            disabled={Boolean(deletingMeasureId)}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent className="dialog-content-body">
-          <Typography variant="body1" sx={{ color: '#e6d8a3', mb: 1.5, fontSize: '0.95rem' }}>
-            Are you sure you want to remove the measurement profile{' '}
-            <strong style={{ color: '#d4af37' }}>
-              "{measureToDelete?.title || 'this profile'}"
-            </strong>
-            ?
-          </Typography>
-          <Typography variant="caption" sx={{ color: 'rgba(230, 216, 163, 0.65)', display: 'block', lineHeight: 1.5 }}>
-            This measurement record will be permanently deleted from this customer's profile. This action cannot be undone.
-          </Typography>
-        </DialogContent>
-
-        <DialogActions className="dialog-actions-bar">
-          <Button
-            onClick={() => setMeasureToDelete(null)}
-            className="cancel-btn"
-            disabled={Boolean(deletingMeasureId)}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={confirmDeleteMeasurement}
-            variant="contained"
-            disabled={Boolean(deletingMeasureId)}
-            sx={{
-              backgroundColor: '#dc2626 !important',
-              color: '#ffffff !important',
-              fontWeight: 700,
-              textTransform: 'none',
-              borderRadius: '8px',
-              padding: '7px 20px',
-              boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3) !important',
-              '&:hover': {
-                backgroundColor: '#ef4444 !important',
-              },
-            }}
-            startIcon={
-              deletingMeasureId ? <CircularProgress size={16} sx={{ color: '#ffffff' }} /> : null
-            }
-          >
-            {deletingMeasureId ? 'Deleting...' : 'Delete Profile'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+        <p style={{ color: '#e6d8a3', fontSize: '0.95rem', marginBottom: 10, marginTop: 0 }}>
+          Are you sure you want to remove measurement profile{' '}
+          <strong style={{ color: '#d4af37' }}>"{measureToDelete?.title || 'this profile'}"</strong>?
+        </p>
+        <p style={{ color: 'rgba(230, 216, 163, 0.65)', fontSize: '0.82rem', lineHeight: 1.5, margin: 0 }}>
+          This will permanently delete this tailoring specification.
+        </p>
+      </AppModal>
+    </div>
   );
 };
 

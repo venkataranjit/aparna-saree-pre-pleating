@@ -1,23 +1,4 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  Button,
-  Card,
-  Chip,
-  Avatar,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  MenuItem,
-  IconButton,
-  InputAdornment,
-  Alert,
-  CircularProgress,
-  Tooltip,
-} from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -26,12 +7,19 @@ import PhoneIphoneOutlinedIcon from "@mui/icons-material/PhoneIphoneOutlined";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
-import CloseIcon from "@mui/icons-material/Close";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import SquareFootOutlinedIcon from "@mui/icons-material/SquareFootOutlined";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
+import {
+  AppButton,
+  AppInput,
+  AppModal,
+  AppBadge,
+  AppSpinner,
+  AppCard,
+} from "../../../components/common";
 import { useAuth } from "../../../auth/context/AuthContext";
 import {
   updateUser,
@@ -139,9 +127,7 @@ const measurementValidationSchema = Yup.object({
       (val) => {
         if (!val) return true;
         const num = Number(val);
-        return (
-          !Number.isNaN(num) && Number.isInteger(num) && num > 0 && num <= 30
-        );
+        return !Number.isNaN(num) && Number.isInteger(num) && num >= 1 && num <= 30;
       }
     ),
   height: Yup.string()
@@ -162,8 +148,14 @@ const measurementValidationSchema = Yup.object({
 });
 
 const MyProfile = () => {
-  const { currentUser, userProfile, isSuperAdmin, role, refreshProfile, loading: authLoading } =
-    useAuth();
+  const {
+    currentUser,
+    userProfile,
+    isSuperAdmin,
+    role,
+    refreshProfile,
+    loading: authLoading,
+  } = useAuth();
   const [measurements, setMeasurements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState(null);
@@ -178,9 +170,10 @@ const MyProfile = () => {
 
   const currentUid = currentUser?.uid || userProfile?.id;
   const displayName =
-    userProfile?.username || currentUser?.displayName || (currentUser?.email ? currentUser.email.split("@")[0] : "");
-  const displayEmail =
-    userProfile?.email || currentUser?.email || "";
+    userProfile?.username ||
+    currentUser?.displayName ||
+    (currentUser?.email ? currentUser.email.split("@")[0] : "");
+  const displayEmail = userProfile?.email || currentUser?.email || "";
   const displayMobile =
     userProfile?.userMobile || currentUser?.phoneNumber || "";
   const displayAddress = userProfile?.userAddress || "";
@@ -193,7 +186,9 @@ const MyProfile = () => {
       ? "Admin"
       : role === "staff"
       ? "Staff"
-      : (currentUser || userProfile ? "Customer" : "");
+      : currentUser || userProfile
+      ? "Customer"
+      : "";
 
   // Fetch measurements for the logged-in user
   const fetchMyMeasurements = async () => {
@@ -448,1285 +443,828 @@ const MyProfile = () => {
 
   if (authLoading && !currentUser && !userProfile) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
-        <CircularProgress size={36} sx={{ color: "#d4af37" }} />
-      </Box>
+      <div className="my-profile-page__loading">
+        <AppSpinner size={36} />
+      </div>
     );
   }
 
   return (
-    <Box className="my-profile-page">
+    <div className="my-profile-page">
       {/* Top Header */}
-      <Box className="my-profile-page__header">
-        <Box>
-          <Typography variant="h4" component="h1" className="page-title">
-            My Profile
-          </Typography>
-          <Typography variant="body2" className="page-subtitle">
-            Manage your personal profile details and custom saree pleating
-            measurements
-          </Typography>
-        </Box>
+      <div className="my-profile-page__header">
+        <div>
+          <h1 className="page-title">My Profile</h1>
+          <p className="page-subtitle">
+            Manage your personal profile details and custom saree pleating measurements
+          </p>
+        </div>
 
-        <Box className="header-actions">
-          <Button
-            variant="outlined"
-            startIcon={<RefreshOutlinedIcon sx={{ color: "#d4af37" }} />}
+        <div className="header-actions">
+          <AppButton
+            variant="secondary"
+            icon={<RefreshOutlinedIcon />}
             onClick={fetchMyMeasurements}
             disabled={loading}
-            className="refresh-btn"
           >
             {loading ? "Refreshing..." : "Refresh"}
-          </Button>
+          </AppButton>
 
-          <Button
-            variant="outlined"
-            startIcon={<EditOutlinedIcon sx={{ color: "#d4af37" }} />}
+          <AppButton
+            variant="secondary"
+            icon={<EditOutlinedIcon />}
             onClick={() => setOpenEditProfileModal(true)}
-            className="edit-profile-btn"
           >
             Edit Profile
-          </Button>
+          </AppButton>
 
-          <Button
-            variant="contained"
-            startIcon={
-              <SquareFootOutlinedIcon sx={{ color: "#000000 !important" }} />
-            }
+          <AppButton
+            variant="primary"
+            icon={<SquareFootOutlinedIcon />}
             onClick={() => setOpenAddMeasureModal(true)}
-            className="primary-action-btn"
           >
             Add Measurement
-          </Button>
-        </Box>
-      </Box>
+          </AppButton>
+        </div>
+      </div>
 
       {/* Global Feedback Alert */}
       {feedback && (
-        <Alert
-          severity={feedback.type}
-          onClose={() => setFeedback(null)}
-          className="profile-feedback-alert"
-        >
-          {feedback.message}
-        </Alert>
+        <div className={`profile-feedback-alert profile-feedback-alert--${feedback.type}`}>
+          <span>{feedback.message}</span>
+          <button
+            type="button"
+            className="alert-close-btn"
+            onClick={() => setFeedback(null)}
+          >
+            &times;
+          </button>
+        </div>
       )}
 
       {/* Profile Overview Hero Card */}
-      <Card className="profile-hero-card">
-        <Box className="hero-main-row">
-          <Box className="hero-identity">
-            <Avatar
-              className="profile-avatar-large"
-              alt={displayName}
-              src={userProfile?.photoURL || currentUser?.photoURL}
-            >
-              {avatarChar || <PersonOutlineIcon sx={{ fontSize: 32 }} />}
-            </Avatar>
-            <Box>
-              <Typography className="user-display-name">
+      <div className="profile-hero-card">
+        <div className="hero-main-row">
+          <div className="hero-identity">
+            <div className="profile-avatar-large">
+              {avatarChar || <PersonOutlineIcon />}
+            </div>
+            <div>
+              <h2 className="user-display-name">
                 {displayName || "User Profile"}
-              </Typography>
-              <Box className="role-badge-chip">
-                <VerifiedUserOutlinedIcon sx={{ fontSize: 14 }} />
+              </h2>
+              <div className="role-badge-chip">
+                <VerifiedUserOutlinedIcon />
                 <span>{roleLabel || "Customer"}</span>
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
 
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<EditOutlinedIcon sx={{ color: "#d4af37" }} />}
+          <AppButton
+            variant="secondary"
+            size="sm"
+            icon={<EditOutlinedIcon />}
             onClick={() => setOpenEditProfileModal(true)}
-            className="edit-profile-btn"
           >
             Edit My Details
-          </Button>
-        </Box>
+          </AppButton>
+        </div>
 
         {/* Contact and address grid */}
-        <Box className="hero-info-grid">
-          <Box className="info-box">
-            <Box className="info-icon-wrap">
-              <PhoneIphoneOutlinedIcon sx={{ fontSize: 18 }} />
-            </Box>
-            <Box>
-              <Typography className="info-label">Mobile Number</Typography>
-              <Typography className="info-value">
+        <div className="hero-info-grid">
+          <div className="info-box">
+            <div className="info-icon-wrap">
+              <PhoneIphoneOutlinedIcon />
+            </div>
+            <div>
+              <span className="info-label">Mobile Number</span>
+              <p className="info-value">
                 {displayMobile
                   ? `+91 ${displayMobile.replace(/\D/g, "").slice(-10)}`
                   : "Not provided"}
-              </Typography>
-            </Box>
-          </Box>
+              </p>
+            </div>
+          </div>
 
-          <Box className="info-box">
-            <Box className="info-icon-wrap">
-              <EmailOutlinedIcon sx={{ fontSize: 18 }} />
-            </Box>
-            <Box>
-              <Typography className="info-label">Email Address</Typography>
-              <Typography className="info-value">{displayEmail}</Typography>
-            </Box>
-          </Box>
+          <div className="info-box">
+            <div className="info-icon-wrap">
+              <EmailOutlinedIcon />
+            </div>
+            <div>
+              <span className="info-label">Email Address</span>
+              <p className="info-value">{displayEmail}</p>
+            </div>
+          </div>
 
-          <Box className="info-box">
-            <Box className="info-icon-wrap">
-              <LocationOnOutlinedIcon sx={{ fontSize: 18 }} />
-            </Box>
-            <Box>
-              <Typography className="info-label">Delivery Address</Typography>
-              <Typography className="info-value">
+          <div className="info-box">
+            <div className="info-icon-wrap">
+              <LocationOnOutlinedIcon />
+            </div>
+            <div>
+              <span className="info-label">Delivery Address</span>
+              <p className="info-value">
                 {displayAddress || "No address provided yet"}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-      </Card>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Saree Pleating Measurements Section */}
-      <Box className="section-title-bar">
-        <Typography className="section-title">
+      <div className="section-title-bar">
+        <h3 className="section-title">
           <StraightenOutlinedIcon />
           My Saree Pleating Measurements
-        </Typography>
-        <Chip
-          label={`${measurements.length} ${
-            measurements.length === 1 ? "Measurement" : "Measurements"
-          }`}
-          size="small"
-          className="count-chip"
-        />
-      </Box>
+        </h3>
+        <span className="count-chip">
+          {measurements.length} {measurements.length === 1 ? "Measurement" : "Measurements"}
+        </span>
+      </div>
 
       {loading && measurements.length === 0 ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-          <CircularProgress size={32} sx={{ color: "#d4af37" }} />
-        </Box>
+        <div className="my-profile-page__loading">
+          <AppSpinner size={32} />
+        </div>
       ) : measurements.length === 0 ? (
-        <Card className="empty-measurements-card">
+        <div className="empty-measurements-card">
           <StraightenOutlinedIcon className="empty-icon" />
-          <Typography className="empty-title">
-            No Measurements Recorded Yet
-          </Typography>
-          <Typography className="empty-desc">
+          <h4 className="empty-title">No Measurements Recorded Yet</h4>
+          <p className="empty-desc">
             Save custom saree pleating profiles with your preferred pallu
             length, chest size, pleat count, and draping notes.
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={
-              <SquareFootOutlinedIcon sx={{ color: "#000000 !important" }} />
-            }
+          </p>
+          <AppButton
+            variant="primary"
+            icon={<SquareFootOutlinedIcon />}
             onClick={() => setOpenAddMeasureModal(true)}
-            className="primary-action-btn"
-            sx={{ mt: 2.5 }}
           >
             Add Your First Measurement
-          </Button>
-        </Card>
+          </AppButton>
+        </div>
       ) : (
-        <Box className="measurements-grid">
+        <div className="measurements-grid">
           {measurements.map((measure, idx) => (
-            <Card key={measure.id || idx} className="measurement-card">
-              <Box className="measure-card-header">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <SquareFootOutlinedIcon sx={{ color: "#d4af37", fontSize: 22 }} />
-                    <Typography className="profile-title-text">
+            <div key={measure.id || idx} className="measurement-card">
+              <div className="measure-card-header">
+                <div className="measure-card-header-left">
+                  <div className="measure-title-wrap">
+                    <SquareFootOutlinedIcon />
+                    <h4 className="profile-title-text">
                       {measure.title || `Measurement Profile #${idx + 1}`}
-                    </Typography>
-                  </Box>
+                    </h4>
+                  </div>
                   {measure.dressSize && (
-                    <Chip
-                      label={`Dress Size: ${measure.dressSize}`}
-                      size="small"
-                      sx={{
-                        height: 24,
-                        fontSize: "0.75rem",
-                        fontWeight: 700,
-                        color: "#d4af37",
-                        borderColor: "rgba(212,175,55,0.4)",
-                        backgroundColor: "rgba(212,175,55,0.08)",
-                      }}
-                      variant="outlined"
-                    />
+                    <span className="dress-size-pill">
+                      Dress Size: {measure.dressSize}
+                    </span>
                   )}
-                </Box>
+                </div>
 
-                <Box className="card-actions">
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<EditOutlinedIcon sx={{ fontSize: 16 }} />}
-                    className="action-edit-btn"
+                <div className="card-actions">
+                  <AppButton
+                    size="sm"
+                    variant="secondary"
+                    icon={<EditOutlinedIcon />}
                     onClick={() => {
                       setSelectedMeasureForEdit(measure);
                       setOpenEditMeasureModal(true);
                     }}
                   >
                     Edit
-                  </Button>
+                  </AppButton>
 
-                  <IconButton
-                    size="small"
-                    className="action-delete-btn"
-                    title="Delete Measurement"
+                  <AppButton
+                    size="sm"
+                    variant="icon"
+                    icon={<DeleteOutlineIcon />}
                     onClick={() => setMeasureToDelete(measure)}
-                  >
-                    <DeleteOutlineIcon sx={{ fontSize: 18 }} />
-                  </IconButton>
-                </Box>
-              </Box>
+                    title="Delete Measurement"
+                  />
+                </div>
+              </div>
 
-              <Box className="measure-card-body">
-                <Box className="dimensions-grid">
-                  <Box className="dim-cell">
-                    <Typography className="dim-name">Pallu Length</Typography>
-                    <Typography className="dim-val">
+              <div className="measure-card-body">
+                <div className="dimensions-grid">
+                  <div className="dim-cell">
+                    <span className="dim-name">Pallu Length</span>
+                    <span className="dim-val">
                       {measure.pallu != null && measure.pallu !== ""
                         ? `${measure.pallu}"`
                         : "—"}
-                    </Typography>
-                  </Box>
-                  <Box className="dim-cell">
-                    <Typography className="dim-name">
-                      Shoulder to Tight
-                    </Typography>
-                    <Typography className="dim-val">
+                    </span>
+                  </div>
+                  <div className="dim-cell">
+                    <span className="dim-name">Shoulder to Tight</span>
+                    <span className="dim-val">
                       {measure.shoulderToRightTight != null &&
                       measure.shoulderToRightTight !== ""
                         ? `${measure.shoulderToRightTight}"`
                         : "—"}
-                    </Typography>
-                  </Box>
-                  <Box className="dim-cell">
-                    <Typography className="dim-name">Chest Size</Typography>
-                    <Typography className="dim-val">
+                    </span>
+                  </div>
+                  <div className="dim-cell">
+                    <span className="dim-name">Chest Size</span>
+                    <span className="dim-val">
                       {measure.chest != null && measure.chest !== ""
                         ? `${measure.chest}"`
                         : "—"}
-                    </Typography>
-                  </Box>
-                  <Box className="dim-cell">
-                    <Typography className="dim-name">Hip Size</Typography>
-                    <Typography className="dim-val">
+                    </span>
+                  </div>
+                  <div className="dim-cell">
+                    <span className="dim-name">Hip Size</span>
+                    <span className="dim-val">
                       {measure.hip != null && measure.hip !== ""
                         ? `${measure.hip}"`
                         : "—"}
-                    </Typography>
-                  </Box>
-                  <Box className="dim-cell">
-                    <Typography className="dim-name">1st Pleat Size</Typography>
-                    <Typography className="dim-val">
+                    </span>
+                  </div>
+                  <div className="dim-cell">
+                    <span className="dim-name">1st Pleat Size</span>
+                    <span className="dim-val">
                       {measure.firstPleatSize != null &&
                       measure.firstPleatSize !== ""
                         ? `${measure.firstPleatSize}"`
                         : "—"}
-                    </Typography>
-                  </Box>
-                  <Box className="dim-cell">
-                    <Typography className="dim-name">Chest Pleats</Typography>
-                    <Typography className="dim-val">
+                    </span>
+                  </div>
+                  <div className="dim-cell">
+                    <span className="dim-name">Chest Pleats</span>
+                    <span className="dim-val">
                       {measure.noOfChestPleats != null &&
                       measure.noOfChestPleats !== ""
                         ? `${measure.noOfChestPleats} Pleats`
                         : "—"}
-                    </Typography>
-                  </Box>
-                  <Box className="dim-cell">
-                    <Typography className="dim-name">Height</Typography>
-                    <Typography className="dim-val">
+                    </span>
+                  </div>
+                  <div className="dim-cell">
+                    <span className="dim-name">Height</span>
+                    <span className="dim-val">
                       {measure.height != null && measure.height !== ""
                         ? `${measure.height}`
                         : "—"}
-                    </Typography>
-                  </Box>
-                  <Box className="dim-cell">
-                    <Typography className="dim-name">Dress Size</Typography>
-                    <Typography className="dim-val">
+                    </span>
+                  </div>
+                  <div className="dim-cell">
+                    <span className="dim-name">Dress Size</span>
+                    <span className="dim-val">
                       {measure.dressSize || "—"}
-                    </Typography>
-                  </Box>
-                </Box>
+                    </span>
+                  </div>
+                </div>
 
                 {measure.notes && (
-                  <Box className="measure-notes-box">
-                    <Typography className="notes-label">
-                      Tailoring & Draping Notes
-                    </Typography>
-                    <Typography className="notes-content">
-                      {measure.notes}
-                    </Typography>
-                  </Box>
+                  <div className="measure-notes-box">
+                    <span className="notes-label">Tailoring & Draping Notes</span>
+                    <p className="notes-content">{measure.notes}</p>
+                  </div>
                 )}
 
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 2, pt: 1.5, borderTop: "1px solid rgba(212, 175, 55, 0.12)" }}>
-                  <Typography className="measure-footer-date" sx={{ mt: "0 !important" }}>
-                    <CalendarTodayOutlinedIcon sx={{ fontSize: 13, color: "#d4af37" }} />
+                <div className="measure-card-footer">
+                  <span className="measure-footer-date">
+                    <CalendarTodayOutlinedIcon />
                     Recorded {formatDateSafe(measure.createdAtDate || measure.createdAt, "Recent")}
-                  </Typography>
-                </Box>
-              </Box>
-            </Card>
+                  </span>
+                </div>
+              </div>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL: EDIT PERSONAL PROFILE                                             */}
+      {/* 1. Modal: Edit Profile Dialog                                             */}
       {/* ========================================================================= */}
-      <Dialog
+      <AppModal
         open={openEditProfileModal}
-        onClose={() => setOpenEditProfileModal(false)}
+        onClose={() => !editProfileFormik.isSubmitting && setOpenEditProfileModal(false)}
+        title="Edit My Profile Details"
+        subtitle="Update your contact information and delivery address"
         maxWidth="sm"
-        fullWidth
-        className="profile-modal"
-        PaperProps={{
-          sx: {
-            maxWidth: "560px !important",
-            width: "100%",
-          },
-        }}
-      >
-        <DialogTitle className="dialog-title-bar">
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 40,
-                height: 40,
-                borderRadius: "12px",
-                background: "linear-gradient(135deg, #d4af37 0%, #a28220 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 4px 14px rgba(212, 175, 55, 0.35)",
-                flexShrink: 0,
-              }}
-            >
-              <EditOutlinedIcon sx={{ color: "#000000", fontSize: 22 }} />
-            </Box>
-            <Box>
-              <Typography variant="h6" className="dialog-title">
-                Edit My Profile Details
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "rgba(230, 216, 163, 0.65)",
-                  fontSize: "0.76rem",
-                  display: "block",
-                }}
-              >
-                Update your contact information and delivery address
-              </Typography>
-            </Box>
-          </Box>
-          <IconButton
-            onClick={() => setOpenEditProfileModal(false)}
-            sx={{
-              color: "#e6d8a3",
-              padding: "6px",
-              borderRadius: "8px",
-              "&:hover": {
-                backgroundColor: "rgba(212, 175, 55, 0.15)",
-                color: "#d4af37",
-              },
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <form onSubmit={editProfileFormik.handleSubmit}>
-          <DialogContent className="dialog-content-body">
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-              <TextField
-                fullWidth
-                label="Your Full Name *"
-                name="username"
-                value={editProfileFormik.values.username}
-                onChange={editProfileFormik.handleChange}
-                onBlur={editProfileFormik.handleBlur}
-                error={
-                  editProfileFormik.touched.username &&
-                  Boolean(editProfileFormik.errors.username)
-                }
-                helperText={
-                  editProfileFormik.touched.username &&
-                  editProfileFormik.errors.username
-                }
-                className="custom-form-field"
-                size="small"
-              />
-
-              <TextField
-                fullWidth
-                label="10-Digit Mobile Number *"
-                name="userMobile"
-                value={editProfileFormik.values.userMobile}
-                onChange={editProfileFormik.handleChange}
-                onBlur={editProfileFormik.handleBlur}
-                error={
-                  editProfileFormik.touched.userMobile &&
-                  Boolean(editProfileFormik.errors.userMobile)
-                }
-                helperText={
-                  editProfileFormik.touched.userMobile &&
-                  editProfileFormik.errors.userMobile
-                }
-                className="custom-form-field"
-                size="small"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">+91</InputAdornment>
-                  ),
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="Email Address *"
-                name="email"
-                type="email"
-                value={editProfileFormik.values.email}
-                onChange={editProfileFormik.handleChange}
-                onBlur={editProfileFormik.handleBlur}
-                error={
-                  editProfileFormik.touched.email &&
-                  Boolean(editProfileFormik.errors.email)
-                }
-                helperText={
-                  editProfileFormik.touched.email &&
-                  editProfileFormik.errors.email
-                }
-                className="custom-form-field"
-                size="small"
-              />
-
-              <TextField
-                fullWidth
-                multiline
-                rows={2.5}
-                label="Delivery Address"
-                name="userAddress"
-                placeholder="Flat / House No., Street, City, Pincode"
-                value={editProfileFormik.values.userAddress}
-                onChange={editProfileFormik.handleChange}
-                onBlur={editProfileFormik.handleBlur}
-                error={
-                  editProfileFormik.touched.userAddress &&
-                  Boolean(editProfileFormik.errors.userAddress)
-                }
-                helperText={
-                  editProfileFormik.touched.userAddress &&
-                  editProfileFormik.errors.userAddress
-                }
-                className="custom-form-field"
-                size="small"
-              />
-            </Box>
-          </DialogContent>
-
-          <DialogActions className="dialog-actions-bar">
-            <Button
+        actions={
+          <>
+            <AppButton
+              variant="secondary"
               onClick={() => setOpenEditProfileModal(false)}
-              className="cancel-btn"
               disabled={editProfileFormik.isSubmitting}
             >
               Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              className="submit-btn"
-              disabled={editProfileFormik.isSubmitting}
-              startIcon={
-                editProfileFormik.isSubmitting ? (
-                  <CircularProgress size={16} sx={{ color: "#000000" }} />
-                ) : null
-              }
+            </AppButton>
+            <AppButton
+              variant="primary"
+              onClick={editProfileFormik.handleSubmit}
+              loading={editProfileFormik.isSubmitting}
             >
-              {editProfileFormik.isSubmitting ? "Saving..." : "Save My Details"}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-
-      {/* ========================================================================= */}
-      {/* MODAL: ADD MEASUREMENT PROFILE                                           */}
-      {/* ========================================================================= */}
-      <Dialog
-        open={openAddMeasureModal}
-        onClose={() => setOpenAddMeasureModal(false)}
-        maxWidth="md"
-        fullWidth
-        className="profile-modal"
-        PaperProps={{
-          sx: {
-            maxWidth: "700px !important",
-            width: "100%",
-          },
-        }}
+              Save Profile
+            </AppButton>
+          </>
+        }
       >
-        <DialogTitle className="dialog-title-bar">
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 42,
-                height: 42,
-                borderRadius: "12px",
-                background: "linear-gradient(135deg, #d4af37 0%, #a28220 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 4px 14px rgba(212, 175, 55, 0.35)",
-                flexShrink: 0,
-              }}
-            >
-              <SquareFootOutlinedIcon sx={{ color: "#000000", fontSize: 24 }} />
-            </Box>
-            <Box>
-              <Typography variant="h6" className="dialog-title">
-                Add Saree Pleating Measurement
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "rgba(230, 216, 163, 0.65)",
-                  fontSize: "0.76rem",
-                  display: "block",
-                }}
-              >
-                Save custom draping & pleating dimensions to your profile
-              </Typography>
-            </Box>
-          </Box>
-          <IconButton
-            onClick={() => setOpenAddMeasureModal(false)}
-            sx={{
-              color: "#e6d8a3",
-              padding: "6px",
-              borderRadius: "8px",
-              "&:hover": {
-                backgroundColor: "rgba(212, 175, 55, 0.15)",
-                color: "#d4af37",
-              },
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <form onSubmit={addMeasureFormik.handleSubmit}>
-          <DialogContent className="dialog-content-body">
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.2 }}>
-              <TextField
-                fullWidth
-                label="Measurement Profile Title *"
-                placeholder="e.g. Bridal Silk Saree, Reception Draping, Kanchi Pleats"
-                name="title"
-                value={addMeasureFormik.values.title}
-                onChange={addMeasureFormik.handleChange}
-                onBlur={addMeasureFormik.handleBlur}
-                error={
-                  addMeasureFormik.touched.title &&
-                  Boolean(addMeasureFormik.errors.title)
-                }
-                helperText={
-                  addMeasureFormik.touched.title &&
-                  addMeasureFormik.errors.title
-                }
-                className="custom-form-field"
-                size="small"
-              />
-
-              {/* Row 1: Pallu & Shoulder */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 2,
-                }}
-              >
-                <TextField
-                  label="Pallu Length"
-                  placeholder="e.g. 38"
-                  name="pallu"
-                  value={addMeasureFormik.values.pallu}
-                  onChange={addMeasureFormik.handleChange}
-                  onBlur={addMeasureFormik.handleBlur}
-                  error={
-                    addMeasureFormik.touched.pallu &&
-                    Boolean(addMeasureFormik.errors.pallu)
-                  }
-                  helperText={
-                    addMeasureFormik.touched.pallu &&
-                    addMeasureFormik.errors.pallu
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">in</InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  label="Shoulder to Right Tight"
-                  placeholder="e.g. 14"
-                  name="shoulderToRightTight"
-                  value={addMeasureFormik.values.shoulderToRightTight}
-                  onChange={addMeasureFormik.handleChange}
-                  onBlur={addMeasureFormik.handleBlur}
-                  error={
-                    addMeasureFormik.touched.shoulderToRightTight &&
-                    Boolean(addMeasureFormik.errors.shoulderToRightTight)
-                  }
-                  helperText={
-                    addMeasureFormik.touched.shoulderToRightTight &&
-                    addMeasureFormik.errors.shoulderToRightTight
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">in</InputAdornment>
-                    ),
-                  }}
-                />
-              </Box>
-
-              {/* Row 2: Chest & Hip */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 2,
-                }}
-              >
-                <TextField
-                  label="Chest / Bust Size"
-                  placeholder="e.g. 36"
-                  name="chest"
-                  value={addMeasureFormik.values.chest}
-                  onChange={addMeasureFormik.handleChange}
-                  onBlur={addMeasureFormik.handleBlur}
-                  error={
-                    addMeasureFormik.touched.chest &&
-                    Boolean(addMeasureFormik.errors.chest)
-                  }
-                  helperText={
-                    addMeasureFormik.touched.chest &&
-                    addMeasureFormik.errors.chest
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">in</InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  label="Hip / Waist Size"
-                  placeholder="e.g. 40"
-                  name="hip"
-                  value={addMeasureFormik.values.hip}
-                  onChange={addMeasureFormik.handleChange}
-                  onBlur={addMeasureFormik.handleBlur}
-                  error={
-                    addMeasureFormik.touched.hip &&
-                    Boolean(addMeasureFormik.errors.hip)
-                  }
-                  helperText={
-                    addMeasureFormik.touched.hip && addMeasureFormik.errors.hip
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">in</InputAdornment>
-                    ),
-                  }}
-                />
-              </Box>
-
-              {/* Row 3: First Pleat & Chest Pleats */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 2,
-                }}
-              >
-                <TextField
-                  label="First Pleat Size"
-                  placeholder="e.g. 6.5"
-                  name="firstPleatSize"
-                  value={addMeasureFormik.values.firstPleatSize}
-                  onChange={addMeasureFormik.handleChange}
-                  onBlur={addMeasureFormik.handleBlur}
-                  error={
-                    addMeasureFormik.touched.firstPleatSize &&
-                    Boolean(addMeasureFormik.errors.firstPleatSize)
-                  }
-                  helperText={
-                    addMeasureFormik.touched.firstPleatSize &&
-                    addMeasureFormik.errors.firstPleatSize
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">in</InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  label="No. of Chest Pleats"
-                  placeholder="e.g. 5"
-                  name="noOfChestPleats"
-                  value={addMeasureFormik.values.noOfChestPleats}
-                  onChange={addMeasureFormik.handleChange}
-                  onBlur={addMeasureFormik.handleBlur}
-                  error={
-                    addMeasureFormik.touched.noOfChestPleats &&
-                    Boolean(addMeasureFormik.errors.noOfChestPleats)
-                  }
-                  helperText={
-                    addMeasureFormik.touched.noOfChestPleats &&
-                    addMeasureFormik.errors.noOfChestPleats
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">pleats</InputAdornment>
-                    ),
-                  }}
-                />
-              </Box>
-
-              {/* Row 4: Height & Dress Size */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 2,
-                }}
-              >
-                <TextField
-                  label="Height"
-                  placeholder="e.g. 165 or 5.5"
-                  name="height"
-                  value={addMeasureFormik.values.height}
-                  onChange={addMeasureFormik.handleChange}
-                  onBlur={addMeasureFormik.handleBlur}
-                  error={
-                    addMeasureFormik.touched.height &&
-                    Boolean(addMeasureFormik.errors.height)
-                  }
-                  helperText={
-                    addMeasureFormik.touched.height &&
-                    addMeasureFormik.errors.height
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">cm / in</InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  select
-                  label="Dress Size"
-                  name="dressSize"
-                  value={addMeasureFormik.values.dressSize}
-                  onChange={addMeasureFormik.handleChange}
-                  className="custom-form-field"
-                  size="small"
-                >
-                  {DRESS_SIZES.map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {s}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
-
-              {/* Notes */}
-              <TextField
-                fullWidth
-                multiline
-                rows={2.5}
-                label="Tailoring & Draping Notes (Optional)"
-                placeholder="Specific pin positions, pleat stiffness, or custom preferences..."
-                name="notes"
-                value={addMeasureFormik.values.notes}
-                onChange={addMeasureFormik.handleChange}
-                onBlur={addMeasureFormik.handleBlur}
-                error={
-                  addMeasureFormik.touched.notes &&
-                  Boolean(addMeasureFormik.errors.notes)
-                }
-                helperText={
-                  addMeasureFormik.touched.notes &&
-                  addMeasureFormik.errors.notes
-                }
-                className="custom-form-field"
-                size="small"
-              />
-            </Box>
-          </DialogContent>
-
-          <DialogActions className="dialog-actions-bar">
-            <Button
-              onClick={() => setOpenAddMeasureModal(false)}
-              className="cancel-btn"
-              disabled={addMeasureFormik.isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              className="submit-btn"
-              disabled={addMeasureFormik.isSubmitting}
-              startIcon={
-                addMeasureFormik.isSubmitting ? (
-                  <CircularProgress size={16} sx={{ color: "#000000" }} />
-                ) : null
-              }
-            >
-              {addMeasureFormik.isSubmitting
-                ? "Saving..."
-                : "Save Measurement Profile"}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-
-      {/* ========================================================================= */}
-      {/* MODAL: EDIT MEASUREMENT PROFILE                                          */}
-      {/* ========================================================================= */}
-      <Dialog
-        open={openEditMeasureModal}
-        onClose={() => setOpenEditMeasureModal(false)}
-        maxWidth="md"
-        fullWidth
-        className="profile-modal"
-        PaperProps={{
-          sx: {
-            maxWidth: "700px !important",
-            width: "100%",
-          },
-        }}
-      >
-        <DialogTitle className="dialog-title-bar">
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 42,
-                height: 42,
-                borderRadius: "12px",
-                background: "linear-gradient(135deg, #d4af37 0%, #a28220 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 4px 14px rgba(212, 175, 55, 0.35)",
-                flexShrink: 0,
-              }}
-            >
-              <EditOutlinedIcon sx={{ color: "#000000", fontSize: 22 }} />
-            </Box>
-            <Box>
-              <Typography variant="h6" className="dialog-title">
-                Edit Measurement Profile
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "rgba(230, 216, 163, 0.65)",
-                  fontSize: "0.76rem",
-                  display: "block",
-                }}
-              >
-                Update your saree pleating & draping dimensions
-              </Typography>
-            </Box>
-          </Box>
-          <IconButton
-            onClick={() => setOpenEditMeasureModal(false)}
-            sx={{
-              color: "#e6d8a3",
-              padding: "6px",
-              borderRadius: "8px",
-              "&:hover": {
-                backgroundColor: "rgba(212, 175, 55, 0.15)",
-                color: "#d4af37",
-              },
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <form onSubmit={editMeasureFormik.handleSubmit}>
-          <DialogContent className="dialog-content-body">
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.2 }}>
-              <TextField
-                fullWidth
-                label="Measurement Profile Title *"
-                name="title"
-                value={editMeasureFormik.values.title}
-                onChange={editMeasureFormik.handleChange}
-                onBlur={editMeasureFormik.handleBlur}
-                error={
-                  editMeasureFormik.touched.title &&
-                  Boolean(editMeasureFormik.errors.title)
-                }
-                helperText={
-                  editMeasureFormik.touched.title &&
-                  editMeasureFormik.errors.title
-                }
-                className="custom-form-field"
-                size="small"
-              />
-
-              {/* Row 1: Pallu & Shoulder */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 2,
-                }}
-              >
-                <TextField
-                  label="Pallu Length"
-                  placeholder="e.g. 38"
-                  name="pallu"
-                  value={editMeasureFormik.values.pallu}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={
-                    editMeasureFormik.touched.pallu &&
-                    Boolean(editMeasureFormik.errors.pallu)
-                  }
-                  helperText={
-                    editMeasureFormik.touched.pallu &&
-                    editMeasureFormik.errors.pallu
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">in</InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  label="Shoulder to Right Tight"
-                  placeholder="e.g. 14"
-                  name="shoulderToRightTight"
-                  value={editMeasureFormik.values.shoulderToRightTight}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={
-                    editMeasureFormik.touched.shoulderToRightTight &&
-                    Boolean(editMeasureFormik.errors.shoulderToRightTight)
-                  }
-                  helperText={
-                    editMeasureFormik.touched.shoulderToRightTight &&
-                    editMeasureFormik.errors.shoulderToRightTight
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">in</InputAdornment>
-                    ),
-                  }}
-                />
-              </Box>
-
-              {/* Row 2: Chest & Hip */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 2,
-                }}
-              >
-                <TextField
-                  label="Chest / Bust Size"
-                  placeholder="e.g. 36"
-                  name="chest"
-                  value={editMeasureFormik.values.chest}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={
-                    editMeasureFormik.touched.chest &&
-                    Boolean(editMeasureFormik.errors.chest)
-                  }
-                  helperText={
-                    editMeasureFormik.touched.chest &&
-                    editMeasureFormik.errors.chest
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">in</InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  label="Hip / Waist Size"
-                  placeholder="e.g. 40"
-                  name="hip"
-                  value={editMeasureFormik.values.hip}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={
-                    editMeasureFormik.touched.hip &&
-                    Boolean(editMeasureFormik.errors.hip)
-                  }
-                  helperText={
-                    editMeasureFormik.touched.hip &&
-                    editMeasureFormik.errors.hip
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">in</InputAdornment>
-                    ),
-                  }}
-                />
-              </Box>
-
-              {/* Row 3: First Pleat & Chest Pleats */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 2,
-                }}
-              >
-                <TextField
-                  label="First Pleat Size"
-                  placeholder="e.g. 6.5"
-                  name="firstPleatSize"
-                  value={editMeasureFormik.values.firstPleatSize}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={
-                    editMeasureFormik.touched.firstPleatSize &&
-                    Boolean(editMeasureFormik.errors.firstPleatSize)
-                  }
-                  helperText={
-                    editMeasureFormik.touched.firstPleatSize &&
-                    editMeasureFormik.errors.firstPleatSize
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">in</InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  label="No. of Chest Pleats"
-                  placeholder="e.g. 5"
-                  name="noOfChestPleats"
-                  value={editMeasureFormik.values.noOfChestPleats}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={
-                    editMeasureFormik.touched.noOfChestPleats &&
-                    Boolean(editMeasureFormik.errors.noOfChestPleats)
-                  }
-                  helperText={
-                    editMeasureFormik.touched.noOfChestPleats &&
-                    editMeasureFormik.errors.noOfChestPleats
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">pleats</InputAdornment>
-                    ),
-                  }}
-                />
-              </Box>
-
-              {/* Row 4: Height & Dress Size */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 2,
-                }}
-              >
-                <TextField
-                  label="Height"
-                  placeholder="e.g. 165 or 5.5"
-                  name="height"
-                  value={editMeasureFormik.values.height}
-                  onChange={editMeasureFormik.handleChange}
-                  onBlur={editMeasureFormik.handleBlur}
-                  error={
-                    editMeasureFormik.touched.height &&
-                    Boolean(editMeasureFormik.errors.height)
-                  }
-                  helperText={
-                    editMeasureFormik.touched.height &&
-                    editMeasureFormik.errors.height
-                  }
-                  className="custom-form-field"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">cm / in</InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  select
-                  label="Dress Size"
-                  name="dressSize"
-                  value={editMeasureFormik.values.dressSize}
-                  onChange={editMeasureFormik.handleChange}
-                  className="custom-form-field"
-                  size="small"
-                >
-                  {DRESS_SIZES.map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {s}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
-
-              {/* Notes */}
-              <TextField
-                fullWidth
-                multiline
-                rows={2.5}
-                label="Tailoring & Draping Notes (Optional)"
-                placeholder="Specific pin positions, pleat stiffness, or custom preferences..."
-                name="notes"
-                value={editMeasureFormik.values.notes}
-                onChange={editMeasureFormik.handleChange}
-                onBlur={editMeasureFormik.handleBlur}
-                error={
-                  editMeasureFormik.touched.notes &&
-                  Boolean(editMeasureFormik.errors.notes)
-                }
-                helperText={
-                  editMeasureFormik.touched.notes &&
-                  editMeasureFormik.errors.notes
-                }
-                className="custom-form-field"
-                size="small"
-              />
-            </Box>
-          </DialogContent>
-
-          <DialogActions className="dialog-actions-bar">
-            <Button
-              onClick={() => setOpenEditMeasureModal(false)}
-              className="cancel-btn"
-              disabled={editMeasureFormik.isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              className="submit-btn"
-              disabled={editMeasureFormik.isSubmitting}
-              startIcon={
-                editMeasureFormik.isSubmitting ? (
-                  <CircularProgress size={16} sx={{ color: "#000000" }} />
-                ) : null
-              }
-            >
-              {editMeasureFormik.isSubmitting
-                ? "Saving..."
-                : "Update Measurement Profile"}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-
-      {/* Confirmation Modal for Measurement Deletion */}
-      {measureToDelete && (
-        <Dialog
-          open={Boolean(measureToDelete)}
-          onClose={() => setMeasureToDelete(null)}
-          maxWidth="xs"
-          fullWidth
-          className="profile-modal"
+        <form
+          onSubmit={editProfileFormik.handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "16px" }}
         >
-          <DialogTitle className="dialog-title-bar">
-            <Typography
-              className="dialog-title"
-              sx={{ color: "#f87171 !important" }}
+          <AppInput
+            label="Your Full Name"
+            required
+            id="profile-username"
+            name="username"
+            value={editProfileFormik.values.username}
+            onChange={editProfileFormik.handleChange}
+            onBlur={editProfileFormik.handleBlur}
+            error={
+              editProfileFormik.touched.username &&
+              editProfileFormik.errors.username
+            }
+            disabled={editProfileFormik.isSubmitting}
+            startAdornment={<PersonOutlineIcon />}
+          />
+
+          <AppInput
+            label="Mobile Number"
+            required
+            id="profile-mobile"
+            name="userMobile"
+            placeholder="10-digit mobile number"
+            value={editProfileFormik.values.userMobile}
+            onChange={editProfileFormik.handleChange}
+            onBlur={editProfileFormik.handleBlur}
+            error={
+              editProfileFormik.touched.userMobile &&
+              editProfileFormik.errors.userMobile
+            }
+            disabled={editProfileFormik.isSubmitting}
+            startAdornment={<span>+91</span>}
+          />
+
+          <AppInput
+            label="Email Address"
+            required
+            type="email"
+            id="profile-email"
+            name="email"
+            value={editProfileFormik.values.email}
+            onChange={editProfileFormik.handleChange}
+            onBlur={editProfileFormik.handleBlur}
+            error={
+              editProfileFormik.touched.email &&
+              editProfileFormik.errors.email
+            }
+            disabled={editProfileFormik.isSubmitting}
+            startAdornment={<EmailOutlinedIcon />}
+          />
+
+          <AppInput
+            label="Delivery / Residential Address"
+            multiline
+            rows={3}
+            id="profile-address"
+            name="userAddress"
+            placeholder="Door number, street name, landmark, pincode..."
+            value={editProfileFormik.values.userAddress}
+            onChange={editProfileFormik.handleChange}
+            onBlur={editProfileFormik.handleBlur}
+            error={
+              editProfileFormik.touched.userAddress &&
+              editProfileFormik.errors.userAddress
+            }
+            disabled={editProfileFormik.isSubmitting}
+          />
+        </form>
+      </AppModal>
+
+      {/* ========================================================================= */}
+      {/* 2. Modal: Add Measurement Profile Dialog                                  */}
+      {/* ========================================================================= */}
+      <AppModal
+        open={openAddMeasureModal}
+        onClose={() => !addMeasureFormik.isSubmitting && setOpenAddMeasureModal(false)}
+        title="Add Saree Pleating Measurement"
+        subtitle="Save custom draping & pleating dimensions to your profile"
+        maxWidth="md"
+        actions={
+          <>
+            <AppButton
+              variant="secondary"
+              onClick={() => setOpenAddMeasureModal(false)}
+              disabled={addMeasureFormik.isSubmitting}
             >
-              Confirm Deletion
-            </Typography>
-            <IconButton
-              onClick={() => setMeasureToDelete(null)}
-              sx={{ color: "#e6d8a3" }}
+              Cancel
+            </AppButton>
+            <AppButton
+              variant="primary"
+              onClick={addMeasureFormik.handleSubmit}
+              loading={addMeasureFormik.isSubmitting}
             >
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent className="dialog-content-body">
-            <Typography sx={{ color: "#e6d8a3", fontSize: "0.92rem" }}>
-              Are you sure you want to delete the measurement profile{" "}
-              <strong style={{ color: "#d4af37" }}>
-                "{measureToDelete.title}"
-              </strong>
-              ?
-            </Typography>
-          </DialogContent>
-          <DialogActions className="dialog-actions-bar">
-            <Button
+              Save Measurement
+            </AppButton>
+          </>
+        }
+      >
+        <form
+          onSubmit={addMeasureFormik.handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
+          <AppInput
+            label="Measurement Profile Title"
+            required
+            id="add-measure-title"
+            name="title"
+            placeholder="e.g. Bridal Silk Saree, Reception Draping, Kanchi Pleats"
+            value={addMeasureFormik.values.title}
+            onChange={addMeasureFormik.handleChange}
+            onBlur={addMeasureFormik.handleBlur}
+            error={
+              addMeasureFormik.touched.title && addMeasureFormik.errors.title
+            }
+            disabled={addMeasureFormik.isSubmitting}
+          />
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: "12px",
+            }}
+          >
+            <AppInput
+              label="Pallu Length (Inches)"
+              id="add-measure-pallu"
+              name="pallu"
+              placeholder="e.g. 38"
+              value={addMeasureFormik.values.pallu}
+              onChange={addMeasureFormik.handleChange}
+              onBlur={addMeasureFormik.handleBlur}
+              error={
+                addMeasureFormik.touched.pallu && addMeasureFormik.errors.pallu
+              }
+              disabled={addMeasureFormik.isSubmitting}
+              endAdornment={<span>in</span>}
+            />
+
+            <AppInput
+              label="Shoulder to Tight (Inches)"
+              id="add-measure-shoulder"
+              name="shoulderToRightTight"
+              placeholder="e.g. 14"
+              value={addMeasureFormik.values.shoulderToRightTight}
+              onChange={addMeasureFormik.handleChange}
+              onBlur={addMeasureFormik.handleBlur}
+              error={
+                addMeasureFormik.touched.shoulderToRightTight &&
+                addMeasureFormik.errors.shoulderToRightTight
+              }
+              disabled={addMeasureFormik.isSubmitting}
+              endAdornment={<span>in</span>}
+            />
+
+            <AppInput
+              label="Chest Size (Inches)"
+              id="add-measure-chest"
+              name="chest"
+              placeholder="e.g. 36"
+              value={addMeasureFormik.values.chest}
+              onChange={addMeasureFormik.handleChange}
+              onBlur={addMeasureFormik.handleBlur}
+              error={
+                addMeasureFormik.touched.chest && addMeasureFormik.errors.chest
+              }
+              disabled={addMeasureFormik.isSubmitting}
+              endAdornment={<span>in</span>}
+            />
+
+            <AppInput
+              label="Hip Size (Inches)"
+              id="add-measure-hip"
+              name="hip"
+              placeholder="e.g. 40"
+              value={addMeasureFormik.values.hip}
+              onChange={addMeasureFormik.handleChange}
+              onBlur={addMeasureFormik.handleBlur}
+              error={
+                addMeasureFormik.touched.hip && addMeasureFormik.errors.hip
+              }
+              disabled={addMeasureFormik.isSubmitting}
+              endAdornment={<span>in</span>}
+            />
+
+            <AppInput
+              label="First Pleat Size (Inches)"
+              id="add-measure-first-pleat"
+              name="firstPleatSize"
+              placeholder="e.g. 5.5"
+              value={addMeasureFormik.values.firstPleatSize}
+              onChange={addMeasureFormik.handleChange}
+              onBlur={addMeasureFormik.handleBlur}
+              error={
+                addMeasureFormik.touched.firstPleatSize &&
+                addMeasureFormik.errors.firstPleatSize
+              }
+              disabled={addMeasureFormik.isSubmitting}
+              endAdornment={<span>in</span>}
+            />
+
+            <AppInput
+              label="Number of Chest Pleats"
+              id="add-measure-chest-pleats"
+              name="noOfChestPleats"
+              placeholder="e.g. 5"
+              value={addMeasureFormik.values.noOfChestPleats}
+              onChange={addMeasureFormik.handleChange}
+              onBlur={addMeasureFormik.handleBlur}
+              error={
+                addMeasureFormik.touched.noOfChestPleats &&
+                addMeasureFormik.errors.noOfChestPleats
+              }
+              disabled={addMeasureFormik.isSubmitting}
+              endAdornment={<span>pleats</span>}
+            />
+
+            <AppInput
+              label="Height (cm / ft)"
+              id="add-measure-height"
+              name="height"
+              placeholder="e.g. 158 cm or 5'3"
+              value={addMeasureFormik.values.height}
+              onChange={addMeasureFormik.handleChange}
+              onBlur={addMeasureFormik.handleBlur}
+              error={
+                addMeasureFormik.touched.height && addMeasureFormik.errors.height
+              }
+              disabled={addMeasureFormik.isSubmitting}
+            />
+
+            <AppInput
+              select
+              label="Standard Dress Size"
+              id="add-measure-dress-size"
+              name="dressSize"
+              value={addMeasureFormik.values.dressSize}
+              onChange={addMeasureFormik.handleChange}
+              onBlur={addMeasureFormik.handleBlur}
+              error={
+                addMeasureFormik.touched.dressSize &&
+                addMeasureFormik.errors.dressSize
+              }
+              disabled={addMeasureFormik.isSubmitting}
+            >
+              {DRESS_SIZES.map((sz) => (
+                <option key={sz} value={sz}>
+                  {sz}
+                </option>
+              ))}
+            </AppInput>
+          </div>
+
+          <AppInput
+            multiline
+            rows={3}
+            label="Special Tailoring & Draping Notes (Optional)"
+            id="add-measure-notes"
+            name="notes"
+            placeholder="e.g. Extra pins for heavy silk border, left-side drape, pin at waist..."
+            value={addMeasureFormik.values.notes}
+            onChange={addMeasureFormik.handleChange}
+            onBlur={addMeasureFormik.handleBlur}
+            error={
+              addMeasureFormik.touched.notes && addMeasureFormik.errors.notes
+            }
+            disabled={addMeasureFormik.isSubmitting}
+          />
+        </form>
+      </AppModal>
+
+      {/* ========================================================================= */}
+      {/* 3. Modal: Edit Measurement Profile Dialog                                 */}
+      {/* ========================================================================= */}
+      <AppModal
+        open={openEditMeasureModal}
+        onClose={() => !editMeasureFormik.isSubmitting && setOpenEditMeasureModal(false)}
+        title="Edit Measurement Profile"
+        subtitle={selectedMeasureForEdit?.title || "Modify pleat and sizing parameters"}
+        maxWidth="md"
+        actions={
+          <>
+            <AppButton
+              variant="secondary"
+              onClick={() => setOpenEditMeasureModal(false)}
+              disabled={editMeasureFormik.isSubmitting}
+            >
+              Cancel
+            </AppButton>
+            <AppButton
+              variant="primary"
+              onClick={editMeasureFormik.handleSubmit}
+              loading={editMeasureFormik.isSubmitting}
+            >
+              Save Changes
+            </AppButton>
+          </>
+        }
+      >
+        <form
+          onSubmit={editMeasureFormik.handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
+          <AppInput
+            label="Measurement Profile Title"
+            required
+            id="edit-measure-title"
+            name="title"
+            value={editMeasureFormik.values.title}
+            onChange={editMeasureFormik.handleChange}
+            onBlur={editMeasureFormik.handleBlur}
+            error={
+              editMeasureFormik.touched.title && editMeasureFormik.errors.title
+            }
+            disabled={editMeasureFormik.isSubmitting}
+          />
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: "12px",
+            }}
+          >
+            <AppInput
+              label="Pallu Length (Inches)"
+              id="edit-measure-pallu"
+              name="pallu"
+              value={editMeasureFormik.values.pallu}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={
+                editMeasureFormik.touched.pallu &&
+                editMeasureFormik.errors.pallu
+              }
+              disabled={editMeasureFormik.isSubmitting}
+              endAdornment={<span>in</span>}
+            />
+
+            <AppInput
+              label="Shoulder to Tight (Inches)"
+              id="edit-measure-shoulder"
+              name="shoulderToRightTight"
+              value={editMeasureFormik.values.shoulderToRightTight}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={
+                editMeasureFormik.touched.shoulderToRightTight &&
+                editMeasureFormik.errors.shoulderToRightTight
+              }
+              disabled={editMeasureFormik.isSubmitting}
+              endAdornment={<span>in</span>}
+            />
+
+            <AppInput
+              label="Chest Size (Inches)"
+              id="edit-measure-chest"
+              name="chest"
+              value={editMeasureFormik.values.chest}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={
+                editMeasureFormik.touched.chest &&
+                editMeasureFormik.errors.chest
+              }
+              disabled={editMeasureFormik.isSubmitting}
+              endAdornment={<span>in</span>}
+            />
+
+            <AppInput
+              label="Hip Size (Inches)"
+              id="edit-measure-hip"
+              name="hip"
+              value={editMeasureFormik.values.hip}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={
+                editMeasureFormik.touched.hip && editMeasureFormik.errors.hip
+              }
+              disabled={editMeasureFormik.isSubmitting}
+              endAdornment={<span>in</span>}
+            />
+
+            <AppInput
+              label="First Pleat Size (Inches)"
+              id="edit-measure-first-pleat"
+              name="firstPleatSize"
+              value={editMeasureFormik.values.firstPleatSize}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={
+                editMeasureFormik.touched.firstPleatSize &&
+                editMeasureFormik.errors.firstPleatSize
+              }
+              disabled={editMeasureFormik.isSubmitting}
+              endAdornment={<span>in</span>}
+            />
+
+            <AppInput
+              label="Number of Chest Pleats"
+              id="edit-measure-chest-pleats"
+              name="noOfChestPleats"
+              value={editMeasureFormik.values.noOfChestPleats}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={
+                editMeasureFormik.touched.noOfChestPleats &&
+                editMeasureFormik.errors.noOfChestPleats
+              }
+              disabled={editMeasureFormik.isSubmitting}
+              endAdornment={<span>pleats</span>}
+            />
+
+            <AppInput
+              label="Height (cm / ft)"
+              id="edit-measure-height"
+              name="height"
+              value={editMeasureFormik.values.height}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={
+                editMeasureFormik.touched.height &&
+                editMeasureFormik.errors.height
+              }
+              disabled={editMeasureFormik.isSubmitting}
+            />
+
+            <AppInput
+              select
+              label="Standard Dress Size"
+              id="edit-measure-dress-size"
+              name="dressSize"
+              value={editMeasureFormik.values.dressSize}
+              onChange={editMeasureFormik.handleChange}
+              onBlur={editMeasureFormik.handleBlur}
+              error={
+                editMeasureFormik.touched.dressSize &&
+                editMeasureFormik.errors.dressSize
+              }
+              disabled={editMeasureFormik.isSubmitting}
+            >
+              {DRESS_SIZES.map((sz) => (
+                <option key={sz} value={sz}>
+                  {sz}
+                </option>
+              ))}
+            </AppInput>
+          </div>
+
+          <AppInput
+            multiline
+            rows={3}
+            label="Special Tailoring & Draping Notes (Optional)"
+            id="edit-measure-notes"
+            name="notes"
+            value={editMeasureFormik.values.notes}
+            onChange={editMeasureFormik.handleChange}
+            onBlur={editMeasureFormik.handleBlur}
+            error={
+              editMeasureFormik.touched.notes &&
+              editMeasureFormik.errors.notes
+            }
+            disabled={editMeasureFormik.isSubmitting}
+          />
+        </form>
+      </AppModal>
+
+      {/* ========================================================================= */}
+      {/* 4. Modal: Confirmation Modal for Measurement Deletion                     */}
+      {/* ========================================================================= */}
+      <AppModal
+        open={Boolean(measureToDelete)}
+        onClose={() => !deletingMeasureId && setMeasureToDelete(null)}
+        title="Confirm Deletion"
+        maxWidth="xs"
+        actions={
+          <>
+            <AppButton
+              variant="secondary"
               onClick={() => setMeasureToDelete(null)}
-              className="cancel-btn"
               disabled={Boolean(deletingMeasureId)}
             >
               Cancel
-            </Button>
-            <Button
+            </AppButton>
+            <AppButton
+              variant="danger"
               onClick={confirmDeleteMeasurement}
-              variant="contained"
-              disabled={Boolean(deletingMeasureId)}
-              sx={{
-                backgroundColor: "#dc2626 !important",
-                color: "#ffffff !important",
-                textTransform: "none",
-                fontWeight: 700,
-                "&:hover": { backgroundColor: "#b91c1c !important" },
-              }}
-              startIcon={
-                deletingMeasureId ? (
-                  <CircularProgress size={14} sx={{ color: "#ffffff" }} />
-                ) : null
-              }
+              loading={Boolean(deletingMeasureId)}
             >
-              {deletingMeasureId ? "Deleting..." : "Delete Profile"}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
-    </Box>
+              Delete Profile
+            </AppButton>
+          </>
+        }
+      >
+        <p style={{ color: "#e6d8a3", fontSize: "0.95rem", margin: "8px 0" }}>
+          Are you sure you want to delete the measurement profile{" "}
+          <strong style={{ color: "#d4af37" }}>
+            "{measureToDelete?.title}"
+          </strong>
+          ? This action cannot be undone.
+        </p>
+      </AppModal>
+    </div>
   );
 };
 

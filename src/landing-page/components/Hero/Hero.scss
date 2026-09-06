@@ -24,17 +24,55 @@
     letter-spacing: 2px;
     margin-bottom: $spacing-sm;
     text-transform: uppercase;
+    font-size: 0.85rem;
+    display: block;
+
+    @include mobile {
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+    }
   }
 
   &__title {
     color: $color-light-gold;
     font-weight: 800;
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-top: 8px;
     margin-bottom: $spacing-md;
+
+    @include mobile {
+      font-size: 1.7rem;
+    }
   }
 
   &__subtitle {
     color: rgba(230, 216, 163, 0.85);
+    font-size: 1.1rem;
     line-height: 1.6;
     margin-bottom: $spacing-xl;
+
+    @include mobile {
+      font-size: 0.92rem;
+      margin-bottom: $spacing-lg;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    @include mobile {
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+
+      a, button {
+        width: 100%;
+      }
+    }
   }
 }

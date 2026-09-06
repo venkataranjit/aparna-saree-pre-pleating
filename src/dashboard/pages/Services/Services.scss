@@ -43,13 +43,28 @@
       margin-bottom: $spacing-lg;
 
       .page-title {
-        font-size: 1.5rem !important;
+        font-size: 1.4rem !important;
+      }
+
+      .page-subtitle {
+        font-size: 0.8rem;
       }
 
       .add-service-btn {
         width: 100%;
         min-height: 42px;
       }
+    }
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: $spacing-lg;
+
+    @include mobile {
+      grid-template-columns: 1fr;
+      gap: $spacing-md;
     }
   }
 

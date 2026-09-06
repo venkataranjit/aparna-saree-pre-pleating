@@ -1,0 +1,151 @@
+@use '../../../dashboard/styles/variables.scss' as *;
+
+.app-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: $font-family-base;
+  font-weight: 600;
+  border-radius: $border-radius-md;
+  border: 1px solid transparent;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+  transition: $transition-base;
+  position: relative;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+
+  &:disabled,
+  &--disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: none !important;
+  }
+
+  // Sizes
+  &--sm {
+    padding: 6px 12px;
+    font-size: 12.5px;
+
+    @include mobile {
+      padding: 5px 10px;
+      font-size: 11.5px;
+    }
+  }
+
+  &--md {
+    padding: 9px 18px;
+    font-size: 14px;
+
+    @include mobile {
+      padding: 7px 14px;
+      font-size: 12.5px;
+    }
+  }
+
+  &--lg {
+    padding: 12px 24px;
+    font-size: 15px;
+
+    @include mobile {
+      padding: 10px 18px;
+      font-size: 13.5px;
+    }
+  }
+
+  // Full width
+  &--full-width {
+    width: 100%;
+  }
+
+  // Variants
+  &--primary {
+    background: linear-gradient(135deg, $color-gold 0%, #b89324 100%);
+    color: $color-black;
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.25);
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #e6d8a3 0%, $color-gold 100%);
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.4);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(212, 175, 55, 0.3);
+    }
+  }
+
+  &--secondary {
+    background: rgba(212, 175, 55, 0.06);
+    color: $color-light-gold;
+    border-color: rgba(212, 175, 55, 0.3);
+
+    &:hover:not(:disabled) {
+      background: rgba(212, 175, 55, 0.15);
+      border-color: $color-gold;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+  }
+
+  &--danger {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.28);
+
+    &:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.22);
+      border-color: #ef4444;
+      color: #fca5a5;
+    }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: $color-light-gold;
+
+    &:hover:not(:disabled) {
+      background: rgba(212, 175, 55, 0.08);
+      color: $color-gold;
+    }
+  }
+
+  &--icon {
+    padding: 8px;
+    border-radius: 50%;
+    background: rgba(212, 175, 55, 0.06);
+    color: $color-gold;
+    border-color: rgba(212, 175, 55, 0.2);
+
+    &:hover:not(:disabled) {
+      background: rgba(212, 175, 55, 0.15);
+      border-color: $color-gold;
+      transform: scale(1.05);
+    }
+
+    @include mobile {
+      padding: 6px;
+    }
+  }
+
+  .app-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15em;
+
+    svg {
+      width: 1em;
+      height: 1em;
+    }
+  }
+}

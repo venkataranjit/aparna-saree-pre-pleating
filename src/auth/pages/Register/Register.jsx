@@ -1,20 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  TextField,
-  Button,
-  IconButton,
-  InputAdornment,
-  FormControlLabel,
-  Checkbox,
-  Alert,
-  CircularProgress,
-  FormHelperText,
-} from "@mui/material";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -31,6 +16,7 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SecurityIcon from "@mui/icons-material/Security";
+import { AppButton, AppInput } from "../../../components/common";
 import brandLogo from "../../../assets/logo.png";
 import "./Register.scss";
 
@@ -63,9 +49,10 @@ const registerValidationSchema = Yup.object({
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password"), null], "Passwords do not match")
     .required("Please confirm your password"),
-  agreeTerms: Yup.boolean()
-    .oneOf([true], "You must agree to the Terms & Privacy Policy")
-    .required("You must agree to the Terms & Privacy Policy"),
+  agreeTerms: Yup.boolean().oneOf(
+    [true],
+    "You must agree to the Terms & Privacy Policy"
+  ),
 });
 
 const Register = () => {
@@ -92,75 +79,66 @@ const Register = () => {
       userAddress: "",
       password: "",
       confirmPassword: "",
-      agreeTerms: true,
+      agreeTerms: false,
     },
     validationSchema: registerValidationSchema,
-    onSubmit: async (values, { setSubmitting }) => {
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
       setError("");
       setSuccessMsg("");
 
       try {
-        let uid = "user_" + Date.now();
+        const cleanEmail = values.email.trim().toLowerCase();
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          cleanEmail,
+          values.password
+        );
+        const user = userCredential.user;
 
-        // 1. Create Firebase Auth user
-        if (auth) {
-          const userCredential = await createUserWithEmailAndPassword(
-            auth,
-            values.email.trim(),
-            values.password
-          );
-          uid = userCredential.user.uid;
-
-          if (values.username.trim() && userCredential.user) {
-            try {
-              await updateProfile(userCredential.user, {
-                displayName: values.username.trim(),
-              });
-            } catch (profileErr) {
-              console.warn("Profile name update warning:", profileErr);
-            }
-          }
-        }
-
-        // 2. Persist user document in Firestore 'users' collection
-        const normalizedEmail = values.email.trim().toLowerCase();
-        const isSuper = normalizedEmail === SUPERADMIN_EMAIL.toLowerCase();
-
-        await createUserProfile(uid, {
-          username: values.username.trim(),
-          email: normalizedEmail,
-          userMobile: String(values.userMobile).trim(), // strictly stored as string
-          userAddress: values.userAddress.trim(),
-          role: isSuper ? USER_ROLES.SUPERADMIN : USER_ROLES.CUSTOMER,
+        await updateProfile(user, {
+          displayName: values.username.trim(),
         });
 
-        setSuccessMsg(
-          "Account created successfully! Redirecting to Dashboard..."
-        );
+        const assignedRole =
+          cleanEmail === SUPERADMIN_EMAIL
+            ? USER_ROLES.SUPERADMIN
+            : USER_ROLES.CUSTOMER;
+
+        await createUserProfile(user.uid, {
+          username: values.username.trim(),
+          email: cleanEmail,
+          userMobile: values.userMobile.trim(),
+          userAddress: values.userAddress.trim(),
+          role: assignedRole,
+          isActive: true,
+          photoURL: user.photoURL || null,
+        });
+
+        setSuccessMsg("Account registered successfully! Redirecting...");
+        resetForm();
+
         setTimeout(() => {
-          navigate("/dashboard");
-        }, 900);
+          navigate("/dashboard", { replace: true });
+        }, 1200);
       } catch (err) {
-        console.warn("Firebase registration error:", err);
-        let message = "Unable to create account. Please try again.";
-        if (
-          err.code === "auth/configuration-not-found" ||
-          err.message?.includes("CONFIGURATION_NOT_FOUND")
-        ) {
+        console.error("Registration error:", err);
+        let message = "Failed to create account. Please try again.";
+
+        if (err.code === "auth/email-already-in-use") {
           message =
-            'Firebase Authentication is not activated yet in Firebase Console. Please go to Firebase Console > Build > Authentication > Sign-in method and enable "Email/Password".';
-        } else if (err.code === "auth/operation-not-allowed") {
-          message =
-            'Email/Password sign-in is disabled. Please enable "Email/Password" in Firebase Console > Build > Authentication > Sign-in method.';
-        } else if (err.code === "auth/email-already-in-use") {
-          message = "This email is already registered. Please sign in instead.";
+            "An account with this email address already exists. Please sign in instead.";
         } else if (err.code === "auth/invalid-email") {
-          message = "The email format is invalid.";
+          message = "The email address entered is not valid.";
         } else if (err.code === "auth/weak-password") {
-          message = "Password is too weak. Please use a stronger password.";
+          message =
+            "The password is too weak. Please use at least 6 characters.";
         } else if (err.code === "auth/network-request-failed") {
-          message = "Network error. Please verify your internet connection.";
+          message =
+            "Network error. Please check your internet connection and retry.";
+        } else if (err.message) {
+          message = err.message;
         }
+
         setError(message);
       } finally {
         setSubmitting(false);
@@ -169,364 +147,260 @@ const Register = () => {
   });
 
   return (
-    <Box className="register-screen">
+    <div className="register-screen">
       {/* Ambient luxury background lighting */}
       <div className="register-screen__glow register-screen__glow--top" />
       <div className="register-screen__glow register-screen__glow--bottom" />
 
       {/* Top back navigation link */}
-      <Box className="register-screen__top-nav">
+      <div className="register-screen__top-nav">
         <Link to="/landing" className="back-link">
           <ArrowBackIcon className="back-icon" />
           <span>Return to Storefront</span>
         </Link>
-      </Box>
+      </div>
 
       {/* Centered Register Card */}
-      <Box className="register-screen__container">
-        <Card className="register-card">
+      <div className="register-screen__container">
+        <div className="register-card">
           <div className="register-card__top-bar" />
 
-          <CardContent className="register-card__content">
+          <div className="register-card__content">
             {/* Brand Crest & Header with enlarged logo */}
-            <Box className="register-card__header">
-              <Box className="brand-logo-wrap">
+            <div className="register-card__header">
+              <div className="brand-logo-wrap">
                 <img
                   src={brandLogo}
                   alt="Aparna Saree Pre-Pleating"
                   className="brand-logo-img"
                 />
-              </Box>
-              <Typography variant="h4" className="register-title">
+              </div>
+              <h1 className="register-title">
                 Create Account
-              </Typography>
-            </Box>
+              </h1>
+            </div>
 
             {/* Error / Success Feedback */}
             {error && (
-              <Alert
-                severity="error"
-                className="feedback-alert error-alert"
-                onClose={() => setError("")}
-              >
-                {error}
-              </Alert>
+              <div className="feedback-alert error-alert">
+                <span>{error}</span>
+                <button
+                  type="button"
+                  className="alert-close-btn"
+                  onClick={() => setError("")}
+                >
+                  &times;
+                </button>
+              </div>
             )}
 
             {successMsg && (
-              <Alert
-                severity="success"
-                className="feedback-alert success-alert"
-              >
-                {successMsg}
-              </Alert>
+              <div className="feedback-alert success-alert">
+                <span>{successMsg}</span>
+              </div>
             )}
 
             {/* Register Form */}
-            <Box
-              component="form"
+            <form
               onSubmit={formik.handleSubmit}
               className="register-form"
               noValidate
             >
-              <Box className="register-form__grid">
+              <div className="register-form__grid">
                 {/* Full Name Input */}
-                <Box className="input-group">
-                  <Typography component="label" className="input-label">
-                    Full Name *
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    id="username"
-                    name="username"
-                    placeholder="e.g. Priya Sharma"
-                    value={formik.values.username}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={
-                      formik.touched.username && Boolean(formik.errors.username)
-                    }
-                    helperText={
-                      formik.touched.username && formik.errors.username
-                    }
-                    disabled={formik.isSubmitting}
-                    autoComplete="name"
-                    className="luxury-text-field"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <PersonOutlineIcon className="field-icon" />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
+                <AppInput
+                  label="Full Name"
+                  required
+                  id="username"
+                  name="username"
+                  placeholder="e.g. Priya Sharma"
+                  value={formik.values.username}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                    formik.touched.username && formik.errors.username
+                  }
+                  disabled={formik.isSubmitting}
+                  autoComplete="name"
+                  startAdornment={<PersonOutlineIcon />}
+                />
 
                 {/* Mobile Number Input */}
-                <Box className="input-group">
-                  <Typography component="label" className="input-label">
-                    Mobile Number * (10 Digits)
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    id="userMobile"
-                    name="userMobile"
-                    type="tel"
-                    placeholder="e.g. 9876543210"
-                    value={formik.values.userMobile}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={
-                      formik.touched.userMobile &&
-                      Boolean(formik.errors.userMobile)
-                    }
-                    helperText={
-                      formik.touched.userMobile && formik.errors.userMobile
-                    }
-                    disabled={formik.isSubmitting}
-                    autoComplete="tel"
-                    className="luxury-text-field"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <PhoneIphoneOutlinedIcon className="field-icon" />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
+                <AppInput
+                  label="Mobile Number (10 Digits)"
+                  required
+                  id="userMobile"
+                  name="userMobile"
+                  type="tel"
+                  placeholder="e.g. 9876543210"
+                  value={formik.values.userMobile}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                    formik.touched.userMobile && formik.errors.userMobile
+                  }
+                  disabled={formik.isSubmitting}
+                  autoComplete="tel"
+                  startAdornment={<PhoneIphoneOutlinedIcon />}
+                />
 
                 {/* Email Address Input */}
-                <Box className="input-group">
-                  <Typography component="label" className="input-label">
-                    Email Address *
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={formik.values.email}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched.email && Boolean(formik.errors.email)}
-                    helperText={formik.touched.email && formik.errors.email}
-                    disabled={formik.isSubmitting}
-                    autoComplete="email"
-                    className="luxury-text-field"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <EmailOutlinedIcon className="field-icon" />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
+                <AppInput
+                  label="Email Address"
+                  required
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={formik.values.email}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.email && formik.errors.email}
+                  disabled={formik.isSubmitting}
+                  autoComplete="email"
+                  startAdornment={<EmailOutlinedIcon />}
+                />
 
                 {/* Address Input */}
-                <Box className="input-group">
-                  <Typography component="label" className="input-label">
-                    Address / Location (Optional)
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    id="userAddress"
-                    name="userAddress"
-                    placeholder="e.g. Jubilee Hills, Hyderabad"
-                    value={formik.values.userAddress}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={
-                      formik.touched.userAddress &&
-                      Boolean(formik.errors.userAddress)
-                    }
-                    helperText={
-                      formik.touched.userAddress && formik.errors.userAddress
-                    }
-                    disabled={formik.isSubmitting}
-                    autoComplete="street-address"
-                    className="luxury-text-field"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationOnOutlinedIcon className="field-icon" />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
+                <AppInput
+                  label="Address / Location (Optional)"
+                  id="userAddress"
+                  name="userAddress"
+                  placeholder="e.g. Jubilee Hills, Hyderabad"
+                  value={formik.values.userAddress}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                    formik.touched.userAddress && formik.errors.userAddress
+                  }
+                  disabled={formik.isSubmitting}
+                  autoComplete="street-address"
+                  startAdornment={<LocationOnOutlinedIcon />}
+                />
 
                 {/* Password Input */}
-                <Box className="input-group">
-                  <Typography component="label" className="input-label">
-                    Password * (min 6 characters)
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••••••"
-                    value={formik.values.password}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={
-                      formik.touched.password && Boolean(formik.errors.password)
-                    }
-                    helperText={
-                      formik.touched.password && formik.errors.password
-                    }
-                    disabled={formik.isSubmitting}
-                    autoComplete="new-password"
-                    className="luxury-text-field"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LockOutlinedIcon className="field-icon" />
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            aria-label="toggle password visibility"
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
-                            className="visibility-btn"
-                          >
-                            {showPassword ? (
-                              <VisibilityOffOutlinedIcon />
-                            ) : (
-                              <VisibilityOutlinedIcon />
-                            )}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
+                <AppInput
+                  label="Password (min 6 characters)"
+                  required
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••••••"
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                    formik.touched.password && formik.errors.password
+                  }
+                  disabled={formik.isSubmitting}
+                  autoComplete="new-password"
+                  startAdornment={<LockOutlinedIcon />}
+                  endAdornment={
+                    <button
+                      type="button"
+                      className="visibility-toggle-btn"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <VisibilityOffOutlinedIcon />
+                      ) : (
+                        <VisibilityOutlinedIcon />
+                      )}
+                    </button>
+                  }
+                />
 
                 {/* Confirm Password Input */}
-                <Box className="input-group">
-                  <Typography component="label" className="input-label">
-                    Confirm Password *
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••••••"
-                    value={formik.values.confirmPassword}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={
-                      formik.touched.confirmPassword &&
-                      Boolean(formik.errors.confirmPassword)
-                    }
-                    helperText={
-                      formik.touched.confirmPassword &&
-                      formik.errors.confirmPassword
-                    }
-                    disabled={formik.isSubmitting}
-                    autoComplete="new-password"
-                    className="luxury-text-field"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LockOutlinedIcon className="field-icon" />
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            aria-label="toggle confirm password visibility"
-                            onClick={() =>
-                              setShowConfirmPassword(!showConfirmPassword)
-                            }
-                            edge="end"
-                            className="visibility-btn"
-                          >
-                            {showConfirmPassword ? (
-                              <VisibilityOffOutlinedIcon />
-                            ) : (
-                              <VisibilityOutlinedIcon />
-                            )}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
+                <AppInput
+                  label="Confirm Password"
+                  required
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="••••••••••••"
+                  value={formik.values.confirmPassword}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                    formik.touched.confirmPassword &&
+                    formik.errors.confirmPassword
+                  }
+                  disabled={formik.isSubmitting}
+                  autoComplete="new-password"
+                  startAdornment={<LockOutlinedIcon />}
+                  endAdornment={
+                    <button
+                      type="button"
+                      className="visibility-toggle-btn"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? (
+                        <VisibilityOffOutlinedIcon />
+                      ) : (
+                        <VisibilityOutlinedIcon />
+                      )}
+                    </button>
+                  }
+                />
 
                 {/* Terms & Conditions Checkbox */}
-                <Box className="options-row full-col">
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        id="agreeTerms"
-                        name="agreeTerms"
-                        checked={formik.values.agreeTerms}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        className="gold-checkbox"
-                      />
-                    }
-                    label="I agree to Terms & Privacy Policy"
-                    className="checkbox-label"
-                  />
+                <div className="options-row full-col">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      id="agreeTerms"
+                      name="agreeTerms"
+                      checked={formik.values.agreeTerms}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      className="gold-checkbox"
+                    />
+                    <span>I agree to Terms & Privacy Policy</span>
+                  </label>
                   {formik.touched.agreeTerms && formik.errors.agreeTerms && (
-                    <FormHelperText
-                      error
-                      sx={{ color: "#f87171", ml: 1, mt: 0 }}
-                    >
+                    <div className="field-error-text">
                       {formik.errors.agreeTerms}
-                    </FormHelperText>
+                    </div>
                   )}
-                </Box>
+                </div>
 
                 {/* Primary Create Account Button */}
-                <Box className="full-col">
-                  <Button
+                <div className="full-col">
+                  <AppButton
                     type="submit"
-                    variant="contained"
+                    variant="primary"
                     fullWidth
-                    disabled={formik.isSubmitting}
+                    loading={formik.isSubmitting}
                     className="submit-btn"
                   >
-                    {formik.isSubmitting ? (
-                      <CircularProgress size={22} sx={{ color: "#000000" }} />
-                    ) : (
-                      <span>Create Account</span>
-                    )}
-                  </Button>
-                </Box>
+                    Create Account
+                  </AppButton>
+                </div>
 
                 {/* Link to Login */}
-                <Box className="auth-switch-row full-col">
-                  <Typography variant="body2" className="switch-prompt">
+                <div className="auth-switch-row full-col">
+                  <p className="switch-prompt">
                     Already have an account?{" "}
                     <Link to="/login" className="auth-highlight-link">
                       Sign In
                     </Link>
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
+                  </p>
+                </div>
+              </div>
+            </form>
 
             {/* Footer Security Badge */}
-            <Box className="register-card__footer">
+            <div className="register-card__footer">
               <SecurityIcon className="security-icon" />
-              <Typography variant="caption" className="security-text">
+              <span className="security-text">
                 Protected by 256-bit Firebase Authentication & End-to-End
                 Encryption
-              </Typography>
-            </Box>
-          </CardContent>
-        </Card>
-      </Box>
-    </Box>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

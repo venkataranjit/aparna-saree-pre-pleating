@@ -66,7 +66,7 @@ const NotFound = () => {
               size="large"
               component={RouterLink}
               to="/dashboard"
-              startIcon={<DashboardOutlinedIcon sx={{ color: '#000000 !important' }} />}
+              startIcon={<DashboardOutlinedIcon />}
               className="primary-btn"
             >
               Back to Dashboard
@@ -78,7 +78,7 @@ const NotFound = () => {
               size="large"
               component={RouterLink}
               to="/landing"
-              startIcon={<HomeOutlinedIcon sx={{ color: '#d4af37 !important' }} />}
+              startIcon={<HomeOutlinedIcon />}
               className="secondary-btn"
             >
               Landing Page

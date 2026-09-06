@@ -1,17 +1,4 @@
-import React from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Box,
-  Typography,
-  IconButton,
-  Button,
-  Grid,
-  Divider,
-  Stack,
-} from '@mui/material';
+import React, { useEffect } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
@@ -28,253 +15,246 @@ import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import { AppButton } from '../../../components/common';
 import './OrderDetailsModal.scss';
 
 const OrderDetailsModal = ({ open, onClose, order }) => {
-  if (!order) return null;
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
+
+  if (!open || !order) return null;
 
   const handlePrint = () => {
     window.print();
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-      className="order-details-modal"
-      PaperProps={{
-        className: 'order-details-paper',
-      }}
-    >
-      <div className="order-details-paper__top-bar" />
+    <div className="order-details-modal">
+      <div className="order-details-backdrop" onClick={onClose} />
 
-      {/* Header */}
-      <DialogTitle className="modal-header">
-        <Box className="modal-header__title-wrap">
-          <Typography variant="overline" className="modal-header__subtitle">
-            Booking Specification & Order Details
-          </Typography>
-          <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
-            <Typography variant="h5" className="modal-header__id">
-              {order.id}
-            </Typography>
-            <span className={`status-pill ${order.status}`}>
-              <span className="dot" />
-              {order.status.replace('-', ' ')}
+      <div className="order-details-paper" role="dialog" aria-modal="true">
+        <div className="order-details-paper__top-bar" />
+
+        {/* Header */}
+        <div className="modal-header">
+          <div className="modal-header__title-wrap">
+            <span className="modal-header__subtitle">
+              Booking Specification & Order Details
             </span>
-          </Stack>
-        </Box>
-        <IconButton onClick={onClose} className="modal-close-btn" aria-label="close">
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <h3 className="modal-header__id">
+                {order.id}
+              </h3>
+              <span className={`status-pill ${order.status}`}>
+                <span className="dot" />
+                {order.status.replace('-', ' ')}
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="modal-close-btn"
+            aria-label="close"
+          >
+            <CloseIcon />
+          </button>
+        </div>
 
-      <Divider className="modal-divider" />
+        <div className="modal-divider" />
 
-      {/* Main Content */}
-      <DialogContent className="modal-content">
-        <Grid container spacing={2.5}>
-          {/* 1. Customer Profile */}
-          <Grid item xs={12} md={6}>
-            <Box className="details-card">
-              <Box className="details-card__head">
+        {/* Main Content */}
+        <div className="modal-content">
+          <div className="modal-grid-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+            {/* 1. Customer Profile */}
+            <div className="details-card">
+              <div className="details-card__head">
                 <PersonOutlineIcon className="card-head-icon" />
-                <Typography className="card-head-title">Customer Information</Typography>
-              </Box>
-              <Box className="details-card__body">
-                <Box className="info-row">
-                  <Typography className="info-label">Full Name</Typography>
-                  <Typography className="info-val highlight">{order.customer}</Typography>
-                </Box>
-                <Box className="info-row">
-                  <Typography className="info-label">Phone</Typography>
-                  <Typography className="info-val">
+                <span className="card-head-title">Customer Information</span>
+              </div>
+              <div className="details-card__body">
+                <div className="info-row">
+                  <span className="info-label">Full Name</span>
+                  <span className="info-val highlight">{order.customer}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Phone</span>
+                  <span className="info-val">
                     <PhoneOutlinedIcon className="inline-icon" />
                     {order.phone || '+91 98490 12345'}
-                  </Typography>
-                </Box>
-                <Box className="info-row">
-                  <Typography className="info-label">Email</Typography>
-                  <Typography className="info-val">
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Email</span>
+                  <span className="info-val">
                     <EmailOutlinedIcon className="inline-icon" />
                     {order.email || `${order.customer.toLowerCase().replace(' ', '.')}@example.com`}
-                  </Typography>
-                </Box>
-                <Box className="info-row">
-                  <Typography className="info-label">Location</Typography>
-                  <Typography className="info-val">
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Location</span>
+                  <span className="info-val">
                     <LocationOnOutlinedIcon className="inline-icon" />
                     {order.address || 'Jubilee Hills, Hyderabad'}
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          </Grid>
+                  </span>
+                </div>
+              </div>
+            </div>
 
-          {/* 2. Timeline & Delivery */}
-          <Grid item xs={12} md={6}>
-            <Box className="details-card">
-              <Box className="details-card__head">
+            {/* 2. Timeline & Delivery */}
+            <div className="details-card">
+              <div className="details-card__head">
                 <CalendarMonthOutlinedIcon className="card-head-icon" />
-                <Typography className="card-head-title">Timeline & Fulfillment</Typography>
-              </Box>
-              <Box className="details-card__body">
-                <Box className="info-row">
-                  <Typography className="info-label">Booking Date</Typography>
-                  <Typography className="info-val">{order.date}</Typography>
-                </Box>
-                <Box className="info-row">
-                  <Typography className="info-label">Event / Due Date</Typography>
-                  <Typography className="info-val highlight">
+                <span className="card-head-title">Timeline & Fulfillment</span>
+              </div>
+              <div className="details-card__body">
+                <div className="info-row">
+                  <span className="info-label">Booking Date</span>
+                  <span className="info-val">{order.date}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Event / Due Date</span>
+                  <span className="info-val highlight">
                     <EventAvailableOutlinedIcon className="inline-icon" />
                     {order.eventDate || '2026-09-08 (Reception)'}
-                  </Typography>
-                </Box>
-                <Box className="info-row">
-                  <Typography className="info-label">Fulfillment Mode</Typography>
-                  <Typography className="info-val">
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Fulfillment Mode</span>
+                  <span className="info-val">
                     <LocalShippingOutlinedIcon className="inline-icon" />
                     {order.deliveryType || 'Store Pickup (Scheduled)'}
-                  </Typography>
-                </Box>
-                <Box className="info-row">
-                  <Typography className="info-label">Order Status</Typography>
-                  <Typography className="info-val status-text">
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Order Status</span>
+                  <span className="info-val status-text">
                     <CheckCircleOutlineIcon className="inline-icon" />
                     {order.status === 'completed'
                       ? 'Ready for Pickup / Delivered'
                       : order.status === 'in-progress'
                       ? 'Pleating in Progress'
                       : 'Pending Processing'}
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          </Grid>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* 3. Saree & Pleating Specifications */}
-          <Grid item xs={12}>
-            <Box className="details-card">
-              <Box className="details-card__head">
-                <DryCleaningOutlinedIcon className="card-head-icon" />
-                <Typography className="card-head-title">Saree Pre-Pleating Specifications</Typography>
-              </Box>
-              <Box className="details-card__body">
-                <Grid container spacing={{ xs: 1.5, sm: 2 }}>
-                  <Grid item xs={6} sm={6} md={3}>
-                    <Box className="spec-tile">
-                      <LayersOutlinedIcon className="spec-icon" />
-                      <Typography className="spec-label">Service Type</Typography>
-                      <Typography className="spec-val">{order.service}</Typography>
-                    </Box>
-                  </Grid>
+          <div className="details-card" style={{ marginBottom: '16px' }}>
+            <div className="details-card__head">
+              <DryCleaningOutlinedIcon className="card-head-icon" />
+              <span className="card-head-title">Saree Pre-Pleating Specifications</span>
+            </div>
+            <div className="details-card__body">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+                <div className="spec-tile">
+                  <LayersOutlinedIcon className="spec-icon" />
+                  <span className="spec-label">Service Type</span>
+                  <span className="spec-val">{order.service}</span>
+                </div>
 
-                  <Grid item xs={6} sm={6} md={3}>
-                    <Box className="spec-tile">
-                      <DryCleaningOutlinedIcon className="spec-icon" />
-                      <Typography className="spec-label">Saree Fabric</Typography>
-                      <Typography className="spec-val highlight">{order.sareeType}</Typography>
-                    </Box>
-                  </Grid>
+                <div className="spec-tile">
+                  <DryCleaningOutlinedIcon className="spec-icon" />
+                  <span className="spec-label">Saree Fabric</span>
+                  <span className="spec-val highlight">{order.sareeType}</span>
+                </div>
 
-                  <Grid item xs={6} sm={6} md={3}>
-                    <Box className="spec-tile">
-                      <StraightenOutlinedIcon className="spec-icon" />
-                      <Typography className="spec-label">Front Pleats</Typography>
-                      <Typography className="spec-val">
-                        {order.pleatCount || '6 Front Pleats (5.5" width)'}
-                      </Typography>
-                    </Box>
-                  </Grid>
+                <div className="spec-tile">
+                  <StraightenOutlinedIcon className="spec-icon" />
+                  <span className="spec-label">Front Pleats</span>
+                  <span className="spec-val">
+                    {order.pleatCount || '6 Front Pleats (5.5" width)'}
+                  </span>
+                </div>
 
-                  <Grid item xs={6} sm={6} md={3}>
-                    <Box className="spec-tile">
-                      <Inventory2OutlinedIcon className="spec-icon" />
-                      <Typography className="spec-label">Pallu & Packaging</Typography>
-                      <Typography className="spec-val">
-                        {order.packaging || 'Hardboard Box Fold + Butter Paper'}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Box>
-            </Box>
-          </Grid>
+                <div className="spec-tile">
+                  <Inventory2OutlinedIcon className="spec-icon" />
+                  <span className="spec-label">Pallu & Packaging</span>
+                  <span className="spec-val">
+                    {order.packaging || 'Hardboard Box Fold + Butter Paper'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* 4. Special Instructions Callout */}
-          <Grid item xs={12}>
-            <Box className="instructions-callout">
-              <InfoOutlinedIcon className="callout-icon" />
-              <Box>
-                <Typography className="callout-title">Special Instructions & Care Notes</Typography>
-                <Typography className="callout-text">
-                  {order.notes ||
-                    'Handle delicate zari border with extra care. Steam iron on reverse side only. Pre-pinned with brass safety pins.'}
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
+          <div className="instructions-callout" style={{ marginBottom: '16px' }}>
+            <InfoOutlinedIcon className="callout-icon" />
+            <div>
+              <span className="callout-title">Special Instructions & Care Notes</span>
+              <p className="callout-text">
+                {order.notes ||
+                  'Handle delicate zari border with extra care. Steam iron on reverse side only. Pre-pinned with brass safety pins.'}
+              </p>
+            </div>
+          </div>
 
           {/* 5. Payment Breakdown */}
-          <Grid item xs={12}>
-            <Box className="payment-card">
-              <Box className="payment-card__left">
-                <Box className="payment-head">
-                  <PaymentOutlinedIcon className="pay-icon" />
-                  <Typography className="pay-title">Billing & Payment Summary</Typography>
-                </Box>
-                <Typography className="pay-method">
-                  Payment Status:{' '}
-                  <span className="pay-method-bold">
-                    {order.paymentStatus || 'Paid in Full (UPI / Online)'}
-                  </span>
-                </Typography>
-              </Box>
+          <div className="payment-card">
+            <div className="payment-card__left">
+              <div className="payment-head">
+                <PaymentOutlinedIcon className="pay-icon" />
+                <span className="pay-title">Billing & Payment Summary</span>
+              </div>
+              <span className="pay-method">
+                Payment Status:{' '}
+                <span className="pay-method-bold">
+                  {order.paymentStatus || 'Paid in Full (UPI / Online)'}
+                </span>
+              </span>
+            </div>
 
-              <Box className="payment-card__breakdown">
-                <Box className="pay-row">
-                  <Typography className="pay-label">Base Pleating Service:</Typography>
-                  <Typography className="pay-val">{order.baseAmount || '₹1,000'}</Typography>
-                </Box>
-                <Box className="pay-row">
-                  <Typography className="pay-label">Steam Iron & Box Add-on:</Typography>
-                  <Typography className="pay-val">{order.addonAmount || '₹200'}</Typography>
-                </Box>
-                <Divider className="pay-divider" />
-                <Box className="pay-row total">
-                  <Typography className="pay-total-label">Total Amount:</Typography>
-                  <Typography className="pay-total-val">{order.amount}</Typography>
-                </Box>
-              </Box>
-            </Box>
-          </Grid>
-        </Grid>
-      </DialogContent>
+            <div className="payment-card__breakdown">
+              <div className="pay-row">
+                <span className="pay-label">Base Pleating Service:</span>
+                <span className="pay-val">{order.baseAmount || '₹1,000'}</span>
+              </div>
+              <div className="pay-row">
+                <span className="pay-label">Steam Iron & Box Add-on:</span>
+                <span className="pay-val">{order.addonAmount || '₹200'}</span>
+              </div>
+              <div className="pay-divider" />
+              <div className="pay-row total">
+                <span className="pay-total-label">Total Amount:</span>
+                <span className="pay-total-val">{order.amount}</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <Divider className="modal-divider" />
+        <div className="modal-divider" />
 
-      {/* Footer Actions */}
-      <DialogActions className="modal-actions">
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<PrintOutlinedIcon sx={{ color: '#d4af37 !important' }} />}
-          onClick={handlePrint}
-          className="print-btn"
-        >
-          Print Invoice
-        </Button>
-        <Button
-          variant="contained"
-          onClick={onClose}
-          className="close-btn"
-        >
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+        {/* Footer Actions */}
+        <div className="modal-actions">
+          <AppButton
+            variant="secondary"
+            startIcon={<PrintOutlinedIcon />}
+            onClick={handlePrint}
+            className="print-btn"
+          >
+            Print Invoice
+          </AppButton>
+          <AppButton
+            variant="primary"
+            onClick={onClose}
+            className="close-btn"
+          >
+            Close
+          </AppButton>
+        </div>
+      </div>
+    </div>
   );
 };
 

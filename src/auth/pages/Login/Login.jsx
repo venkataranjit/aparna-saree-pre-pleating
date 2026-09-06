@@ -48,7 +48,7 @@ const GoogleIcon = () => (
 
 const Login = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, refreshProfile } = useAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -140,11 +140,19 @@ const Login = () => {
 
     try {
       if (auth) {
-        await signInWithEmailAndPassword(auth, email.trim(), password);
-        setSuccessMsg('Authentication successful. Redirecting to Dashboard...');
+        const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+        setSuccessMsg('Authentication successful. Loading profile...');
+        if (userCredential?.user && refreshProfile) {
+          try {
+            await refreshProfile(userCredential.user);
+          } catch (pErr) {
+            console.warn('Profile refresh after login note:', pErr);
+          }
+        }
+        setSuccessMsg('Welcome back! Redirecting to Dashboard...');
         setTimeout(() => {
           navigate('/dashboard');
-        }, 700);
+        }, 300);
       } else {
         navigate('/dashboard');
       }
@@ -336,16 +344,21 @@ const Login = () => {
           email: userEmail,
           userMobile: user.phoneNumber || (`+91${phone.trim()}`),
           userAddress: '',
-          role: isSuper ? USER_ROLES.SUPERADMIN : USER_ROLES.CUSTOMER,
         });
       } catch (dbErr) {
         console.warn('Firestore profile sync note:', dbErr);
       }
 
+      if (refreshProfile) {
+        try {
+          await refreshProfile(user);
+        } catch {}
+      }
+
       setSuccessMsg('Phone verified successfully! Redirecting to Dashboard...');
       setTimeout(() => {
         navigate('/dashboard');
-      }, 700);
+      }, 300);
     } catch (err) {
       console.warn('OTP verification error:', err);
       setOtpError(true);
@@ -382,16 +395,21 @@ const Login = () => {
           email: userEmail,
           userMobile: user.phoneNumber || '',
           userAddress: '',
-          role: isSuper ? USER_ROLES.SUPERADMIN : USER_ROLES.CUSTOMER,
         });
       } catch (dbErr) {
         console.warn('Firestore Google user sync note:', dbErr);
       }
 
+      if (refreshProfile) {
+        try {
+          await refreshProfile(user);
+        } catch {}
+      }
+
       setSuccessMsg(`Welcome, ${user.displayName || 'User'}! Redirecting to Dashboard...`);
       setTimeout(() => {
         navigate('/dashboard');
-      }, 700);
+      }, 300);
     } catch (err) {
       console.warn('Google sign-in error:', err);
       if (err.code === 'auth/popup-closed-by-user') {

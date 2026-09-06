@@ -193,10 +193,7 @@
         margin-bottom: 8px;
 
         .brand-logo-img {
-          height: 84px;
-          max-height: 84px;
-          width: auto;
-          max-width: 250px;
+          max-width: 360px;
           object-fit: contain;
           filter: drop-shadow(0 4px 18px rgba(212, 175, 55, 0.45));
           transition: transform 0.25s ease;

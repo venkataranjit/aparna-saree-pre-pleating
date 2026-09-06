@@ -262,8 +262,119 @@
 
       .action-btns {
         display: flex;
-        gap: 6px;
+        gap: 8px;
+        align-items: center;
         justify-content: flex-end;
+
+        .app-btn,
+        button {
+          width: 32px;
+          height: 32px;
+          min-width: 32px;
+          max-width: 32px;
+          padding: 0 !important;
+          border-radius: 6px !important; // Crisp square shape
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          aspect-ratio: 1 / 1;
+          flex-shrink: 0;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+          span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+          }
+
+          svg {
+            font-size: 16px;
+          }
+
+          @media (max-width: 600px) {
+            width: 30px;
+            height: 30px;
+            min-width: 30px;
+            max-width: 30px;
+          }
+
+          // 1. View Customer Profile & Measurements (Crystal Blue)
+          &.action-btn--view {
+            background-color: rgba(59, 130, 246, 0.14) !important;
+            color: #60a5fa !important;
+            border: 1px solid rgba(59, 130, 246, 0.38) !important;
+
+            &:hover {
+              background-color: rgba(59, 130, 246, 0.28) !important;
+              color: #93c5fd !important;
+              border-color: #3b82f6 !important;
+              box-shadow: 0 2px 10px rgba(59, 130, 246, 0.35) !important;
+              transform: translateY(-1px);
+            }
+
+            &:active {
+              transform: translateY(0);
+            }
+          }
+
+          // 2. Add Measurement Profile Shortcut (Emerald Green)
+          &.action-btn--measure {
+            background-color: rgba(16, 185, 129, 0.14) !important;
+            color: #34d399 !important;
+            border: 1px solid rgba(16, 185, 129, 0.38) !important;
+
+            &:hover {
+              background-color: rgba(16, 185, 129, 0.28) !important;
+              color: #6ee7b7 !important;
+              border-color: #10b981 !important;
+              box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35) !important;
+              transform: translateY(-1px);
+            }
+
+            &:active {
+              transform: translateY(0);
+            }
+          }
+
+          // 3. Edit Customer Info (Warm Amber Gold)
+          &.action-btn--edit {
+            background-color: rgba(245, 158, 11, 0.14) !important;
+            color: #fbbf24 !important;
+            border: 1px solid rgba(245, 158, 11, 0.38) !important;
+
+            &:hover {
+              background-color: rgba(245, 158, 11, 0.28) !important;
+              color: #fde68a !important;
+              border-color: #f59e0b !important;
+              box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35) !important;
+              transform: translateY(-1px);
+            }
+
+            &:active {
+              transform: translateY(0);
+            }
+          }
+
+          // 4. Delete Action (Crimson Red)
+          &.action-btn--delete {
+            background-color: rgba(239, 68, 68, 0.14) !important;
+            color: #f87171 !important;
+            border: 1px solid rgba(239, 68, 68, 0.38) !important;
+
+            &:hover {
+              background-color: rgba(239, 68, 68, 0.28) !important;
+              color: #fca5a5 !important;
+              border-color: #ef4444 !important;
+              box-shadow: 0 2px 10px rgba(239, 68, 68, 0.35) !important;
+              transform: translateY(-1px);
+            }
+
+            &:active {
+              transform: translateY(0);
+            }
+          }
+        }
       }
 
       .empty-state-cell {
@@ -405,39 +516,54 @@
     .measure-action-btn {
       width: 32px;
       height: 32px;
-      border-radius: 6px;
+      min-width: 32px;
+      max-width: 32px;
+      padding: 0;
+      aspect-ratio: 1 / 1;
+      border-radius: 6px; // Square shape
       display: inline-flex;
       align-items: center;
       justify-content: center;
       border: none;
       cursor: pointer;
+      flex-shrink: 0;
       transition: all 0.2s ease;
 
+      svg {
+        font-size: 16px;
+      }
+
       @media (max-width: 600px) {
-        width: 28px;
-        height: 28px;
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        max-width: 30px;
       }
 
       &--edit {
-        color: $color-gold;
-        background-color: rgba(212, 175, 55, 0.1);
-        border: 1px solid rgba(212, 175, 55, 0.25);
+        color: #fbbf24;
+        background-color: rgba(245, 158, 11, 0.14);
+        border: 1px solid rgba(245, 158, 11, 0.35);
 
         &:hover {
-          background-color: rgba(212, 175, 55, 0.25);
-          border-color: $color-gold;
+          background-color: rgba(245, 158, 11, 0.28);
+          border-color: #f59e0b;
+          color: #fde68a;
+          box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35);
           transform: translateY(-1px);
         }
       }
 
       &--delete {
         color: #f87171;
-        background-color: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.25);
+        background-color: rgba(239, 68, 68, 0.14);
+        border: 1px solid rgba(239, 68, 68, 0.35);
 
         &:hover {
-          background-color: rgba(239, 68, 68, 0.25);
+          background-color: rgba(239, 68, 68, 0.28);
           border-color: #ef4444;
+          color: #fca5a5;
+          box-shadow: 0 2px 10px rgba(239, 68, 68, 0.35);
           transform: translateY(-1px);
         }
       }

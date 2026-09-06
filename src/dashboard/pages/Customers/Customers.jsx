@@ -1091,31 +1091,37 @@ const Customers = () => {
                         style={{ textAlign: "right", whiteSpace: "nowrap" }}
                       >
                         <div className="action-btns">
-                          {/* 1. View Details Button */}
+                          {/* 1. View Details Button (Crystal Blue) */}
                           <AppButton
-                            variant="secondary"
+                            variant="info"
                             size="sm"
+                            square
+                            className="action-btn--view"
                             title="View Customer Profile & Measurements"
                             onClick={() => handleOpenViewDetails(user)}
                           >
                             <VisibilityOutlinedIcon style={{ fontSize: 16 }} />
                           </AppButton>
 
-                          {/* 2. Add Measurement Shortcut */}
+                          {/* 2. Add Measurement Shortcut (Emerald Green) */}
                           <AppButton
-                            variant="secondary"
+                            variant="success"
                             size="sm"
+                            square
+                            className="action-btn--measure"
                             title="Add Measurement Profile"
                             onClick={() => handleOpenAddMeasure(user)}
                           >
                             <StraightenOutlinedIcon style={{ fontSize: 16 }} />
                           </AppButton>
 
-                          {/* 3. Edit Customer Info */}
+                          {/* 3. Edit Customer Info (Warm Amber Gold) */}
                           {userCanEdit && (
                             <AppButton
-                              variant="secondary"
+                              variant="warning"
                               size="sm"
+                              square
+                              className="action-btn--edit"
                               title="Edit Customer Info"
                               onClick={() => handleOpenEdit(user)}
                             >

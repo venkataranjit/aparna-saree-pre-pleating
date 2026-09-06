@@ -30,8 +30,8 @@ const DashboardLayout = () => {
     setMobileOpen(false);
   };
 
-  // If loading without any cached user session, render minimal loader to prevent identity flicker
-  if (loading && !currentUser && !userProfile) {
+  // If loading authentication or resolving user profile, render minimal loader to prevent role flicker
+  if (loading || (currentUser && !userProfile)) {
     return (
       <div className="dashboard-loading-screen">
         <AppSpinner size="lg" color="gold" />

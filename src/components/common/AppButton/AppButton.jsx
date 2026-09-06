@@ -11,15 +11,19 @@ export default function AppButton({
   loading = false,
   startIcon = null,
   endIcon = null,
+  square = false,
+  iconOnly = false,
   className = '',
   type = 'button',
   onClick,
   ...rest
 }) {
+  const isSquare = square || iconOnly || variant === 'icon';
   const classes = [
     'app-btn',
     `app-btn--${variant}`,
     `app-btn--${size}`,
+    isSquare ? 'app-btn--square' : '',
     fullWidth ? 'app-btn--full-width' : '',
     disabled || loading ? 'app-btn--disabled' : '',
     className,

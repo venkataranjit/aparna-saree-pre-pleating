@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }) => {
   const cached = getCachedSession();
   const [currentUser, setCurrentUser] = useState(cached.user);
   const [userProfile, setUserProfile] = useState(cached.profile);
-  const [loading, setLoading] = useState(!cached.user);
+  const [loading, setLoading] = useState(!cached.user || !cached.profile);
 
   // Sync or fetch profile from Firestore / Local Cache
   const fetchOrInitProfile = async (user) => {
@@ -85,17 +85,22 @@ export const AuthProvider = ({ children }) => {
     const normalizedEmail = (user.email || '').trim().toLowerCase();
     const isSuper = normalizedEmail === SUPERADMIN_EMAIL.toLowerCase();
 
-    // Check local storage first for fast response and persistence
+    // 1. Check local storage first for fast response and persistence
     const localList = getLocalUsers();
     const existingLocal = localList.find(
       (u) =>
         (u.id && u.id === user.uid) ||
-        (u.email && (u.email || '').toLowerCase() === normalizedEmail)
+        (u.email && (u.email || '').trim().toLowerCase() === normalizedEmail)
     );
 
     let currentMobile = existingLocal?.userMobile || user.phoneNumber || '';
     let currentUsername = existingLocal?.username || user.displayName || (isSuper ? 'Victory Ranjit' : 'Customer');
     let currentAddress = existingLocal?.userAddress || '';
+
+    // If existing local user has a specific administrative/staff role, honor it!
+    const candidateRole = isSuper
+      ? USER_ROLES.SUPERADMIN
+      : (existingLocal?.role && existingLocal.role !== USER_ROLES.CUSTOMER ? existingLocal.role : null);
 
     let baseProfile = {
       id: user.uid,
@@ -103,12 +108,12 @@ export const AuthProvider = ({ children }) => {
       username: currentUsername,
       userMobile: currentMobile,
       userAddress: currentAddress,
-      role: isSuper ? USER_ROLES.SUPERADMIN : (existingLocal?.role || USER_ROLES.CUSTOMER),
+      role: candidateRole || existingLocal?.role || USER_ROLES.CUSTOMER,
     };
 
     try {
       const userDocRef = doc(db, 'users', user.uid);
-      let snapshot = await withTimeout(getDoc(userDocRef), 2500, null);
+      let snapshot = await withTimeout(getDoc(userDocRef), 4000, null);
       let data = snapshot && snapshot.exists() ? snapshot.data() : null;
 
       // If document is not keyed by user.uid in Firestore, search by email
@@ -118,7 +123,7 @@ export const AuthProvider = ({ children }) => {
             collection(db, 'users'),
             where('email', '==', normalizedEmail)
           );
-          const emailSnap = await withTimeout(getDocs(q), 2500, null);
+          const emailSnap = await withTimeout(getDocs(q), 4000, null);
           if (emailSnap && !emailSnap.empty) {
             const matchedDoc = emailSnap.docs[0];
             data = matchedDoc.data();
@@ -132,10 +137,47 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
+      // If still not found by direct email query, search all user documents to handle casing or unlinked records
+      if (!data && normalizedEmail) {
+        try {
+          const allDocsSnap = await withTimeout(getDocs(collection(db, 'users')), 4000, null);
+          if (allDocsSnap && !allDocsSnap.empty) {
+            const foundDoc = allDocsSnap.docs.find((d) => {
+              const dData = d.data();
+              return (
+                (dData.email && dData.email.trim().toLowerCase() === normalizedEmail) ||
+                (dData.id && dData.id === user.uid)
+              );
+            });
+            if (foundDoc) {
+              data = foundDoc.data();
+              if (foundDoc.id !== user.uid) {
+                setDoc(userDocRef, { ...data, id: user.uid }, { merge: true }).catch(() => {});
+              }
+            }
+          }
+        } catch (scanErr) {
+          console.warn('Firestore case-insensitive fallback note:', scanErr);
+        }
+      }
+
       if (data) {
-        const finalRole = isSuper
-          ? USER_ROLES.SUPERADMIN
-          : (data.role || existingLocal?.role || baseProfile.role || USER_ROLES.CUSTOMER);
+        // Authoritative role resolution:
+        // Superadmin always superadmin.
+        // If data in Firestore has a role, prefer it.
+        // If data role was customer but candidate/local has admin/staff, preserve admin/staff!
+        let finalRole = USER_ROLES.CUSTOMER;
+        if (isSuper) {
+          finalRole = USER_ROLES.SUPERADMIN;
+        } else if (data.role && data.role !== USER_ROLES.CUSTOMER) {
+          finalRole = data.role;
+        } else if (candidateRole) {
+          finalRole = candidateRole;
+        } else if (data.role) {
+          finalRole = data.role;
+        } else if (existingLocal?.role) {
+          finalRole = existingLocal.role;
+        }
 
         const resolvedProfile = {
           id: user.uid,
@@ -147,15 +189,15 @@ export const AuthProvider = ({ children }) => {
         };
 
         if (isSuper && data.role !== USER_ROLES.SUPERADMIN) {
-          await withTimeout(
-            setDoc(userDocRef, { role: USER_ROLES.SUPERADMIN, updatedAt: serverTimestamp() }, { merge: true }),
-            2000
-          );
+          setDoc(userDocRef, { role: USER_ROLES.SUPERADMIN, updatedAt: serverTimestamp() }, { merge: true }).catch(() => {});
+        } else if (finalRole !== data.role) {
+          // Sync corrected role back to Firestore
+          setDoc(userDocRef, { role: finalRole, updatedAt: serverTimestamp() }, { merge: true }).catch(() => {});
         }
 
-        // Keep local cache synchronized with authoritative Firestore profile
+        // Keep local cache synchronized with authoritative profile
         const updatedLocal = getLocalUsers().map((u) =>
-          (u.id && u.id === user.uid) || ((u.email || '').toLowerCase() === normalizedEmail)
+          (u.id && u.id === user.uid) || ((u.email || '').trim().toLowerCase() === normalizedEmail)
             ? { ...u, ...resolvedProfile }
             : u
         );
@@ -165,16 +207,25 @@ export const AuthProvider = ({ children }) => {
         saveCachedSession(user, resolvedProfile);
         return resolvedProfile;
       } else {
-        // Create initial profile if missing
+        // Create initial profile if missing, strictly preserving any assigned role
+        const determinedRole = isSuper
+          ? USER_ROLES.SUPERADMIN
+          : (candidateRole || existingLocal?.role || USER_ROLES.CUSTOMER);
+
         const newModel = createUserModel({
           username: currentUsername,
           email: normalizedEmail,
           userMobile: currentMobile,
           userAddress: currentAddress,
-          role: baseProfile.role,
+          role: determinedRole,
         });
 
-        await withTimeout(setDoc(userDocRef, newModel, { merge: true }), 2500);
+        try {
+          await withTimeout(setDoc(userDocRef, newModel, { merge: true }), 4000);
+        } catch (writeErr) {
+          console.warn('Initial profile create in Firestore note:', writeErr);
+        }
+
         const created = { id: user.uid, ...newModel };
         setUserProfile(created);
         saveCachedSession(user, created);
@@ -182,9 +233,16 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       console.warn('Profile fetch note (using local representation):', err.message || err);
-      setUserProfile(baseProfile);
-      saveCachedSession(user, baseProfile);
-      return baseProfile;
+      const fallbackRole = isSuper
+        ? USER_ROLES.SUPERADMIN
+        : (candidateRole || existingLocal?.role || baseProfile.role || USER_ROLES.CUSTOMER);
+      const resolvedFallback = {
+        ...baseProfile,
+        role: fallbackRole,
+      };
+      setUserProfile(resolvedFallback);
+      saveCachedSession(user, resolvedFallback);
+      return resolvedFallback;
     }
   };
 
@@ -196,6 +254,7 @@ export const AuthProvider = ({ children }) => {
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        setLoading(true);
         const safeUser = {
           uid: user.uid,
           email: user.email || '',
@@ -203,9 +262,20 @@ export const AuthProvider = ({ children }) => {
           phoneNumber: user.phoneNumber || '',
           photoURL: user.photoURL || '',
         };
-        setCurrentUser(safeUser);
+
+        // Optimistically set cached profile if available to prevent UI flicker
+        const cached = getCachedSession();
+        if (cached?.user?.uid === user.uid && cached?.profile) {
+          setCurrentUser(safeUser);
+          setUserProfile(cached.profile);
+        }
+
         const resolved = await fetchOrInitProfile(user);
-        saveCachedSession(user, resolved);
+        setCurrentUser(safeUser);
+        if (resolved) {
+          setUserProfile(resolved);
+          saveCachedSession(user, resolved);
+        }
       } else {
         clearCachedSession();
         setCurrentUser(null);
@@ -217,10 +287,14 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  const refreshProfile = async () => {
-    if (currentUser) {
-      const refreshed = await fetchOrInitProfile(currentUser);
-      saveCachedSession(currentUser, refreshed);
+  const refreshProfile = async (targetUser = null) => {
+    const userToFetch = targetUser || currentUser || auth?.currentUser;
+    if (userToFetch) {
+      const refreshed = await fetchOrInitProfile(userToFetch);
+      if (refreshed) {
+        setUserProfile(refreshed);
+        saveCachedSession(userToFetch, refreshed);
+      }
       return refreshed;
     }
     return null;

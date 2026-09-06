@@ -336,14 +336,42 @@ export const createUserProfile = async (uid, userData) => {
   let resolvedRole = userData.role;
 
   try {
-    const existingSnap = await withTimeout(getDoc(docRef), 2000, null);
+    const existingSnap = await withTimeout(getDoc(docRef), 3000, null);
     if (existingSnap && existingSnap.exists()) {
       const existingData = existingSnap.data();
       if (existingData?.role && (!userData.role || userData.role === USER_ROLES.CUSTOMER)) {
         resolvedRole = existingData.role;
       }
+    } else if (userData.email) {
+      const cleanEmail = userData.email.trim().toLowerCase();
+      const q = query(collection(db, COLLECTIONS.USERS), where('email', '==', cleanEmail));
+      const emailSnap = await withTimeout(getDocs(q), 3000, null);
+      if (emailSnap && !emailSnap.empty) {
+        const existingData = emailSnap.docs[0].data();
+        if (existingData?.role && (!userData.role || userData.role === USER_ROLES.CUSTOMER)) {
+          resolvedRole = existingData.role;
+        }
+      }
     }
   } catch {}
+
+  // Also check local cache for any registered role
+  if (!resolvedRole || resolvedRole === USER_ROLES.CUSTOMER) {
+    const localList = getLocalUsers();
+    const localMatch = localList.find(
+      (u) =>
+        (u.id && u.id === uid) ||
+        (u.email && userData.email && (u.email || '').trim().toLowerCase() === userData.email.trim().toLowerCase())
+    );
+    if (localMatch?.role && localMatch.role !== USER_ROLES.CUSTOMER) {
+      resolvedRole = localMatch.role;
+    }
+  }
+
+  // SuperAdmin override
+  if (userData.email && userData.email.trim().toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()) {
+    resolvedRole = USER_ROLES.SUPERADMIN;
+  }
 
   const model = createUserModel({
     ...userData,
@@ -351,7 +379,7 @@ export const createUserProfile = async (uid, userData) => {
   });
 
   try {
-    await withTimeout(setDoc(docRef, model, { merge: true }), 3000);
+    await withTimeout(setDoc(docRef, model, { merge: true }), 3500);
   } catch (err) {
     console.warn('createUserProfile firestore note:', err.message || err);
   }

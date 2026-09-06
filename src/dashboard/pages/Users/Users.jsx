@@ -807,8 +807,10 @@ const Users = () => {
                         <div className="action-btns">
                           {userCanEdit && (
                             <AppButton
-                              variant="secondary"
+                              variant="warning"
                               size="sm"
+                              square
+                              className="action-btn--edit"
                               title="Edit User"
                               onClick={() => handleOpenEdit(u)}
                             >
@@ -819,6 +821,8 @@ const Users = () => {
                             <AppButton
                               variant="danger"
                               size="sm"
+                              square
+                              className="action-btn--delete"
                               title="Delete User"
                               onClick={() =>
                                 setUserToDelete({

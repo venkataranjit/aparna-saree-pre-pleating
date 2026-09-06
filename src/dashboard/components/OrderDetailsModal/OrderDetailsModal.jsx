@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
@@ -37,7 +38,7 @@ const OrderDetailsModal = ({ open, onClose, order }) => {
     window.print();
   };
 
-  return (
+  const modalElement = (
     <div className="order-details-modal">
       <div className="order-details-backdrop" onClick={onClose} />
 
@@ -257,6 +258,10 @@ const OrderDetailsModal = ({ open, onClose, order }) => {
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalElement, document.body)
+    : modalElement;
 };
 
 export default OrderDetailsModal;

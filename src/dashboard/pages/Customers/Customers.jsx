@@ -18,6 +18,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import NotesOutlinedIcon from "@mui/icons-material/NotesOutlined";
 import SquareFootOutlinedIcon from "@mui/icons-material/SquareFootOutlined";
+import PendingActionsOutlinedIcon from "@mui/icons-material/PendingActionsOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import StatCard from "../../components/StatCard/StatCard";
@@ -859,9 +860,13 @@ const Customers = () => {
         <StatCard
           title="Pending Profiles"
           value={String(pendingMeasurementsCount)}
-          change="Awaiting Measurements"
-          trendType={pendingMeasurementsCount > 0 ? "progress" : "completed"}
-          icon={<StraightenOutlinedIcon />}
+          change={
+            pendingMeasurementsCount > 0
+              ? "Awaiting Measurement"
+              : "All Profiles Complete"
+          }
+          trendType={pendingMeasurementsCount > 0 ? "pending" : "completed"}
+          icon={<PendingActionsOutlinedIcon />}
         />
       </div>
 

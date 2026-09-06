@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import CloseIcon from '@mui/icons-material/Close';
 import './AppModal.scss';
 
@@ -26,7 +27,7 @@ export default function AppModal({
 
   if (!open) return null;
 
-  return (
+  const modalContent = (
     <div
       className="app-modal-backdrop"
       onClick={(e) => {
@@ -67,4 +68,8 @@ export default function AppModal({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : modalContent;
 }

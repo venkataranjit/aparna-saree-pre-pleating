@@ -1,6 +1,7 @@
 import React from 'react';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CheckIcon from '@mui/icons-material/Check';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import './StatCard.scss';
 
 const StatCard = ({
@@ -16,7 +17,10 @@ const StatCard = ({
     if (trendType === 'completed') {
       return <CheckIcon className="trend-icon" />;
     }
-    if (trendType === 'progress') {
+    if (trendType === 'progress' || trendType === 'pending') {
+      return <AccessTimeIcon className="trend-icon" />;
+    }
+    if (trendType === 'dot') {
       return <span className="trend-pulse-dot" />;
     }
     return <TrendingUpIcon className="trend-icon" />;

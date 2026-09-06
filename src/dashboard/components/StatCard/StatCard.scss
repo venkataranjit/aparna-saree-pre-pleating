@@ -210,14 +210,23 @@
     font-weight: 600;
     letter-spacing: 0.2px;
 
+    .trend-icon,
     .badge-icon {
-      font-size: 0.88rem;
+      font-size: 0.88rem !important;
+      width: 0.88rem;
+      height: 0.88rem;
+      color: inherit !important;
+      fill: currentColor !important;
+      flex-shrink: 0;
+      display: inline-block;
+      vertical-align: middle;
     }
 
     .badge-text {
       font-size: inherit;
       font-weight: inherit;
       line-height: 1;
+      white-space: nowrap;
     }
 
     &.growth,
@@ -226,23 +235,35 @@
       border: 1px solid rgba(212, 175, 55, 0.28);
       color: $color-light-gold;
 
+      .trend-icon,
       .badge-icon {
         color: $color-gold !important;
         fill: $color-gold !important;
       }
     }
 
-    &.progress {
-      background: rgba(212, 175, 55, 0.08);
-      border: 1px solid rgba(212, 175, 55, 0.22);
-      color: $color-light-gold;
+    &.progress,
+    &.pending {
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fbbf24;
+
+      .trend-icon,
+      .badge-icon {
+        color: #fbbf24 !important;
+        fill: #fbbf24 !important;
+      }
 
       .trend-pulse-dot {
         width: 6px;
         height: 6px;
+        min-width: 6px;
+        min-height: 6px;
         border-radius: 50%;
-        background-color: $color-gold;
-        box-shadow: 0 0 6px $color-gold;
+        background-color: #fbbf24;
+        box-shadow: 0 0 6px rgba(245, 158, 11, 0.7);
+        flex-shrink: 0;
+        display: inline-block;
         animation: pulseGlow 1.8s infinite ease-in-out;
       }
     }
@@ -252,6 +273,7 @@
       border: 1px solid rgba(212, 175, 55, 0.28);
       color: $color-light-gold;
 
+      .trend-icon,
       .badge-icon {
         color: $color-gold !important;
         fill: $color-gold !important;

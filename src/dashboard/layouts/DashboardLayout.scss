@@ -44,10 +44,17 @@
     background-color: $bg-secondary;
     overflow-y: auto;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
     scrollbar-width: thin;
     scrollbar-color: rgba(212, 175, 55, 0.45) #050505;
+
+    .dashboard-layout__page-content {
+      flex: 1 0 auto;
+      width: 100%;
+    }
 
     &::-webkit-scrollbar {
       width: 7px;

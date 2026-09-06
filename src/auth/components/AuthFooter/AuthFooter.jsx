@@ -1,22 +1,21 @@
 import React from 'react';
-import { Box, Container, Typography } from '@mui/material';
 import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
 import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
-import './Footer.scss';
+import './AuthFooter.scss';
 
-const Footer = () => {
+const AuthFooter = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <Box component="footer" className="landing-footer">
-      <Container maxWidth="lg" className="landing-footer__container">
-        <div className="landing-footer__copyright">
-          <Typography variant="body2">
-            &copy; {currentYear} Aparna Saree Pre-Pleating. All rights reserved.
-          </Typography>
+    <footer className="auth-footer">
+      <div className="auth-footer__inner">
+        <div className="auth-footer__copyright">
+          <span>&copy; {currentYear} Aparna Saree Pre-Pleating.</span>
+          <span className="divider-dot">&bull;</span>
+          <span className="rights-text">All rights reserved.</span>
         </div>
 
-        <div className="landing-footer__developer">
+        <div className="auth-footer__developer">
           <CodeOutlinedIcon className="dev-icon" />
           <span className="dev-text">Designed &amp; Developed by</span>
           <a
@@ -30,9 +29,9 @@ const Footer = () => {
             <LaunchOutlinedIcon className="ext-icon" />
           </a>
         </div>
-      </Container>
-    </Box>
+      </div>
+    </footer>
   );
 };
 
-export default Footer;
+export default AuthFooter;

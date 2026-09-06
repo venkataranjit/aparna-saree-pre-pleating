@@ -11,6 +11,9 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { AppButton, AppInput, AppSpinner } from '../../../components/common';
 import brandLogo from '../../../assets/logo.png';
+import AuthDesktopBrand from '../../components/AuthDesktopBrand/AuthDesktopBrand';
+import AuthFooter from '../../components/AuthFooter/AuthFooter';
+import CardStorefrontLink from '../../components/CardStorefrontLink/CardStorefrontLink';
 import './ResetPassword.scss';
 
 const ResetPassword = () => {
@@ -101,20 +104,17 @@ const ResetPassword = () => {
       <div className="reset-screen__glow reset-screen__glow--top" />
       <div className="reset-screen__glow reset-screen__glow--bottom" />
 
-      {/* Top back navigation link */}
-      <div className="reset-screen__top-nav">
-        <Link to="/login" className="back-link">
-          <ArrowBackIcon className="back-icon" />
-          <span>Back to Sign In</span>
-        </Link>
-      </div>
-
-      {/* Centered Reset Password Card */}
+      {/* Reset Password Screen Container */}
       <div className="reset-screen__container">
+        <AuthDesktopBrand />
+
         <div className="reset-card">
           <div className="reset-card__top-bar" />
 
           <div className="reset-card__content">
+            {/* Inside-Card Return to Storefront Link */}
+            <CardStorefrontLink />
+
             {/* Brand Crest & Header */}
             <div className="reset-card__header">
               <div className="brand-logo-wrap">
@@ -269,6 +269,9 @@ const ResetPassword = () => {
           </div>
         </div>
       </div>
+
+      {/* Luxury Footer with Developer Credit */}
+      <AuthFooter />
     </div>
   );
 };

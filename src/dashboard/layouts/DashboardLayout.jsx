@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar/Sidebar';
 import Header from '../components/Header/Header';
 import { useAuth } from '../../auth/context/AuthContext';
 import { AppSpinner } from '../../components/common';
+import DashboardFooter from '../components/Footer/DashboardFooter';
 import './DashboardLayout.scss';
 
 const DashboardLayout = () => {
@@ -57,7 +58,10 @@ const DashboardLayout = () => {
       <div className="dashboard-layout__content-wrapper">
         <Header onMobileMenuToggle={toggleMobileSidebar} />
         <main className="dashboard-layout__main">
-          <Outlet />
+          <div className="dashboard-layout__page-content">
+            <Outlet />
+          </div>
+          <DashboardFooter />
         </main>
       </div>
     </div>

@@ -1,12 +1,16 @@
-@use '../../styles/variables' as *;
+@use "../../../dashboard/styles/variables" as *;
 
-.landing-footer {
-  background-color: #080808;
-  border-top: 1px solid rgba(212, 175, 55, 0.18);
-  padding: $spacing-lg 0;
-  color: $color-light-gold;
-  margin-top: auto;
+.auth-footer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 10px;
+  padding-bottom: 6px;
+  border-top: 1px solid rgba(212, 175, 55, 0.16);
   position: relative;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  z-index: 2;
 
   &::before {
     content: "";
@@ -24,26 +28,44 @@
     pointer-events: none;
   }
 
-  &__container {
-    display: flex !important;
+  &__inner {
+    display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 12px;
+    width: 100%;
+    padding: 0 4px;
 
     @media (max-width: 680px) {
       flex-direction: column;
+      align-items: center;
       text-align: center;
-      gap: 12px;
+      gap: 10px;
     }
   }
 
   &__copyright {
-    p {
-      margin: 0;
-      font-size: 0.85rem;
-      color: rgba(230, 216, 163, 0.7);
-      letter-spacing: 0.2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: rgba(230, 216, 163, 0.6);
+    letter-spacing: 0.2px;
+
+    .divider-dot {
+      color: rgba(212, 175, 55, 0.4);
+      font-size: 0.75rem;
+    }
+
+    .rights-text {
+      color: rgba(230, 216, 163, 0.5);
+    }
+
+    @media (max-width: 480px) {
+      font-size: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
     }
   }
 
@@ -51,12 +73,12 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: rgba(230, 216, 163, 0.75);
 
     .dev-icon {
-      font-size: 1.05rem;
-      color: rgba(212, 175, 55, 0.75);
+      font-size: 0.95rem;
+      color: rgba(212, 175, 55, 0.7);
     }
 
     .dev-text {
@@ -68,14 +90,14 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      padding: 4px 12px;
+      padding: 3px 10px;
       border-radius: 14px;
       background: rgba(212, 175, 55, 0.08);
       border: 1px solid rgba(212, 175, 55, 0.28);
       color: $color-light-gold;
       text-decoration: none;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       letter-spacing: 0.3px;
       transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -85,7 +107,7 @@
       }
 
       .ext-icon {
-        font-size: 0.85rem;
+        font-size: 0.82rem;
         color: rgba(212, 175, 55, 0.75);
         transition: transform 0.2s ease, color 0.2s ease;
       }
@@ -109,7 +131,7 @@
     }
 
     @media (max-width: 480px) {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       flex-wrap: wrap;
       justify-content: center;
     }

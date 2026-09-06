@@ -9,6 +9,9 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import LockResetIcon from '@mui/icons-material/LockReset';
 import { AppButton, AppInput } from '../../../components/common';
 import brandLogo from '../../../assets/logo.png';
+import AuthDesktopBrand from '../../components/AuthDesktopBrand/AuthDesktopBrand';
+import AuthFooter from '../../components/AuthFooter/AuthFooter';
+import CardStorefrontLink from '../../components/CardStorefrontLink/CardStorefrontLink';
 import './ForgotPassword.scss';
 
 const ForgotPassword = () => {
@@ -60,20 +63,17 @@ const ForgotPassword = () => {
       <div className="forgot-screen__glow forgot-screen__glow--top" />
       <div className="forgot-screen__glow forgot-screen__glow--bottom" />
 
-      {/* Top back navigation link */}
-      <div className="forgot-screen__top-nav">
-        <Link to="/landing" className="back-link">
-          <ArrowBackIcon className="back-icon" />
-          <span>Return to Storefront</span>
-        </Link>
-      </div>
-
-      {/* Centered Forgot Password Card */}
+      {/* Forgot Password Screen Container */}
       <div className="forgot-screen__container">
+        <AuthDesktopBrand />
+
         <div className="forgot-card">
           <div className="forgot-card__top-bar" />
 
           <div className="forgot-card__content">
+            {/* Inside-Card Return to Storefront Link */}
+            <CardStorefrontLink />
+
             {/* Brand Crest & Header with enlarged logo */}
             <div className="forgot-card__header">
               <div className="brand-logo-wrap">
@@ -168,6 +168,9 @@ const ForgotPassword = () => {
           </div>
         </div>
       </div>
+
+      {/* Luxury Footer with Developer Credit */}
+      <AuthFooter />
     </div>
   );
 };

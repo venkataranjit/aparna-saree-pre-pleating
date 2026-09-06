@@ -18,6 +18,9 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SecurityIcon from "@mui/icons-material/Security";
 import { AppButton, AppInput } from "../../../components/common";
 import brandLogo from "../../../assets/logo.png";
+import AuthDesktopBrand from "../../components/AuthDesktopBrand/AuthDesktopBrand";
+import AuthFooter from "../../components/AuthFooter/AuthFooter";
+import CardStorefrontLink from "../../components/CardStorefrontLink/CardStorefrontLink";
 import "./Register.scss";
 
 /**
@@ -174,20 +177,17 @@ const Register = () => {
       <div className="register-screen__glow register-screen__glow--top" />
       <div className="register-screen__glow register-screen__glow--bottom" />
 
-      {/* Top back navigation link */}
-      <div className="register-screen__top-nav">
-        <Link to="/landing" className="back-link">
-          <ArrowBackIcon className="back-icon" />
-          <span>Return to Storefront</span>
-        </Link>
-      </div>
-
-      {/* Centered Register Card */}
+      {/* Register Screen Container */}
       <div className="register-screen__container">
+        <AuthDesktopBrand />
+
         <div className="register-card">
           <div className="register-card__top-bar" />
 
           <div className="register-card__content">
+            {/* Inside-Card Return to Storefront Link */}
+            <CardStorefrontLink />
+
             {/* Brand Crest & Header with enlarged logo */}
             <div className="register-card__header">
               <div className="brand-logo-wrap">
@@ -422,6 +422,9 @@ const Register = () => {
           </div>
         </div>
       </div>
+
+      {/* Luxury Footer with Developer Credit */}
+      <AuthFooter />
     </div>
   );
 };

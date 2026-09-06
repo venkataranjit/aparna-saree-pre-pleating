@@ -22,6 +22,9 @@ import SecurityIcon from '@mui/icons-material/Security';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { AppButton, AppInput, AppSpinner } from '../../../components/common';
 import brandLogo from '../../../assets/logo.png';
+import AuthDesktopBrand from '../../components/AuthDesktopBrand/AuthDesktopBrand';
+import AuthFooter from '../../components/AuthFooter/AuthFooter';
+import CardStorefrontLink from '../../components/CardStorefrontLink/CardStorefrontLink';
 import './Login.scss';
 
 // Google Official Brand Icon
@@ -438,20 +441,17 @@ const Login = () => {
       <div className="login-screen__glow login-screen__glow--top" />
       <div className="login-screen__glow login-screen__glow--bottom" />
 
-      {/* Top back navigation link */}
-      <div className="login-screen__top-nav">
-        <Link to="/landing" className="back-link">
-          <ArrowBackIcon className="back-icon" />
-          <span>Return to Storefront</span>
-        </Link>
-      </div>
-
-      {/* Centered Login Card */}
+      {/* Login Screen Container */}
       <div className="login-screen__container">
+        <AuthDesktopBrand />
+
         <div className="login-card">
           <div className="login-card__top-bar" />
 
           <div className="login-card__content">
+            {/* Inside-Card Return to Storefront Link */}
+            <CardStorefrontLink />
+
             {/* Brand Crest & Header */}
             <div className="login-card__header">
               <div className="brand-logo-wrap">
@@ -732,6 +732,9 @@ const Login = () => {
           </div>
         </div>
       </div>
+
+      {/* Luxury Footer with Developer Credit */}
+      <AuthFooter />
     </div>
   );
 };

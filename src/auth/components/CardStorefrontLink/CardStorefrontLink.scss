@@ -1,0 +1,69 @@
+@use "../../../dashboard/styles/variables" as *;
+
+.card-storefront-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+  width: 100%;
+
+  .storefront-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    color: rgba(230, 216, 163, 0.88);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: all 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+
+    .storefront-arrow {
+      font-size: 0.95rem;
+      color: $color-gold;
+      transition: transform 0.2s ease;
+    }
+
+    .storefront-icon {
+      font-size: 1.05rem;
+      color: rgba(212, 175, 55, 0.85);
+      transition: color 0.2s ease;
+    }
+
+    &:hover,
+    &:active {
+      background: rgba(212, 175, 55, 0.18);
+      border-color: rgba(212, 175, 55, 0.65);
+      color: $color-light-gold;
+      box-shadow: 0 0 14px rgba(212, 175, 55, 0.28);
+      transform: translateX(-2px);
+
+      .storefront-arrow {
+        transform: translateX(-3px);
+      }
+
+      .storefront-icon {
+        color: $color-light-gold;
+      }
+    }
+
+    @media (max-width: 480px) {
+      font-size: 0.75rem;
+      padding: 5px 12px;
+      gap: 6px;
+
+      .storefront-arrow {
+        font-size: 0.85rem;
+      }
+
+      .storefront-icon {
+        font-size: 0.95rem;
+      }
+    }
+  }
+}

@@ -246,7 +246,7 @@ const Customers = () => {
           .map((u) => ({
             ...u,
             role: USER_ROLES.CUSTOMER,
-            createdAt: formatDateSafe(u.createdAt, "Recent"),
+            createdAt: formatDateSafe(u.createdAt),
           }));
         setCustomers(onlyCustomers);
       } else {
@@ -430,7 +430,7 @@ const Customers = () => {
           {
             ...newCustomerData,
             id: created.id,
-            createdAt: new Date().toLocaleDateString("en-IN"),
+            createdAt: formatDateSafe(new Date()),
           },
           ...prev,
         ]);
@@ -984,7 +984,7 @@ const Customers = () => {
 
                       {/* Joined Date */}
                       <td className="date-cell">
-                        {user.createdAt || "Recent"}
+                        {formatDateSafe(user.createdAt)}
                       </td>
 
                       {/* Row Action Buttons */}
@@ -1296,7 +1296,7 @@ const Customers = () => {
                 <div>
                   <div className="item-label">Joined</div>
                   <div className="item-value">
-                    {customerForView.createdAt || "Recent"}
+                    {formatDateSafe(customerForView.createdAt)}
                   </div>
                 </div>
               </div>

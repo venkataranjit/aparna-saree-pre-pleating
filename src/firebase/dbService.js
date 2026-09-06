@@ -58,40 +58,151 @@ export const getBusinessById = async (businessId) => {
   return { id: snapshot.id, ...snapshot.data() };
 };
 
+const MONTH_NAMES = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
 /**
- * Format any timestamp, object ({ seconds, nanoseconds }), number, or string safely into a readable date string.
- * Guarantees never returning an object so React children errors never occur.
+ * Format any timestamp, object ({ seconds, nanoseconds }), number, or string safely into "dd-mmm-yyyy" (e.g. 06-Sep-2026).
+ * Never returns 'Recent'. Guarantees consistent date formatting across the entire application.
+ *
+ * @param {any} val - Date, Firestore Timestamp, ISO string, timestamp number, etc.
+ * @param {string} [customFallback] - Optional custom fallback string if value is completely invalid
+ * @returns {string} - Date formatted as "dd-mmm-yyyy"
  */
-export const formatDateSafe = (val, fallback = 'Recent') => {
-  if (!val) return fallback;
-  if (typeof val === 'string') {
-    if (val === '[object Object]' || val === 'null' || val === 'undefined') return fallback;
-    return val;
+export const formatDateSafe = (val, customFallback = null) => {
+  const getFormatted = (d) => {
+    if (!d || isNaN(d.getTime())) return null;
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = MONTH_NAMES[d.getMonth()];
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const getTodayFormatted = () => {
+    if (customFallback && customFallback !== 'Recent' && customFallback !== 'recent') {
+      return customFallback;
+    }
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = MONTH_NAMES[today.getMonth()];
+    const year = today.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  if (!val || val === 'Recent' || val === 'recent' || val === 'null' || val === 'undefined' || val === '[object Object]') {
+    return getTodayFormatted();
   }
+
+  // 1. JS Date instance
+  if (val instanceof Date) {
+    return getFormatted(val) || getTodayFormatted();
+  }
+
+  // 2. Firestore Timestamp object with .toDate()
+  if (typeof val === 'object' && typeof val.toDate === 'function') {
+    try {
+      return getFormatted(val.toDate()) || getTodayFormatted();
+    } catch {
+      return getTodayFormatted();
+    }
+  }
+
+  // 3. Object with seconds: { seconds: ..., nanoseconds: ... }
+  if (typeof val === 'object' && typeof val.seconds === 'number') {
+    try {
+      return getFormatted(new Date(val.seconds * 1000)) || getTodayFormatted();
+    } catch {
+      return getTodayFormatted();
+    }
+  }
+
+  // 4. Number (epoch milliseconds or seconds)
   if (typeof val === 'number') {
     try {
-      return new Date(val).toLocaleDateString('en-IN');
+      const ms = val < 10000000000 ? val * 1000 : val;
+      return getFormatted(new Date(ms)) || getTodayFormatted();
     } catch {
-      return fallback;
+      return getTodayFormatted();
     }
   }
-  if (typeof val === 'object') {
-    if (typeof val.toDate === 'function') {
-      try {
-        return val.toDate().toLocaleDateString('en-IN');
-      } catch {
-        return fallback;
-      }
+
+  // 5. String parsing
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (trimmed === 'Recent' || trimmed === 'recent' || trimmed === '[object Object]' || trimmed === '') {
+      return getTodayFormatted();
     }
-    if (typeof val.seconds === 'number') {
-      try {
-        return new Date(val.seconds * 1000).toLocaleDateString('en-IN');
-      } catch {
-        return fallback;
+
+    // Check if already in "dd-mmm-yyyy" (e.g. "06-Sep-2026" or "6-Sep-2026")
+    const ddMmmMatch = trimmed.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})/);
+    if (ddMmmMatch) {
+      const day = String(ddMmmMatch[1]).padStart(2, '0');
+      const mRaw = ddMmmMatch[2];
+      const mStr = mRaw.charAt(0).toUpperCase() + mRaw.slice(1, 3).toLowerCase();
+      return `${day}-${mStr}-${ddMmmMatch[3]}`;
+    }
+
+    // Check for "dd/mm/yyyy" or "dd-mm-yyyy"
+    const ddmmyyyyMatch = trimmed.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (ddmmyyyyMatch) {
+      const day = parseInt(ddmmyyyyMatch[1], 10);
+      const month = parseInt(ddmmyyyyMatch[2], 10) - 1;
+      const year = parseInt(ddmmyyyyMatch[3], 10);
+      const d = new Date(year, month, day);
+      return getFormatted(d) || getTodayFormatted();
+    }
+
+    // Check for "yyyy-mm-dd" or "yyyy/mm/dd"
+    const yyyymmddMatch = trimmed.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+    if (yyyymmddMatch) {
+      const year = parseInt(yyyymmddMatch[1], 10);
+      const month = parseInt(yyyymmddMatch[2], 10) - 1;
+      const day = parseInt(yyyymmddMatch[3], 10);
+      const d = new Date(year, month, day);
+      return getFormatted(d) || getTodayFormatted();
+    }
+
+    // Native Date parser fallback (for ISO strings like 2026-09-06T08:00:00Z)
+    try {
+      const parsed = new Date(trimmed);
+      if (!isNaN(parsed.getTime())) {
+        return getFormatted(parsed) || getTodayFormatted();
       }
+    } catch {}
+  }
+
+  return getTodayFormatted();
+};
+
+/**
+ * Format modified / updated date.
+ * If the record has not been modified (or if created and modified have the same date/timestamp value in DB),
+ * returns "-" (dash) as per requirements.
+ *
+ * @param {any} updatedVal - Updated timestamp / date
+ * @param {any} [createdVal] - Created timestamp / date
+ * @returns {string} - Formatted modified date or "-"
+ */
+export const formatModifiedDate = (updatedVal, createdVal = null) => {
+  if (!updatedVal || updatedVal === '-' || updatedVal === '—') return '-';
+
+  // If raw values in DB are identical
+  if (createdVal && String(updatedVal).trim() === String(createdVal).trim()) {
+    return '-';
+  }
+
+  // Compare formatted date strings
+  const formattedUpdated = formatDateSafe(updatedVal);
+  if (createdVal) {
+    const formattedCreated = formatDateSafe(createdVal);
+    if (formattedUpdated === formattedCreated) {
+      return '-';
     }
   }
-  return fallback;
+
+  return formattedUpdated || '-';
 };
 
 /**
@@ -123,7 +234,7 @@ export const KNOWN_FIREBASE_AUTH_USERS = [
     userMobile: '',
     userAddress: '',
     role: USER_ROLES.SUPERADMIN,
-    createdAt: '05/09/2026',
+    createdAt: '05-Sep-2026',
   },
   {
     id: 'k5KRcQLGuUVtf2xqnrkpuFFFF63',
@@ -132,7 +243,7 @@ export const KNOWN_FIREBASE_AUTH_USERS = [
     userMobile: '',
     userAddress: '',
     role: USER_ROLES.ADMIN,
-    createdAt: '05/09/2026',
+    createdAt: '05-Sep-2026',
   },
 ];
 
@@ -146,8 +257,8 @@ export const getLocalUsers = () => {
     // Strip legacy businessId if present and ensure createdAt/updatedAt are always valid strings
     list = list.map(({ businessId, ...rest }) => ({
       ...rest,
-      createdAt: formatDateSafe(rest.createdAt, 'Recent'),
-      updatedAt: formatDateSafe(rest.updatedAt, 'Recent'),
+      createdAt: formatDateSafe(rest.createdAt),
+      updatedAt: formatDateSafe(rest.updatedAt),
     }));
 
     // Ensure all registered Firebase Auth users are present and roles stay in sync
@@ -165,7 +276,7 @@ export const getLocalUsers = () => {
       }
     });
 
-    if (changed || raw?.includes('businessId') || raw?.includes('"type":"firestore/timestamp/1.0"')) {
+    if (changed) {
       saveLocalUsers(list);
     }
     return list;
@@ -193,7 +304,7 @@ export const getLocalMeasurements = () => {
     if (!Array.isArray(list)) return [];
     return list.map((m) => ({
       ...m,
-      createdAtDate: formatDateSafe(m.createdAtDate || m.createdAt, '5/9/2026'),
+      createdAtDate: formatDateSafe(m.createdAtDate || m.createdAt),
     }));
   } catch {
     return [];
@@ -438,7 +549,7 @@ export const createUser = async (userData) => {
 
   const model = createUserModel(userData);
   const tempId = 'user-' + Date.now();
-  const localItem = { id: tempId, ...model, createdAt: new Date().toLocaleDateString('en-IN') };
+  const localItem = { id: tempId, ...model, createdAt: formatDateSafe(new Date()) };
 
   // Immediately save to local cache
   const localList = getLocalUsers();
@@ -519,8 +630,8 @@ export const getAllUsers = async () => {
         return {
           id: d.id,
           ...data,
-          createdAt: formatDateSafe(data.createdAt, 'Recent'),
-          updatedAt: formatDateSafe(data.updatedAt, 'Recent'),
+          createdAt: formatDateSafe(data.createdAt),
+          updatedAt: formatDateSafe(data.updatedAt),
         };
       });
 
@@ -662,7 +773,7 @@ export const updateUser = async (userId, updatedData) => {
     userMobile: String(updatedData.userMobile || '').trim(),
     userAddress: String(updatedData.userAddress || '').trim(),
     role: finalRole,
-    updatedAt: new Date().toLocaleDateString('en-IN'),
+    updatedAt: formatDateSafe(new Date()),
   };
 
   if (existingIdx >= 0) {
@@ -968,7 +1079,7 @@ export const getAllMeasurements = async () => {
         return {
           id: doc.id,
           ...data,
-          createdAtDate: formatDateSafe(data.createdAtDate || data.createdAt, '5/9/2026'),
+          createdAtDate: formatDateSafe(data.createdAtDate || data.createdAt),
         };
       });
       const map = new Map();
@@ -982,12 +1093,12 @@ export const getAllMeasurements = async () => {
           }
         }
       });
-      const merged = Array.from(map.values());
-      saveLocalMeasurements(merged);
-      return merged;
+      const finalList = Array.from(map.values());
+      saveLocalMeasurements(finalList);
+      return finalList;
     }
   } catch (err) {
-    console.warn('getAllMeasurements note (serving local):', err);
+    console.warn('Firestore getAllMeasurements note (serving from local cache):', err.message || err);
   }
 
   return localList;
@@ -1002,31 +1113,21 @@ export const getMeasurementsByBusiness = async (_businessId) => {
 };
 
 /**
- * Update an existing measurement document
+ * Update an existing customer measurement record
  * @param {string} measurementId
  * @param {Object} measurementData
  */
 export const updateMeasurement = async (measurementId, measurementData) => {
-  // Build clean payload — store values as strings (no numeric conversion) for consistency
-  const cleanVal = (val) => {
-    if (val === null || val === undefined || val === '') return null;
-    return String(val).trim() || null;
-  };
-
   const payload = {};
-  if (measurementData.title !== undefined) payload.title = String(measurementData.title).trim();
-  if (measurementData.pallu !== undefined) payload.pallu = cleanVal(measurementData.pallu);
-  if (measurementData.shoulderToRightTight !== undefined)
-    payload.shoulderToRightTight = cleanVal(measurementData.shoulderToRightTight);
-  if (measurementData.chest !== undefined) payload.chest = cleanVal(measurementData.chest);
-  if (measurementData.hip !== undefined) payload.hip = cleanVal(measurementData.hip);
-  if (measurementData.firstPleatSize !== undefined)
-    payload.firstPleatSize = cleanVal(measurementData.firstPleatSize);
-  if (measurementData.noOfChestPleats !== undefined)
-    payload.noOfChestPleats = cleanVal(measurementData.noOfChestPleats);
-  if (measurementData.height !== undefined) payload.height = cleanVal(measurementData.height);
-  if (measurementData.dressSize !== undefined)
-    payload.dressSize = measurementData.dressSize ? String(measurementData.dressSize).trim() : null;
+  if (measurementData.title !== undefined) payload.title = String(measurementData.title || '').trim();
+  if (measurementData.pallu !== undefined) payload.pallu = measurementData.pallu;
+  if (measurementData.shoulderToRightTight !== undefined) payload.shoulderToRightTight = measurementData.shoulderToRightTight;
+  if (measurementData.chest !== undefined) payload.chest = measurementData.chest;
+  if (measurementData.hip !== undefined) payload.hip = measurementData.hip;
+  if (measurementData.firstPleatSize !== undefined) payload.firstPleatSize = measurementData.firstPleatSize;
+  if (measurementData.noOfChestPleats !== undefined) payload.noOfChestPleats = measurementData.noOfChestPleats;
+  if (measurementData.height !== undefined) payload.height = measurementData.height;
+  if (measurementData.dressSize !== undefined) payload.dressSize = measurementData.dressSize;
   if (measurementData.notes !== undefined) payload.notes = String(measurementData.notes || '').trim();
 
   // Update in local cache first
@@ -1037,7 +1138,7 @@ export const updateMeasurement = async (measurementId, measurementData) => {
     ...existing,
     ...payload,
     id: measurementId,
-    updatedAt: new Date().toLocaleDateString('en-IN'),
+    updatedAt: formatDateSafe(new Date()),
   };
   if (idx >= 0) {
     localList[idx] = updatedRecord;

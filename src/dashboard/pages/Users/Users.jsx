@@ -25,6 +25,7 @@ import {
   createAuthUser,
   checkUserUniqueness,
   formatDateSafe,
+  formatModifiedDate,
 } from "../../../firebase/dbService";
 import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
 import {
@@ -184,11 +185,17 @@ const Users = () => {
 
         if (!uniqueness.isUnique) {
           if (uniqueness.emailExists) {
-            editFormik.setFieldError("email", "This email address is already registered.");
+            editFormik.setFieldError(
+              "email",
+              "This email address is already registered."
+            );
             editFormik.setFieldTouched("email", true, false);
           }
           if (uniqueness.mobileExists) {
-            editFormik.setFieldError("userMobile", "This mobile number is already registered.");
+            editFormik.setFieldError(
+              "userMobile",
+              "This mobile number is already registered."
+            );
             editFormik.setFieldTouched("userMobile", true, false);
           }
           setFeedback({
@@ -265,11 +272,17 @@ const Users = () => {
 
         if (!uniqueness.isUnique) {
           if (uniqueness.emailExists) {
-            formik.setFieldError("email", "This email address is already registered.");
+            formik.setFieldError(
+              "email",
+              "This email address is already registered."
+            );
             formik.setFieldTouched("email", true, false);
           }
           if (uniqueness.mobileExists) {
-            formik.setFieldError("userMobile", "This mobile number is already registered.");
+            formik.setFieldError(
+              "userMobile",
+              "This mobile number is already registered."
+            );
             formik.setFieldTouched("userMobile", true, false);
           }
           setFeedback({
@@ -328,7 +341,7 @@ const Users = () => {
 
         const newUserItem = {
           ...newUserPayload,
-          createdAt: new Date().toLocaleDateString("en-IN"),
+          createdAt: formatDateSafe(new Date()),
         };
 
         setUsers((prev) => [
@@ -442,6 +455,31 @@ const Users = () => {
     },
   ];
 
+  const renderRoleBadge = (u) => {
+    const roleStr = (u.role || "").toLowerCase();
+    const isSuper =
+      roleStr === "superadmin" ||
+      (u.email && u.email.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase());
+
+    if (isSuper) {
+      return (
+        <AppBadge
+          variant="superadmin"
+          icon={<ShieldOutlinedIcon style={{ fontSize: 13 }} />}
+        >
+          Super Admin
+        </AppBadge>
+      );
+    }
+    if (roleStr === "admin") {
+      return <AppBadge variant="admin">Admin</AppBadge>;
+    }
+    if (roleStr === "staff") {
+      return <AppBadge variant="staff">Staff</AppBadge>;
+    }
+    return <AppBadge variant="customer">Customer</AppBadge>;
+  };
+
   return (
     <div className="users-page">
       {/* Header section */}
@@ -528,11 +566,12 @@ const Users = () => {
           <table className="users-table">
             <thead>
               <tr>
-                <th>User</th>
+                <th>User Name</th>
                 <th>Mobile Number</th>
                 <th>Address</th>
                 <th>Assigned Role</th>
                 <th>Created On</th>
+                <th>Modified On</th>
                 <th style={{ textAlign: "right", minWidth: 100 }}>Actions</th>
               </tr>
             </thead>
@@ -540,7 +579,7 @@ const Users = () => {
               {loading ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     style={{ textAlign: "center", padding: "48px 16px" }}
                   >
                     <div
@@ -560,7 +599,7 @@ const Users = () => {
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="empty-state-cell">
+                  <td colSpan={7} className="empty-state-cell">
                     <div
                       style={{
                         display: "flex",
@@ -633,11 +672,12 @@ const Users = () => {
                         </div>
                       </td>
                       <td className="address-cell">{u.userAddress || "—"}</td>
-                      <td>
-                        <AppBadge variant={u.role}>{u.role}</AppBadge>
-                      </td>
+                      <td>{renderRoleBadge(u)}</td>
                       <td className="date-cell">
                         {formatDateSafe(u.createdAt)}
+                      </td>
+                      <td className="date-cell">
+                        {formatModifiedDate(u.updatedAt, u.createdAt)}
                       </td>
                       <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                         <div className="action-btns">

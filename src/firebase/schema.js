@@ -295,7 +295,11 @@ export const createMeasurementModel = ({
     height: sanitizeMeasure(height),
     dressSize: String(dressSize || "").trim(),
     notes: String(notes || "").trim(),
-    createdAtDate: new Date().toLocaleDateString('en-IN'),
+    createdAtDate: (() => {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const now = new Date();
+      return `${String(now.getDate()).padStart(2, '0')}-${months[now.getMonth()]}-${now.getFullYear()}`;
+    })(),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };

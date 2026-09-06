@@ -749,7 +749,7 @@ const MyProfile = () => {
                 <div className="measure-card-footer">
                   <span className="measure-footer-date">
                     <CalendarTodayOutlinedIcon />
-                    Recorded {formatDateSafe(measure.createdAtDate || measure.createdAt, "Recent")}
+                    Recorded {formatDateSafe(measure.createdAtDate || measure.createdAt)}
                   </span>
                 </div>
               </div>

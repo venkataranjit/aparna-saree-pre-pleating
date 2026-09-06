@@ -5,6 +5,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import OrderDetailsModal from "../OrderDetailsModal/OrderDetailsModal";
 import { AppButton } from "../../../components/common";
+import { formatDateSafe } from "../../../firebase/dbService";
 import "./OrdersTable.scss";
 
 const initialOrders = [
@@ -18,8 +19,8 @@ const initialOrders = [
     pleatCount: '6 Front Pleats (5.5" width)',
     palluStyle: 'Pin-ready Box Pleats (38" length)',
     packaging: "Rigid Hardboard Box + Butter Paper Wrap",
-    date: "2026-09-04",
-    eventDate: "2026-09-08 (Muhurtham Ceremony)",
+    date: "04-Sep-2026",
+    eventDate: "08-Sep-2026 (Muhurtham Ceremony)",
     deliveryType: "Store Pickup (Scheduled)",
     address: "Plot 42, Road 10, Banjara Hills, Hyderabad",
     status: "completed",
@@ -40,8 +41,8 @@ const initialOrders = [
     pleatCount: '7 Front Pleats (4.5" width)',
     palluStyle: "Classic Free-flow / Ironed Pin",
     packaging: "Standard Hanger Garment Bag",
-    date: "2026-09-04",
-    eventDate: "2026-09-06 (Sangeet Night)",
+    date: "04-Sep-2026",
+    eventDate: "06-Sep-2026 (Sangeet Night)",
     deliveryType: "Doorstep Delivery",
     address: "Flat 302, Green Meadows, Jubilee Hills, Hyderabad",
     status: "in-progress",
@@ -62,8 +63,8 @@ const initialOrders = [
     pleatCount: '5 Front Pleats (6" width)',
     palluStyle: "Single Pleat Pinned",
     packaging: "Breathable Non-woven Bag",
-    date: "2026-09-03",
-    eventDate: "2026-09-05 (Housewarming)",
+    date: "03-Sep-2026",
+    eventDate: "05-Sep-2026 (Housewarming)",
     deliveryType: "Staff Draping at Venue",
     address: "House 18, Phase 2, Gachibowli, Hyderabad",
     status: "completed",
@@ -83,8 +84,8 @@ const initialOrders = [
     pleatCount: '8 Sleek Pleats (4" width)',
     palluStyle: "Narrow Accordion Fold (32\")",
     packaging: "Standard Poly Wrap",
-    date: "2026-09-02",
-    eventDate: "2026-09-07 (Reception)",
+    date: "02-Sep-2026",
+    eventDate: "07-Sep-2026 (Reception)",
     deliveryType: "Store Pickup",
     address: "Villa 12, Palm Springs, Madhapur, Hyderabad",
     status: "pending",
@@ -104,8 +105,8 @@ const initialOrders = [
     pleatCount: '6 Front Pleats (5" width)',
     palluStyle: 'Royal Fan Pleats (40" length)',
     packaging: "Rigid Hardboard Box + Butter Paper Wrap",
-    date: "2026-09-01",
-    eventDate: "2026-09-09 (Engagement)",
+    date: "01-Sep-2026",
+    eventDate: "09-Sep-2026 (Engagement)",
     deliveryType: "Doorstep Delivery",
     address: "Apt 501, Lake Breeze, Kondapur, Hyderabad",
     status: "completed",
@@ -126,8 +127,8 @@ const initialOrders = [
     pleatCount: '6 Wide Pleats (6" width)',
     palluStyle: "Floating Pallu with Shoulder Pleats",
     packaging: "Standard Hanger Garment Bag",
-    date: "2026-08-30",
-    eventDate: "2026-09-04 (College Farewell)",
+    date: "30-Aug-2026",
+    eventDate: "04-Sep-2026 (College Farewell)",
     deliveryType: "Store Pickup",
     address: "H.No 3-4-102, Barkatpura, Hyderabad",
     status: "cancelled",
@@ -246,7 +247,7 @@ const OrdersTable = () => {
                     {order.sareeType}
                   </td>
                   <td className="table-body-cell date-cell">
-                    {order.date}
+                    {formatDateSafe(order.date)}
                   </td>
                   <td className="table-body-cell amount-cell">
                     {order.amount}

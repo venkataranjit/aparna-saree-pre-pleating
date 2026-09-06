@@ -283,7 +283,11 @@ const Sidebar = ({
           <div className="profile-inner-row">
             <div className="avatar-wrapper">
               <div className="user-avatar-squircle">
-                {avatarChar || <PersonOutlineIcon />}
+                {avatarChar ? (
+                  <span className="avatar-char">{avatarChar}</span>
+                ) : (
+                  <PersonOutlineIcon />
+                )}
               </div>
               <span className="online-dot" />
             </div>

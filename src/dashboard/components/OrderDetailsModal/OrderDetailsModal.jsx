@@ -16,6 +16,7 @@ import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { AppButton } from '../../../components/common';
+import { formatDateSafe } from '../../../firebase/dbService';
 import './OrderDetailsModal.scss';
 
 const OrderDetailsModal = ({ open, onClose, order }) => {
@@ -118,13 +119,13 @@ const OrderDetailsModal = ({ open, onClose, order }) => {
               <div className="details-card__body">
                 <div className="info-row">
                   <span className="info-label">Booking Date</span>
-                  <span className="info-val">{order.date}</span>
+                  <span className="info-val">{formatDateSafe(order.date)}</span>
                 </div>
                 <div className="info-row">
                   <span className="info-label">Event / Due Date</span>
                   <span className="info-val highlight">
                     <EventAvailableOutlinedIcon className="inline-icon" />
-                    {order.eventDate || '2026-09-08 (Reception)'}
+                    {order.eventDate || '08-Sep-2026 (Reception)'}
                   </span>
                 </div>
                 <div className="info-row">

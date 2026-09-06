@@ -81,7 +81,7 @@ export const formatDateSafe = (val, customFallback = null) => {
   };
 
   const getTodayFormatted = () => {
-    if (customFallback && customFallback !== 'Recent' && customFallback !== 'recent') {
+    if (customFallback !== null) {
       return customFallback;
     }
     const today = new Date();
@@ -92,7 +92,7 @@ export const formatDateSafe = (val, customFallback = null) => {
   };
 
   if (!val || val === 'Recent' || val === 'recent' || val === 'null' || val === 'undefined' || val === '[object Object]') {
-    return getTodayFormatted();
+    return customFallback !== null ? customFallback : getTodayFormatted();
   }
 
   // 1. JS Date instance
@@ -177,27 +177,94 @@ export const formatDateSafe = (val, customFallback = null) => {
 };
 
 /**
+ * Convert any timestamp representation (Firestore Timestamp, Date, string, number)
+ * to epoch milliseconds for exact comparison. Returns NaN if invalid or empty.
+ */
+export const getTimestampMillis = (val) => {
+  if (!val || val === '-' || val === '—' || val === 'null' || val === 'undefined') {
+    return NaN;
+  }
+  if (typeof val === 'number') {
+    return val < 10000000000 ? val * 1000 : val;
+  }
+  if (val instanceof Date) {
+    return val.getTime();
+  }
+  if (typeof val === 'object') {
+    if (typeof val.toMillis === 'function') {
+      try { return val.toMillis(); } catch {}
+    }
+    if (typeof val.toDate === 'function') {
+      try { return val.toDate().getTime(); } catch {}
+    }
+    if (typeof val.seconds === 'number') {
+      return val.seconds * 1000 + (val.nanoseconds ? Math.round(val.nanoseconds / 1000000) : 0);
+    }
+  }
+  if (typeof val === 'string') {
+    const s = val.trim();
+    if (!s || s === '-' || s === '—') return NaN;
+    const match = s.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
+    if (match) {
+      const day = parseInt(match[1], 10);
+      const mIdx = MONTH_NAMES.findIndex((m) => m.toLowerCase() === match[2].toLowerCase());
+      const year = parseInt(match[3], 10);
+      if (mIdx >= 0) {
+        return new Date(year, mIdx, day).getTime();
+      }
+    }
+    const parsed = Date.parse(s);
+    if (!isNaN(parsed)) return parsed;
+  }
+  return NaN;
+};
+
+/**
  * Format modified / updated date.
- * If the record has not been modified (or if created and modified have the same date/timestamp value in DB),
- * returns "-" (dash) as per requirements.
+ * If createdAt and modifiedAt timestamps are identical (or within 10 seconds of initial creation),
+ * or if modifiedAt is missing / empty, returns "-" (dash).
+ * Otherwise returns the formatted modified date string.
  *
  * @param {any} updatedVal - Updated timestamp / date
  * @param {any} [createdVal] - Created timestamp / date
  * @returns {string} - Formatted modified date or "-"
  */
 export const formatModifiedDate = (updatedVal, createdVal = null) => {
-  if (!updatedVal || updatedVal === '-' || updatedVal === '—') return '-';
+  if (!updatedVal || updatedVal === '-' || updatedVal === '—' || updatedVal === 'null' || updatedVal === 'undefined') {
+    return '-';
+  }
 
-  // If raw values in DB are identical
+  // 1. If raw strings are identical
   if (createdVal && String(updatedVal).trim() === String(createdVal).trim()) {
     return '-';
   }
 
-  // Compare formatted date strings
-  const formattedUpdated = formatDateSafe(updatedVal);
+  // 2. Compare numeric millisecond timestamps if available
+  const updatedMs = getTimestampMillis(updatedVal);
+  const createdMs = getTimestampMillis(createdVal);
+
+  if (!isNaN(updatedMs) && !isNaN(createdMs)) {
+    // If within 10 seconds of creation, they are initial creation timestamps
+    if (Math.abs(updatedMs - createdMs) <= 10000) {
+      return '-';
+    }
+    // If updated timestamp is earlier than created
+    if (updatedMs < createdMs) {
+      return '-';
+    }
+  }
+
+  // 3. Compare formatted date strings (e.g. 06-Sep-2026)
+  const formattedUpdated = formatDateSafe(updatedVal, '-');
+  if (!formattedUpdated || formattedUpdated === '-') return '-';
+
   if (createdVal) {
-    const formattedCreated = formatDateSafe(createdVal);
+    const formattedCreated = formatDateSafe(createdVal, '-');
     if (formattedUpdated === formattedCreated) {
+      // If the day is identical, check if there was a real later update (>10s)
+      if (!isNaN(updatedMs) && !isNaN(createdMs) && (updatedMs - createdMs > 10000)) {
+        return formattedUpdated;
+      }
       return '-';
     }
   }
@@ -235,6 +302,7 @@ export const KNOWN_FIREBASE_AUTH_USERS = [
     userAddress: '',
     role: USER_ROLES.SUPERADMIN,
     createdAt: '05-Sep-2026',
+    updatedAt: null,
   },
   {
     id: 'k5KRcQLGuUVtf2xqnrkpuFFFF63',
@@ -244,6 +312,7 @@ export const KNOWN_FIREBASE_AUTH_USERS = [
     userAddress: '',
     role: USER_ROLES.ADMIN,
     createdAt: '05-Sep-2026',
+    updatedAt: null,
   },
 ];
 
@@ -254,11 +323,13 @@ export const getLocalUsers = () => {
     let list = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(list)) list = [];
 
-    // Strip legacy businessId if present and ensure createdAt/updatedAt are always valid strings
+    // Strip legacy businessId if present and ensure createdAt/updatedAt are preserved properly
     list = list.map(({ businessId, ...rest }) => ({
       ...rest,
-      createdAt: formatDateSafe(rest.createdAt),
-      updatedAt: formatDateSafe(rest.updatedAt),
+      createdAt: rest.createdAt ? formatDateSafe(rest.createdAt) : formatDateSafe(new Date()),
+      updatedAt: rest.updatedAt ? formatDateSafe(rest.updatedAt, '-') : '-',
+      rawCreatedAt: rest.rawCreatedAt || rest.createdAt || null,
+      rawUpdatedAt: rest.rawUpdatedAt || rest.updatedAt || null,
     }));
 
     // Ensure all registered Firebase Auth users are present and roles stay in sync
@@ -658,8 +729,10 @@ export const getAllUsers = async () => {
         return {
           id: d.id,
           ...data,
-          createdAt: formatDateSafe(data.createdAt),
-          updatedAt: formatDateSafe(data.updatedAt),
+          createdAt: data.createdAt ? formatDateSafe(data.createdAt) : formatDateSafe(new Date()),
+          updatedAt: data.updatedAt ? formatDateSafe(data.updatedAt, '-') : '-',
+          rawCreatedAt: data.createdAt || null,
+          rawUpdatedAt: data.updatedAt || null,
         };
       });
 

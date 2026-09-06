@@ -26,6 +26,7 @@ import {
   checkUserUniqueness,
   formatDateSafe,
   formatModifiedDate,
+  getTimestampMillis,
 } from "../../../firebase/dbService";
 import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
 import {
@@ -457,19 +458,22 @@ const Users = () => {
 
   const sortedUsers = useMemo(() => {
     return [...filteredUsers].sort((a, b) => {
-      let aVal = a[sortField] ?? "";
-      let bVal = b[sortField] ?? "";
-
       if (sortField === "createdAt" || sortField === "updatedAt") {
-        const aTime = aVal?.toDate
-          ? aVal.toDate().getTime()
-          : new Date(aVal || 0).getTime() || 0;
-        const bTime = bVal?.toDate
-          ? bVal.toDate().getTime()
-          : new Date(bVal || 0).getTime() || 0;
+        const aVal =
+          sortField === "createdAt"
+            ? a.rawCreatedAt || a.createdAt
+            : a.rawUpdatedAt || a.updatedAt;
+        const bVal =
+          sortField === "createdAt"
+            ? b.rawCreatedAt || b.createdAt
+            : b.rawUpdatedAt || b.updatedAt;
+        const aTime = getTimestampMillis(aVal) || 0;
+        const bTime = getTimestampMillis(bVal) || 0;
         return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
       }
 
+      const aVal = a[sortField] ?? "";
+      const bVal = b[sortField] ?? "";
       return sortDirection === "asc"
         ? String(aVal).localeCompare(String(bVal))
         : String(bVal).localeCompare(String(aVal));
@@ -799,7 +803,7 @@ const Users = () => {
                         {formatDateSafe(u.createdAt)}
                       </AppTableCell>
                       <AppTableCell className="date-cell">
-                        {formatModifiedDate(u.updatedAt, u.createdAt)}
+                        {formatModifiedDate(u.rawUpdatedAt || u.updatedAt, u.rawCreatedAt || u.createdAt)}
                       </AppTableCell>
                       <AppTableCell
                         style={{ textAlign: "right", whiteSpace: "nowrap" }}

@@ -34,6 +34,8 @@ import {
   deleteCustomerMeasurement,
   checkUserUniqueness,
   formatDateSafe,
+  formatModifiedDate,
+  getTimestampMillis,
 } from "../../../firebase/dbService";
 import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
 import {
@@ -268,7 +270,10 @@ const Customers = () => {
           .map((u) => ({
             ...u,
             role: USER_ROLES.CUSTOMER,
-            createdAt: formatDateSafe(u.createdAt),
+            createdAt: u.createdAt,
+            updatedAt: u.updatedAt,
+            rawCreatedAt: u.rawCreatedAt || u.createdAt,
+            rawUpdatedAt: u.rawUpdatedAt || u.updatedAt,
           }));
         setCustomers(onlyCustomers);
       } else {
@@ -276,16 +281,25 @@ const Customers = () => {
       }
     } catch (err) {
       console.warn("Error fetching customers from Firebase:", err);
-      const cached = getLocalUsers().filter((u) => {
-        const email = (u.email || "").toLowerCase().trim();
-        if (email === SUPERADMIN_EMAIL.toLowerCase()) return false;
-        const r = (u.role || "").toLowerCase();
-        return (
-          r !== USER_ROLES.SUPERADMIN &&
-          r !== USER_ROLES.ADMIN &&
-          r !== USER_ROLES.STAFF
-        );
-      });
+      const cached = getLocalUsers()
+        .filter((u) => {
+          const email = (u.email || "").toLowerCase().trim();
+          if (email === SUPERADMIN_EMAIL.toLowerCase()) return false;
+          const r = (u.role || "").toLowerCase();
+          return (
+            r !== USER_ROLES.SUPERADMIN &&
+            r !== USER_ROLES.ADMIN &&
+            r !== USER_ROLES.STAFF
+          );
+        })
+        .map((u) => ({
+          ...u,
+          role: USER_ROLES.CUSTOMER,
+          createdAt: u.createdAt,
+          updatedAt: u.updatedAt,
+          rawCreatedAt: u.rawCreatedAt || u.createdAt,
+          rawUpdatedAt: u.rawUpdatedAt || u.updatedAt,
+        }));
       setCustomers(cached || []);
     } finally {
       setLoading(false);
@@ -340,11 +354,17 @@ const Customers = () => {
 
         if (!uniqueness.isUnique) {
           if (uniqueness.emailExists) {
-            editFormik.setFieldError("email", "This email address is already registered.");
+            editFormik.setFieldError(
+              "email",
+              "This email address is already registered."
+            );
             editFormik.setFieldTouched("email", true, false);
           }
           if (uniqueness.mobileExists) {
-            editFormik.setFieldError("userMobile", "This mobile number is already registered.");
+            editFormik.setFieldError(
+              "userMobile",
+              "This mobile number is already registered."
+            );
             editFormik.setFieldTouched("userMobile", true, false);
           }
           setFeedback({
@@ -424,11 +444,17 @@ const Customers = () => {
 
         if (!uniqueness.isUnique) {
           if (uniqueness.emailExists) {
-            createFormik.setFieldError("email", "This email address is already registered.");
+            createFormik.setFieldError(
+              "email",
+              "This email address is already registered."
+            );
             createFormik.setFieldTouched("email", true, false);
           }
           if (uniqueness.mobileExists) {
-            createFormik.setFieldError("userMobile", "This mobile number is already registered.");
+            createFormik.setFieldError(
+              "userMobile",
+              "This mobile number is already registered."
+            );
             createFormik.setFieldTouched("userMobile", true, false);
           }
           setFeedback({
@@ -712,15 +738,17 @@ const Customers = () => {
         const bCount = (measurementsMap[b.id] || []).length;
         return sortDirection === "asc" ? aCount - bCount : bCount - aCount;
       }
-      if (sortField === "createdAt") {
-        const aVal = a.createdAt;
-        const bVal = b.createdAt;
-        const aTime = aVal?.toDate
-          ? aVal.toDate().getTime()
-          : new Date(aVal || 0).getTime() || 0;
-        const bTime = bVal?.toDate
-          ? bVal.toDate().getTime()
-          : new Date(bVal || 0).getTime() || 0;
+      if (sortField === "createdAt" || sortField === "updatedAt") {
+        const aVal =
+          sortField === "createdAt"
+            ? a.rawCreatedAt || a.createdAt
+            : a.rawUpdatedAt || a.updatedAt;
+        const bVal =
+          sortField === "createdAt"
+            ? b.rawCreatedAt || b.createdAt
+            : b.rawUpdatedAt || b.updatedAt;
+        const aTime = getTimestampMillis(aVal) || 0;
+        const bTime = getTimestampMillis(bVal) || 0;
         return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
       }
       const aVal = a[sortField] ?? "";
@@ -900,31 +928,37 @@ const Customers = () => {
                     direction={sortField === "username" ? sortDirection : "asc"}
                     onClick={() => handleRequestSort("username")}
                   >
-                    CUSTOMER
+                    CUSTOMER NAME
                   </AppTableSortLabel>
                 </AppTableCell>
                 <AppTableCell head>
                   <AppTableSortLabel
                     active={sortField === "userMobile"}
-                    direction={sortField === "userMobile" ? sortDirection : "asc"}
+                    direction={
+                      sortField === "userMobile" ? sortDirection : "asc"
+                    }
                     onClick={() => handleRequestSort("userMobile")}
                   >
-                    CONTACT DETAILS
+                    MOBILE
                   </AppTableSortLabel>
                 </AppTableCell>
                 <AppTableCell head>
                   <AppTableSortLabel
                     active={sortField === "userAddress"}
-                    direction={sortField === "userAddress" ? sortDirection : "asc"}
+                    direction={
+                      sortField === "userAddress" ? sortDirection : "asc"
+                    }
                     onClick={() => handleRequestSort("userAddress")}
                   >
-                    DELIVERY ADDRESS
+                    ADDRESS
                   </AppTableSortLabel>
                 </AppTableCell>
                 <AppTableCell head style={{ textAlign: "center" }}>
                   <AppTableSortLabel
                     active={sortField === "measureCount"}
-                    direction={sortField === "measureCount" ? sortDirection : "asc"}
+                    direction={
+                      sortField === "measureCount" ? sortDirection : "asc"
+                    }
                     onClick={() => handleRequestSort("measureCount")}
                   >
                     MEASUREMENTS
@@ -933,10 +967,23 @@ const Customers = () => {
                 <AppTableCell head>
                   <AppTableSortLabel
                     active={sortField === "createdAt"}
-                    direction={sortField === "createdAt" ? sortDirection : "asc"}
+                    direction={
+                      sortField === "createdAt" ? sortDirection : "asc"
+                    }
                     onClick={() => handleRequestSort("createdAt")}
                   >
                     JOINED DATE
+                  </AppTableSortLabel>
+                </AppTableCell>
+                <AppTableCell head>
+                  <AppTableSortLabel
+                    active={sortField === "updatedAt"}
+                    direction={
+                      sortField === "updatedAt" ? sortDirection : "asc"
+                    }
+                    onClick={() => handleRequestSort("updatedAt")}
+                  >
+                    MODIFIED
                   </AppTableSortLabel>
                 </AppTableCell>
                 <AppTableCell
@@ -952,7 +999,7 @@ const Customers = () => {
               {loading && customers.length === 0 ? (
                 <AppTableRow>
                   <AppTableCell
-                    colSpan={6}
+                    colSpan={7}
                     style={{ textAlign: "center", padding: "48px 16px" }}
                   >
                     <div
@@ -972,7 +1019,7 @@ const Customers = () => {
                 </AppTableRow>
               ) : filteredCustomers.length === 0 ? (
                 <AppTableRow>
-                  <AppTableCell colSpan={6} className="empty-state-cell">
+                  <AppTableCell colSpan={7} className="empty-state-cell">
                     <div
                       style={{
                         display: "flex",
@@ -1089,6 +1136,14 @@ const Customers = () => {
                       {/* Joined Date */}
                       <AppTableCell className="date-cell">
                         {formatDateSafe(user.createdAt)}
+                      </AppTableCell>
+
+                      {/* Modified Date */}
+                      <AppTableCell className="date-cell">
+                        {formatModifiedDate(
+                          user.rawUpdatedAt || user.updatedAt,
+                          user.rawCreatedAt || user.createdAt
+                        )}
                       </AppTableCell>
 
                       {/* Row Action Buttons */}

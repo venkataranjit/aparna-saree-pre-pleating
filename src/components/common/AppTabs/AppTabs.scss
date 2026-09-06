@@ -1,4 +1,4 @@
-@use '../../../dashboard/styles/variables.scss' as *;
+@use "../../../dashboard/styles/variables.scss" as *;
 
 .app-tabs-wrap {
   display: flex;
@@ -39,20 +39,25 @@
   }
 
   &:hover {
-    color: #ffffff;
+    color: $color-light-gold;
   }
 
   &--active {
     color: $color-gold;
 
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       bottom: -1px;
       left: 0;
       right: 0;
       height: 2px;
-      background: linear-gradient(90deg, #b89324 0%, $color-gold 50%, #e6d8a3 100%);
+      background: linear-gradient(
+        90deg,
+        #b89324 0%,
+        $color-gold 50%,
+        #e6d8a3 100%
+      );
       box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
       border-radius: 2px;
     }

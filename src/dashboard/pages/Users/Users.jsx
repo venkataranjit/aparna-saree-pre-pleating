@@ -766,7 +766,7 @@ const Users = () => {
             required
             id="username"
             name="username"
-            placeholder="e.g. Ananya Sharma"
+            placeholder="e.g. Aparna"
             value={formik.values.username}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -796,7 +796,7 @@ const Users = () => {
             id="email"
             name="email"
             type="email"
-            placeholder="ananya@example.com"
+            placeholder="aparna@example.com"
             value={formik.values.email}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}

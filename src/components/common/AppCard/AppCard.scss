@@ -1,4 +1,4 @@
-@use '../../../dashboard/styles/variables.scss' as *;
+@use "../../../dashboard/styles/variables.scss" as *;
 
 .app-card {
   background: #0d0d0d;
@@ -39,7 +39,7 @@
     margin: 0;
     font-size: 16px;
     font-weight: 700;
-    color: #ffffff;
+    color: $color-light-gold;
 
     @include mobile {
       font-size: 14px;

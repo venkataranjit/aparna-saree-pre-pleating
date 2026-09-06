@@ -1,4 +1,4 @@
-@use '../../styles/variables' as *;
+@use "../../styles/variables" as *;
 
 .my-profile-page {
   padding: 8px 4px 32px 4px;
@@ -46,7 +46,11 @@
       }
 
       .primary-action-btn {
-        background: linear-gradient(135deg, #d4af37 0%, #aa851c 100%) !important;
+        background: linear-gradient(
+          135deg,
+          #d4af37 0%,
+          #aa851c 100%
+        ) !important;
         color: #000000 !important;
         font-weight: 700;
         font-size: 0.88rem;
@@ -57,7 +61,11 @@
         transition: all 0.2s ease;
 
         &:hover {
-          background: linear-gradient(135deg, #e6d8a3 0%, #d4af37 100%) !important;
+          background: linear-gradient(
+            135deg,
+            #e6d8a3 0%,
+            #d4af37 100%
+          ) !important;
           box-shadow: 0 6px 20px rgba(212, 175, 55, 0.45) !important;
         }
       }
@@ -122,7 +130,12 @@
 
   /* Hero Profile Card */
   .profile-hero-card {
-    background: linear-gradient(145deg, #100f0c 0%, #070706 70%, #040404 100%) !important;
+    background: linear-gradient(
+      145deg,
+      #100f0c 0%,
+      #070706 70%,
+      #040404 100%
+    ) !important;
     border: 1px solid rgba(212, 175, 55, 0.25) !important;
     border-radius: 14px !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
@@ -146,7 +159,11 @@
         width: 72px !important;
         height: 72px !important;
         border-radius: 18px !important;
-        background: linear-gradient(135deg, $color-gold 0%, #a28220 100%) !important;
+        background: linear-gradient(
+          135deg,
+          $color-gold 0%,
+          #a28220 100%
+        ) !important;
         color: #050505 !important;
         font-weight: 800 !important;
         font-size: 2rem !important;
@@ -308,7 +325,12 @@
   /* Individual Measurement Card (100% Full Width) */
   .measurement-card {
     width: 100% !important;
-    background: linear-gradient(160deg, #110f0c 0%, #080807 80%, #040404 100%) !important;
+    background: linear-gradient(
+      160deg,
+      #110f0c 0%,
+      #080807 80%,
+      #040404 100%
+    ) !important;
     border: 1px solid rgba(212, 175, 55, 0.28) !important;
     border-radius: 14px !important;
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6) !important;
@@ -317,12 +339,17 @@
 
     &:hover {
       border-color: rgba(212, 175, 55, 0.65) !important;
-      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.75), 0 0 22px rgba(212, 175, 55, 0.15) !important;
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.75),
+        0 0 22px rgba(212, 175, 55, 0.15) !important;
     }
 
     .measure-card-header {
       padding: 16px 24px;
-      background: linear-gradient(90deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.02) 100%);
+      background: linear-gradient(
+        90deg,
+        rgba(212, 175, 55, 0.08) 0%,
+        rgba(212, 175, 55, 0.02) 100%
+      );
       border-bottom: 1px solid rgba(212, 175, 55, 0.18);
       display: flex;
       align-items: center;
@@ -411,7 +438,7 @@
           }
 
           .dim-val {
-            color: #ffffff;
+            color: $color-light-gold;
             font-size: 1.15rem;
             font-weight: 800;
             margin-top: 4px;
@@ -453,5 +480,3 @@
     }
   }
 }
-
-

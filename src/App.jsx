@@ -5,6 +5,7 @@ import { landingRoutes } from './landing-page/routes/landingRoutes';
 import Login from './auth/pages/Login/Login';
 import Register from './auth/pages/Register/Register';
 import ForgotPassword from './auth/pages/ForgotPassword/ForgotPassword';
+import ResetPassword from './auth/pages/ResetPassword/ResetPassword';
 import NotFound from './dashboard/pages/NotFound/NotFound';
 import { AuthProvider } from './auth/context/AuthContext';
 import './App.scss';
@@ -41,6 +42,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/auth/action" element={<ResetPassword />} />
+        <Route path="/__/auth/action" element={<ResetPassword />} />
 
         {/* 404 Fallback */}
         <Route path="*" element={<NotFound />} />

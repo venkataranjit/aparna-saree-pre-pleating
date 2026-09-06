@@ -559,7 +559,11 @@ export const resetUserPassword = async ({ email, currentPassword = 'aparna', new
           if (createErr.code === 'auth/email-already-in-use') {
             // User exists in Firebase Auth but current password was not 'aparna'.
             // Fall back to sending an official password reset link.
-            await sendPasswordResetEmail(secondaryAuth, cleanEmail);
+            const actionCodeSettings = typeof window !== 'undefined' && window.location?.origin ? {
+              url: `${window.location.origin}/reset-password`,
+              handleCodeInApp: true,
+            } : undefined;
+            await sendPasswordResetEmail(secondaryAuth, cleanEmail, actionCodeSettings);
             return {
               method: 'email_sent',
               message: `A password reset link has been sent to ${cleanEmail}.`,

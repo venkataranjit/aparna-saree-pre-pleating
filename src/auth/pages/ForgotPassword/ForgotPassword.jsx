@@ -31,7 +31,11 @@ const ForgotPassword = () => {
 
     try {
       if (auth) {
-        await sendPasswordResetEmail(auth, email.trim());
+        const actionCodeSettings = typeof window !== 'undefined' && window.location?.origin ? {
+          url: `${window.location.origin}/reset-password`,
+          handleCodeInApp: true,
+        } : undefined;
+        await sendPasswordResetEmail(auth, email.trim(), actionCodeSettings);
       }
       setSuccessMsg(`Password reset link sent to ${email.trim()}. Please check your inbox and spam folder.`);
     } catch (err) {

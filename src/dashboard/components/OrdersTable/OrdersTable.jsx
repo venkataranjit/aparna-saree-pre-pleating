@@ -16,6 +16,7 @@ import {
   AppTablePagination,
 } from "../../../components/common";
 import { formatDateSafe } from "../../../firebase/dbService";
+import { DateTimeCell } from "../DateTimeCell/DateTimeCell";
 import "./OrdersTable.scss";
 
 const initialOrders = [
@@ -354,7 +355,7 @@ const OrdersTable = () => {
                     {order.sareeType}
                   </AppTableCell>
                   <AppTableCell className="table-body-cell date-cell">
-                    {formatDateSafe(order.date)}
+                    <DateTimeCell value={order.createdAt || order.orderDate || order.date} />
                   </AppTableCell>
                   <AppTableCell className="table-body-cell amount-cell">
                     {order.amount}

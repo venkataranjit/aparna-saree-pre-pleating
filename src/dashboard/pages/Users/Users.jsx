@@ -29,6 +29,7 @@ import {
   getTimestampMillis,
 } from "../../../firebase/dbService";
 import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
+import { DateTimeCell } from "../../components/DateTimeCell/DateTimeCell";
 import {
   AppButton,
   AppInput,
@@ -256,9 +257,17 @@ const Users = () => {
 
         await updateUser(selectedUser.id, updatedFields);
 
+        const editNow = new Date();
         setUsers((prev) =>
           prev.map((u) =>
-            u.id === selectedUser.id ? { ...u, ...updatedFields } : u
+            u.id === selectedUser.id
+              ? {
+                  ...u,
+                  ...updatedFields,
+                  updatedAt: editNow.toISOString(),
+                  rawUpdatedAt: editNow,
+                }
+              : u
           )
         );
 
@@ -374,11 +383,15 @@ const Users = () => {
           role: isSuper ? USER_ROLES.SUPERADMIN : values.role,
         };
 
-        await updateUser(authUid, newUserPayload);
+        await createUser(newUserPayload);
 
+        const now = new Date();
         const newUserItem = {
           ...newUserPayload,
-          createdAt: formatDateSafe(new Date()),
+          createdAt: now.toISOString(),
+          rawCreatedAt: now,
+          updatedAt: null,
+          rawUpdatedAt: null,
         };
 
         setUsers((prev) => [
@@ -800,10 +813,13 @@ const Users = () => {
                       </AppTableCell>
                       <AppTableCell>{renderRoleBadge(u)}</AppTableCell>
                       <AppTableCell className="date-cell">
-                        {formatDateSafe(u.createdAt)}
+                        <DateTimeCell value={u.rawCreatedAt || u.createdAt} />
                       </AppTableCell>
                       <AppTableCell className="date-cell">
-                        {formatModifiedDate(u.rawUpdatedAt || u.updatedAt, u.rawCreatedAt || u.createdAt)}
+                        <DateTimeCell
+                          value={u.rawUpdatedAt || u.updatedAt}
+                          modifiedFrom={u.rawCreatedAt || u.createdAt}
+                        />
                       </AppTableCell>
                       <AppTableCell
                         style={{ textAlign: "right", whiteSpace: "nowrap" }}

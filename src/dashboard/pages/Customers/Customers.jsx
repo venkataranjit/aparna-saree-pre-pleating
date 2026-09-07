@@ -41,6 +41,7 @@ import {
   resetUserPassword,
 } from "../../../firebase/dbService";
 import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
+import { DateTimeCell } from "../../components/DateTimeCell/DateTimeCell";
 import {
   AppButton,
   AppInput,
@@ -427,11 +428,18 @@ const Customers = () => {
           }
         }
 
+        const editNow = new Date();
         setCustomers((prev) =>
           prev.map((c) =>
             c.id === selectedCustomer.id ||
             (c.email && c.email.toLowerCase() === cleanEmail)
-              ? { ...c, ...updatePayload, id: updatedDoc.id || c.id }
+              ? {
+                  ...c,
+                  ...updatePayload,
+                  id: updatedDoc.id || c.id,
+                  updatedAt: editNow.toISOString(),
+                  rawUpdatedAt: editNow,
+                }
               : c
           )
         );
@@ -544,11 +552,15 @@ const Customers = () => {
         };
 
         const created = await createUser(newCustomerData);
+        const now = new Date();
         setCustomers((prev) => [
           {
             ...newCustomerData,
             id: created.id || authUid,
-            createdAt: formatDateSafe(new Date()),
+            createdAt: now.toISOString(),
+            rawCreatedAt: now,
+            updatedAt: null,
+            rawUpdatedAt: null,
           },
           ...prev,
         ]);
@@ -1142,15 +1154,15 @@ const Customers = () => {
 
                       {/* Joined Date */}
                       <AppTableCell className="date-cell">
-                        {formatDateSafe(user.createdAt)}
+                        <DateTimeCell value={user.rawCreatedAt || user.createdAt} />
                       </AppTableCell>
 
                       {/* Modified Date */}
                       <AppTableCell className="date-cell">
-                        {formatModifiedDate(
-                          user.rawUpdatedAt || user.updatedAt,
-                          user.rawCreatedAt || user.createdAt
-                        )}
+                        <DateTimeCell
+                          value={user.rawUpdatedAt || user.updatedAt}
+                          modifiedFrom={user.rawCreatedAt || user.createdAt}
+                        />
                       </AppTableCell>
 
                       {/* Row Action Buttons */}
@@ -1508,7 +1520,7 @@ const Customers = () => {
                 <div>
                   <div className="item-label">Joined</div>
                   <div className="item-value">
-                    {formatDateSafe(customerForView.createdAt)}
+                    <DateTimeCell value={customerForView.rawCreatedAt || customerForView.createdAt} />
                   </div>
                 </div>
               </div>
@@ -1603,9 +1615,9 @@ const Customers = () => {
 
                       <div className="measure-actions">
                         <span className="measure-date">
-                          {measure.createdAt
-                            ? formatDateSafe(measure.createdAt)
-                            : ""}
+                          {measure.createdAt ? (
+                            <DateTimeCell value={measure.createdAt} />
+                          ) : ""}
                         </span>
 
                         {userCanEdit && (

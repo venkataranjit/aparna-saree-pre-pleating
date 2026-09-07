@@ -158,7 +158,6 @@ export const createBusinessModel = ({
   ownerMobile: String(ownerMobile).trim(),
   businessAddress: String(businessAddress).trim(),
   createdAt: serverTimestamp(),
-  updatedAt: serverTimestamp(),
 });
 
 /**
@@ -178,7 +177,9 @@ export const createUserModel = ({
   role = null,
   measurementId = null,
 } = {}) => {
-  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const normalizedEmail = String(email || "")
+    .trim()
+    .toLowerCase();
   let assignedRole = USER_ROLES.CUSTOMER;
 
   if (normalizedEmail === SUPERADMIN_EMAIL.toLowerCase()) {
@@ -198,10 +199,8 @@ export const createUserModel = ({
     role: assignedRole,
     measurementId: measurementId ? String(measurementId).trim() : null,
     createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
   };
 };
-
 
 /**
  * 3. Service Model
@@ -222,7 +221,6 @@ export const createServiceModel = ({
   serviceDiscountedPrice: Number(serviceDiscountedPrice) || 0,
   active: Boolean(active),
   createdAt: serverTimestamp(),
-  updatedAt: serverTimestamp(),
 });
 
 /**
@@ -247,7 +245,6 @@ export const createCustomerModel = ({
   userId: userId ? String(userId).trim() : null,
   measurementId: measurementId ? String(measurementId).trim() : null,
   createdAt: serverTimestamp(),
-  updatedAt: serverTimestamp(),
 });
 
 /**
@@ -295,13 +292,7 @@ export const createMeasurementModel = ({
     height: sanitizeMeasure(height),
     dressSize: String(dressSize || "").trim(),
     notes: String(notes || "").trim(),
-    createdAtDate: (() => {
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const now = new Date();
-      return `${String(now.getDate()).padStart(2, '0')}-${months[now.getMonth()]}-${now.getFullYear()}`;
-    })(),
     createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
   };
 };
 
@@ -348,5 +339,4 @@ export const createOrderModel = ({
   notes: String(notes).trim(),
   createdBy: String(createdBy).trim(),
   createdAt: serverTimestamp(),
-  updatedAt: serverTimestamp(),
 });

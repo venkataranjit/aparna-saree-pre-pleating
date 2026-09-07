@@ -32,6 +32,7 @@ import {
   deleteCustomerMeasurement,
   checkUserUniqueness,
   formatDateSafe,
+  formatTimeSafe,
   resetUserPassword,
 } from "../../../firebase/dbService";
 import { USER_ROLES } from "../../../firebase/schema";
@@ -773,7 +774,8 @@ const MyProfile = () => {
                   <span className="measure-footer-date">
                     <CalendarTodayOutlinedIcon />
                     Recorded{" "}
-                    {formatDateSafe(measure.createdAtDate || measure.createdAt)}
+                    {formatDateSafe(measure.createdAt)}
+                    {formatTimeSafe(measure.createdAt) ? ` ${formatTimeSafe(measure.createdAt)}` : ""}
                   </span>
                 </div>
               </div>

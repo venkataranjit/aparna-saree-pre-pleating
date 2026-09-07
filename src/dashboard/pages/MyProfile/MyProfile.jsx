@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from 'react-toastify';
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -27,9 +28,9 @@ import { useAuth } from "../../../auth/context/AuthContext";
 import {
   updateUser,
   getAllMeasurements,
-  createCustomerMeasurement,
+  createClientMeasurement,
   updateMeasurement,
-  deleteCustomerMeasurement,
+  deleteClientMeasurement,
   checkUserUniqueness,
   formatDateSafe,
   formatTimeSafe,
@@ -169,10 +170,7 @@ const MyProfile = () => {
     loading: authLoading,
   } = useAuth();
   const [measurements, setMeasurements] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [feedback, setFeedback] = useState(null);
-
-  // Modals
+  const [loading, setLoading] = useState(true);  // Modals
   const [openEditProfileModal, setOpenEditProfileModal] = useState(false);
   const [openAddMeasureModal, setOpenAddMeasureModal] = useState(false);
   const [openEditMeasureModal, setOpenEditMeasureModal] = useState(false);
@@ -199,7 +197,7 @@ const MyProfile = () => {
         : role === "staff"
           ? "Staff"
           : currentUser || userProfile
-            ? "Customer"
+            ? "Client"
             : "";
 
   // Fetch measurements for the logged-in user
@@ -241,9 +239,7 @@ const MyProfile = () => {
       newPassword: "",
     },
     validationSchema: profileValidationSchema,
-    onSubmit: async (values, { setSubmitting, resetForm }) => {
-      setFeedback(null);
-      try {
+    onSubmit: async (values, { setSubmitting, resetForm }) => {      try {
         const cleanEmail = values.email.trim().toLowerCase();
         const cleanMobile = String(values.userMobile).trim();
 
@@ -269,10 +265,7 @@ const MyProfile = () => {
             );
             editProfileFormik.setFieldTouched("userMobile", true, false);
           }
-          setFeedback({
-            type: "error",
-            message: uniqueness.message,
-          });
+          toast.error(uniqueness.message);
           setSubmitting(false);
           return;
         }
@@ -282,7 +275,7 @@ const MyProfile = () => {
           userMobile: cleanMobile,
           email: cleanEmail,
           userAddress: values.userAddress.trim(),
-          role: userProfile?.role || USER_ROLES.CUSTOMER,
+          role: userProfile?.role || USER_ROLES.CLIENT,
         };
 
         if (currentUid) {
@@ -322,10 +315,7 @@ const MyProfile = () => {
               }
             } catch (pwErr) {
               console.warn("Password reset fallback failed:", pwErr);
-              setFeedback({
-                type: "error",
-                message: `Profile saved, but password update failed: ${pwErr.message}`,
-              });
+              toast.error(`Profile saved, but password update failed: ${pwErr.message}`);
               setSubmitting(false);
               return;
             }
@@ -338,18 +328,12 @@ const MyProfile = () => {
           } catch {}
         }
 
-        setFeedback({
-          type: "success",
-          message: `Your profile details have been updated successfully!${pwFeedbackNote}`,
-        });
+        toast.success(`Your profile details have been updated successfully!${pwFeedbackNote}`);
         resetForm();
         setOpenEditProfileModal(false);
       } catch (err) {
         console.error("Update profile error:", err);
-        setFeedback({
-          type: "error",
-          message: err.message || "Failed to update profile details.",
-        });
+        toast.error(err.message || "Failed to update profile details.");
       } finally {
         setSubmitting(false);
       }
@@ -395,9 +379,7 @@ const MyProfile = () => {
       notes: selectedMeasureForEdit?.notes || "",
     },
     validationSchema: measurementValidationSchema,
-    onSubmit: async (values, { setSubmitting }) => {
-      setFeedback(null);
-      try {
+    onSubmit: async (values, { setSubmitting }) => {      try {
         if (!selectedMeasureForEdit?.id)
           throw new Error("Measurement ID is required to update.");
 
@@ -433,18 +415,12 @@ const MyProfile = () => {
           ),
         );
 
-        setFeedback({
-          type: "success",
-          message: `Measurement profile "${values.title.trim()}" updated successfully!`,
-        });
+        toast.success(`Measurement profile "${values.title.trim()}" updated successfully!`);
         setOpenEditMeasureModal(false);
         setSelectedMeasureForEdit(null);
       } catch (err) {
         console.error("Update measurement error:", err);
-        setFeedback({
-          type: "error",
-          message: err.message || "Failed to update measurement profile.",
-        });
+        toast.error(err.message || "Failed to update measurement profile.");
       } finally {
         setSubmitting(false);
       }
@@ -457,21 +433,15 @@ const MyProfile = () => {
     const { id: measurementId, title } = measureToDelete;
     setDeletingMeasureId(measurementId);
     try {
-      await deleteCustomerMeasurement(measurementId);
+      await deleteClientMeasurement(measurementId);
       setMeasurements((prev) => prev.filter((m) => m.id !== measurementId));
-      setFeedback({
-        type: "success",
-        message: `Measurement profile "${
+      toast.success(`Measurement profile "${
           title || "Profile"
-        }" deleted successfully.`,
-      });
+        }" deleted successfully.`);
       setMeasureToDelete(null);
     } catch (err) {
       console.error("Delete measurement error:", err);
-      setFeedback({
-        type: "error",
-        message: "Failed to delete measurement profile.",
-      });
+      toast.error("Failed to delete measurement profile.");
     } finally {
       setDeletingMeasureId(null);
     }
@@ -520,22 +490,6 @@ const MyProfile = () => {
         </div>
       </div>
 
-      {/* Global Feedback Alert */}
-      {feedback && (
-        <div
-          className={`profile-feedback-alert profile-feedback-alert--${feedback.type}`}
-        >
-          <span>{feedback.message}</span>
-          <button
-            type="button"
-            className="alert-close-btn"
-            onClick={() => setFeedback(null)}
-          >
-            &times;
-          </button>
-        </div>
-      )}
-
       {/* Profile Overview Hero Card */}
       <div className="profile-hero-card">
         <div className="hero-main-row">
@@ -549,7 +503,7 @@ const MyProfile = () => {
               </h2>
               <div className="role-badge-chip">
                 <VerifiedUserOutlinedIcon />
-                <span>{roleLabel || "Customer"}</span>
+                <span>{roleLabel || "Client"}</span>
               </div>
             </div>
           </div>
@@ -906,6 +860,8 @@ const MyProfile = () => {
         onSave={async (values) => {
           const measurementPayload = {
             userId: currentUid,
+            clientName: displayName,
+            clientMobile: displayMobile,
             customerName: displayName,
             customerMobile: displayMobile,
             title: values.title.trim(),
@@ -919,12 +875,9 @@ const MyProfile = () => {
             dressSize: values.dressSize.trim() || null,
             notes: values.notes.trim(),
           };
-          const saved = await createCustomerMeasurement(measurementPayload);
+          const saved = await createClientMeasurement(measurementPayload);
           setMeasurements((prev) => [saved, ...prev]);
-          setFeedback({
-            type: "success",
-            message: `Measurement profile "${values.title.trim()}" added successfully!`,
-          });
+          toast.success(`Measurement profile "${values.title.trim()}" added successfully!`);
         }}
       />
 

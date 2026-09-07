@@ -22,7 +22,7 @@ import "./OrdersTable.scss";
 const initialOrders = [
   {
     id: "ORD-101",
-    customer: "Priya Sharma",
+    client: "Priya Sharma",
     phone: "+91 98490 12345",
     email: "priya.sharma@gmail.com",
     service: "Bridal Saree Pre-Pleating + Box Fold",
@@ -40,11 +40,11 @@ const initialOrders = [
     addonAmount: "₹200 (Box Pack & Press)",
     amount: "₹1,200",
     notes:
-      "Customer requested extra pins on the pallu pleats for heavy bridal movement. Extra care for pure gold zari border.",
+      "Client requested extra pins on the pallu pleats for heavy bridal movement. Extra care for pure gold zari border.",
   },
   {
     id: "ORD-102",
-    customer: "Ananya Reddy",
+    client: "Ananya Reddy",
     phone: "+91 99887 65432",
     email: "ananya.reddy@outlook.com",
     service: "Pre-Pleating & Ironing",
@@ -66,29 +66,28 @@ const initialOrders = [
   },
   {
     id: "ORD-103",
-    customer: "Kavitha Raman",
+    client: "Kavitha Raman",
     phone: "+91 97001 11223",
     email: "kavitha.raman@tcs.com",
     service: "Draping Assistance (On-site)",
     sareeType: "Soft Silk",
     pleatCount: '5 Front Pleats (6" width)',
     palluStyle: "Single Pleat Pinned",
-    packaging: "Breathable Non-woven Bag",
+    packaging: "Hanger with Dust Cover",
     date: "03-Sep-2026",
-    eventDate: "05-Sep-2026 (Housewarming)",
-    deliveryType: "Staff Draping at Venue",
-    address: "House 18, Phase 2, Gachibowli, Hyderabad",
+    eventDate: "04-Sep-2026 (Temple Wedding)",
+    deliveryType: "Staff Drapist Visit",
+    address: "Villa 18, Palm Grove, Gachibowli, Hyderabad",
     status: "completed",
-    paymentStatus: "Paid Online",
+    paymentStatus: "Paid in Full (NetBanking)",
     baseAmount: "₹1,500",
     addonAmount: "₹0",
     amount: "₹1,500",
-    notes: "Draper needs to arrive by 6:30 AM sharp at venue.",
+    notes: "Requires draping assistance at venue at 6:30 AM sharp.",
   },
   {
     id: "ORD-104",
-    customer: "Sneha Varma",
-    phone: "+91 98480 99887",
+    client: "Sneha Varma",
     email: "sneha.v@gmail.com",
     service: "Standard Saree Pre-Pleating",
     sareeType: "Chiffon Designer Saree",
@@ -108,7 +107,7 @@ const initialOrders = [
   },
   {
     id: "ORD-105",
-    customer: "Divya Teja",
+    client: "Divya Teja",
     phone: "+91 91234 56789",
     email: "divya.teja@yahoo.co.in",
     service: "Bridal Saree Pre-Pleating + Box Fold",
@@ -130,7 +129,7 @@ const initialOrders = [
   },
   {
     id: "ORD-106",
-    customer: "Meenakshi Sundaram",
+    client: "Meenakshi Sundaram",
     phone: "+91 90000 33445",
     email: "meena.sundaram@gmail.com",
     service: "Pre-Pleating & Ironing",
@@ -147,7 +146,7 @@ const initialOrders = [
     baseAmount: "₹650",
     addonAmount: "₹0",
     amount: "₹650",
-    notes: "Order cancelled by customer due to event postponement.",
+    notes: "Order cancelled by client due to event postponement.",
   },
 ];
 
@@ -177,7 +176,7 @@ const OrdersTable = () => {
       const matchesFilter =
         activeFilter === "All" || order.status === activeFilter;
       const matchesSearch =
-        order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (order.client || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.sareeType.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesFilter && matchesSearch;
@@ -186,8 +185,8 @@ const OrdersTable = () => {
 
   const sortedOrders = useMemo(() => {
     return [...filteredOrders].sort((a, b) => {
-      let aVal = a[sortField] ?? "";
-      let bVal = b[sortField] ?? "";
+      let aVal = (sortField === "client" ? a.client : a[sortField]) ?? "";
+      let bVal = (sortField === "client" ? b.client : b[sortField]) ?? "";
       if (sortField === "amount") {
         aVal = parseInt(String(aVal).replace(/[^0-9]/g, ""), 10) || 0;
         bVal = parseInt(String(bVal).replace(/[^0-9]/g, ""), 10) || 0;
@@ -271,11 +270,11 @@ const OrdersTable = () => {
               </AppTableCell>
               <AppTableCell head className="table-head-cell">
                 <AppTableSortLabel
-                  active={sortField === "customer"}
-                  direction={sortField === "customer" ? sortDirection : "asc"}
-                  onClick={() => handleRequestSort("customer")}
+                  active={sortField === "client"}
+                  direction={sortField === "client" ? sortDirection : "asc"}
+                  onClick={() => handleRequestSort("client")}
                 >
-                  Customer
+                  Client
                 </AppTableSortLabel>
               </AppTableCell>
               <AppTableCell head className="table-head-cell">
@@ -345,8 +344,8 @@ const OrdersTable = () => {
                   <AppTableCell className="table-body-cell order-id">
                     {order.id}
                   </AppTableCell>
-                  <AppTableCell className="table-body-cell customer-name">
-                    {order.customer}
+                  <AppTableCell className="table-body-cell client-name">
+                    {order.client}
                   </AppTableCell>
                   <AppTableCell className="table-body-cell">
                     {order.service}

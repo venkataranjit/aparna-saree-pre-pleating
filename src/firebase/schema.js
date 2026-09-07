@@ -7,7 +7,7 @@ export const COLLECTIONS = {
   BUSINESSES: "businesses",
   USERS: "users",
   SERVICES: "services",
-  CUSTOMERS: "customers",
+  CLIENTS: "clients",
   ORDERS: "orders",
   MEASUREMENTS: "measurements",
 };
@@ -19,7 +19,7 @@ export const USER_ROLES = {
   SUPERADMIN: "superadmin",
   ADMIN: "admin",
   STAFF: "staff",
-  CUSTOMER: "customer",
+  CLIENT: "client",
 };
 
 /**
@@ -124,7 +124,7 @@ export const INITIAL_SERVICES = [
 ];
 
 /**
- * Measurement Fields (Customer-provided, no hardcoded defaults)
+ * Measurement Fields (Client-provided, no hardcoded defaults)
  * Includes: pallu, shoulderToRightTight, chest, hip, firstPleatSize, noOfChestPleats
  */
 export const MEASUREMENT_FIELDS = [
@@ -166,7 +166,7 @@ export const createBusinessModel = ({
  * @param {string} data.username
  * @param {string} data.userMobile
  * @param {string} data.userAddress
- * @param {('superadmin'|'admin'|'staff'|'customer')} [data.role='customer']
+ * @param {('superadmin'|'admin'|'staff'|'client')} [data.role='client']
  * @param {string|null} [data.measurementId=null] - Reference to measurements collection
  */
 export const createUserModel = ({
@@ -180,13 +180,13 @@ export const createUserModel = ({
   const normalizedEmail = String(email || "")
     .trim()
     .toLowerCase();
-  let assignedRole = USER_ROLES.CUSTOMER;
+  let assignedRole = USER_ROLES.CLIENT;
 
   if (normalizedEmail === SUPERADMIN_EMAIL.toLowerCase()) {
     assignedRole = USER_ROLES.SUPERADMIN;
   } else if (
     role &&
-    [USER_ROLES.ADMIN, USER_ROLES.STAFF, USER_ROLES.CUSTOMER].includes(role)
+    [USER_ROLES.ADMIN, USER_ROLES.STAFF, USER_ROLES.CLIENT].includes(role)
   ) {
     assignedRole = role;
   }
@@ -224,32 +224,38 @@ export const createServiceModel = ({
 });
 
 /**
- * 4. Customer Model
+ * 4. Client Model
  * @param {Object} data
- * @param {string} data.customerName
- * @param {string} data.customerMobile (stored strictly as string)
- * @param {string} data.customerAddress
+ * @param {string} [data.clientName]
+ * @param {string} [data.clientMobile] (stored strictly as string)
+ * @param {string} [data.clientAddress]
  * @param {string|null} [data.userId] - Optional mapped user document ID
  * @param {string|null} [data.measurementId] - Reference to measurements collection document
  */
-export const createCustomerModel = ({
-  customerName = "",
-  customerMobile = "",
-  customerAddress = "",
+export const createClientModel = ({
+  clientName = "",
+  clientMobile = "",
+  clientAddress = "",
   userId = null,
   measurementId = null,
-} = {}) => ({
-  customerName: String(customerName).trim(),
-  customerMobile: String(customerMobile).trim(), // Mobile must be stored as string
-  customerAddress: String(customerAddress).trim(),
-  userId: userId ? String(userId).trim() : null,
-  measurementId: measurementId ? String(measurementId).trim() : null,
-  createdAt: serverTimestamp(),
-});
+} = {}) => {
+  const resolvedName = String(clientName || "").trim();
+  const resolvedMobile = String(clientMobile || "").trim();
+  const resolvedAddress = String(clientAddress || "").trim();
+
+  return {
+    clientName: resolvedName,
+    clientMobile: resolvedMobile, // Mobile must be stored as string
+    clientAddress: resolvedAddress,
+    userId: userId ? String(userId).trim() : null,
+    measurementId: measurementId ? String(measurementId).trim() : null,
+    createdAt: serverTimestamp(),
+  };
+};
 
 /**
  * 5. Measurement Model (Mapped to Users collection)
- * Customer must provide their exact details; no default values.
+ * Client must provide their exact details; no default values.
  *
  * @param {Object} data
  * @param {string} data.userId - Reference to User document ID in users collection
@@ -299,7 +305,7 @@ export const createMeasurementModel = ({
 /**
  * 6. Order Model
  * @param {Object} data
- * @param {string} data.customerId
+ * @param {string} data.clientId
  * @param {Array} data.items
  * @param {number} data.shippingCharges
  * @param {number} data.totalAmount
@@ -313,7 +319,7 @@ export const createMeasurementModel = ({
  * @param {string} data.createdBy
  */
 export const createOrderModel = ({
-  customerId = "",
+  clientId = "",
   items = [],
   shippingCharges = 0,
   totalAmount = 0,
@@ -325,18 +331,20 @@ export const createOrderModel = ({
   deliveryDate = null,
   notes = "",
   createdBy = "",
-} = {}) => ({
-  customerId: String(customerId).trim(),
-  items: Array.isArray(items) ? items : [],
-  shippingCharges: Number(shippingCharges) || 0,
-  totalAmount: Number(totalAmount) || 0,
-  paidAmount: Number(paidAmount) || 0,
-  paymentStatus: String(paymentStatus),
-  paymentMethod: String(paymentMethod),
-  orderStatus: String(orderStatus),
-  orderDate: orderDate || serverTimestamp(),
-  deliveryDate: deliveryDate || null,
-  notes: String(notes).trim(),
-  createdBy: String(createdBy).trim(),
-  createdAt: serverTimestamp(),
-});
+} = {}) => {
+  return {
+    clientId: String(clientId || "").trim(),
+    items: Array.isArray(items) ? items : [],
+    shippingCharges: Number(shippingCharges) || 0,
+    totalAmount: Number(totalAmount) || 0,
+    paidAmount: Number(paidAmount) || 0,
+    paymentStatus: String(paymentStatus),
+    paymentMethod: String(paymentMethod),
+    orderStatus: String(orderStatus),
+    orderDate: orderDate || serverTimestamp(),
+    deliveryDate: deliveryDate || null,
+    notes: String(notes).trim(),
+    createdBy: String(createdBy).trim(),
+    createdAt: serverTimestamp(),
+  };
+};

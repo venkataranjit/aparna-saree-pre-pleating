@@ -38,12 +38,12 @@ service cloud.firestore {
 
     // 3. Services Collection
     match /services/{serviceId} {
-      allow read: if true; // Public catalog for storefront & customers
+      allow read: if true; // Public catalog for storefront & clients
       allow write: if isStaffOrAdmin(request.resource.data.businessId);
     }
 
-    // 4. Customers Collection
-    match /customers/{customerId} {
+    // 4. Clients Collection
+    match /clients/{clientId} {
       allow read, write: if isAuthenticated();
     }
 
@@ -52,7 +52,7 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
-    // 6. Measurements Collection (Customer provided, mapped to users)
+    // 6. Measurements Collection (Client provided, mapped to users)
     match /measurements/{measurementId} {
       allow read, write: if isAuthenticated();
     }

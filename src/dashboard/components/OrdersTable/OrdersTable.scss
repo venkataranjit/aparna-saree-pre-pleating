@@ -26,6 +26,12 @@
       gap: 12px;
     }
 
+    &.client-name {
+      color: $color-light-gold;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
     .title {
       color: $color-light-gold;
       font-weight: 700;
@@ -258,7 +264,7 @@
       color: $color-gold !important;
     }
 
-    &.customer-name {
+    &.client-name {
       font-weight: 600;
       color: $color-light-gold !important;
     }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { toast } from 'react-toastify';
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
@@ -134,7 +135,6 @@ const Users = () => {
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [feedback, setFeedback] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -189,10 +189,7 @@ const Users = () => {
       console.warn("Could not fetch remote users, using cached users:", err);
       const local = getLocalUsers();
       setUsers(local);
-      setFeedback({
-        type: "error",
-        message: "Using offline cached users. Check Firebase connection.",
-      });
+      toast.error("Using offline cached users. Check Firebase connection.");
     } finally {
       setLoading(false);
     }
@@ -227,7 +224,6 @@ const Users = () => {
     validationSchema: editUserValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       if (!selectedUser) return;
-      setFeedback(null);
       try {
         const cleanEmail = values.email.trim().toLowerCase();
         const cleanMobile = String(values.userMobile).trim();
@@ -254,10 +250,7 @@ const Users = () => {
             );
             editFormik.setFieldTouched("userMobile", true, false);
           }
-          setFeedback({
-            type: "error",
-            message: uniqueness.message,
-          });
+          toast.error(uniqueness.message);
           setSubmitting(false);
           return;
         }
@@ -293,18 +286,11 @@ const Users = () => {
           if (refreshProfile) refreshProfile();
         }
 
-        setFeedback({
-          type: "success",
-          message: `User "${values.username}" updated successfully!`,
-        });
+        toast.success(`User "${values.username}" updated successfully!`);
         setOpenEditModal(false);
       } catch (err) {
         console.error("Error updating user:", err);
-        setFeedback({
-          type: "error",
-          message:
-            "Failed to update user: " + (err.message || "Please try again."),
-        });
+        toast.error("Failed to update user: " + (err.message || "Please try again."));
       } finally {
         setSubmitting(false);
       }
@@ -322,7 +308,6 @@ const Users = () => {
     },
     validationSchema: userValidationSchema,
     onSubmit: async (values, { resetForm, setSubmitting }) => {
-      setFeedback(null);
       try {
         const cleanEmail = values.email.trim().toLowerCase();
         const cleanMobile = String(values.userMobile).trim();
@@ -349,10 +334,7 @@ const Users = () => {
             );
             formik.setFieldTouched("userMobile", true, false);
           }
-          setFeedback({
-            type: "error",
-            message: uniqueness.message,
-          });
+          toast.error(uniqueness.message);
           setSubmitting(false);
           return;
         }
@@ -368,24 +350,15 @@ const Users = () => {
         } catch (authErr) {
           console.warn("Firebase Auth creation note:", authErr);
           if (authErr.code === "auth/email-already-in-use") {
-            setFeedback({
-              type: "error",
-              message: `The email "${cleanEmail}" is already registered in Firebase Authentication.`,
-            });
+            toast.error(`The email "${cleanEmail}" is already registered in Firebase Authentication.`);
             setSubmitting(false);
             return;
           } else if (authErr.code === "auth/weak-password") {
-            setFeedback({
-              type: "error",
-              message: "Temporary password must be at least 6 characters long.",
-            });
+            toast.error("Temporary password must be at least 6 characters long.");
             setSubmitting(false);
             return;
           } else if (authErr.code === "auth/invalid-email") {
-            setFeedback({
-              type: "error",
-              message: "Invalid email address format.",
-            });
+            toast.error("Invalid email address format.");
             setSubmitting(false);
             return;
           }
@@ -420,10 +393,7 @@ const Users = () => {
           ),
         ]);
 
-        setFeedback({
-          type: "success",
-          message: `User "${values.username}" successfully registered in Firebase! They can now log in with email "${cleanEmail}" and default password "aparna".`,
-        });
+        toast.success(`User "${values.username}" successfully registered in Firebase! They can now log in with email "${cleanEmail}" and default password "aparna".`);
         resetForm({
           values: {
             username: "",
@@ -437,11 +407,7 @@ const Users = () => {
         setOpenModal(false);
       } catch (err) {
         console.error("Error creating user:", err);
-        setFeedback({
-          type: "error",
-          message:
-            "Failed to create user: " + (err.message || "Please try again."),
-        });
+        toast.error("Failed to create user: " + (err.message || "Please try again."));
       } finally {
         setSubmitting(false);
       }
@@ -455,18 +421,11 @@ const Users = () => {
     try {
       await deleteUser(id);
       setUsers((prev) => prev.filter((u) => u.id !== id));
-      setFeedback({
-        type: "success",
-        message: `User "${name}" has been removed from Firebase.`,
-      });
+      toast.success(`User "${name}" has been removed from Firebase.`);
       setUserToDelete(null);
     } catch (err) {
       console.error("Error deleting user:", err);
-      setFeedback({
-        type: "error",
-        message:
-          "Failed to delete user: " + (err.message || "Permission denied"),
-      });
+      toast.error("Failed to delete user: " + (err.message || "Permission denied"));
     } finally {
       setDeletingUser(false);
     }
@@ -474,9 +433,11 @@ const Users = () => {
 
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
+      const uRole = (u.role || "").toLowerCase();
+      const tabLower = activeTab.toLowerCase();
       const matchesTab =
         activeTab === "ALL" ||
-        u.role?.toLowerCase() === activeTab.toLowerCase();
+        uRole === tabLower;
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         !query ||
@@ -519,7 +480,7 @@ const Users = () => {
   }, [sortedUsers, page, rowsPerPage]);
 
   // Restrict access: only Super Admin and Admin can access the Users screen.
-  // Staff and Customers are redirected immediately to /dashboard.
+  // Staff and Clients are redirected immediately to /dashboard.
   if (!hasAccessToUsers) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -528,27 +489,27 @@ const Users = () => {
     { label: `All (${users.length})`, value: "ALL" },
     {
       label: `Super Admins (${
-        users.filter((u) => u.role === USER_ROLES.SUPERADMIN).length
+        users.filter((u) => (u.role || "").toLowerCase() === USER_ROLES.SUPERADMIN).length
       })`,
       value: USER_ROLES.SUPERADMIN,
     },
     {
       label: `Admins (${
-        users.filter((u) => u.role === USER_ROLES.ADMIN).length
+        users.filter((u) => (u.role || "").toLowerCase() === USER_ROLES.ADMIN).length
       })`,
       value: USER_ROLES.ADMIN,
     },
     {
       label: `Staff (${
-        users.filter((u) => u.role === USER_ROLES.STAFF).length
+        users.filter((u) => (u.role || "").toLowerCase() === USER_ROLES.STAFF).length
       })`,
       value: USER_ROLES.STAFF,
     },
     {
-      label: `Customers (${
-        users.filter((u) => u.role === USER_ROLES.CUSTOMER).length
+      label: `Clients (${
+        users.filter((u) => (u.role || "").toLowerCase() === USER_ROLES.CLIENT).length
       })`,
-      value: USER_ROLES.CUSTOMER,
+      value: USER_ROLES.CLIENT,
     },
   ];
 
@@ -574,7 +535,7 @@ const Users = () => {
     if (roleStr === "staff") {
       return <AppBadge variant="staff">Staff</AppBadge>;
     }
-    return <AppBadge variant="customer">Customer</AppBadge>;
+    return <AppBadge variant="client">Client</AppBadge>;
   };
 
   return (
@@ -584,7 +545,7 @@ const Users = () => {
         <div>
           <h1 className="page-title">Manage Users</h1>
           <p className="page-subtitle">
-            Configure team members, staff permissions, and customer profiles
+            Configure team members, staff permissions, and client profiles
           </p>
         </div>
         <div className="header-actions">
@@ -603,7 +564,6 @@ const Users = () => {
             startIcon={<PersonAddOutlinedIcon />}
             className="create-user-btn"
             onClick={() => {
-              setFeedback(null);
               setOpenModal(true);
             }}
           >
@@ -611,33 +571,6 @@ const Users = () => {
           </AppButton>
         </div>
       </div>
-
-      {/* Global alert feedback */}
-      {feedback && (
-        <div
-          className={`users-feedback-alert users-feedback-alert--${feedback.type}`}
-        >
-          {feedback.type === "success" ? (
-            <CheckCircleOutlineIcon fontSize="small" />
-          ) : (
-            <ErrorOutlineIcon fontSize="small" />
-          )}
-          <span style={{ flex: 1 }}>{feedback.message}</span>
-          <button
-            type="button"
-            onClick={() => setFeedback(null)}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "inherit",
-              cursor: "pointer",
-              fontWeight: "bold",
-            }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
 
       {/* Filter Tabs & Search Bar */}
       <div className="users-page__toolbar">
@@ -1008,7 +941,7 @@ const Users = () => {
             <option value={USER_ROLES.STAFF}>
               Staff (Pleating & Handling)
             </option>
-            <option value={USER_ROLES.CUSTOMER}>Customer (Default)</option>
+            <option value={USER_ROLES.CLIENT}>Client (Default)</option>
           </AppInput>
 
           <AppInput
@@ -1153,7 +1086,7 @@ const Users = () => {
               <option value={USER_ROLES.STAFF}>
                 Staff (Pleating & Handling)
               </option>
-              <option value={USER_ROLES.CUSTOMER}>Customer (Default)</option>
+              <option value={USER_ROLES.CLIENT}>Client (Default)</option>
             </AppInput>
           )}
 

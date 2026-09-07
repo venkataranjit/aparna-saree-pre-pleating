@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from 'react-toastify';
 import { Link, useNavigate } from "react-router-dom";
 import {
   createUserWithEmailAndPassword,
@@ -316,7 +317,7 @@ const Register = () => {
         const assignedRole =
           cleanEmail === SUPERADMIN_EMAIL
             ? USER_ROLES.SUPERADMIN
-            : USER_ROLES.CUSTOMER;
+            : USER_ROLES.CLIENT;
 
         await createUserProfile(user.uid, {
           username: values.username.trim(),
@@ -389,26 +390,8 @@ const Register = () => {
             </div>
 
             {/* Error / Success Feedback */}
-            {error && (
-              <div className="feedback-alert error-alert">
-                <span>{error}</span>
-                <button
-                  type="button"
-                  className="alert-close-btn"
-                  onClick={() => setError("")}
-                >
-                  &times;
-                </button>
-              </div>
-            )}
 
-            {successMsg && (
-              <div className="feedback-alert success-alert">
-                <span>{successMsg}</span>
-              </div>
-            )}
-
-            {/* Register Form */}
+{/* Register Form */}
             <form
               onSubmit={formik.handleSubmit}
               className="register-form"

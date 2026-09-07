@@ -1,6 +1,6 @@
 @use "../../styles/variables" as *;
 
-.customers-page {
+.clients-page {
   padding: 8px 4px;
 
   &__header {
@@ -56,7 +56,7 @@
     }
   }
 
-  .customers-feedback-alert {
+  .clients-feedback-alert {
     background-color: rgba(10, 10, 10, 0.85);
     border: 1px solid rgba(212, 175, 55, 0.3);
     color: $color-light-gold;
@@ -117,7 +117,7 @@
       gap: 12px;
     }
 
-    .customers-search-field {
+    .clients-search-field {
       width: 280px;
 
       @media (max-width: 768px) {
@@ -126,8 +126,8 @@
     }
   }
 
-  /* Main Customers Table Card */
-  .customers-table-card {
+  /* Main Clients Table Card */
+  .clients-table-card {
     background-color: $bg-card;
     border: 1px solid $surface-border;
     border-radius: 12px;
@@ -144,7 +144,7 @@
       }
     }
 
-    .customers-table {
+    .clients-table {
       width: 100%;
       border-collapse: collapse;
 
@@ -158,15 +158,23 @@
         border-bottom: 1px solid rgba(212, 175, 55, 0.2);
         padding: 14px 18px;
         text-align: left;
-        white-space: nowrap;
+        white-space: nowrap !important;
 
         @media (max-width: 600px) {
-          font-size: 0.7rem;
-          padding: 10px 12px;
+          padding: 12px 10px;
+          font-size: 0.72rem;
+        }
+
+        &.th-center {
+          text-align: center;
+        }
+
+        &.th-actions {
+          text-align: right;
         }
       }
 
-      tr.customer-table-row {
+      tr.client-table-row {
         transition: background-color 0.18s ease;
 
         &:hover {
@@ -303,7 +311,7 @@
             max-width: 30px;
           }
 
-          // 1. View Customer Profile & Measurements (Crystal Blue)
+          // 1. View Client Profile & Measurements (Crystal Blue)
           &.action-btn--view {
             background-color: rgba(59, 130, 246, 0.14) !important;
             color: #60a5fa !important;
@@ -318,11 +326,12 @@
             }
 
             &:active {
+              background-color: rgba(59, 130, 246, 0.4) !important;
               transform: translateY(0);
             }
           }
 
-          // 2. Add Measurement Profile Shortcut (Emerald Green)
+          // 2. Add Measurement (Emerald Green)
           &.action-btn--measure {
             background-color: rgba(16, 185, 129, 0.14) !important;
             color: #34d399 !important;
@@ -337,11 +346,12 @@
             }
 
             &:active {
+              background-color: rgba(16, 185, 129, 0.4) !important;
               transform: translateY(0);
             }
           }
 
-          // 3. Edit Customer Info (Warm Amber Gold)
+          // 3. Edit Client Info (Warm Amber Gold)
           &.action-btn--edit {
             background-color: rgba(245, 158, 11, 0.14) !important;
             color: #fbbf24 !important;
@@ -356,35 +366,23 @@
             }
 
             &:active {
-              transform: translateY(0);
-            }
-          }
-
-          // 4. Delete Action (Crimson Red)
-          &.action-btn--delete {
-            background-color: rgba(239, 68, 68, 0.14) !important;
-            color: #f87171 !important;
-            border: 1px solid rgba(239, 68, 68, 0.38) !important;
-
-            &:hover {
-              background-color: rgba(239, 68, 68, 0.28) !important;
-              color: #fca5a5 !important;
-              border-color: #ef4444 !important;
-              box-shadow: 0 2px 10px rgba(239, 68, 68, 0.35) !important;
-              transform: translateY(-1px);
-            }
-
-            &:active {
+              background-color: rgba(245, 158, 11, 0.4) !important;
               transform: translateY(0);
             }
           }
         }
       }
 
-      .empty-state-cell {
-        padding: 48px 16px;
+      .table-loading-cell {
         text-align: center;
-        color: rgba(230, 216, 163, 0.7);
+        padding: 50px 20px;
+        color: $color-light-gold;
+      }
+
+      .table-empty-cell {
+        text-align: center;
+        padding: 48px 20px;
+        color: rgba(230, 216, 163, 0.6);
 
         @media (max-width: 600px) {
           padding: 32px 12px;
@@ -395,7 +393,7 @@
   }
 }
 
-/* Customer Summary & Measurements in View Details Modal */
+/* Client Summary & Measurements in View Details Modal */
 .details-summary-card {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

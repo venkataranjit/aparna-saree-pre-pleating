@@ -13,7 +13,7 @@ import './CurvedBottomBar.scss';
  * CurvedBottomBar
  * Fixed 100% width bottom navigation bar with luxury obsidian & gold styling.
  * Smoothly scales up icon size on hover with spring animation.
- * Features Home, Orders, Services, Customers/Store, and More (opens sidebar).
+ * Features Home, Orders, Services, Clients/Store, and More (opens sidebar).
  */
 export const CurvedBottomBar = ({
   collapsed = false,
@@ -26,7 +26,7 @@ export const CurvedBottomBar = ({
   const [ripplingId, setRipplingId] = useState(null);
 
   const userRole = (role || '').toLowerCase();
-  const isCustomer = !isSuperAdmin && (userRole === 'customer' || userRole === '');
+  const isClient = !isSuperAdmin && (userRole === 'client' || userRole === '');
 
   // Configure navigation items matching the luxury dashboard layout
   const navItems = [
@@ -50,10 +50,10 @@ export const CurvedBottomBar = ({
       icon: <DryCleaningOutlinedIcon className="nav-bar-icon" />,
     },
     {
-      id: isCustomer ? 'storefront' : 'customers',
-      label: isCustomer ? 'Store' : 'Customers',
-      path: isCustomer ? '/landing' : '/dashboard/customers',
-      icon: isCustomer ? (
+      id: isClient ? 'storefront' : 'clients',
+      label: isClient ? 'Store' : 'Clients',
+      path: isClient ? '/landing' : '/dashboard/clients',
+      icon: isClient ? (
         <StorefrontOutlinedIcon className="nav-bar-icon" />
       ) : (
         <PeopleOutlineIcon className="nav-bar-icon" />
@@ -73,6 +73,9 @@ export const CurvedBottomBar = ({
         location.pathname === '/dashboard/profile' ||
         location.pathname.startsWith('/dashboard/users')
       );
+    }
+    if (item.id === 'clients') {
+      return location.pathname.startsWith('/dashboard/clients');
     }
     if (item.exact) {
       return location.pathname === item.path;

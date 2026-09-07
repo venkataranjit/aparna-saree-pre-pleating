@@ -15,7 +15,7 @@ import './Overview.scss';
 const Overview = () => {
   const { role, isSuperAdmin } = useAuth();
   const userRole = (role || '').toLowerCase();
-  const isCustomer = !isSuperAdmin && (userRole === USER_ROLES.CUSTOMER || userRole === 'customer' || userRole === '');
+  const isClient = !isSuperAdmin && (userRole === USER_ROLES.CLIENT || userRole === 'client' || userRole === '');
 
   return (
     <div className="overview-page">
@@ -26,14 +26,14 @@ const Overview = () => {
             Dashboard
           </h1>
           <p className="overview-page-caption">
-            {isCustomer
+            {isClient
               ? 'Real-time overview of your saree pre-pleating orders & bookings'
               : 'Real-time overview of saree pre-pleating operations, orders & revenue'}
           </p>
         </div>
 
         <div className="action-buttons">
-          {!isCustomer && (
+          {!isClient && (
             <AppButton
               variant="secondary"
               startIcon={<FileDownloadIcon />}
@@ -52,8 +52,8 @@ const Overview = () => {
         </div>
       </div>
 
-      {/* Key Metric Stat Cards - hidden for customer role */}
-      {!isCustomer && (
+      {/* Key Metric Stat Cards - hidden for client role */}
+      {!isClient && (
         <div className="overview-page__stats-grid">
           {/* Card 1: Orders */}
           <StatCard
@@ -74,9 +74,9 @@ const Overview = () => {
             icon={<DryCleaningOutlinedIcon />}
           />
 
-          {/* Card 3: Customers */}
+          {/* Card 3: Clients */}
           <StatCard
-            title="Customers"
+            title="Clients"
             value="342"
             change="+28 new this month"
             trendType="up"

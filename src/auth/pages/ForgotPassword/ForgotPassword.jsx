@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../../firebase/config';
@@ -89,27 +90,8 @@ const ForgotPassword = () => {
             </div>
 
             {/* Error / Success Feedback */}
-            {error && (
-              <div className="feedback-alert error-alert">
-                <span>{error}</span>
-                <button
-                  type="button"
-                  className="alert-close-btn"
-                  onClick={() => setError('')}
-                >
-                  &times;
-                </button>
-              </div>
-            )}
 
-            {successMsg && (
-              <div className="feedback-alert success-alert">
-                <CheckCircleOutlineIcon className="alert-inline-icon" />
-                <span>{successMsg}</span>
-              </div>
-            )}
-
-            {/* Password Reset Form */}
+{/* Password Reset Form */}
             <form onSubmit={handleReset} className="forgot-form" noValidate>
               <AppInput
                 label="Registered Email Address"

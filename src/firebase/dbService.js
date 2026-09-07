@@ -32,7 +32,7 @@ import {
   createBusinessModel,
   createUserModel,
   createServiceModel,
-  createCustomerModel,
+  createClientModel,
   createMeasurementModel,
   createOrderModel,
 } from './schema';
@@ -468,6 +468,7 @@ export const getLocalUsers = () => {
 
     // Ensure all registered Firebase Auth users are present and roles stay in sync
     let changed = false;
+
     KNOWN_FIREBASE_AUTH_USERS.forEach((known) => {
       const existing = list.find(
         (u) => (u.email || '').trim().toLowerCase() === known.email.toLowerCase()
@@ -541,7 +542,7 @@ export const createUserProfile = async (uid, userData) => {
     const existingSnap = await withTimeout(getDoc(docRef), 3000, null);
     if (existingSnap && existingSnap.exists()) {
       const existingData = existingSnap.data();
-      if (existingData?.role && (!userData.role || userData.role === USER_ROLES.CUSTOMER)) {
+      if (existingData?.role && (!userData.role || userData.role === USER_ROLES.CLIENT)) {
         resolvedRole = existingData.role;
       }
     } else if (userData.email) {
@@ -550,7 +551,7 @@ export const createUserProfile = async (uid, userData) => {
       const emailSnap = await withTimeout(getDocs(q), 3000, null);
       if (emailSnap && !emailSnap.empty) {
         const existingData = emailSnap.docs[0].data();
-        if (existingData?.role && (!userData.role || userData.role === USER_ROLES.CUSTOMER)) {
+        if (existingData?.role && (!userData.role || userData.role === USER_ROLES.CLIENT)) {
           resolvedRole = existingData.role;
         }
       }
@@ -558,14 +559,14 @@ export const createUserProfile = async (uid, userData) => {
   } catch {}
 
   // Also check local cache for any registered role
-  if (!resolvedRole || resolvedRole === USER_ROLES.CUSTOMER) {
+  if (!resolvedRole || resolvedRole === USER_ROLES.CLIENT) {
     const localList = getLocalUsers();
     const localMatch = localList.find(
       (u) =>
         (u.id && u.id === uid) ||
         (u.email && userData.email && (u.email || '').trim().toLowerCase() === userData.email.trim().toLowerCase())
     );
-    if (localMatch?.role && localMatch.role !== USER_ROLES.CUSTOMER) {
+    if (localMatch?.role && localMatch.role !== USER_ROLES.CLIENT) {
       resolvedRole = localMatch.role;
     }
   }
@@ -577,7 +578,7 @@ export const createUserProfile = async (uid, userData) => {
 
   const model = createUserModel({
     ...userData,
-    role: resolvedRole || USER_ROLES.CUSTOMER,
+    role: resolvedRole || USER_ROLES.CLIENT,
   });
 
   try {
@@ -997,12 +998,13 @@ export const getAllUsers = async () => {
  * Users cannot be upgraded to superadmin, and victoryranjit@gmail.com cannot be demoted.
  *
  * @param {string} userId - Firestore User Document ID
- * @param {('admin'|'staff'|'customer')} newRole - Target role
+ * @param {('admin'|'staff'|'client')} newRole - Target role
  */
 export const updateUserRole = async (userId, newRole) => {
-  const validRoles = [USER_ROLES.ADMIN, USER_ROLES.STAFF, USER_ROLES.CUSTOMER];
-  if (!validRoles.includes(newRole)) {
-    throw new Error('Invalid role specified. Only Admin, Staff, or Customer roles can be assigned.');
+  const targetRole = newRole;
+  const validRoles = [USER_ROLES.ADMIN, USER_ROLES.STAFF, USER_ROLES.CLIENT];
+  if (!validRoles.includes(targetRole)) {
+    throw new Error('Invalid role specified. Only Admin, Staff, or Client roles can be assigned.');
   }
 
   // Update in local cache
@@ -1012,12 +1014,16 @@ export const updateUserRole = async (userId, newRole) => {
     if (localList[idx].email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()) {
       throw new Error('Super Admin role is immutable and cannot be modified.');
     }
-    localList[idx].role = newRole;
+    localList[idx].role = targetRole;
     saveLocalUsers(localList);
   }
 
   try {
     const docRef = doc(db, COLLECTIONS.USERS, userId);
+    await updateDoc(docRef, {
+      role: targetRole,
+      updatedAt: serverTimestamp(),
+    });
     const userSnapshot = await withTimeout(getDoc(docRef), 2500, null);
 
     if (userSnapshot && userSnapshot.exists()) {
@@ -1087,7 +1093,7 @@ export const updateUser = async (userId, updatedData) => {
   ) {
     finalRole = USER_ROLES.SUPERADMIN;
   } else if (finalRole === USER_ROLES.SUPERADMIN) {
-    finalRole = USER_ROLES.CUSTOMER;
+    finalRole = USER_ROLES.CLIENT;
   }
 
   const existingUser = existingIdx >= 0 ? localList[existingIdx] : {};
@@ -1218,43 +1224,58 @@ export const seedInitialServices = async () => {
 
 /**
  * ============================================================================
- * 4. Customers Collection Operations
+ * 4. Clients Collection Operations
  * ============================================================================
  */
 
 /**
- * Create a new customer with measurements
- * @param {Object} customerData
+ * Create a new client with measurements
+ * @param {Object} clientData
  */
-export const createCustomer = async (customerData) => {
-  const model = createCustomerModel(customerData);
-  const docRef = await addDoc(collection(db, COLLECTIONS.CUSTOMERS), model);
+export const createClient = async (clientData) => {
+  const model = createClientModel(clientData);
+  const docRef = await addDoc(collection(db, COLLECTIONS.CLIENTS), model);
   return { id: docRef.id, ...model };
 };
 
-/**
- * Get all customers across the customers collection
- */
-export const getAllCustomers = async () => {
-  const snapshot = await getDocs(collection(db, COLLECTIONS.CUSTOMERS));
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+export const getAllClients = async () => {
+  try {
+    const clientsSnap = await getDocs(collection(db, COLLECTIONS.CLIENTS));
+    return clientsSnap.docs.map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        ...data,
+        clientName: data.clientName || data.username || '',
+        clientMobile: data.clientMobile || data.userMobile || '',
+        clientAddress: data.clientAddress || data.userAddress || '',
+        username: data.clientName || data.username || '',
+        userMobile: data.clientMobile || data.userMobile || '',
+        userAddress: data.clientAddress || data.userAddress || '',
+        role: USER_ROLES.CLIENT,
+      };
+    });
+  } catch (err) {
+    console.warn('getAllClients error:', err.message || err);
+    return [];
+  }
 };
 
 /**
- * Get all customers (businessId parameter retained for backward compatibility)
+ * Get all clients
  * @param {string} [_businessId]
  */
-export const getCustomersByBusiness = async (_businessId) => {
-  return await getAllCustomers();
+export const getClientsByBusiness = async (_businessId) => {
+  return await getAllClients();
 };
 
 /**
- * Link a customer to a measurement document or user
- * @param {string} customerId
+ * Link a client to a measurement document or user
+ * @param {string} clientId
  * @param {Object} linkData - e.g. { measurementId, userId }
  */
-export const updateCustomerLinks = async (customerId, linkData) => {
-  const docRef = doc(db, COLLECTIONS.CUSTOMERS, customerId);
+export const updateClientLinks = async (clientId, linkData) => {
+  const docRef = doc(db, COLLECTIONS.CLIENTS, clientId);
   await updateDoc(docRef, {
     ...linkData,
     updatedAt: serverTimestamp(),
@@ -1307,10 +1328,10 @@ export const createMeasurement = async (measurementData) => {
   }
 };
 
-export const createCustomerMeasurement = createMeasurement;
+export const createClientMeasurement = createMeasurement;
 
 /**
- * Get all measurement records mapped to a specific customer / user
+ * Get all measurement records mapped to a specific client / user
  * @param {string} userId
  */
 export const getMeasurementsByUserId = async (userId) => {
@@ -1377,10 +1398,10 @@ export const getMeasurementById = async (measurementId) => {
 };
 
 /**
- * Delete a customer measurement record
+ * Delete a client measurement record
  * @param {string} measurementId
  */
-export const deleteCustomerMeasurement = async (measurementId) => {
+export const deleteClientMeasurement = async (measurementId) => {
   const localList = getLocalMeasurements().filter((m) => m.id !== measurementId);
   saveLocalMeasurements(localList);
 
@@ -1388,13 +1409,13 @@ export const deleteCustomerMeasurement = async (measurementId) => {
     const docRef = doc(db, COLLECTIONS.MEASUREMENTS, measurementId);
     await withTimeout(deleteDoc(docRef), 3000);
   } catch (err) {
-    console.warn('deleteCustomerMeasurement note:', err);
+    console.warn('deleteClientMeasurement note:', err);
   }
   return true;
 };
 
 /**
- * Get all customer measurements across the measurements collection
+ * Get all client measurements across the measurements collection
  */
 export const getAllMeasurements = async () => {
   const localList = getLocalMeasurements();
@@ -1429,7 +1450,7 @@ export const getAllMeasurements = async () => {
 };
 
 /**
- * Get customer measurements (businessId parameter retained for backward compatibility)
+ * Get client measurements
  * @param {string} [_businessId]
  */
 export const getMeasurementsByBusiness = async (_businessId) => {
@@ -1437,7 +1458,7 @@ export const getMeasurementsByBusiness = async (_businessId) => {
 };
 
 /**
- * Update an existing customer measurement record
+ * Update an existing client measurement record
  * @param {string} measurementId
  * @param {Object} measurementData
  */
@@ -1519,7 +1540,7 @@ export const createOrder = async (orderData) => {
  */
 export const getAllOrders = async () => {
   const snapshot = await getDocs(collection(db, COLLECTIONS.ORDERS));
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
 };
 
 /**

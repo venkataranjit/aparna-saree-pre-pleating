@@ -75,16 +75,16 @@ const OrderDetailsModal = ({ open, onClose, order }) => {
         {/* Main Content */}
         <div className="modal-content">
           <div className="modal-grid-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '16px' }}>
-            {/* 1. Customer Profile */}
+            {/* 1. Client Profile */}
             <div className="details-card">
               <div className="details-card__head">
                 <PersonOutlineIcon className="card-head-icon" />
-                <span className="card-head-title">Customer Information</span>
+                <span className="card-head-title">Client Information</span>
               </div>
               <div className="details-card__body">
                 <div className="info-row">
                   <span className="info-label">Full Name</span>
-                  <span className="info-val highlight">{order.customer}</span>
+                  <span className="info-val highlight">{order.client}</span>
                 </div>
                 <div className="info-row">
                   <span className="info-label">Phone</span>
@@ -97,7 +97,7 @@ const OrderDetailsModal = ({ open, onClose, order }) => {
                   <span className="info-label">Email</span>
                   <span className="info-val">
                     <EmailOutlinedIcon className="inline-icon" />
-                    {order.email || `${order.customer.toLowerCase().replace(' ', '.')}@example.com`}
+                    {order.email || `${(order.client || 'client').toLowerCase().replace(/\s+/g, '.')}@example.com`}
                   </span>
                 </div>
                 <div className="info-row">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { toast } from 'react-toastify';
 import { useNavigate, Link } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
@@ -440,13 +441,13 @@ const Login = () => {
       const result = await confirmationResult.confirm(cleanOtp);
       const user = result.user;
 
-      // Sync customer record to Firestore users collection
+      // Sync client record to Firestore users collection
       try {
         const userEmail = (user.email || "").trim().toLowerCase();
         const isSuper = userEmail === SUPERADMIN_EMAIL.toLowerCase();
         await createUserProfile(user.uid, {
           username:
-            user.displayName || (isSuper ? "Victory Ranjit" : "Customer"),
+            user.displayName || (isSuper ? "Victory Ranjit" : "Client"),
           email: userEmail,
           userMobile: user.phoneNumber || `+91${phone.trim()}`,
           userAddress: "",
@@ -671,26 +672,8 @@ const Login = () => {
             </div>
 
             {/* Error / Success Feedback */}
-            {error && (
-              <div className="feedback-alert error-alert">
-                <span>{error}</span>
-                <button
-                  type="button"
-                  className="alert-close-btn"
-                  onClick={() => setError("")}
-                >
-                  &times;
-                </button>
-              </div>
-            )}
 
-            {successMsg && (
-              <div className="feedback-alert success-alert">
-                <span>{successMsg}</span>
-              </div>
-            )}
-
-            {/* =================================================================== */}
+{/* =================================================================== */}
             {/* 1. Email & Password Form */}
             {/* =================================================================== */}
             {loginMethod === "email" && (

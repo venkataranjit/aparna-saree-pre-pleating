@@ -15,7 +15,7 @@ const AuthContext = createContext({
   canDelete: false,
   canAdd: false,
   canManageUsers: false,
-  role: USER_ROLES.CUSTOMER,
+  role: USER_ROLES.CLIENT,
   loading: true,
   logout: async () => {},
   refreshProfile: async () => {},
@@ -92,13 +92,13 @@ export const AuthProvider = ({ children }) => {
     );
 
     let currentMobile = existingLocal?.userMobile || user.phoneNumber || '';
-    let currentUsername = existingLocal?.username || user.displayName || (isSuper ? 'Victory Ranjit' : 'Customer');
+    let currentUsername = existingLocal?.username || user.displayName || (isSuper ? 'Victory Ranjit' : 'Client');
     let currentAddress = existingLocal?.userAddress || '';
 
     // If existing local user has a specific administrative/staff role, honor it!
     const candidateRole = isSuper
       ? USER_ROLES.SUPERADMIN
-      : (existingLocal?.role && existingLocal.role !== USER_ROLES.CUSTOMER ? existingLocal.role : null);
+      : (existingLocal?.role && existingLocal.role !== USER_ROLES.CLIENT ? existingLocal.role : null);
 
     let baseProfile = {
       id: user.uid,
@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }) => {
       username: currentUsername,
       userMobile: currentMobile,
       userAddress: currentAddress,
-      role: candidateRole || existingLocal?.role || USER_ROLES.CUSTOMER,
+      role: candidateRole || existingLocal?.role || USER_ROLES.CLIENT,
     };
 
     try {
@@ -163,11 +163,11 @@ export const AuthProvider = ({ children }) => {
         // Authoritative role resolution:
         // Superadmin always superadmin.
         // If data in Firestore has a role, prefer it.
-        // If data role was customer but candidate/local has admin/staff, preserve admin/staff!
-        let finalRole = USER_ROLES.CUSTOMER;
+        // If data role was client but candidate/local has admin/staff, preserve admin/staff!
+        let finalRole = USER_ROLES.CLIENT;
         if (isSuper) {
           finalRole = USER_ROLES.SUPERADMIN;
-        } else if (data.role && data.role !== USER_ROLES.CUSTOMER) {
+        } else if (data.role && data.role !== USER_ROLES.CLIENT) {
           finalRole = data.role;
         } else if (candidateRole) {
           finalRole = candidateRole;
@@ -208,7 +208,7 @@ export const AuthProvider = ({ children }) => {
         // Create initial profile if missing, strictly preserving any assigned role
         const determinedRole = isSuper
           ? USER_ROLES.SUPERADMIN
-          : (candidateRole || existingLocal?.role || USER_ROLES.CUSTOMER);
+          : (candidateRole || existingLocal?.role || USER_ROLES.CLIENT);
 
         const newModel = createUserModel({
           username: currentUsername,
@@ -233,7 +233,7 @@ export const AuthProvider = ({ children }) => {
       console.warn('Profile fetch note (using local representation):', err.message || err);
       const fallbackRole = isSuper
         ? USER_ROLES.SUPERADMIN
-        : (candidateRole || existingLocal?.role || baseProfile.role || USER_ROLES.CUSTOMER);
+        : (candidateRole || existingLocal?.role || baseProfile.role || USER_ROLES.CLIENT);
       const resolvedFallback = {
         ...baseProfile,
         role: fallbackRole,
@@ -328,15 +328,17 @@ export const AuthProvider = ({ children }) => {
   };
 
 
+
   const emailLower = (currentUser?.email || userProfile?.email || '').trim().toLowerCase();
-  const isSuperAdmin = emailLower === SUPERADMIN_EMAIL.toLowerCase() || userProfile?.role === USER_ROLES.SUPERADMIN;
-  const role = isSuperAdmin ? USER_ROLES.SUPERADMIN : (userProfile?.role || USER_ROLES.CUSTOMER);
+  const isSuperAdmin = emailLower === SUPERADMIN_EMAIL.toLowerCase();
+  const role = isSuperAdmin ? USER_ROLES.SUPERADMIN : (userProfile?.role || USER_ROLES.CLIENT);
 
   // Permissions:
   // SuperAdmin and Admin have full permissions (view, add, edit, delete) and see all options.
   // Staff has only view and add permissions (no edit, no delete).
   const isAdmin = isSuperAdmin || role === USER_ROLES.ADMIN;
   const isStaff = role === USER_ROLES.STAFF;
+  const isClient = !isSuperAdmin && !isAdmin && !isStaff;
   const canEdit = isSuperAdmin || role === USER_ROLES.ADMIN;
   const canDelete = isSuperAdmin || role === USER_ROLES.ADMIN;
   const canAdd = isSuperAdmin || role === USER_ROLES.ADMIN || role === USER_ROLES.STAFF;
@@ -348,6 +350,7 @@ export const AuthProvider = ({ children }) => {
     isSuperAdmin,
     isAdmin,
     isStaff,
+    isClient,
     canEdit,
     canDelete,
     canAdd,

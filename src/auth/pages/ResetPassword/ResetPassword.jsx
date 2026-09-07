@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { verifyPasswordResetCode, confirmPasswordReset } from 'firebase/auth';
 import { auth } from '../../../firebase/config';
@@ -140,7 +141,7 @@ const ResetPassword = () => {
             {/* Invalid or Expired Code Error */}
             {!verifyingCode && codeError && (
               <div className="reset-state-box">
-                <div className="feedback-alert error-alert">
+                <div className="reset-state-box__error">
                   <ErrorOutlineIcon className="alert-inline-icon" />
                   <span>{codeError}</span>
                 </div>
@@ -159,7 +160,7 @@ const ResetPassword = () => {
             {/* Success State */}
             {!verifyingCode && resetSuccess && (
               <div className="reset-state-box">
-                <div className="feedback-alert success-alert">
+                <div className="reset-state-box__success">
                   <CheckCircleOutlineIcon className="alert-inline-icon" />
                   <span>Your password has been reset successfully!</span>
                 </div>
@@ -182,21 +183,7 @@ const ResetPassword = () => {
             {/* Reset Password Form */}
             {!verifyingCode && !codeError && !resetSuccess && (
               <form onSubmit={handleSubmit} className="reset-form" noValidate>
-                {submitError && (
-                  <div className="feedback-alert error-alert">
-                    <ErrorOutlineIcon className="alert-inline-icon" />
-                    <span>{submitError}</span>
-                    <button
-                      type="button"
-                      className="alert-close-btn"
-                      onClick={() => setSubmitError('')}
-                    >
-                      &times;
-                    </button>
-                  </div>
-                )}
-
-                <AppInput
+<AppInput
                   label="New Password"
                   id="new-password"
                   name="password"

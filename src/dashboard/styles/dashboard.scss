@@ -48,3 +48,94 @@ svg {
   background: #000000;
 }
 
+// ─────────────────────────────────────────────
+// React-Toastify — Luxury Black & Gold Theme
+// ─────────────────────────────────────────────
+.Toastify__toast-container {
+  z-index: 99999;
+  padding: 0 12px;
+
+  @media (max-width: 480px) {
+    width: 100vw;
+    padding: 0 8px;
+    bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
+.Toastify__toast {
+  background: rgba(10, 10, 10, 0.97);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(212, 175, 55, 0.08);
+  color: #e6d8a3;
+  font-family: inherit;
+  font-size: 0.875rem;
+  backdrop-filter: blur(16px);
+  padding: 14px 16px;
+  min-height: 52px;
+}
+
+.Toastify__toast--success {
+  border-left: 3px solid #4ade80;
+
+  .Toastify__toast-icon svg {
+    fill: #4ade80;
+  }
+}
+
+.Toastify__toast--error {
+  border-left: 3px solid #f87171;
+
+  .Toastify__toast-icon svg {
+    fill: #f87171;
+  }
+}
+
+.Toastify__toast--warning {
+  border-left: 3px solid #facc15;
+
+  .Toastify__toast-icon svg {
+    fill: #facc15;
+  }
+}
+
+.Toastify__toast--info {
+  border-left: 3px solid $color-gold;
+
+  .Toastify__toast-icon svg {
+    fill: $color-gold;
+  }
+}
+
+.Toastify__toast-body {
+  color: #e6d8a3;
+  padding: 0;
+  gap: 10px;
+}
+
+.Toastify__close-button {
+  color: rgba(230, 216, 163, 0.6);
+  opacity: 1;
+  align-self: center;
+
+  &:hover {
+    color: #e6d8a3;
+  }
+}
+
+.Toastify__progress-bar {
+  height: 2px;
+  background: rgba(212, 175, 55, 0.5);
+}
+
+.Toastify__progress-bar--success {
+  background: #4ade80;
+}
+
+.Toastify__progress-bar--error {
+  background: #f87171;
+}
+
+.Toastify__progress-bar--warning {
+  background: #facc15;
+}

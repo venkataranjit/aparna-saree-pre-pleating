@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { toast } from "react-toastify";
 import { Navigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -33,9 +34,9 @@ import {
   updateUser,
   getLocalUsers,
   getAllMeasurements,
-  createCustomerMeasurement,
+  createClientMeasurement,
   updateMeasurement,
-  deleteCustomerMeasurement,
+  deleteClientMeasurement,
   checkUserUniqueness,
   formatDateSafe,
   formatModifiedDate,
@@ -61,16 +62,16 @@ import {
   AppTableSortLabel,
   AppTablePagination,
 } from "../../../components/common";
-import "./Customers.scss";
+import "./Clients.scss";
 import { MeasurementModal } from "../../components/MeasurementModal/MeasurementModal";
 
-// Validation schema for creating or editing a customer
-const customerValidationSchema = Yup.object({
+// Validation schema for creating or editing a client
+const clientValidationSchema = Yup.object({
   username: Yup.string()
     .trim()
     .min(2, "Name must be at least 2 characters")
     .max(60, "Name cannot exceed 60 characters")
-    .required("Customer Name is required"),
+    .required("Client Name is required"),
   userMobile: Yup.string()
     .trim()
     .matches(
@@ -181,7 +182,7 @@ const measurementValidationSchema = Yup.object({
   notes: Yup.string().trim().max(300, "Notes cannot exceed 300 characters"),
 });
 
-const Customers = () => {
+const Clients = () => {
   const {
     currentUser,
     refreshProfile,
@@ -192,10 +193,10 @@ const Customers = () => {
     canDelete,
   } = useAuth();
   const userRole = (role || "").toLowerCase();
-  const isCustomer =
+  const isClient =
     !isSuperAdmin &&
-    (userRole === USER_ROLES.CUSTOMER ||
-      userRole === "customer" ||
+    (userRole === USER_ROLES.CLIENT ||
+      userRole === "client" ||
       userRole === "");
   const userCanEdit =
     canEdit ??
@@ -208,15 +209,14 @@ const Customers = () => {
       userRole === USER_ROLES.ADMIN ||
       userRole === USER_ROLES.SUPERADMIN);
 
-  // If customer accesses Customers screen, redirect to /dashboard
-  if (isCustomer) {
+  // If client accesses Clients screen, redirect to /dashboard
+  if (isClient) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const [customers, setCustomers] = useState([]);
+  const [clients, setClients] = useState([]);
   const [measurementsMap, setMeasurementsMap] = useState({});
   const [loading, setLoading] = useState(true);
-  const [feedback, setFeedback] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("ALL");
 
@@ -234,9 +234,9 @@ const Customers = () => {
   };
 
   // Expandable row state for "View More" (to view joined date, modified date, etc.)
-  const [expandedCustomers, setExpandedCustomers] = useState(new Set());
-  const toggleCustomerExpand = (id) => {
-    setExpandedCustomers((prev) => {
+  const [expandedClients, setExpandedClients] = useState(new Set());
+  const toggleClientExpand = (id) => {
+    setExpandedClients((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -248,22 +248,22 @@ const Customers = () => {
   };
 
   // Modal Dialog states
-  const [dialogOpen, setDialogOpen] = useState(false); // Add Customer Modal
-  const [openEditModal, setOpenEditModal] = useState(false); // Edit Customer Modal
+  const [dialogOpen, setDialogOpen] = useState(false); // Add Client Modal
+  const [openEditModal, setOpenEditModal] = useState(false); // Edit Client Modal
   const [openAddMeasureModal, setOpenAddMeasureModal] = useState(false); // Add Measurement Modal
-  const [openViewDetailsModal, setOpenViewDetailsModal] = useState(false); // View Customer Details Modal
+  const [openViewDetailsModal, setOpenViewDetailsModal] = useState(false); // View Client Details Modal
   const [openEditMeasureModal, setOpenEditMeasureModal] = useState(false); // Edit Measurement Modal
 
   // Active items in modals
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [customerForMeasure, setCustomerForMeasure] = useState(null);
-  const [customerForView, setCustomerForView] = useState(null);
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [clientForMeasure, setClientForMeasure] = useState(null);
+  const [clientForView, setClientForView] = useState(null);
   const [selectedMeasureForEdit, setSelectedMeasureForEdit] = useState(null);
   const [deletingMeasureId, setDeletingMeasureId] = useState(null);
   const [measureToDelete, setMeasureToDelete] = useState(null);
 
-  // Fetch only Customer details and their measurements
-  const fetchCustomers = async () => {
+  // Fetch only Client details and their measurements
+  const fetchClients = async () => {
     setLoading(true);
     try {
       let records = await getAllUsers();
@@ -282,7 +282,7 @@ const Customers = () => {
       setMeasurementsMap(mMap);
 
       if (records && records.length > 0) {
-        const onlyCustomers = records
+        const onlyClients = records
           .filter((u) => {
             const email = (u.email || "").toLowerCase().trim();
             if (email === SUPERADMIN_EMAIL.toLowerCase()) return false;
@@ -298,18 +298,18 @@ const Customers = () => {
           })
           .map((u) => ({
             ...u,
-            role: USER_ROLES.CUSTOMER,
+            role: USER_ROLES.CLIENT,
             createdAt: u.createdAt,
             updatedAt: u.updatedAt,
             rawCreatedAt: u.rawCreatedAt || u.createdAt,
             rawUpdatedAt: u.rawUpdatedAt || u.updatedAt,
           }));
-        setCustomers(onlyCustomers);
+        setClients(onlyClients);
       } else {
-        setCustomers([]);
+        setClients([]);
       }
     } catch (err) {
-      console.warn("Error fetching customers from Firebase:", err);
+      console.warn("Error fetching clients from Firebase:", err);
       const cached = getLocalUsers()
         .filter((u) => {
           const email = (u.email || "").toLowerCase().trim();
@@ -323,67 +323,66 @@ const Customers = () => {
         })
         .map((u) => ({
           ...u,
-          role: USER_ROLES.CUSTOMER,
+          role: USER_ROLES.CLIENT,
           createdAt: u.createdAt,
           updatedAt: u.updatedAt,
           rawCreatedAt: u.rawCreatedAt || u.createdAt,
           rawUpdatedAt: u.rawUpdatedAt || u.updatedAt,
         }));
-      setCustomers(cached || []);
+      setClients(cached || []);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCustomers();
+    fetchClients();
   }, [currentUser, userProfile, role]);
 
   // Handle opening Edit Modal
-  const handleOpenEdit = (customer) => {
+  const handleOpenEdit = (client) => {
     if (!userCanEdit) return;
-    setSelectedCustomer(customer);
+    setSelectedClient(client);
     setOpenEditModal(true);
   };
 
   // Handle opening Add Measurement Modal
-  const handleOpenAddMeasure = (customer) => {
-    setCustomerForMeasure(customer);
+  const handleOpenAddMeasure = (client) => {
+    setClientForMeasure(client);
     setOpenAddMeasureModal(true);
   };
 
   // Handle opening View Details Modal
-  const handleOpenViewDetails = (customer) => {
-    setCustomerForView(customer);
+  const handleOpenViewDetails = (client) => {
+    setClientForView(client);
     setOpenViewDetailsModal(true);
   };
 
-  // Edit Customer Formik
+  // Edit Client Formik
   const editFormik = useFormik({
     enableReinitialize: true,
     initialValues: {
-      username: selectedCustomer?.username || "",
-      userMobile: selectedCustomer?.userMobile || "",
-      email: selectedCustomer?.email || "",
-      userAddress: selectedCustomer?.userAddress || "",
+      username: selectedClient?.username || "",
+      userMobile: selectedClient?.userMobile || "",
+      email: selectedClient?.email || "",
+      userAddress: selectedClient?.userAddress || "",
       newPassword: "",
     },
-    validationSchema: customerValidationSchema.shape({
+    validationSchema: clientValidationSchema.shape({
       newPassword: Yup.string()
         .min(6, "Password must be at least 6 characters")
         .notRequired(),
     }),
     onSubmit: async (values, { setSubmitting }) => {
-      setFeedback(null);
       try {
         const cleanEmail = values.email.trim().toLowerCase();
         const cleanMobile = String(values.userMobile).trim();
 
-        // Validate uniqueness excluding current selected customer
+        // Validate uniqueness excluding current selected client
         const uniqueness = await checkUserUniqueness({
           email: cleanEmail,
           userMobile: cleanMobile,
-          excludeUserId: selectedCustomer?.id,
+          excludeUserId: selectedClient?.id,
         });
 
         if (!uniqueness.isUnique) {
@@ -401,10 +400,7 @@ const Customers = () => {
             );
             editFormik.setFieldTouched("userMobile", true, false);
           }
-          setFeedback({
-            type: "error",
-            message: uniqueness.message,
-          });
+          toast.error(uniqueness.message,);
           setSubmitting(false);
           return;
         }
@@ -414,10 +410,10 @@ const Customers = () => {
           userMobile: cleanMobile,
           email: cleanEmail,
           userAddress: values.userAddress.trim(),
-          role: USER_ROLES.CUSTOMER,
+          role: USER_ROLES.CLIENT,
         };
 
-        const updatedDoc = await updateUser(selectedCustomer.id, updatePayload);
+        const updatedDoc = await updateUser(selectedClient.id, updatePayload);
 
         // Reset password if a new one was provided
         let pwFeedbackNote = "";
@@ -436,19 +432,16 @@ const Customers = () => {
             }
           } catch (pwErr) {
             console.warn("Password update note:", pwErr);
-            setFeedback({
-              type: "error",
-              message: `Profile saved, but password update failed: ${pwErr.message}`,
-            });
+            toast.error(`Profile saved, but password update failed: ${pwErr.message}`,);
             setSubmitting(false);
             return;
           }
         }
 
         const editNow = new Date();
-        setCustomers((prev) =>
+        setClients((prev) =>
           prev.map((c) =>
-            c.id === selectedCustomer.id ||
+            c.id === selectedClient.id ||
             (c.email && c.email.toLowerCase() === cleanEmail)
               ? {
                   ...c,
@@ -461,8 +454,8 @@ const Customers = () => {
           ),
         );
 
-        if (customerForView && customerForView.id === selectedCustomer.id) {
-          setCustomerForView((prev) => ({ ...prev, ...updatePayload }));
+        if (clientForView && clientForView.id === selectedClient.id) {
+          setClientForView((prev) => ({ ...prev, ...updatePayload }));
         }
 
         if (refreshProfile) {
@@ -471,24 +464,18 @@ const Customers = () => {
           } catch {}
         }
 
-        setFeedback({
-          type: "success",
-          message: `Customer "${values.username.trim()}" updated successfully!${pwFeedbackNote}`,
-        });
+        toast.success(`Client "${values.username.trim()}" updated successfully!${pwFeedbackNote}`,);
         setOpenEditModal(false);
       } catch (err) {
-        console.error("Update customer error:", err);
-        setFeedback({
-          type: "error",
-          message: err.message || "Failed to update customer.",
-        });
+        console.error("Update client error:", err);
+        toast.error(err.message || "Failed to update client.",);
       } finally {
         setSubmitting(false);
       }
     },
   });
 
-  // Create Customer Formik
+  // Create Client Formik
   const createFormik = useFormik({
     initialValues: {
       username: "",
@@ -496,14 +483,13 @@ const Customers = () => {
       email: "",
       userAddress: "",
     },
-    validationSchema: customerValidationSchema,
+    validationSchema: clientValidationSchema,
     onSubmit: async (values, { resetForm, setSubmitting }) => {
-      setFeedback(null);
       try {
         const cleanEmail = values.email.trim().toLowerCase();
         const cleanMobile = String(values.userMobile).trim();
 
-        // Validate uniqueness before creating customer
+        // Validate uniqueness before creating client
         const uniqueness = await checkUserUniqueness({
           email: cleanEmail,
           userMobile: cleanMobile,
@@ -524,10 +510,7 @@ const Customers = () => {
             );
             createFormik.setFieldTouched("userMobile", true, false);
           }
-          setFeedback({
-            type: "error",
-            message: uniqueness.message,
-          });
+          toast.error(uniqueness.message,);
           setSubmitting(false);
           return;
         }
@@ -548,30 +531,27 @@ const Customers = () => {
               "This email address is already registered in Authentication.",
             );
             createFormik.setFieldTouched("email", true, false);
-            setFeedback({
-              type: "error",
-              message: `The email "${cleanEmail}" is already registered in Firebase Authentication.`,
-            });
+            toast.error(`The email "${cleanEmail}" is already registered in Firebase Authentication.`,);
             setSubmitting(false);
             return;
           }
           authUid = "user-" + Date.now();
         }
 
-        const newCustomerData = {
+        const newClientData = {
           id: authUid,
           username: values.username.trim(),
           email: cleanEmail,
           userMobile: cleanMobile,
           userAddress: values.userAddress.trim(),
-          role: USER_ROLES.CUSTOMER,
+          role: USER_ROLES.CLIENT,
         };
 
-        const created = await createUser(newCustomerData);
+        const created = await createUser(newClientData);
         const now = new Date();
-        setCustomers((prev) => [
+        setClients((prev) => [
           {
-            ...newCustomerData,
+            ...newClientData,
             id: created.id || authUid,
             createdAt: now.toISOString(),
             rawCreatedAt: now,
@@ -581,18 +561,12 @@ const Customers = () => {
           ...prev,
         ]);
 
-        setFeedback({
-          type: "success",
-          message: `Customer "${values.username.trim()}" registered successfully!`,
-        });
+        toast.success(`Client "${values.username.trim()}" registered successfully!`,);
         resetForm();
         setDialogOpen(false);
       } catch (err) {
-        console.error("Customer registration error:", err);
-        setFeedback({
-          type: "error",
-          message: err.message || "Failed to create customer record.",
-        });
+        console.error("Client registration error:", err);
+        toast.error(err.message || "Failed to create client record.",);
       } finally {
         setSubmitting(false);
       }
@@ -646,11 +620,10 @@ const Customers = () => {
     },
     validationSchema: measurementValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
-      setFeedback(null);
       try {
         if (!selectedMeasureForEdit?.id)
           throw new Error("Measurement ID is required to update.");
-        const customerId = selectedMeasureForEdit.userId || customerForView?.id;
+        const clientId = selectedMeasureForEdit.userId || clientForView?.id;
 
         const updatePayload = {
           title: values.title.trim(),
@@ -671,10 +644,10 @@ const Customers = () => {
         );
 
         setMeasurementsMap((prev) => {
-          const userList = prev[customerId] ? [...prev[customerId]] : [];
+          const userList = prev[clientId] ? [...prev[clientId]] : [];
           return {
             ...prev,
-            [customerId]: userList.map((m) =>
+            [clientId]: userList.map((m) =>
               m.id === selectedMeasureForEdit.id
                 ? {
                     ...m,
@@ -689,18 +662,12 @@ const Customers = () => {
           };
         });
 
-        setFeedback({
-          type: "success",
-          message: `Measurement profile "${values.title.trim()}" updated successfully!`,
-        });
+        toast.success(`Measurement profile "${values.title.trim()}" updated successfully!`,);
         setOpenEditMeasureModal(false);
         setSelectedMeasureForEdit(null);
       } catch (err) {
         console.error("Update measurement error:", err);
-        setFeedback({
-          type: "error",
-          message: err.message || "Failed to update measurement profile.",
-        });
+        toast.error(err.message || "Failed to update measurement profile.",);
       } finally {
         setSubmitting(false);
       }
@@ -710,40 +677,34 @@ const Customers = () => {
   // Confirm and execute measurement deletion from custom popup
   const confirmDeleteMeasurement = async () => {
     if (!userCanDelete || !measureToDelete) return;
-    const { id: measurementId, userId: customerId, title } = measureToDelete;
+    const { id: measurementId, userId: clientId, title } = measureToDelete;
     setDeletingMeasureId(measurementId);
     try {
-      await deleteCustomerMeasurement(measurementId);
+      await deleteClientMeasurement(measurementId);
       setMeasurementsMap((prev) => {
-        const userList = (prev[customerId] || []).filter(
+        const userList = (prev[clientId] || []).filter(
           (m) => m.id !== measurementId,
         );
         return {
           ...prev,
-          [customerId]: userList,
+          [clientId]: userList,
         };
       });
-      setFeedback({
-        type: "success",
-        message: `Measurement profile "${
+      toast.success(`Measurement profile "${
           title || "Profile"
-        }" removed successfully.`,
-      });
+        }" removed successfully.`,);
       setMeasureToDelete(null);
     } catch (err) {
       console.error("Delete measurement error:", err);
-      setFeedback({
-        type: "error",
-        message: "Failed to delete measurement profile.",
-      });
+      toast.error("Failed to delete measurement profile.",);
     } finally {
       setDeletingMeasureId(null);
     }
   };
 
-  // Filtered customer list by search term and tabs
-  const filteredCustomers = useMemo(() => {
-    return customers.filter((item) => {
+  // Filtered client list by search term and tabs
+  const filteredClients = useMemo(() => {
+    return clients.filter((item) => {
       const term = searchTerm.toLowerCase().trim();
       const matchesSearch =
         !term ||
@@ -760,10 +721,10 @@ const Customers = () => {
 
       return matchesSearch && matchesTab;
     });
-  }, [customers, searchTerm, activeTab, measurementsMap]);
+  }, [clients, searchTerm, activeTab, measurementsMap]);
 
-  const sortedCustomers = useMemo(() => {
-    return [...filteredCustomers].sort((a, b) => {
+  const sortedClients = useMemo(() => {
+    return [...filteredClients].sort((a, b) => {
       if (sortField === "measureCount") {
         const aCount = (measurementsMap[a.id] || []).length;
         const bCount = (measurementsMap[b.id] || []).length;
@@ -788,23 +749,23 @@ const Customers = () => {
         ? String(aVal).localeCompare(String(bVal))
         : String(bVal).localeCompare(String(aVal));
     });
-  }, [filteredCustomers, sortField, sortDirection, measurementsMap]);
+  }, [filteredClients, sortField, sortDirection, measurementsMap]);
 
-  const paginatedCustomers = useMemo(() => {
-    return sortedCustomers.slice(
+  const paginatedClients = useMemo(() => {
+    return sortedClients.slice(
       page * rowsPerPage,
       page * rowsPerPage + rowsPerPage,
     );
-  }, [sortedCustomers, page, rowsPerPage]);
+  }, [sortedClients, page, rowsPerPage]);
 
   // Metrics calculations
-  const totalCustomersCount = customers.length;
-  const customersWithMeasurements = useMemo(() => {
-    return customers.filter((c) => (measurementsMap[c.id] || []).length > 0)
+  const totalClientsCount = clients.length;
+  const clientsWithMeasurements = useMemo(() => {
+    return clients.filter((c) => (measurementsMap[c.id] || []).length > 0)
       .length;
-  }, [customers, measurementsMap]);
+  }, [clients, measurementsMap]);
   const pendingMeasurementsCount =
-    totalCustomersCount - customersWithMeasurements;
+    totalClientsCount - clientsWithMeasurements;
   const totalMeasurementsCount = useMemo(() => {
     return Object.values(measurementsMap).reduce(
       (acc, list) => acc + (list?.length || 0),
@@ -812,10 +773,10 @@ const Customers = () => {
     );
   }, [measurementsMap]);
 
-  const customerTabs = [
-    { label: `All Customers (${customers.length})`, value: "ALL" },
+  const clientTabs = [
+    { label: `All Clients (${clients.length})`, value: "ALL" },
     {
-      label: `With Measurements (${customersWithMeasurements})`,
+      label: `With Measurements (${clientsWithMeasurements})`,
       value: "MEASURED",
     },
     {
@@ -825,13 +786,13 @@ const Customers = () => {
   ];
 
   return (
-    <div className="customers-page">
+    <div className="clients-page">
       {/* Top Header matching Dashboard and Users */}
-      <div className="customers-page__header">
+      <div className="clients-page__header">
         <div>
-          <h1 className="page-title">Customers</h1>
+          <h1 className="page-title">Clients</h1>
           <p className="page-subtitle">
-            View customer profiles, contact info, and manage tailoring
+            View client profiles, contact info, and manage tailoring
             measurements
           </p>
         </div>
@@ -841,7 +802,7 @@ const Customers = () => {
             variant="secondary"
             size="md"
             startIcon={<RefreshOutlinedIcon />}
-            onClick={fetchCustomers}
+            onClick={fetchClients}
             disabled={loading}
             className="refresh-btn"
           >
@@ -853,59 +814,31 @@ const Customers = () => {
             size="md"
             startIcon={<PersonAddOutlinedIcon />}
             onClick={() => {
-              setFeedback(null);
               setDialogOpen(true);
             }}
-            className="create-customer-btn"
+            className="create-client-btn"
           >
-            Add Customer
+            Add Client
           </AppButton>
         </div>
       </div>
 
-      {/* Global Alert Feedback */}
-      {feedback && (
-        <div
-          className={`customers-feedback-alert customers-feedback-alert--${feedback.type}`}
-        >
-          {feedback.type === "success" ? (
-            <CheckCircleOutlineIcon fontSize="small" />
-          ) : (
-            <ErrorOutlineIcon fontSize="small" />
-          )}
-          <span style={{ flex: 1 }}>{feedback.message}</span>
-          <button
-            type="button"
-            onClick={() => setFeedback(null)}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "inherit",
-              cursor: "pointer",
-              fontWeight: "bold",
-            }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       {/* 4 StatCards matching Dashboard Overview Grid */}
-      <div className="customers-page__stats-grid">
+      <div className="clients-page__stats-grid">
         <StatCard
-          title="Customers"
-          value={String(totalCustomersCount)}
+          title="Clients"
+          value={String(totalClientsCount)}
           change="All Registered Clients"
           trendType="completed"
           icon={<PeopleOutlineIcon />}
         />
         <StatCard
           title="With Measurements"
-          value={String(customersWithMeasurements)}
+          value={String(clientsWithMeasurements)}
           change={
-            totalCustomersCount > 0
+            totalClientsCount > 0
               ? `${Math.round(
-                  (customersWithMeasurements / totalCustomersCount) * 100,
+                  (clientsWithMeasurements / totalClientsCount) * 100,
                 )}% Profile Rate`
               : "0%"
           }
@@ -933,14 +866,14 @@ const Customers = () => {
       </div>
 
       {/* Filter Tabs & Search Bar matching Manage Users Toolbar */}
-      <div className="customers-page__toolbar">
+      <div className="clients-page__toolbar">
         <AppTabs
-          tabs={customerTabs}
+          tabs={clientTabs}
           value={activeTab}
           onChange={(val) => setActiveTab(val)}
         />
 
-        <div className="customers-search-field">
+        <div className="clients-search-field">
           <AppInput
             placeholder="Search by name, mobile, email, address..."
             value={searchTerm}
@@ -950,10 +883,10 @@ const Customers = () => {
         </div>
       </div>
 
-      {/* Main Customers Table Card */}
-      <div className="customers-table-card">
+      {/* Main Clients Table Card */}
+      <div className="clients-table-card">
         <AppTableContainer className="table-responsive">
-          <AppTable className="customers-table">
+          <AppTable className="clients-table">
             <AppTableHead>
               <AppTableRow>
                 <AppTableCell head>
@@ -962,7 +895,7 @@ const Customers = () => {
                     direction={sortField === "username" ? sortDirection : "asc"}
                     onClick={() => handleRequestSort("username")}
                   >
-                    CUSTOMER NAME
+                    CLIENT NAME
                   </AppTableSortLabel>
                 </AppTableCell>
                 <AppTableCell head>
@@ -1013,12 +946,12 @@ const Customers = () => {
                     >
                       <AppSpinner size="lg" color="gold" />
                       <span style={{ color: "#e6d8a3", fontSize: "0.9rem" }}>
-                        Loading customer directory...
+                        Loading client directory...
                       </span>
                     </div>
                   </AppTableCell>
                 </AppTableRow>
-              ) : filteredCustomers.length === 0 ? (
+              ) : filteredClients.length === 0 ? (
                 <AppTableRow>
                   <AppTableCell colSpan={4} className="empty-state-cell">
                     <div
@@ -1039,7 +972,7 @@ const Customers = () => {
                           fontSize: "0.95rem",
                         }}
                       >
-                        No customers found matching your criteria.
+                        No clients found matching your criteria.
                       </span>
                       <span
                         style={{
@@ -1047,13 +980,13 @@ const Customers = () => {
                           fontSize: "0.8rem",
                         }}
                       >
-                        Click "Add Customer" to create the first client profile.
+                        Click "Add Client" to create the first client profile.
                       </span>
                     </div>
                   </AppTableCell>
                 </AppTableRow>
               ) : (
-                paginatedCustomers.map((user) => {
+                paginatedClients.map((user) => {
                   const initial = (
                     user.username?.charAt(0) ||
                     user.email?.charAt(0) ||
@@ -1061,12 +994,12 @@ const Customers = () => {
                   ).toUpperCase();
                   const userMeasures = measurementsMap[user.id] || [];
                   const measureCount = userMeasures.length;
-                  const isExpanded = expandedCustomers.has(user.id);
+                  const isExpanded = expandedClients.has(user.id);
 
                   return (
                     <React.Fragment key={user.id}>
-                      <AppTableRow className="customer-table-row">
-                        {/* Customer Avatar & Name */}
+                      <AppTableRow className="client-table-row">
+                        {/* Client Avatar & Name */}
                         <AppTableCell>
                           <div
                             style={{
@@ -1078,7 +1011,7 @@ const Customers = () => {
                             <div className="user-avatar-circle">{initial}</div>
                             <div>
                               <div className="user-name-text">
-                                {user.username || "Customer"}
+                                {user.username || "Client"}
                               </div>
                               <div className="user-email-text">
                                 {user.email || "No email registered"}
@@ -1142,7 +1075,7 @@ const Customers = () => {
                               size="sm"
                               square
                               className="action-btn--view"
-                              title="View Customer Profile & Measurements"
+                              title="View Client Profile & Measurements"
                               onClick={() => handleOpenViewDetails(user)}
                             >
                               <VisibilityOutlinedIcon
@@ -1164,14 +1097,14 @@ const Customers = () => {
                               />
                             </AppButton>
 
-                            {/* 3. Edit Customer Info (Warm Amber Gold) */}
+                            {/* 3. Edit Client Info (Warm Amber Gold) */}
                             {userCanEdit && (
                               <AppButton
                                 variant="warning"
                                 size="sm"
                                 square
                                 className="action-btn--edit"
-                                title="Edit Customer Info"
+                                title="Edit Client Info"
                                 onClick={() => handleOpenEdit(user)}
                               >
                                 <EditOutlinedIcon style={{ fontSize: 16 }} />
@@ -1182,7 +1115,7 @@ const Customers = () => {
                             <button
                               type="button"
                               className={`view-more-pill-btn ${isExpanded ? "is-active" : ""}`}
-                              onClick={() => toggleCustomerExpand(user.id)}
+                              onClick={() => toggleClientExpand(user.id)}
                               aria-expanded={isExpanded}
                               title={
                                 isExpanded
@@ -1203,7 +1136,7 @@ const Customers = () => {
                         </AppTableCell>
                       </AppTableRow>
 
-                      {/* Expandable View More Row with extra fields: Address, Joined Date, Modified Date */}
+                      {/* Expandable View More Row with extra fields: Address, Created At, Modified Date */}
                       {isExpanded && (
                         <AppTableRow className="table-expanded-row">
                           <AppTableCell
@@ -1211,12 +1144,12 @@ const Customers = () => {
                             className="table-expanded-cell"
                           >
                             <div className="table-expanded-container">
-                              {/* Delivery Address Tile */}
+                              {/* Residential / Delivery Address Tile */}
                               <div className="expanded-tile expanded-tile--address">
                                 <div className="tile-header">
                                   <LocationOnOutlinedIcon className="tile-icon" />
                                   <span className="tile-label">
-                                    Delivery Address
+                                    Residential / Delivery Address
                                   </span>
                                 </div>
                                 <div className="tile-content">
@@ -1232,12 +1165,12 @@ const Customers = () => {
                                 </div>
                               </div>
 
-                              {/* Joined Date Tile */}
+                              {/* Created At Tile */}
                               <div className="expanded-tile">
                                 <div className="tile-header">
                                   <CalendarTodayOutlinedIcon className="tile-icon" />
                                   <span className="tile-label">
-                                    Joined Date
+                                    Created At
                                   </span>
                                 </div>
                                 <div className="tile-content">
@@ -1247,12 +1180,12 @@ const Customers = () => {
                                 </div>
                               </div>
 
-                              {/* Modified At Tile */}
+                              {/* Updated At Tile */}
                               <div className="expanded-tile">
                                 <div className="tile-header">
                                   <ScheduleOutlinedIcon className="tile-icon" />
                                   <span className="tile-label">
-                                    Modified At
+                                    Updated At
                                   </span>
                                 </div>
                                 <div className="tile-content">
@@ -1276,7 +1209,7 @@ const Customers = () => {
           </AppTable>
         </AppTableContainer>
         <AppTablePagination
-          count={filteredCustomers.length}
+          count={filteredClients.length}
           page={page}
           onPageChange={(e, newPage) => setPage(newPage)}
           rowsPerPage={rowsPerPage}
@@ -1289,13 +1222,13 @@ const Customers = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 1. Modal: Add New Customer Dialog                                         */}
+      {/* 1. Modal: Add New Client Dialog                                         */}
       {/* ========================================================================= */}
       <AppModal
         open={dialogOpen}
         onClose={() => !createFormik.isSubmitting && setDialogOpen(false)}
-        title="Register New Customer"
-        subtitle="Enter customer contact details below."
+        title="Register New Client"
+        subtitle="Enter client contact details below."
         maxWidth="sm"
         actions={
           <>
@@ -1311,7 +1244,7 @@ const Customers = () => {
               onClick={createFormik.handleSubmit}
               loading={createFormik.isSubmitting}
             >
-              Add Customer
+              Add Client
             </AppButton>
           </>
         }
@@ -1321,7 +1254,7 @@ const Customers = () => {
           style={{ display: "flex", flexDirection: "column", gap: "14px" }}
         >
           <AppInput
-            label="Customer Full Name"
+            label="Client Full Name"
             required
             id="create-username"
             name="username"
@@ -1391,19 +1324,19 @@ const Customers = () => {
             type="text"
             value="aparna"
             disabled={true}
-            helperText="Temporary password is permanently locked to 'aparna' for all new customer accounts"
+            helperText="Temporary password is permanently locked to 'aparna' for all new client accounts"
             startAdornment={<LockOutlinedIcon />}
           />
         </form>
       </AppModal>
 
       {/* ========================================================================= */}
-      {/* 2. Modal: Edit Customer Dialog                                            */}
+      {/* 2. Modal: Edit Client Dialog                                            */}
       {/* ========================================================================= */}
       <AppModal
         open={openEditModal}
         onClose={() => !editFormik.isSubmitting && setOpenEditModal(false)}
-        title="Edit Customer Profile"
+        title="Edit Client Profile"
         subtitle="Update contact and location information."
         maxWidth="sm"
         actions={
@@ -1430,7 +1363,7 @@ const Customers = () => {
           style={{ display: "flex", flexDirection: "column", gap: "14px" }}
         >
           <AppInput
-            label="Customer Full Name"
+            label="Client Full Name"
             required
             id="edit-username"
             name="username"
@@ -1472,7 +1405,7 @@ const Customers = () => {
           />
 
           <AppInput
-            label="Delivery Address / City"
+            label="Residential / Delivery Address / City"
             id="edit-userAddress"
             name="userAddress"
             value={editFormik.values.userAddress}
@@ -1505,13 +1438,13 @@ const Customers = () => {
       </AppModal>
 
       {/* ========================================================================= */}
-      {/* 3. Modal: View Customer Details & Measurement Profiles                    */}
+      {/* 3. Modal: View Client Details & Measurement Profiles                    */}
       {/* ========================================================================= */}
       <AppModal
         open={openViewDetailsModal}
         onClose={() => setOpenViewDetailsModal(false)}
-        title={customerForView?.username || "Customer Profile"}
-        subtitle="Customer contact info & tailored saree measurement specifications"
+        title={clientForView?.username || "Client Profile"}
+        subtitle="Client contact info & tailored saree measurement specifications"
         maxWidth="md"
         actions={
           <>
@@ -1519,7 +1452,7 @@ const Customers = () => {
               variant="secondary"
               onClick={() => {
                 setOpenViewDetailsModal(false);
-                handleOpenAddMeasure(customerForView);
+                handleOpenAddMeasure(clientForView);
               }}
               startIcon={<StraightenOutlinedIcon />}
             >
@@ -1534,11 +1467,11 @@ const Customers = () => {
           </>
         }
       >
-        {customerForView && (
+        {clientForView && (
           <div
             style={{ display: "flex", flexDirection: "column", gap: "16px" }}
           >
-            {/* Customer Summary Card */}
+            {/* Client Summary Card */}
             <div className="details-summary-card">
               <div className="summary-item">
                 <PhoneIphoneOutlinedIcon
@@ -1547,7 +1480,7 @@ const Customers = () => {
                 <div>
                   <div className="item-label">Phone</div>
                   <div className="item-value">
-                    {customerForView.userMobile || "—"}
+                    {clientForView.userMobile || "—"}
                   </div>
                 </div>
               </div>
@@ -1557,7 +1490,7 @@ const Customers = () => {
                 <div>
                   <div className="item-label">Email</div>
                   <div className="item-value">
-                    {customerForView.email || "—"}
+                    {clientForView.email || "—"}
                   </div>
                 </div>
               </div>
@@ -1569,7 +1502,7 @@ const Customers = () => {
                 <div>
                   <div className="item-label">Address</div>
                   <div className="item-value">
-                    {customerForView.userAddress || "—"}
+                    {clientForView.userAddress || "—"}
                   </div>
                 </div>
               </div>
@@ -1583,8 +1516,8 @@ const Customers = () => {
                   <div className="item-value">
                     <DateTimeCell
                       value={
-                        customerForView.rawCreatedAt ||
-                        customerForView.createdAt
+                        clientForView.rawCreatedAt ||
+                        clientForView.createdAt
                       }
                     />
                   </div>
@@ -1609,13 +1542,13 @@ const Customers = () => {
                 }}
               >
                 Saree Measurement Profiles (
-                {measurementsMap[customerForView.id]?.length || 0})
+                {measurementsMap[clientForView.id]?.length || 0})
               </span>
             </div>
 
             {/* List of Measurement Cards */}
-            {!measurementsMap[customerForView.id] ||
-            measurementsMap[customerForView.id].length === 0 ? (
+            {!measurementsMap[clientForView.id] ||
+            measurementsMap[clientForView.id].length === 0 ? (
               <div className="empty-measurements-box">
                 <StraightenOutlinedIcon
                   style={{
@@ -1632,7 +1565,7 @@ const Customers = () => {
                     fontSize: "0.9rem",
                   }}
                 >
-                  No saree measurements recorded for this customer yet.
+                  No saree measurements recorded for this client yet.
                 </div>
                 <p
                   style={{
@@ -1651,7 +1584,7 @@ const Customers = () => {
                   startIcon={<StraightenOutlinedIcon />}
                   onClick={() => {
                     setOpenViewDetailsModal(false);
-                    handleOpenAddMeasure(customerForView);
+                    handleOpenAddMeasure(clientForView);
                   }}
                 >
                   Record Measurements Now
@@ -1659,7 +1592,7 @@ const Customers = () => {
               </div>
             ) : (
               <div className="measurements-list-container">
-                {measurementsMap[customerForView.id].map((measure, idx) => (
+                {measurementsMap[clientForView.id].map((measure, idx) => (
                   <div key={measure.id || idx} className="measurement-card">
                     <div className="measure-card-header">
                       <div
@@ -1707,7 +1640,7 @@ const Customers = () => {
                             onClick={() =>
                               setMeasureToDelete({
                                 id: measure.id,
-                                userId: customerForView.id,
+                                userId: clientForView.id,
                                 title: measure.title,
                               })
                             }
@@ -1766,7 +1699,7 @@ const Customers = () => {
                       </div>
 
                       <div className="dim-item">
-                        <span className="dim-label">Customer Height</span>
+                        <span className="dim-label">Client Height</span>
                         <span className="dim-value">
                           {measure.height ? `${measure.height}` : "—"}
                         </span>
@@ -1809,19 +1742,19 @@ const Customers = () => {
       <MeasurementModal
         open={openAddMeasureModal}
         onClose={() => setOpenAddMeasureModal(false)}
-        subtitle={`Recording measurements for ${customerForMeasure?.username || "Customer"}`}
+        subtitle={`Recording measurements for ${clientForMeasure?.username || "Client"}`}
         initialValues={{
-          title: customerForMeasure?.username
-            ? `${customerForMeasure.username} Measurements`
+          title: clientForMeasure?.username
+            ? `${clientForMeasure.username} Measurements`
             : "Standard Saree Pleats",
         }}
         onSave={async (values) => {
-          const customerId = customerForMeasure?.id;
-          if (!customerId)
-            throw new Error("Customer ID is required to record measurements.");
+          const clientId = clientForMeasure?.id;
+          if (!clientId)
+            throw new Error("Client ID is required to record measurements.");
 
           const measurementPayload = {
-            userId: customerId,
+            userId: clientId,
             title: values.title.trim(),
             pallu: values.pallu.trim() || null,
             shoulderToRightTight: values.shoulderToRightTight.trim() || null,
@@ -1834,17 +1767,14 @@ const Customers = () => {
             notes: values.notes.trim(),
           };
 
-          const saved = await createCustomerMeasurement(measurementPayload);
+          const saved = await createClientMeasurement(measurementPayload);
 
           setMeasurementsMap((prev) => {
-            const userList = prev[customerId] ? [...prev[customerId]] : [];
-            return { ...prev, [customerId]: [saved, ...userList] };
+            const userList = prev[clientId] ? [...prev[clientId]] : [];
+            return { ...prev, [clientId]: [saved, ...userList] };
           });
 
-          setFeedback({
-            type: "success",
-            message: `Measurement profile "${values.title.trim()}" added successfully for ${customerForMeasure.username}!`,
-          });
+          toast.success(`Measurement profile "${values.title.trim()}" added successfully for ${clientForMeasure.username}!`,);
         }}
       />
 
@@ -2097,4 +2027,4 @@ const Customers = () => {
   );
 };
 
-export default Customers;
+export default Clients;

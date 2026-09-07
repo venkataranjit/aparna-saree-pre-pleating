@@ -42,8 +42,8 @@ const navSections = [
         icon: <DryCleaningOutlinedIcon />,
       },
       {
-        label: "Customers",
-        path: "/dashboard/customers",
+        label: "Clients",
+        path: "/dashboard/clients",
         icon: <PeopleOutlineIcon />,
       },
     ],
@@ -98,7 +98,7 @@ const Sidebar = ({
       : currentUser?.email
       ? currentUser.email.split("@")[0]
       : currentUser
-      ? "Customer"
+      ? "Client"
       : "");
 
   const roleLabel =
@@ -109,7 +109,7 @@ const Sidebar = ({
       : role === "staff"
       ? "Staff"
       : currentUser || userProfile
-      ? "Customer"
+      ? "Client"
       : "";
 
   const avatarChar = displayName ? displayName.charAt(0).toUpperCase() : "";
@@ -142,12 +142,12 @@ const Sidebar = ({
   };
 
   // Filter navigation items based on role:
-  // - Manage Users is accessible ONLY to Super Admin and Admin (hidden from Staff and Customers)
-  // - Customers is accessible to Super Admin, Admin, and Staff (hidden from Customers)
+  // - Manage Users is accessible ONLY to Super Admin and Admin (hidden from Staff and Clients)
+  // - Clients is accessible to Super Admin, Admin, and Staff (hidden from Clients)
   const filteredNavSections = useMemo(() => {
     const userRole = (role || "").toLowerCase();
-    const isCustomer =
-      !isSuperAdmin && (userRole === "customer" || userRole === "");
+    const isClient =
+      !isSuperAdmin && (userRole === "client" || userRole === "");
     const canAccessUsers =
       canManageUsers ??
       (isSuperAdmin ||
@@ -161,7 +161,7 @@ const Sidebar = ({
           if (item.path === "/dashboard/users" && !canAccessUsers) {
             return false;
           }
-          if (item.path === "/dashboard/customers" && isCustomer) {
+          if (item.path === "/dashboard/clients" && isClient) {
             return false;
           }
           return true;

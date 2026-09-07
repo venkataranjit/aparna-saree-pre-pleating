@@ -6,7 +6,7 @@
   min-height: 100dvh;
   height: 100%;
   width: 100%;
-  background-color: #000000;
+  background: transparent;
   position: relative;
   overflow-y: auto;
   overflow-x: hidden;
@@ -28,59 +28,6 @@
   &::-webkit-scrollbar-thumb {
     background: rgba(212, 175, 55, 0.35);
     border-radius: 4px;
-  }
-
-  // Ambient gold glow backdrops
-  &__glow {
-    position: fixed;
-    border-radius: 50%;
-    pointer-events: none;
-    filter: blur(90px);
-    opacity: 0.16;
-    z-index: 0;
-
-    &--top {
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 520px;
-      height: 380px;
-      background: radial-gradient(
-        circle,
-        $color-gold 0%,
-        rgba(212, 175, 55, 0.2) 60%,
-        transparent 100%
-      );
-
-      @media (max-width: 640px) {
-        width: 320px;
-        height: 220px;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-    }
-
-    &--bottom {
-      bottom: 0;
-      right: -80px;
-      width: 440px;
-      height: 340px;
-      background: radial-gradient(
-        circle,
-        #aa851c 0%,
-        rgba(212, 175, 55, 0.15) 70%,
-        transparent 100%
-      );
-      opacity: 0.12;
-
-      @media (max-width: 640px) {
-        width: 280px;
-        height: 220px;
-        right: -40px;
-        bottom: 0;
-      }
-    }
   }
 
   // Center container
@@ -460,20 +407,21 @@
           }
         }
 
+        &--meta,
         &--facebook {
-          background: #1877f2 !important;
-          border: 1px solid #1877f2 !important;
-          box-shadow: 0 2px 8px rgba(24, 119, 242, 0.4);
+          background: linear-gradient(135deg, #0081fb 0%, #0064e0 100%) !important;
+          border: 1px solid #0064e0 !important;
+          box-shadow: 0 2px 8px rgba(0, 100, 224, 0.4);
 
           &:hover:not(:disabled) {
-            background: #166fe5 !important;
-            border-color: #166fe5 !important;
-            box-shadow: 0 4px 14px rgba(24, 119, 242, 0.55);
+            background: linear-gradient(135deg, #008bfb 0%, #0070e6 100%) !important;
+            border-color: #0070e6 !important;
+            box-shadow: 0 4px 14px rgba(0, 100, 224, 0.55);
             transform: translateY(-2px);
           }
 
           &:active:not(:disabled) {
-            background: #1464cc !important;
+            background: #0056bd !important;
             transform: translateY(0);
           }
         }
@@ -494,7 +442,8 @@
         }
       }
 
-      // Facebook Official White Animated Loader
+      // Meta Official White Animated Loader
+      .meta-loader,
       .facebook-loader {
         display: flex;
         align-items: center;
@@ -509,6 +458,7 @@
           display: block;
         }
 
+        .meta-loader-path,
         .facebook-loader-path {
           animation: fbDash 1.2s ease-in-out infinite;
         }
@@ -601,3 +551,4 @@
     stroke-dashoffset: -115;
   }
 }
+

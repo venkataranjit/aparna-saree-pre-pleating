@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import {
   createUserWithEmailAndPassword,
@@ -13,7 +13,10 @@ import {
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { auth } from "../../../firebase/config";
-import { createUserProfile, checkUserUniqueness } from "../../../firebase/dbService";
+import {
+  createUserProfile,
+  checkUserUniqueness,
+} from "../../../firebase/dbService";
 import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
 import { useAuth } from "../../context/AuthContext";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -30,11 +33,12 @@ import brandLogo from "../../../assets/logo.png";
 import AuthDesktopBrand from "../../components/AuthDesktopBrand/AuthDesktopBrand";
 import AuthFooter from "../../components/AuthFooter/AuthFooter";
 import CardStorefrontLink from "../../components/CardStorefrontLink/CardStorefrontLink";
+import AuthBackground from "../../components/AuthBackground/AuthBackground";
 import "./Register.scss";
 
 // Google Official Brand Icon
 const GoogleIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" style={{ display: 'block' }}>
+  <svg width="22" height="22" viewBox="0 0 24 24" style={{ display: "block" }}>
     <path
       fill="#4285F4"
       d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
@@ -54,12 +58,12 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// Facebook Official Brand Icon
-const FacebookIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" style={{ display: 'block' }}>
+// Meta Official Brand Icon
+const MetaIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" style={{ display: "block" }}>
     <path
       fill="#FFFFFF"
-      d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+      d="M6.915 4.03c-1.968 0-3.683 1.28-4.871 3.113C.704 9.208 0 11.883 0 14.449c0 .706.07 1.369.21 1.973a6.624 6.624 0 0 0 .265.86 5.297 5.297 0 0 0 .371.761c.696 1.159 1.818 1.927 3.593 1.927 1.497 0 2.633-.671 3.965-2.444.76-1.012 1.144-1.626 2.663-4.32l.756-1.339.186-.325c.061.1.121.196.183.3l2.152 3.595c.724 1.21 1.665 2.556 2.47 3.314 1.046.987 1.992 1.22 3.06 1.22 1.075 0 1.876-.355 2.455-.843a3.743 3.743 0 0 0 .81-.973c.542-.939.861-2.127.861-3.745 0-2.72-.681-5.357-2.084-7.45-1.282-1.912-2.957-2.93-4.716-2.93-1.047 0-2.088.467-3.053 1.308-.652.57-1.257 1.29-1.82 2.05-.69-.875-1.335-1.547-1.958-2.056-1.182-.966-2.315-1.303-3.454-1.303zm10.16 2.053c1.147 0 2.188.758 2.992 1.999 1.132 1.748 1.647 4.195 1.647 6.4 0 1.548-.368 2.9-1.839 2.9-.58 0-1.027-.23-1.664-1.004-.496-.601-1.343-1.878-2.832-4.358l-.617-1.028a44.908 44.908 0 0 0-1.255-1.98c.07-.109.141-.224.211-.327 1.12-1.667 2.118-2.602 3.358-2.602zm-10.201.553c1.265 0 2.058.791 2.675 1.446.307.327.737.871 1.234 1.579l-1.02 1.566c-.757 1.163-1.882 3.017-2.837 4.338-1.191 1.649-1.81 1.817-2.486 1.817-.524 0-1.038-.237-1.383-.794-.263-.426-.464-1.13-.464-2.046 0-2.221.63-4.535 1.66-6.088.454-.687.964-1.226 1.533-1.533a2.264 2.264 0 0 1 1.088-.285z"
     />
   </svg>
 );
@@ -78,9 +82,9 @@ const GoogleLoader = () => (
   </svg>
 );
 
-// Facebook Official White Animated Loader
-const FacebookLoader = () => (
-  <div className="facebook-loader">
+// Meta Official White Animated Loader
+const MetaLoader = () => (
+  <div className="meta-loader">
     <svg viewBox="0 0 50 50">
       <circle
         cx="25"
@@ -91,7 +95,7 @@ const FacebookLoader = () => (
         strokeWidth="4.5"
       />
       <circle
-        className="facebook-loader-path"
+        className="meta-loader-path"
         cx="25"
         cy="25"
         r="20"
@@ -103,7 +107,6 @@ const FacebookLoader = () => (
     </svg>
   </div>
 );
-
 
 /**
  * Validation schema using Yup
@@ -118,7 +121,7 @@ const registerValidationSchema = Yup.object({
     .trim()
     .matches(
       /^[6-9]\d{9}$/,
-      "Please enter a valid 10-digit Indian mobile number"
+      "Please enter a valid 10-digit Indian mobile number",
     )
     .required("Mobile number is required"),
   email: Yup.string()
@@ -136,7 +139,7 @@ const registerValidationSchema = Yup.object({
     .required("Please confirm your password"),
   agreeTerms: Yup.boolean().oneOf(
     [true],
-    "You must agree to the Terms & Privacy Policy"
+    "You must agree to the Terms & Privacy Policy",
   ),
 });
 
@@ -156,7 +159,7 @@ const Register = () => {
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [facebookLoading, setFacebookLoading] = useState(false);
+  const [metaLoading, setMetaLoading] = useState(false);
   const { refreshProfile } = useAuth();
 
   const handleGoogleSignUp = async () => {
@@ -179,7 +182,8 @@ const Register = () => {
         const userEmail = (user.email || "").trim().toLowerCase();
         const isSuper = userEmail === SUPERADMIN_EMAIL.toLowerCase();
         await createUserProfile(user.uid, {
-          username: user.displayName || (isSuper ? "Victory Ranjit" : "Google User"),
+          username:
+            user.displayName || (isSuper ? "Victory Ranjit" : "Google User"),
           email: userEmail,
           userMobile: user.phoneNumber || "",
           userAddress: "",
@@ -194,7 +198,9 @@ const Register = () => {
         } catch {}
       }
 
-      setSuccessMsg(`Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`);
+      setSuccessMsg(
+        `Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`,
+      );
       setTimeout(() => {
         navigate("/dashboard");
       }, 300);
@@ -210,10 +216,10 @@ const Register = () => {
     }
   };
 
-  const handleFacebookSignUp = async () => {
+  const handleMetaSignUp = async () => {
     setError("");
     setSuccessMsg("");
-    setFacebookLoading(true);
+    setMetaLoading(true);
 
     try {
       if (auth) {
@@ -231,13 +237,14 @@ const Register = () => {
         const userEmail = (user.email || "").trim().toLowerCase();
         const isSuper = userEmail === SUPERADMIN_EMAIL.toLowerCase();
         await createUserProfile(user.uid, {
-          username: user.displayName || (isSuper ? "Victory Ranjit" : "Facebook User"),
+          username:
+            user.displayName || (isSuper ? "Victory Ranjit" : "Meta User"),
           email: userEmail,
           userMobile: user.phoneNumber || "",
           userAddress: "",
         });
       } catch (dbErr) {
-        console.warn("Firestore Facebook user sync note:", dbErr);
+        console.warn("Firestore Meta user sync note:", dbErr);
       }
 
       if (refreshProfile) {
@@ -246,21 +253,27 @@ const Register = () => {
         } catch {}
       }
 
-      setSuccessMsg(`Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`);
+      setSuccessMsg(
+        `Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`,
+      );
       setTimeout(() => {
         navigate("/dashboard");
       }, 300);
     } catch (err) {
-      console.warn("Facebook signup error:", err);
+      console.warn("Meta signup error:", err);
       if (err.code === "auth/popup-closed-by-user") {
-        setError("Facebook sign-in was cancelled.");
+        setError("Meta sign-in was cancelled.");
       } else if (err.code === "auth/account-exists-with-different-credential") {
-        setError("An account already exists with the same email. Please sign in with Google or Email/Password.");
+        setError(
+          "An account already exists with the same email. Please sign in with Google or Email/Password.",
+        );
       } else {
-        setError(err.message || "Unable to sign in with Facebook. Please try again.");
+        setError(
+          err.message || "Unable to sign in with Meta. Please try again.",
+        );
       }
     } finally {
-      setFacebookLoading(false);
+      setMetaLoading(false);
     }
   };
 
@@ -291,11 +304,17 @@ const Register = () => {
 
         if (!uniqueness.isUnique) {
           if (uniqueness.emailExists) {
-            formik.setFieldError("email", "An account with this email address already exists.");
+            formik.setFieldError(
+              "email",
+              "An account with this email address already exists.",
+            );
             formik.setFieldTouched("email", true, false);
           }
           if (uniqueness.mobileExists) {
-            formik.setFieldError("userMobile", "An account with this mobile number already exists.");
+            formik.setFieldError(
+              "userMobile",
+              "An account with this mobile number already exists.",
+            );
             formik.setFieldTouched("userMobile", true, false);
           }
           setError(uniqueness.message);
@@ -306,7 +325,7 @@ const Register = () => {
         const userCredential = await createUserWithEmailAndPassword(
           auth,
           cleanEmail,
-          values.password
+          values.password,
         );
         const user = userCredential.user;
 
@@ -363,9 +382,8 @@ const Register = () => {
 
   return (
     <div className="register-screen">
-      {/* Ambient luxury background lighting */}
-      <div className="register-screen__glow register-screen__glow--top" />
-      <div className="register-screen__glow register-screen__glow--bottom" />
+      {/* Royal Silk Aurora Luxury Background */}
+      <AuthBackground />
 
       {/* Register Screen Container */}
       <div className="register-screen__container">
@@ -384,14 +402,12 @@ const Register = () => {
                   className="brand-logo-img"
                 />
               </div>
-              <h1 className="register-title">
-                Create Account
-              </h1>
+              <h1 className="register-title">Create Account</h1>
             </div>
 
             {/* Error / Success Feedback */}
 
-{/* Register Form */}
+            {/* Register Form */}
             <form
               onSubmit={formik.handleSubmit}
               className="register-form"
@@ -408,9 +424,7 @@ const Register = () => {
                   value={formik.values.username}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  error={
-                    formik.touched.username && formik.errors.username
-                  }
+                  error={formik.touched.username && formik.errors.username}
                   disabled={formik.isSubmitting}
                   autoComplete="name"
                   startAdornment={<PersonOutlineIcon />}
@@ -427,9 +441,7 @@ const Register = () => {
                   value={formik.values.userMobile}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  error={
-                    formik.touched.userMobile && formik.errors.userMobile
-                  }
+                  error={formik.touched.userMobile && formik.errors.userMobile}
                   disabled={formik.isSubmitting}
                   autoComplete="tel"
                   startAdornment={<PhoneIphoneOutlinedIcon />}
@@ -480,9 +492,7 @@ const Register = () => {
                   value={formik.values.password}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  error={
-                    formik.touched.password && formik.errors.password
-                  }
+                  error={formik.touched.password && formik.errors.password}
                   disabled={formik.isSubmitting}
                   autoComplete="new-password"
                   startAdornment={<LockOutlinedIcon />}
@@ -523,7 +533,9 @@ const Register = () => {
                     <button
                       type="button"
                       className="visibility-toggle-btn"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                     >
                       {showConfirmPassword ? (
                         <VisibilityOffOutlinedIcon />
@@ -590,7 +602,7 @@ const Register = () => {
                 type="button"
                 className="social-icon-btn social-icon-btn--google"
                 onClick={handleGoogleSignUp}
-                disabled={formik.isSubmitting || googleLoading || facebookLoading}
+                disabled={formik.isSubmitting || googleLoading || metaLoading}
                 title="Sign up with Google"
                 aria-label="Sign up with Google"
               >
@@ -599,13 +611,13 @@ const Register = () => {
 
               <button
                 type="button"
-                className="social-icon-btn social-icon-btn--facebook"
-                onClick={handleFacebookSignUp}
-                disabled={formik.isSubmitting || googleLoading || facebookLoading}
-                title="Sign up with Facebook"
-                aria-label="Sign up with Facebook"
+                className="social-icon-btn social-icon-btn--meta"
+                onClick={handleMetaSignUp}
+                disabled={formik.isSubmitting || googleLoading || metaLoading}
+                title="Sign up with Meta"
+                aria-label="Sign up with Meta"
               >
-                {facebookLoading ? <FacebookLoader /> : <FacebookIcon />}
+                {metaLoading ? <MetaLoader /> : <MetaIcon />}
               </button>
             </div>
 

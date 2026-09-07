@@ -15,6 +15,7 @@ import brandLogo from '../../../assets/logo.png';
 import AuthDesktopBrand from '../../components/AuthDesktopBrand/AuthDesktopBrand';
 import AuthFooter from '../../components/AuthFooter/AuthFooter';
 import CardStorefrontLink from '../../components/CardStorefrontLink/CardStorefrontLink';
+import AuthBackground from '../../components/AuthBackground/AuthBackground';
 import './ResetPassword.scss';
 
 const ResetPassword = () => {
@@ -101,9 +102,8 @@ const ResetPassword = () => {
 
   return (
     <div className="reset-screen">
-      {/* Ambient luxury background glow */}
-      <div className="reset-screen__glow reset-screen__glow--top" />
-      <div className="reset-screen__glow reset-screen__glow--bottom" />
+      {/* Royal Silk Aurora Luxury Background */}
+      <AuthBackground />
 
       {/* Reset Password Screen Container */}
       <div className="reset-screen__container">

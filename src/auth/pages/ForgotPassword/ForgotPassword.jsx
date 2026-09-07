@@ -13,6 +13,7 @@ import brandLogo from '../../../assets/logo.png';
 import AuthDesktopBrand from '../../components/AuthDesktopBrand/AuthDesktopBrand';
 import AuthFooter from '../../components/AuthFooter/AuthFooter';
 import CardStorefrontLink from '../../components/CardStorefrontLink/CardStorefrontLink';
+import AuthBackground from '../../components/AuthBackground/AuthBackground';
 import './ForgotPassword.scss';
 
 const ForgotPassword = () => {
@@ -60,9 +61,8 @@ const ForgotPassword = () => {
 
   return (
     <div className="forgot-screen">
-      {/* Ambient luxury background lighting */}
-      <div className="forgot-screen__glow forgot-screen__glow--top" />
-      <div className="forgot-screen__glow forgot-screen__glow--bottom" />
+      {/* Royal Silk Aurora Luxury Background */}
+      <AuthBackground />
 
       {/* Forgot Password Screen Container */}
       <div className="forgot-screen__container">

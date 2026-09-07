@@ -862,8 +862,6 @@ const MyProfile = () => {
             userId: currentUid,
             clientName: displayName,
             clientMobile: displayMobile,
-            customerName: displayName,
-            customerMobile: displayMobile,
             title: values.title.trim(),
             pallu: values.pallu.trim() || null,
             shoulderToRightTight: values.shoulderToRightTight.trim() || null,

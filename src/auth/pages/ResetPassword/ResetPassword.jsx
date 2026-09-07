@@ -112,9 +112,6 @@ const ResetPassword = () => {
           <div className="reset-card__top-bar" />
 
           <div className="reset-card__content">
-            {/* Inside-Card Return to Storefront Link */}
-            <CardStorefrontLink />
-
             {/* Brand Crest & Header */}
             <div className="reset-card__header">
               <div className="brand-logo-wrap">
@@ -258,6 +255,9 @@ const ResetPassword = () => {
                 </div>
               </form>
             )}
+
+            {/* Return to Storefront Link */}
+            <CardStorefrontLink />
 
             {/* Footer Security Badge */}
             <div className="reset-card__footer">

@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  updateProfile,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  signInWithPopup,
+  setPersistence,
+  browserLocalPersistence,
+} from "firebase/auth";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { auth } from "../../../firebase/config";
@@ -16,12 +24,44 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SecurityIcon from "@mui/icons-material/Security";
-import { AppButton, AppInput } from "../../../components/common";
+import { AppButton, AppInput, AppSpinner } from "../../../components/common";
 import brandLogo from "../../../assets/logo.png";
 import AuthDesktopBrand from "../../components/AuthDesktopBrand/AuthDesktopBrand";
 import AuthFooter from "../../components/AuthFooter/AuthFooter";
 import CardStorefrontLink from "../../components/CardStorefrontLink/CardStorefrontLink";
 import "./Register.scss";
+
+// Google Official Brand Icon
+const GoogleIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" style={{ display: 'block' }}>
+    <path
+      fill="#4285F4"
+      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+    />
+    <path
+      fill="#34A853"
+      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.16 0 9.97 0 12s.45 3.84 1.25 5.42l4.03-3.15z"
+    />
+    <path
+      fill="#EA4335"
+      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+    />
+  </svg>
+);
+
+// Facebook Official Brand Icon
+const FacebookIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" style={{ display: 'block' }}>
+    <path
+      fill="#FFFFFF"
+      d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+    />
+  </svg>
+);
 
 /**
  * Validation schema using Yup
@@ -73,6 +113,114 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [facebookLoading, setFacebookLoading] = useState(false);
+  const { refreshProfile } = useAuth();
+
+  const handleGoogleSignUp = async () => {
+    setError("");
+    setSuccessMsg("");
+    setGoogleLoading(true);
+
+    try {
+      if (auth) {
+        try {
+          await setPersistence(auth, browserLocalPersistence);
+        } catch {}
+      }
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      try {
+        const userEmail = (user.email || "").trim().toLowerCase();
+        const isSuper = userEmail === SUPERADMIN_EMAIL.toLowerCase();
+        await createUserProfile(user.uid, {
+          username: user.displayName || (isSuper ? "Victory Ranjit" : "Google User"),
+          email: userEmail,
+          userMobile: user.phoneNumber || "",
+          userAddress: "",
+        });
+      } catch (dbErr) {
+        console.warn("Firestore Google user sync note:", dbErr);
+      }
+
+      if (refreshProfile) {
+        try {
+          await refreshProfile(user);
+        } catch {}
+      }
+
+      setSuccessMsg(`Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`);
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 300);
+    } catch (err) {
+      console.warn("Google signup error:", err);
+      if (err.code === "auth/popup-closed-by-user") {
+        setError("Google sign-in was cancelled.");
+      } else {
+        setError("Unable to sign in with Google. Please try again.");
+      }
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleFacebookSignUp = async () => {
+    setError("");
+    setSuccessMsg("");
+    setFacebookLoading(true);
+
+    try {
+      if (auth) {
+        try {
+          await setPersistence(auth, browserLocalPersistence);
+        } catch {}
+      }
+      const provider = new FacebookAuthProvider();
+      provider.addScope("email");
+      provider.addScope("public_profile");
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      try {
+        const userEmail = (user.email || "").trim().toLowerCase();
+        const isSuper = userEmail === SUPERADMIN_EMAIL.toLowerCase();
+        await createUserProfile(user.uid, {
+          username: user.displayName || (isSuper ? "Victory Ranjit" : "Facebook User"),
+          email: userEmail,
+          userMobile: user.phoneNumber || "",
+          userAddress: "",
+        });
+      } catch (dbErr) {
+        console.warn("Firestore Facebook user sync note:", dbErr);
+      }
+
+      if (refreshProfile) {
+        try {
+          await refreshProfile(user);
+        } catch {}
+      }
+
+      setSuccessMsg(`Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`);
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 300);
+    } catch (err) {
+      console.warn("Facebook signup error:", err);
+      if (err.code === "auth/popup-closed-by-user") {
+        setError("Facebook sign-in was cancelled.");
+      } else if (err.code === "auth/account-exists-with-different-credential") {
+        setError("An account already exists with the same email. Please sign in with Google or Email/Password.");
+      } else {
+        setError(err.message || "Unable to sign in with Facebook. Please try again.");
+      }
+    } finally {
+      setFacebookLoading(false);
+    }
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -185,9 +333,6 @@ const Register = () => {
           <div className="register-card__top-bar" />
 
           <div className="register-card__content">
-            {/* Inside-Card Return to Storefront Link */}
-            <CardStorefrontLink />
-
             {/* Brand Crest & Header with enlarged logo */}
             <div className="register-card__header">
               <div className="brand-logo-wrap">
@@ -410,6 +555,38 @@ const Register = () => {
                 </div>
               </div>
             </form>
+
+            {/* Divider & Social Sign Up */}
+            <div className="auth-divider">
+              <span>OR SIGN UP WITH</span>
+            </div>
+
+            <div className="social-auth-buttons">
+              <button
+                type="button"
+                className="social-icon-btn social-icon-btn--google"
+                onClick={handleGoogleSignUp}
+                disabled={formik.isSubmitting || googleLoading || facebookLoading}
+                title="Sign up with Google"
+                aria-label="Sign up with Google"
+              >
+                {googleLoading ? <AppSpinner size={20} /> : <GoogleIcon />}
+              </button>
+
+              <button
+                type="button"
+                className="social-icon-btn social-icon-btn--facebook"
+                onClick={handleFacebookSignUp}
+                disabled={formik.isSubmitting || googleLoading || facebookLoading}
+                title="Sign up with Facebook"
+                aria-label="Sign up with Facebook"
+              >
+                {facebookLoading ? <AppSpinner size={20} color="white" /> : <FacebookIcon />}
+              </button>
+            </div>
+
+            {/* Return to Storefront Link */}
+            <CardStorefrontLink />
 
             {/* Footer Security Badge */}
             <div className="register-card__footer">

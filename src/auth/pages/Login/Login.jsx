@@ -1,37 +1,43 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
   signInWithPhoneNumber,
   RecaptchaVerifier,
   GoogleAuthProvider,
+  FacebookAuthProvider,
   signInWithPopup,
   setPersistence,
   browserLocalPersistence,
-} from 'firebase/auth';
-import { auth } from '../../../firebase/config';
-import { createUserProfile } from '../../../firebase/dbService';
-import { USER_ROLES, SUPERADMIN_EMAIL } from '../../../firebase/schema';
-import { useAuth } from '../../context/AuthContext';
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import PhoneIphoneOutlinedIcon from '@mui/icons-material/PhoneIphoneOutlined';
-import DialpadOutlinedIcon from '@mui/icons-material/DialpadOutlined';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import SecurityIcon from '@mui/icons-material/Security';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import { AppButton, AppInput, AppSpinner } from '../../../components/common';
-import brandLogo from '../../../assets/logo.png';
-import AuthDesktopBrand from '../../components/AuthDesktopBrand/AuthDesktopBrand';
-import AuthFooter from '../../components/AuthFooter/AuthFooter';
-import CardStorefrontLink from '../../components/CardStorefrontLink/CardStorefrontLink';
-import './Login.scss';
+} from "firebase/auth";
+import { auth } from "../../../firebase/config";
+import { createUserProfile } from "../../../firebase/dbService";
+import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
+import { useAuth } from "../../context/AuthContext";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import PhoneIphoneOutlinedIcon from "@mui/icons-material/PhoneIphoneOutlined";
+import DialpadOutlinedIcon from "@mui/icons-material/DialpadOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SecurityIcon from "@mui/icons-material/Security";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import { AppButton, AppInput, AppSpinner } from "../../../components/common";
+import brandLogo from "../../../assets/logo.png";
+import AuthDesktopBrand from "../../components/AuthDesktopBrand/AuthDesktopBrand";
+import AuthFooter from "../../components/AuthFooter/AuthFooter";
+import CardStorefrontLink from "../../components/CardStorefrontLink/CardStorefrontLink";
+import "./Login.scss";
 
 // Google Official Brand Icon
 const GoogleIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" style={{ marginRight: 8, display: 'block' }}>
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    style={{ display: "block" }}
+  >
     <path
       fill="#4285F4"
       d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
@@ -51,6 +57,21 @@ const GoogleIcon = () => (
   </svg>
 );
 
+// Facebook Official Brand Icon
+const FacebookIcon = () => (
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    style={{ display: "block" }}
+  >
+    <path
+      fill="#FFFFFF"
+      d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+    />
+  </svg>
+);
+
 const Login = () => {
   const navigate = useNavigate();
   const { currentUser, refreshProfile } = useAuth();
@@ -58,22 +79,22 @@ const Login = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (currentUser) {
-      navigate('/dashboard', { replace: true });
+      navigate("/dashboard", { replace: true });
     }
   }, [currentUser, navigate]);
 
   // Login Mode: 'email' | 'phone'
-  const [loginMethod, setLoginMethod] = useState('email');
+  const [loginMethod, setLoginMethod] = useState("email");
 
   // Email & Password States
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
   // Phone OTP States
-  const [phone, setPhone] = useState('');
-  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const [phone, setPhone] = useState("");
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
   const [otpSent, setOtpSent] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState(null);
   const [otpError, setOtpError] = useState(false);
@@ -82,8 +103,9 @@ const Login = () => {
   // UI States
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [facebookLoading, setFacebookLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   // Cleanup reCAPTCHA verifier on unmount
   useEffect(() => {
@@ -101,10 +123,10 @@ const Login = () => {
 
   // Helper to get or create invisible reCAPTCHA verifier
   const getRecaptchaVerifier = () => {
-    let container = document.getElementById('recaptcha-container');
+    let container = document.getElementById("recaptcha-container");
     if (!container) {
-      container = document.createElement('div');
-      container.id = 'recaptcha-container';
+      container = document.createElement("div");
+      container.id = "recaptcha-container";
       document.body.appendChild(container);
     }
 
@@ -112,18 +134,18 @@ const Login = () => {
       try {
         window.recaptchaVerifier.clear();
       } catch (e) {
-        console.warn('Error clearing previous reCAPTCHA:', e);
+        console.warn("Error clearing previous reCAPTCHA:", e);
       }
       window.recaptchaVerifier = null;
     }
 
     window.recaptchaVerifier = new RecaptchaVerifier(auth, container, {
-      size: 'invisible',
+      size: "invisible",
       callback: () => {
         // reCAPTCHA solved
       },
-      'expired-callback': () => {
-        setError('reCAPTCHA expired. Please try requesting OTP again.');
+      "expired-callback": () => {
+        setError("reCAPTCHA expired. Please try requesting OTP again.");
       },
     });
 
@@ -133,11 +155,11 @@ const Login = () => {
   // 1. Email & Password Sign In
   const handleEmailSignIn = async (e) => {
     if (e) e.preventDefault();
-    setError('');
-    setSuccessMsg('');
+    setError("");
+    setSuccessMsg("");
 
     if (!email.trim() || !password) {
-      setError('Please enter both email and password.');
+      setError("Please enter both email and password.");
       return;
     }
 
@@ -148,42 +170,51 @@ const Login = () => {
         try {
           await setPersistence(auth, browserLocalPersistence);
         } catch (persErr) {
-          console.warn('Set persistence note:', persErr);
+          console.warn("Set persistence note:", persErr);
         }
-        const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
-        setSuccessMsg('Authentication successful. Loading profile...');
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          email.trim(),
+          password,
+        );
+        setSuccessMsg("Authentication successful. Loading profile...");
         if (userCredential?.user && refreshProfile) {
           try {
             await refreshProfile(userCredential.user);
           } catch (pErr) {
-            console.warn('Profile refresh after login note:', pErr);
+            console.warn("Profile refresh after login note:", pErr);
           }
         }
-        setSuccessMsg('Welcome back! Redirecting to Dashboard...');
+        setSuccessMsg("Welcome back! Redirecting to Dashboard...");
         setTimeout(() => {
-          navigate('/dashboard');
+          navigate("/dashboard");
         }, 300);
       } else {
-        navigate('/dashboard');
+        navigate("/dashboard");
       }
     } catch (err) {
-      console.warn('Firebase login warning:', err);
-      let message = 'Invalid email or password. Please verify your credentials.';
+      console.warn("Firebase login warning:", err);
+      let message =
+        "Invalid email or password. Please verify your credentials.";
       if (
-        err.code === 'auth/configuration-not-found' ||
-        err.message?.includes('CONFIGURATION_NOT_FOUND')
+        err.code === "auth/configuration-not-found" ||
+        err.message?.includes("CONFIGURATION_NOT_FOUND")
       ) {
         message =
           'Firebase Authentication is not activated yet in Firebase Console. Please enable "Email/Password" in Firebase Console > Build > Authentication > Sign-in method.';
-      } else if (err.code === 'auth/operation-not-allowed') {
+      } else if (err.code === "auth/operation-not-allowed") {
         message =
           'Email/Password sign-in is disabled. Please enable "Email/Password" in Firebase Console > Build > Authentication > Sign-in method.';
-      } else if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        message = 'Account not found or password incorrect. Please verify your credentials.';
-      } else if (err.code === 'auth/too-many-requests') {
-        message = 'Too many attempts. Please try again in a few moments.';
-      } else if (err.code === 'auth/network-request-failed') {
-        message = 'Network error. Please check your internet connection.';
+      } else if (
+        err.code === "auth/user-not-found" ||
+        err.code === "auth/invalid-credential"
+      ) {
+        message =
+          "Account not found or password incorrect. Please verify your credentials.";
+      } else if (err.code === "auth/too-many-requests") {
+        message = "Too many attempts. Please try again in a few moments.";
+      } else if (err.code === "auth/network-request-failed") {
+        message = "Network error. Please check your internet connection.";
       }
       setError(message);
     } finally {
@@ -194,12 +225,12 @@ const Login = () => {
   // 2. Phone Number OTP Request
   const handleSendOtp = async (e) => {
     if (e) e.preventDefault();
-    setError('');
-    setSuccessMsg('');
+    setError("");
+    setSuccessMsg("");
 
-    const cleanPhone = phone.trim().replace(/\D/g, '');
+    const cleanPhone = phone.trim().replace(/\D/g, "");
     if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
-      setError('Please enter a valid 10-digit Indian mobile number.');
+      setError("Please enter a valid 10-digit Indian mobile number.");
       return;
     }
 
@@ -208,38 +239,52 @@ const Login = () => {
     try {
       const appVerifier = getRecaptchaVerifier();
       const fullPhoneNumber = `+91${cleanPhone}`;
-      const confirmation = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
+      const confirmation = await signInWithPhoneNumber(
+        auth,
+        fullPhoneNumber,
+        appVerifier,
+      );
       setConfirmationResult(confirmation);
       setOtpSent(true);
-      setSuccessMsg(`OTP sent to ${fullPhoneNumber}. Please enter the 6-digit verification code below.`);
+      setSuccessMsg(
+        `OTP sent to ${fullPhoneNumber}. Please enter the 6-digit verification code below.`,
+      );
     } catch (err) {
-      console.error('Phone sign-in error:', err);
+      console.error("Phone sign-in error:", err);
       if (window.recaptchaVerifier) {
         try {
           window.recaptchaVerifier.clear();
         } catch {}
         window.recaptchaVerifier = null;
       }
-      let msg = 'Failed to send OTP. Please try again.';
-      if (err.code === 'auth/invalid-phone-number') {
-        msg = 'Invalid phone number format. Please enter a valid 10-digit Indian mobile number.';
-      } else if (err.code === 'auth/operation-not-allowed') {
-        msg = 'Phone authentication is disabled. Please enable "Phone" in Firebase Console > Authentication > Sign-in method.';
+      let msg = "Failed to send OTP. Please try again.";
+      if (err.code === "auth/invalid-phone-number") {
+        msg =
+          "Invalid phone number format. Please enter a valid 10-digit Indian mobile number.";
+      } else if (err.code === "auth/operation-not-allowed") {
+        msg =
+          'Phone authentication is disabled. Please enable "Phone" in Firebase Console > Authentication > Sign-in method.';
       } else if (
-        err.code === 'auth/configuration-not-found' ||
-        err.message?.includes('CONFIGURATION_NOT_FOUND')
+        err.code === "auth/configuration-not-found" ||
+        err.message?.includes("CONFIGURATION_NOT_FOUND")
       ) {
-        msg = 'Phone provider is not configured. Please enable "Phone" in Firebase Console > Authentication > Sign-in method.';
-      } else if (err.code === 'auth/too-many-requests') {
-        msg = 'Too many requests sent. Please wait a few moments before trying again.';
-      } else if (err.code === 'auth/captcha-check-failed') {
-        msg = 'reCAPTCHA verification failed. Please refresh the page and try again.';
-      } else if (err.code === 'auth/quota-exceeded') {
-        msg = 'SMS quota exceeded for this Firebase project. Add test phone numbers in Firebase Console or upgrade plan.';
-      } else if (err.code === 'auth/invalid-app-credential') {
-        msg = 'Firebase app verification failed. Check Authorized Domains in Firebase Console or configure Test Phone Numbers.';
-      } else if (err.code === 'auth/billing-not-enabled') {
-        msg = 'SMS delivery requires billing or configuring "Phone numbers for testing" in Firebase Console.';
+        msg =
+          'Phone provider is not configured. Please enable "Phone" in Firebase Console > Authentication > Sign-in method.';
+      } else if (err.code === "auth/too-many-requests") {
+        msg =
+          "Too many requests sent. Please wait a few moments before trying again.";
+      } else if (err.code === "auth/captcha-check-failed") {
+        msg =
+          "reCAPTCHA verification failed. Please refresh the page and try again.";
+      } else if (err.code === "auth/quota-exceeded") {
+        msg =
+          "SMS quota exceeded for this Firebase project. Add test phone numbers in Firebase Console or upgrade plan.";
+      } else if (err.code === "auth/invalid-app-credential") {
+        msg =
+          "Firebase app verification failed. Check Authorized Domains in Firebase Console or configure Test Phone Numbers.";
+      } else if (err.code === "auth/billing-not-enabled") {
+        msg =
+          'SMS delivery requires billing or configuring "Phone numbers for testing" in Firebase Console.';
       } else if (err.message) {
         msg = `Failed to send OTP: ${err.message}`;
       }
@@ -253,12 +298,12 @@ const Login = () => {
   const handleOtpDigitChange = (index, value) => {
     if (otpError) setOtpError(false);
     // Only allow single digit
-    const cleaned = value.replace(/\D/g, '');
+    const cleaned = value.replace(/\D/g, "");
     const newDigits = [...otpDigits];
 
     if (cleaned.length > 1) {
       // Handle fast typing or autofill
-      const chars = cleaned.slice(0, 6 - index).split('');
+      const chars = cleaned.slice(0, 6 - index).split("");
       chars.forEach((char, i) => {
         if (index + i < 6) {
           newDigits[index + i] = char;
@@ -281,23 +326,23 @@ const Login = () => {
 
   const handleOtpKeyDown = (index, e) => {
     if (otpError) setOtpError(false);
-    if (e.key === 'Backspace') {
+    if (e.key === "Backspace") {
       if (!otpDigits[index] && index > 0) {
         // If current box is empty, delete previous and move focus back
         const newDigits = [...otpDigits];
-        newDigits[index - 1] = '';
+        newDigits[index - 1] = "";
         setOtpDigits(newDigits);
         otpInputRefs.current[index - 1]?.focus();
       } else if (otpDigits[index]) {
         // Clear current box
         const newDigits = [...otpDigits];
-        newDigits[index] = '';
+        newDigits[index] = "";
         setOtpDigits(newDigits);
       }
-    } else if (e.key === 'ArrowLeft' && index > 0) {
+    } else if (e.key === "ArrowLeft" && index > 0) {
       e.preventDefault();
       otpInputRefs.current[index - 1]?.focus();
-    } else if (e.key === 'ArrowRight' && index < 5) {
+    } else if (e.key === "ArrowRight" && index < 5) {
       e.preventDefault();
       otpInputRefs.current[index + 1]?.focus();
     }
@@ -306,11 +351,15 @@ const Login = () => {
   const handleOtpPaste = (e) => {
     e.preventDefault();
     if (otpError) setOtpError(false);
-    const pasteData = e.clipboardData.getData('text').trim().replace(/\D/g, '').slice(0, 6);
+    const pasteData = e.clipboardData
+      .getData("text")
+      .trim()
+      .replace(/\D/g, "")
+      .slice(0, 6);
     if (!pasteData) return;
 
     const newDigits = [...otpDigits];
-    pasteData.split('').forEach((char, i) => {
+    pasteData.split("").forEach((char, i) => {
       if (i < 6) newDigits[i] = char;
     });
     setOtpDigits(newDigits);
@@ -322,19 +371,19 @@ const Login = () => {
   // 3. Phone OTP Confirmation
   const handleVerifyOtp = async (e) => {
     if (e) e.preventDefault();
-    setError('');
-    setSuccessMsg('');
+    setError("");
+    setSuccessMsg("");
     setOtpError(false);
 
-    const cleanOtp = otpDigits.join('').trim();
+    const cleanOtp = otpDigits.join("").trim();
     if (cleanOtp.length !== 6) {
-      setError('Please enter all 6 digits of your OTP code.');
+      setError("Please enter all 6 digits of your OTP code.");
       setOtpError(true);
       return;
     }
 
     if (!confirmationResult) {
-      setError('Session expired. Please request a new OTP code.');
+      setError("Session expired. Please request a new OTP code.");
       setOtpError(true);
       return;
     }
@@ -352,16 +401,17 @@ const Login = () => {
 
       // Sync customer record to Firestore users collection
       try {
-        const userEmail = (user.email || '').trim().toLowerCase();
+        const userEmail = (user.email || "").trim().toLowerCase();
         const isSuper = userEmail === SUPERADMIN_EMAIL.toLowerCase();
         await createUserProfile(user.uid, {
-          username: user.displayName || (isSuper ? 'Victory Ranjit' : 'Customer'),
+          username:
+            user.displayName || (isSuper ? "Victory Ranjit" : "Customer"),
           email: userEmail,
-          userMobile: user.phoneNumber || (`+91${phone.trim()}`),
-          userAddress: '',
+          userMobile: user.phoneNumber || `+91${phone.trim()}`,
+          userAddress: "",
         });
       } catch (dbErr) {
-        console.warn('Firestore profile sync note:', dbErr);
+        console.warn("Firestore profile sync note:", dbErr);
       }
 
       if (refreshProfile) {
@@ -370,18 +420,18 @@ const Login = () => {
         } catch {}
       }
 
-      setSuccessMsg('Phone verified successfully! Redirecting to Dashboard...');
+      setSuccessMsg("Phone verified successfully! Redirecting to Dashboard...");
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate("/dashboard");
       }, 300);
     } catch (err) {
-      console.warn('OTP verification error:', err);
+      console.warn("OTP verification error:", err);
       setOtpError(true);
-      let msg = 'Invalid verification code. Please check and re-enter.';
-      if (err.code === 'auth/invalid-verification-code') {
-        msg = 'Invalid OTP code. Please verify the numbers and try again.';
-      } else if (err.code === 'auth/code-expired') {
-        msg = 'The verification code has expired. Please request a new OTP.';
+      let msg = "Invalid verification code. Please check and re-enter.";
+      if (err.code === "auth/invalid-verification-code") {
+        msg = "Invalid OTP code. Please verify the numbers and try again.";
+      } else if (err.code === "auth/code-expired") {
+        msg = "The verification code has expired. Please request a new OTP.";
       }
       setError(msg);
     } finally {
@@ -391,8 +441,8 @@ const Login = () => {
 
   // 4. Google Sign-In
   const handleGoogleSignIn = async () => {
-    setError('');
-    setSuccessMsg('');
+    setError("");
+    setSuccessMsg("");
     setGoogleLoading(true);
 
     try {
@@ -402,22 +452,23 @@ const Login = () => {
         } catch {}
       }
       const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: 'select_account' });
+      provider.setCustomParameters({ prompt: "select_account" });
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
       // Sync user profile in Firestore
       try {
-        const userEmail = (user.email || '').trim().toLowerCase();
+        const userEmail = (user.email || "").trim().toLowerCase();
         const isSuper = userEmail === SUPERADMIN_EMAIL.toLowerCase();
         await createUserProfile(user.uid, {
-          username: user.displayName || (isSuper ? 'Victory Ranjit' : 'Google User'),
+          username:
+            user.displayName || (isSuper ? "Victory Ranjit" : "Google User"),
           email: userEmail,
-          userMobile: user.phoneNumber || '',
-          userAddress: '',
+          userMobile: user.phoneNumber || "",
+          userAddress: "",
         });
       } catch (dbErr) {
-        console.warn('Firestore Google user sync note:', dbErr);
+        console.warn("Firestore Google user sync note:", dbErr);
       }
 
       if (refreshProfile) {
@@ -426,26 +477,100 @@ const Login = () => {
         } catch {}
       }
 
-      setSuccessMsg(`Welcome, ${user.displayName || 'User'}! Redirecting to Dashboard...`);
+      setSuccessMsg(
+        `Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`,
+      );
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate("/dashboard");
       }, 300);
     } catch (err) {
-      console.warn('Google sign-in error:', err);
-      if (err.code === 'auth/popup-closed-by-user') {
-        setError('Google sign-in was cancelled.');
-      } else if (err.code === 'auth/cancelled-popup-request') {
+      console.warn("Google sign-in error:", err);
+      if (err.code === "auth/popup-closed-by-user") {
+        setError("Google sign-in was cancelled.");
+      } else if (err.code === "auth/cancelled-popup-request") {
         // Ignored
       } else if (
-        err.code === 'auth/configuration-not-found' ||
-        err.message?.includes('CONFIGURATION_NOT_FOUND')
+        err.code === "auth/configuration-not-found" ||
+        err.message?.includes("CONFIGURATION_NOT_FOUND")
       ) {
-        setError('Google Sign-in is not enabled in Firebase Console. Please enable Google provider.');
+        setError(
+          "Google Sign-in is not enabled in Firebase Console. Please enable Google provider.",
+        );
       } else {
-        setError('Unable to sign in with Google. Please try again.');
+        setError("Unable to sign in with Google. Please try again.");
       }
     } finally {
       setGoogleLoading(false);
+    }
+  };
+
+  // 5. Facebook Sign-In
+  const handleFacebookSignIn = async () => {
+    setError("");
+    setSuccessMsg("");
+    setFacebookLoading(true);
+
+    try {
+      if (auth) {
+        try {
+          await setPersistence(auth, browserLocalPersistence);
+        } catch {}
+      }
+      const provider = new FacebookAuthProvider();
+      provider.addScope("email");
+      provider.addScope("public_profile");
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Sync user profile in Firestore
+      try {
+        const userEmail = (user.email || "").trim().toLowerCase();
+        const isSuper = userEmail === SUPERADMIN_EMAIL.toLowerCase();
+        await createUserProfile(user.uid, {
+          username:
+            user.displayName || (isSuper ? "Victory Ranjit" : "Facebook User"),
+          email: userEmail,
+          userMobile: user.phoneNumber || "",
+          userAddress: "",
+        });
+      } catch (dbErr) {
+        console.warn("Firestore Facebook user sync note:", dbErr);
+      }
+
+      if (refreshProfile) {
+        try {
+          await refreshProfile(user);
+        } catch {}
+      }
+
+      setSuccessMsg(
+        `Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`,
+      );
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 300);
+    } catch (err) {
+      console.warn("Facebook sign-in error:", err);
+      if (err.code === "auth/popup-closed-by-user") {
+        setError("Facebook sign-in was cancelled.");
+      } else if (err.code === "auth/cancelled-popup-request") {
+        // Ignored
+      } else if (
+        err.code === "auth/configuration-not-found" ||
+        err.message?.includes("CONFIGURATION_NOT_FOUND")
+      ) {
+        setError(
+          "Facebook Sign-in is not enabled in Firebase Console. Please enable Facebook provider in Firebase Console > Authentication > Sign-in method.",
+        );
+      } else if (err.code === "auth/account-exists-with-different-credential") {
+        setError(
+          "An account already exists with the same email. Please sign in with Google or Email/Password.",
+        );
+      } else {
+        setError("Unable to sign in with Facebook. Please try again.");
+      }
+    } finally {
+      setFacebookLoading(false);
     }
   };
 
@@ -466,9 +591,6 @@ const Login = () => {
           <div className="login-card__top-bar" />
 
           <div className="login-card__content">
-            {/* Inside-Card Return to Storefront Link */}
-            <CardStorefrontLink />
-
             {/* Brand Crest & Header */}
             <div className="login-card__header">
               <div className="brand-logo-wrap">
@@ -478,19 +600,17 @@ const Login = () => {
                   className="brand-logo-img"
                 />
               </div>
-              <h1 className="login-title">
-                Login
-              </h1>
+              <h1 className="login-title">Login</h1>
             </div>
 
             {/* Method Switcher Tabs (Email vs Phone OTP) */}
             <div className="login-method-switch">
               <button
                 type="button"
-                className={`method-tab-btn ${loginMethod === 'email' ? 'active' : ''}`}
+                className={`method-tab-btn ${loginMethod === "email" ? "active" : ""}`}
                 onClick={() => {
-                  setLoginMethod('email');
-                  setError('');
+                  setLoginMethod("email");
+                  setError("");
                 }}
               >
                 <EmailOutlinedIcon />
@@ -498,10 +618,10 @@ const Login = () => {
               </button>
               <button
                 type="button"
-                className={`method-tab-btn ${loginMethod === 'phone' ? 'active' : ''}`}
+                className={`method-tab-btn ${loginMethod === "phone" ? "active" : ""}`}
                 onClick={() => {
-                  setLoginMethod('phone');
-                  setError('');
+                  setLoginMethod("phone");
+                  setError("");
                 }}
               >
                 <PhoneIphoneOutlinedIcon />
@@ -516,7 +636,7 @@ const Login = () => {
                 <button
                   type="button"
                   className="alert-close-btn"
-                  onClick={() => setError('')}
+                  onClick={() => setError("")}
                 >
                   &times;
                 </button>
@@ -532,8 +652,12 @@ const Login = () => {
             {/* =================================================================== */}
             {/* 1. Email & Password Form */}
             {/* =================================================================== */}
-            {loginMethod === 'email' && (
-              <form onSubmit={handleEmailSignIn} className="login-form" noValidate>
+            {loginMethod === "email" && (
+              <form
+                onSubmit={handleEmailSignIn}
+                className="login-form"
+                noValidate
+              >
                 {/* Email Input */}
                 <AppInput
                   label="Email Address"
@@ -549,9 +673,15 @@ const Login = () => {
                 />
 
                 {/* Password Input */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                  }}
+                >
                   <div className="password-header-row">
-                    <span className="input-label-text">Password</span>
+                    <span className="app-input-label">Password</span>
                     <Link to="/forgot-password" className="forgot-link-btn">
                       Forgot Password?
                     </Link>
@@ -559,7 +689,7 @@ const Login = () => {
                   <AppInput
                     id="login-password"
                     name="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -572,7 +702,11 @@ const Login = () => {
                         className="visibility-toggle-btn"
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
+                        {showPassword ? (
+                          <VisibilityOffOutlinedIcon />
+                        ) : (
+                          <VisibilityOutlinedIcon />
+                        )}
                       </button>
                     }
                   />
@@ -607,7 +741,7 @@ const Login = () => {
             {/* =================================================================== */}
             {/* 2. Phone Number OTP Form */}
             {/* =================================================================== */}
-            {loginMethod === 'phone' && (
+            {loginMethod === "phone" && (
               <div className="login-form">
                 {!otpSent ? (
                   // Step 2A: Enter Mobile Number
@@ -625,7 +759,7 @@ const Login = () => {
                       hint="We will send a 6-digit OTP code to your phone via SMS."
                     />
 
-                    <div style={{ marginTop: '16px' }}>
+                    <div style={{ marginTop: "16px" }}>
                       <AppButton
                         type="submit"
                         variant="primary"
@@ -639,15 +773,20 @@ const Login = () => {
                   </form>
                 ) : (
                   // Step 2B: Enter 6-Digit OTP in 6 distinct boxes
-                  <form onSubmit={handleVerifyOtp} className="otp-verification-section">
+                  <form
+                    onSubmit={handleVerifyOtp}
+                    className="otp-verification-section"
+                  >
                     <div className="otp-header-row">
-                      <span className="input-label-text">Enter 6-Digit OTP</span>
+                      <span className="input-label-text">
+                        Enter 6-Digit OTP
+                      </span>
                       <button
                         type="button"
                         onClick={() => {
                           setOtpSent(false);
-                          setOtpDigits(['', '', '', '', '', '']);
-                          setError('');
+                          setOtpDigits(["", "", "", "", "", ""]);
+                          setError("");
                         }}
                         className="change-phone-btn"
                       >
@@ -656,7 +795,10 @@ const Login = () => {
                     </div>
 
                     {/* 6 OTP Boxes */}
-                    <div className={`otp-boxes-container ${otpError ? 'has-error' : ''}`} onPaste={handleOtpPaste}>
+                    <div
+                      className={`otp-boxes-container ${otpError ? "has-error" : ""}`}
+                      onPaste={handleOtpPaste}
+                    >
                       {otpDigits.map((digit, index) => (
                         <input
                           key={index}
@@ -668,9 +810,11 @@ const Login = () => {
                           value={digit}
                           autoFocus={index === 0}
                           disabled={loading || googleLoading}
-                          onChange={(e) => handleOtpDigitChange(index, e.target.value)}
+                          onChange={(e) =>
+                            handleOtpDigitChange(index, e.target.value)
+                          }
                           onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                          className={`otp-digit-box ${digit ? 'filled' : ''} ${otpError ? 'error' : ''}`}
+                          className={`otp-digit-box ${digit ? "filled" : ""} ${otpError ? "error" : ""}`}
                           aria-label={`OTP digit ${index + 1}`}
                         />
                       ))}
@@ -680,20 +824,24 @@ const Login = () => {
                       Sent to +91 {phone.trim()}
                     </span>
 
-                    <div style={{ marginTop: '18px' }}>
+                    <div style={{ marginTop: "18px" }}>
                       <AppButton
                         type="submit"
                         variant="primary"
                         fullWidth
                         loading={loading}
-                        disabled={loading || googleLoading || otpDigits.join('').length !== 6}
+                        disabled={
+                          loading ||
+                          googleLoading ||
+                          otpDigits.join("").length !== 6
+                        }
                         className="submit-btn"
                       >
                         Verify & Sign In
                       </AppButton>
                     </div>
 
-                    <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                    <div style={{ textAlign: "center", marginTop: "16px" }}>
                       <button
                         type="button"
                         onClick={handleSendOtp}
@@ -708,39 +856,54 @@ const Login = () => {
               </div>
             )}
 
-            {/* =================================================================== */}
-            {/* 3. Divider & Google Sign-In */}
-            {/* =================================================================== */}
+            {/* 3. Divider & Social Sign-In */}
             <div className="auth-divider">
               <span>OR CONTINUE WITH</span>
             </div>
 
-            <AppButton
-              variant="secondary"
-              fullWidth
-              onClick={handleGoogleSignIn}
-              disabled={loading || googleLoading}
-              className="google-sign-in-btn"
-              icon={googleLoading ? <AppSpinner size={18} /> : <GoogleIcon />}
-            >
-              {googleLoading ? 'Signing in with Google...' : 'Sign in with Google'}
-            </AppButton>
+            <div className="social-auth-buttons">
+              <button
+                type="button"
+                className="social-icon-btn social-icon-btn--google"
+                onClick={handleGoogleSignIn}
+                disabled={loading || googleLoading || facebookLoading}
+                title="Sign in with Google"
+                aria-label="Sign in with Google"
+              >
+                {googleLoading ? <AppSpinner size={20} /> : <GoogleIcon />}
+              </button>
+
+              <button
+                type="button"
+                className="social-icon-btn social-icon-btn--facebook"
+                onClick={handleFacebookSignIn}
+                disabled={loading || googleLoading || facebookLoading}
+                title="Sign in with Facebook"
+                aria-label="Sign in with Facebook"
+              >
+                {facebookLoading ? <AppSpinner size={20} color="white" /> : <FacebookIcon />}
+              </button>
+            </div>
 
             {/* Link to Register */}
             <div className="auth-switch-row">
               <p className="switch-prompt">
-                Don't have an account?{' '}
+                Don't have an account?{" "}
                 <Link to="/register" className="auth-highlight-link">
                   Create Account
                 </Link>
               </p>
             </div>
 
+            {/* Return to Storefront Link */}
+            <CardStorefrontLink />
+
             {/* Footer Security Badge */}
             <div className="login-card__footer">
               <SecurityIcon className="security-icon" />
               <span className="security-text">
-                Protected by 256-bit Firebase Authentication & End-to-End Encryption
+                Protected by 256-bit Firebase Authentication & End-to-End
+                Encryption
               </span>
             </div>
 

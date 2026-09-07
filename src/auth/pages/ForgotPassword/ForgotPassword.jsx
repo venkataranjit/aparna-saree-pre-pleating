@@ -71,9 +71,6 @@ const ForgotPassword = () => {
           <div className="forgot-card__top-bar" />
 
           <div className="forgot-card__content">
-            {/* Inside-Card Return to Storefront Link */}
-            <CardStorefrontLink />
-
             {/* Brand Crest & Header with enlarged logo */}
             <div className="forgot-card__header">
               <div className="brand-logo-wrap">
@@ -157,6 +154,9 @@ const ForgotPassword = () => {
                 </div>
               </div>
             </form>
+
+            {/* Return to Storefront Link */}
+            <CardStorefrontLink />
 
             {/* Footer Security Badge */}
             <div className="forgot-card__footer">

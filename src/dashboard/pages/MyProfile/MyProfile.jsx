@@ -50,7 +50,7 @@ const profileValidationSchema = Yup.object({
     .trim()
     .matches(
       /^[6-9]\d{9}$/,
-      "Please enter a valid 10-digit Indian mobile number"
+      "Please enter a valid 10-digit Indian mobile number",
     )
     .required("Mobile Number is required"),
   email: Yup.string()
@@ -83,7 +83,7 @@ const measurementValidationSchema = Yup.object({
         if (!val) return true;
         const num = Number(val);
         return !Number.isNaN(num) && num > 0 && num <= 200;
-      }
+      },
     ),
   shoulderToRightTight: Yup.string()
     .trim()
@@ -94,7 +94,7 @@ const measurementValidationSchema = Yup.object({
         if (!val) return true;
         const num = Number(val);
         return !Number.isNaN(num) && num > 0 && num <= 100;
-      }
+      },
     ),
   chest: Yup.string()
     .trim()
@@ -105,7 +105,7 @@ const measurementValidationSchema = Yup.object({
         if (!val) return true;
         const num = Number(val);
         return !Number.isNaN(num) && num > 0 && num <= 100;
-      }
+      },
     ),
   hip: Yup.string()
     .trim()
@@ -116,7 +116,7 @@ const measurementValidationSchema = Yup.object({
         if (!val) return true;
         const num = Number(val);
         return !Number.isNaN(num) && num > 0 && num <= 120;
-      }
+      },
     ),
   firstPleatSize: Yup.string()
     .trim()
@@ -127,7 +127,7 @@ const measurementValidationSchema = Yup.object({
         if (!val) return true;
         const num = Number(val);
         return !Number.isNaN(num) && num > 0 && num <= 50;
-      }
+      },
     ),
   noOfChestPleats: Yup.string()
     .trim()
@@ -140,7 +140,7 @@ const measurementValidationSchema = Yup.object({
         return (
           !Number.isNaN(num) && Number.isInteger(num) && num >= 1 && num <= 30
         );
-      }
+      },
     ),
   height: Yup.string()
     .trim()
@@ -151,7 +151,7 @@ const measurementValidationSchema = Yup.object({
         if (!val) return true;
         const num = Number(val);
         return !Number.isNaN(num) && num > 0 && num <= 300;
-      }
+      },
     ),
   dressSize: Yup.string()
     .trim()
@@ -195,12 +195,12 @@ const MyProfile = () => {
     isSuperAdmin || role === "superadmin"
       ? "Super Admin"
       : role === "admin"
-      ? "Admin"
-      : role === "staff"
-      ? "Staff"
-      : currentUser || userProfile
-      ? "Customer"
-      : "";
+        ? "Admin"
+        : role === "staff"
+          ? "Staff"
+          : currentUser || userProfile
+            ? "Customer"
+            : "";
 
   // Fetch measurements for the logged-in user
   const fetchMyMeasurements = async () => {
@@ -213,7 +213,7 @@ const MyProfile = () => {
       }
       const allMeasures = await getAllMeasurements();
       const myMeasures = allMeasures.filter(
-        (m) => m.userId === currentUid || m.userId === userProfile?.id
+        (m) => m.userId === currentUid || m.userId === userProfile?.id,
       );
       setMeasurements(myMeasures);
     } catch (err) {
@@ -258,14 +258,14 @@ const MyProfile = () => {
           if (uniqueness.emailExists) {
             editProfileFormik.setFieldError(
               "email",
-              "This email address is already registered."
+              "This email address is already registered.",
             );
             editProfileFormik.setFieldTouched("email", true, false);
           }
           if (uniqueness.mobileExists) {
             editProfileFormik.setFieldError(
               "userMobile",
-              "This mobile number is already registered."
+              "This mobile number is already registered.",
             );
             editProfileFormik.setFieldTouched("userMobile", true, false);
           }
@@ -416,7 +416,7 @@ const MyProfile = () => {
 
         const updatedRecord = await updateMeasurement(
           selectedMeasureForEdit.id,
-          updatePayload
+          updatePayload,
         );
         setMeasurements((prev) =>
           prev.map((m) =>
@@ -429,8 +429,8 @@ const MyProfile = () => {
                     ? updatedRecord
                     : {}),
                 }
-              : m
-          )
+              : m,
+          ),
         );
 
         setFeedback({
@@ -507,15 +507,6 @@ const MyProfile = () => {
             disabled={loading}
           >
             {loading ? "Refreshing..." : "Refresh"}
-          </AppButton>
-
-          <AppButton
-            variant="secondary"
-            className="edit-profile-btn"
-            startIcon={<EditOutlinedIcon />}
-            onClick={() => setOpenEditProfileModal(true)}
-          >
-            Edit Profile
           </AppButton>
 
           <AppButton
@@ -773,9 +764,10 @@ const MyProfile = () => {
                 <div className="measure-card-footer">
                   <span className="measure-footer-date">
                     <CalendarTodayOutlinedIcon />
-                    Recorded{" "}
-                    {formatDateSafe(measure.createdAt)}
-                    {formatTimeSafe(measure.createdAt) ? ` ${formatTimeSafe(measure.createdAt)}` : ""}
+                    Recorded {formatDateSafe(measure.createdAt)}
+                    {formatTimeSafe(measure.createdAt)
+                      ? ` ${formatTimeSafe(measure.createdAt)}`
+                      : ""}
                   </span>
                 </div>
               </div>

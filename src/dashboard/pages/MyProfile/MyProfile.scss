@@ -59,7 +59,7 @@
         flex-wrap: wrap;
 
         .app-btn {
-          flex: 1 1 auto;
+          flex: 1;
           min-width: 110px;
         }
       }
@@ -393,7 +393,8 @@
 
     &:hover {
       border-color: rgba(212, 175, 55, 0.65) !important;
-      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.75),
+      box-shadow:
+        0 10px 32px rgba(0, 0, 0, 0.75),
         0 0 22px rgba(212, 175, 55, 0.15) !important;
     }
 

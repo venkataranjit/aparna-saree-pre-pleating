@@ -9,7 +9,7 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
+import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
@@ -544,7 +544,7 @@ const Users = () => {
       return (
         <AppBadge
           variant="superadmin"
-          icon={<ShieldOutlinedIcon style={{ fontSize: 13 }} />}
+          icon={<VerifiedUserOutlinedIcon style={{ fontSize: 13 }} />}
         >
           Super Admin
         </AppBadge>

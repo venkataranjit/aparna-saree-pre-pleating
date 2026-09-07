@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAnalytics, isSupported } from 'firebase/analytics';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
@@ -29,6 +29,14 @@ if (typeof window !== 'undefined') {
 
 // Export Firebase services for modular use across landing page, dashboard & forms
 export const auth = getAuth(app);
+
+// Enforce permanent local persistence across browser reloads, mobile restarts, and webviews
+if (typeof window !== 'undefined') {
+  setPersistence(auth, browserLocalPersistence).catch((err) => {
+    console.warn('Failed to set browserLocalPersistence on Firebase Auth:', err);
+  });
+}
+
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export { app, analytics, firebaseConfig };

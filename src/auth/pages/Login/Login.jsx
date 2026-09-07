@@ -6,6 +6,8 @@ import {
   RecaptchaVerifier,
   GoogleAuthProvider,
   signInWithPopup,
+  setPersistence,
+  browserLocalPersistence,
 } from 'firebase/auth';
 import { auth } from '../../../firebase/config';
 import { createUserProfile } from '../../../firebase/dbService';
@@ -143,6 +145,11 @@ const Login = () => {
 
     try {
       if (auth) {
+        try {
+          await setPersistence(auth, browserLocalPersistence);
+        } catch (persErr) {
+          console.warn('Set persistence note:', persErr);
+        }
         const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
         setSuccessMsg('Authentication successful. Loading profile...');
         if (userCredential?.user && refreshProfile) {
@@ -335,6 +342,11 @@ const Login = () => {
     setLoading(true);
 
     try {
+      if (auth) {
+        try {
+          await setPersistence(auth, browserLocalPersistence);
+        } catch {}
+      }
       const result = await confirmationResult.confirm(cleanOtp);
       const user = result.user;
 
@@ -384,6 +396,11 @@ const Login = () => {
     setGoogleLoading(true);
 
     try {
+      if (auth) {
+        try {
+          await setPersistence(auth, browserLocalPersistence);
+        } catch {}
+      }
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, provider);

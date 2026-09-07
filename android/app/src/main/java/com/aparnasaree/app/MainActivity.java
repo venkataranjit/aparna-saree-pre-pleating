@@ -1,6 +1,7 @@
 package com.aparnasaree.app;
 
 import android.os.Bundle;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import com.getcapacitor.BridgeActivity;
 
@@ -13,6 +14,12 @@ public class MainActivity extends BridgeActivity {
             webView.setVerticalScrollBarEnabled(false);
             webView.setHorizontalScrollBarEnabled(false);
             webView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
+
+            WebSettings settings = webView.getSettings();
+            if (settings != null) {
+                settings.setDomStorageEnabled(true);
+                settings.setDatabaseEnabled(true);
+            }
         }
     }
 }

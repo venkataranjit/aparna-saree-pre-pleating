@@ -77,8 +77,6 @@ export const AuthProvider = ({ children }) => {
   // Sync or fetch profile from Firestore / Local Cache
   const fetchOrInitProfile = async (user) => {
     if (!user) {
-      setUserProfile(null);
-      clearCachedSession();
       return null;
     }
 
@@ -277,9 +275,22 @@ export const AuthProvider = ({ children }) => {
           saveCachedSession(user, resolved);
         }
       } else {
-        clearCachedSession();
-        setCurrentUser(null);
-        setUserProfile(null);
+        // NEVER logout automatically:
+        // If Firebase auth listener emits null (offline, transient refresh, or cold boot),
+        // check if a valid cached session exists in localStorage.
+        const cached = getCachedSession();
+        if (cached?.user && cached.user.uid) {
+          // Retain logged-in state permanently
+          setCurrentUser(cached.user);
+          if (cached.profile) {
+            setUserProfile(cached.profile);
+          }
+        } else {
+          // If cache was manually cleared by user (clear data / clear browser cache)
+          clearCachedSession();
+          setCurrentUser(null);
+          setUserProfile(null);
+        }
       }
       setLoading(false);
     });

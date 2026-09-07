@@ -1,4 +1,4 @@
-@use '../../styles/variables' as *;
+@use "../../styles/variables" as *;
 
 .landing-hero {
   padding: $spacing-2xl 0;
@@ -35,7 +35,7 @@
 
   &__title {
     color: $color-light-gold;
-    font-weight: 800;
+    font-weight: 700;
     font-size: 2.5rem;
     line-height: 1.2;
     margin-top: 8px;
@@ -70,7 +70,8 @@
       gap: 12px;
       width: 100%;
 
-      a, button {
+      a,
+      button {
         width: 100%;
       }
     }

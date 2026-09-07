@@ -1,4 +1,4 @@
-@use '../../styles/variables' as *;
+@use "../../styles/variables" as *;
 
 .customers-page {
   padding: 8px 4px;
@@ -20,7 +20,7 @@
 
     .page-title {
       font-size: 1.85rem;
-      font-weight: 800;
+      font-weight: 700;
       color: $color-light-gold;
       letter-spacing: -0.5px;
       margin: 0;
@@ -190,13 +190,17 @@
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(10, 10, 8, 0.9) 100%);
+        background: linear-gradient(
+          135deg,
+          rgba(212, 175, 55, 0.3) 0%,
+          rgba(10, 10, 8, 0.9) 100%
+        );
         border: 1px solid rgba(212, 175, 55, 0.4);
         display: flex;
         align-items: center;
         justify-content: center;
         color: $color-light-gold;
-        font-weight: 800;
+        font-weight: 700;
         font-size: 0.88rem;
         flex-shrink: 0;
 
@@ -267,7 +271,7 @@
         justify-content: flex-end;
 
         .app-btn,
-        button {
+        button:not(.view-more-pill-btn) {
           width: 32px;
           height: 32px;
           min-width: 32px;

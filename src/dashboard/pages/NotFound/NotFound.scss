@@ -1,10 +1,15 @@
-@use '../../styles/variables' as *;
+@use "../../styles/variables" as *;
 
 .not-found-page {
   min-height: 100vh;
   min-height: 100dvh;
   background-color: #000000;
-  background: radial-gradient(circle at 50% 20%, rgba(212, 175, 55, 0.12) 0%, rgba(0, 0, 0, 0.95) 60%, #000000 100%);
+  background: radial-gradient(
+    circle at 50% 20%,
+    rgba(212, 175, 55, 0.12) 0%,
+    rgba(0, 0, 0, 0.95) 60%,
+    #000000 100%
+  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,7 +28,12 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, transparent 0%, $color-gold 50%, transparent 100%);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      $color-gold 50%,
+      transparent 100%
+    );
     opacity: 0.9;
   }
 
@@ -35,7 +45,11 @@
     top: -150px;
     left: 50%;
     transform: translateX(-50%);
-    background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+    background: radial-gradient(
+      circle,
+      rgba(212, 175, 55, 0.08) 0%,
+      transparent 70%
+    );
     pointer-events: none;
     z-index: 0;
   }
@@ -66,7 +80,11 @@
       position: absolute;
       width: 110%;
       height: 120%;
-      background: radial-gradient(ellipse at center, rgba(212, 175, 55, 0.2) 0%, transparent 70%);
+      background: radial-gradient(
+        ellipse at center,
+        rgba(212, 175, 55, 0.2) 0%,
+        transparent 70%
+      );
       filter: blur(20px);
       pointer-events: none;
       z-index: 0;
@@ -81,7 +99,8 @@
     height: auto;
     max-height: 130px;
     object-fit: contain;
-    filter: drop-shadow(0 0 24px rgba(212, 175, 55, 0.45)) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.8));
+    filter: drop-shadow(0 0 24px rgba(212, 175, 55, 0.45))
+      drop-shadow(0 6px 16px rgba(0, 0, 0, 0.8));
     animation: gentleFloat 6s ease-in-out infinite alternate;
 
     @media (max-width: 768px) {
@@ -97,12 +116,18 @@
 
   // Modern Glass Card
   .not-found-card {
-    background: linear-gradient(155deg, rgba(18, 17, 13, 0.85) 0%, rgba(8, 8, 7, 0.95) 100%);
+    background: linear-gradient(
+      155deg,
+      rgba(18, 17, 13, 0.85) 0%,
+      rgba(8, 8, 7, 0.95) 100%
+    );
     border: 1px solid rgba(212, 175, 55, 0.25);
     border-radius: 20px;
     padding: 36px 44px;
     backdrop-filter: blur(14px);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.95), 0 0 30px rgba(212, 175, 55, 0.12);
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.95),
+      0 0 30px rgba(212, 175, 55, 0.12);
     max-width: 680px;
     width: 100%;
     position: relative;
@@ -119,7 +144,12 @@
       left: 20%;
       right: 20%;
       height: 2px;
-      background: linear-gradient(90deg, transparent 0%, $color-gold 50%, transparent 100%);
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        $color-gold 50%,
+        transparent 100%
+      );
       opacity: 0.8;
     }
 
@@ -154,7 +184,12 @@
       font-weight: 900 !important;
       line-height: 0.95 !important;
       letter-spacing: -2px;
-      background: linear-gradient(135deg, #fff3cf 0%, #d4af37 45%, #9a7b1c 100%);
+      background: linear-gradient(
+        135deg,
+        #fff3cf 0%,
+        #d4af37 45%,
+        #9a7b1c 100%
+      );
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 14px !important;
@@ -165,7 +200,7 @@
     &__headline {
       color: $color-light-gold !important;
       font-size: clamp(1.3rem, 4vw, 1.85rem) !important;
-      font-weight: 800 !important;
+      font-weight: 700 !important;
       letter-spacing: 0.2px;
       margin-bottom: 12px !important;
     }
@@ -189,7 +224,11 @@
       margin-bottom: 0;
 
       .primary-btn {
-        background: linear-gradient(135deg, #d4af37 0%, #a88219 100%) !important;
+        background: linear-gradient(
+          135deg,
+          #d4af37 0%,
+          #a88219 100%
+        ) !important;
         color: #000000 !important;
         font-weight: 700 !important;
         font-size: 0.88rem !important;
@@ -199,7 +238,11 @@
         transition: all 0.25s ease !important;
 
         &:hover {
-          background: linear-gradient(135deg, #e6d8a3 0%, #d4af37 100%) !important;
+          background: linear-gradient(
+            135deg,
+            #e6d8a3 0%,
+            #d4af37 100%
+          ) !important;
           box-shadow: 0 6px 24px rgba(212, 175, 55, 0.55) !important;
           transform: translateY(-2px);
         }

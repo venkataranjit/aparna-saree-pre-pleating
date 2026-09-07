@@ -21,6 +21,9 @@ import SquareFootOutlinedIcon from "@mui/icons-material/SquareFootOutlined";
 import PendingActionsOutlinedIcon from "@mui/icons-material/PendingActionsOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import StatCard from "../../components/StatCard/StatCard";
 import { useAuth } from "../../../auth/context/AuthContext";
@@ -72,7 +75,7 @@ const customerValidationSchema = Yup.object({
     .trim()
     .matches(
       /^[6-9]\d{9}$/,
-      "Please enter a valid 10-digit Indian mobile number"
+      "Please enter a valid 10-digit Indian mobile number",
     )
     .required("Mobile Number is required"),
   email: Yup.string()
@@ -102,7 +105,7 @@ const measurementValidationSchema = Yup.object({
         if (!val) return true;
         const num = Number(val);
         return !Number.isNaN(num) && num > 0 && num <= 200;
-      }
+      },
     ),
   shoulderToRightTight: Yup.string()
     .trim()
@@ -113,7 +116,7 @@ const measurementValidationSchema = Yup.object({
         if (!val) return true;
         const num = Number(val);
         return !Number.isNaN(num) && num > 0 && num <= 100;
-      }
+      },
     ),
   chest: Yup.string()
     .trim()
@@ -124,7 +127,7 @@ const measurementValidationSchema = Yup.object({
         if (!val) return true;
         const num = Number(val);
         return !Number.isNaN(num) && num > 0 && num <= 100;
-      }
+      },
     ),
   hip: Yup.string()
     .trim()
@@ -135,7 +138,7 @@ const measurementValidationSchema = Yup.object({
         if (!val) return true;
         const num = Number(val);
         return !Number.isNaN(num) && num > 0 && num <= 120;
-      }
+      },
     ),
   firstPleatSize: Yup.string()
     .trim()
@@ -146,7 +149,7 @@ const measurementValidationSchema = Yup.object({
         if (!val) return true;
         const num = Number(val);
         return !Number.isNaN(num) && num > 0 && num <= 50;
-      }
+      },
     ),
   noOfChestPleats: Yup.string()
     .trim()
@@ -159,7 +162,7 @@ const measurementValidationSchema = Yup.object({
         return (
           !Number.isNaN(num) && Number.isInteger(num) && num > 0 && num <= 30
         );
-      }
+      },
     ),
   height: Yup.string()
     .trim()
@@ -170,7 +173,7 @@ const measurementValidationSchema = Yup.object({
         if (!val) return true;
         const num = Number(val);
         return !Number.isNaN(num) && num > 0 && num <= 300;
-      }
+      },
     ),
   dressSize: Yup.string()
     .trim()
@@ -228,6 +231,20 @@ const Customers = () => {
     setSortDirection(isAsc ? "desc" : "asc");
     setSortField(field);
     setPage(0);
+  };
+
+  // Expandable row state for "View More" (to view joined date, modified date, etc.)
+  const [expandedCustomers, setExpandedCustomers] = useState(new Set());
+  const toggleCustomerExpand = (id) => {
+    setExpandedCustomers((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   };
 
   // Modal Dialog states
@@ -373,14 +390,14 @@ const Customers = () => {
           if (uniqueness.emailExists) {
             editFormik.setFieldError(
               "email",
-              "This email address is already registered."
+              "This email address is already registered.",
             );
             editFormik.setFieldTouched("email", true, false);
           }
           if (uniqueness.mobileExists) {
             editFormik.setFieldError(
               "userMobile",
-              "This mobile number is already registered."
+              "This mobile number is already registered.",
             );
             editFormik.setFieldTouched("userMobile", true, false);
           }
@@ -440,8 +457,8 @@ const Customers = () => {
                   updatedAt: editNow.toISOString(),
                   rawUpdatedAt: editNow,
                 }
-              : c
-          )
+              : c,
+          ),
         );
 
         if (customerForView && customerForView.id === selectedCustomer.id) {
@@ -471,7 +488,6 @@ const Customers = () => {
     },
   });
 
-
   // Create Customer Formik
   const createFormik = useFormik({
     initialValues: {
@@ -497,14 +513,14 @@ const Customers = () => {
           if (uniqueness.emailExists) {
             createFormik.setFieldError(
               "email",
-              "This email address is already registered."
+              "This email address is already registered.",
             );
             createFormik.setFieldTouched("email", true, false);
           }
           if (uniqueness.mobileExists) {
             createFormik.setFieldError(
               "userMobile",
-              "This mobile number is already registered."
+              "This mobile number is already registered.",
             );
             createFormik.setFieldTouched("userMobile", true, false);
           }
@@ -529,7 +545,7 @@ const Customers = () => {
           if (authErr.code === "auth/email-already-in-use") {
             createFormik.setFieldError(
               "email",
-              "This email address is already registered in Authentication."
+              "This email address is already registered in Authentication.",
             );
             createFormik.setFieldTouched("email", true, false);
             setFeedback({
@@ -584,7 +600,6 @@ const Customers = () => {
   });
 
   // measureFormik removed — handled by <MeasurementModal> component via onSave prop.
-
 
   // Open Edit Measurement Modal
   const handleOpenEditMeasure = (measure) => {
@@ -652,7 +667,7 @@ const Customers = () => {
 
         const updatedRecord = await updateMeasurement(
           selectedMeasureForEdit.id,
-          updatePayload
+          updatePayload,
         );
 
         setMeasurementsMap((prev) => {
@@ -669,7 +684,7 @@ const Customers = () => {
                       ? updatedRecord
                       : {}),
                   }
-                : m
+                : m,
             ),
           };
         });
@@ -701,7 +716,7 @@ const Customers = () => {
       await deleteCustomerMeasurement(measurementId);
       setMeasurementsMap((prev) => {
         const userList = (prev[customerId] || []).filter(
-          (m) => m.id !== measurementId
+          (m) => m.id !== measurementId,
         );
         return {
           ...prev,
@@ -778,7 +793,7 @@ const Customers = () => {
   const paginatedCustomers = useMemo(() => {
     return sortedCustomers.slice(
       page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage
+      page * rowsPerPage + rowsPerPage,
     );
   }, [sortedCustomers, page, rowsPerPage]);
 
@@ -793,7 +808,7 @@ const Customers = () => {
   const totalMeasurementsCount = useMemo(() => {
     return Object.values(measurementsMap).reduce(
       (acc, list) => acc + (list?.length || 0),
-      0
+      0,
     );
   }, [measurementsMap]);
 
@@ -890,7 +905,7 @@ const Customers = () => {
           change={
             totalCustomersCount > 0
               ? `${Math.round(
-                  (customersWithMeasurements / totalCustomersCount) * 100
+                  (customersWithMeasurements / totalCustomersCount) * 100,
                 )}% Profile Rate`
               : "0%"
           }
@@ -961,17 +976,6 @@ const Customers = () => {
                     MOBILE
                   </AppTableSortLabel>
                 </AppTableCell>
-                <AppTableCell head>
-                  <AppTableSortLabel
-                    active={sortField === "userAddress"}
-                    direction={
-                      sortField === "userAddress" ? sortDirection : "asc"
-                    }
-                    onClick={() => handleRequestSort("userAddress")}
-                  >
-                    ADDRESS
-                  </AppTableSortLabel>
-                </AppTableCell>
                 <AppTableCell head style={{ textAlign: "center" }}>
                   <AppTableSortLabel
                     active={sortField === "measureCount"}
@@ -983,31 +987,9 @@ const Customers = () => {
                     MEASUREMENTS
                   </AppTableSortLabel>
                 </AppTableCell>
-                <AppTableCell head>
-                  <AppTableSortLabel
-                    active={sortField === "createdAt"}
-                    direction={
-                      sortField === "createdAt" ? sortDirection : "asc"
-                    }
-                    onClick={() => handleRequestSort("createdAt")}
-                  >
-                    JOINED DATE
-                  </AppTableSortLabel>
-                </AppTableCell>
-                <AppTableCell head>
-                  <AppTableSortLabel
-                    active={sortField === "updatedAt"}
-                    direction={
-                      sortField === "updatedAt" ? sortDirection : "asc"
-                    }
-                    onClick={() => handleRequestSort("updatedAt")}
-                  >
-                    MODIFIED
-                  </AppTableSortLabel>
-                </AppTableCell>
                 <AppTableCell
                   head
-                  style={{ textAlign: "right", minWidth: 140 }}
+                  style={{ textAlign: "right", minWidth: 160 }}
                 >
                   ACTIONS
                 </AppTableCell>
@@ -1018,7 +1000,7 @@ const Customers = () => {
               {loading ? (
                 <AppTableRow>
                   <AppTableCell
-                    colSpan={7}
+                    colSpan={4}
                     style={{ textAlign: "center", padding: "48px 16px" }}
                   >
                     <div
@@ -1038,7 +1020,7 @@ const Customers = () => {
                 </AppTableRow>
               ) : filteredCustomers.length === 0 ? (
                 <AppTableRow>
-                  <AppTableCell colSpan={7} className="empty-state-cell">
+                  <AppTableCell colSpan={4} className="empty-state-cell">
                     <div
                       style={{
                         display: "flex",
@@ -1079,137 +1061,214 @@ const Customers = () => {
                   ).toUpperCase();
                   const userMeasures = measurementsMap[user.id] || [];
                   const measureCount = userMeasures.length;
+                  const isExpanded = expandedCustomers.has(user.id);
 
                   return (
-                    <AppTableRow key={user.id} className="customer-table-row">
-                      {/* Customer Avatar & Name */}
-                      <AppTableCell>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                          }}
-                        >
-                          <div className="user-avatar-circle">{initial}</div>
-                          <div>
-                            <div className="user-name-text">
-                              {user.username || "Customer"}
-                            </div>
-                            <div className="user-email-text">
-                              {user.email || "No email registered"}
+                    <React.Fragment key={user.id}>
+                      <AppTableRow className="customer-table-row">
+                        {/* Customer Avatar & Name */}
+                        <AppTableCell>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                            }}
+                          >
+                            <div className="user-avatar-circle">{initial}</div>
+                            <div>
+                              <div className="user-name-text">
+                                {user.username || "Customer"}
+                              </div>
+                              <div className="user-email-text">
+                                {user.email || "No email registered"}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </AppTableCell>
+                        </AppTableCell>
 
-                      {/* Phone Number */}
-                      <AppTableCell className="mobile-cell">
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
+                        {/* Phone Number */}
+                        <AppTableCell className="mobile-cell">
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <PhoneIphoneOutlinedIcon
+                              style={{ fontSize: 16, color: "#d4af37" }}
+                            />
+                            <span style={{ fontFamily: "monospace" }}>
+                              {user.userMobile || "—"}
+                            </span>
+                          </div>
+                        </AppTableCell>
+
+                        {/* Saree Measurement Status */}
+                        <AppTableCell style={{ textAlign: "center" }}>
+                          {measureCount > 0 ? (
+                            <span
+                              onClick={() => handleOpenViewDetails(user)}
+                              style={{ cursor: "pointer" }}
+                              title="View Measurements"
+                            >
+                              <AppBadge variant="completed">
+                                ✓ {measureCount} Profile
+                                {measureCount > 1 ? "s" : ""}
+                              </AppBadge>
+                            </span>
+                          ) : (
+                            <span
+                              onClick={() => handleOpenAddMeasure(user)}
+                              style={{ cursor: "pointer" }}
+                              title="Add Measurement"
+                            >
+                              <AppBadge variant="pending">
+                                + Add Measurements
+                              </AppBadge>
+                            </span>
+                          )}
+                        </AppTableCell>
+
+                        {/* Row Action Buttons */}
+                        <AppTableCell
+                          style={{ textAlign: "right", whiteSpace: "nowrap" }}
                         >
-                          <PhoneIphoneOutlinedIcon
-                            style={{ fontSize: 16, color: "#d4af37" }}
-                          />
-                          <span style={{ fontFamily: "monospace" }}>
-                            {user.userMobile || "—"}
-                          </span>
-                        </div>
-                      </AppTableCell>
-
-                      {/* Delivery Address */}
-                      <AppTableCell className="address-cell">
-                        {user.userAddress || "—"}
-                      </AppTableCell>
-
-                      {/* Saree Measurement Status */}
-                      <AppTableCell style={{ textAlign: "center" }}>
-                        {measureCount > 0 ? (
-                          <span
-                            onClick={() => handleOpenViewDetails(user)}
-                            style={{ cursor: "pointer" }}
-                            title="View Measurements"
-                          >
-                            <AppBadge variant="completed">
-                              ✓ {measureCount} Profile
-                              {measureCount > 1 ? "s" : ""}
-                            </AppBadge>
-                          </span>
-                        ) : (
-                          <span
-                            onClick={() => handleOpenAddMeasure(user)}
-                            style={{ cursor: "pointer" }}
-                            title="Add Measurement"
-                          >
-                            <AppBadge variant="pending">
-                              + Add Measurements
-                            </AppBadge>
-                          </span>
-                        )}
-                      </AppTableCell>
-
-                      {/* Joined Date */}
-                      <AppTableCell className="date-cell">
-                        <DateTimeCell value={user.rawCreatedAt || user.createdAt} />
-                      </AppTableCell>
-
-                      {/* Modified Date */}
-                      <AppTableCell className="date-cell">
-                        <DateTimeCell
-                          value={user.rawUpdatedAt || user.updatedAt}
-                          modifiedFrom={user.rawCreatedAt || user.createdAt}
-                        />
-                      </AppTableCell>
-
-                      {/* Row Action Buttons */}
-                      <AppTableCell
-                        style={{ textAlign: "right", whiteSpace: "nowrap" }}
-                      >
-                        <div className="action-btns">
-                          {/* 1. View Details Button (Crystal Blue) */}
-                          <AppButton
-                            variant="info"
-                            size="sm"
-                            square
-                            className="action-btn--view"
-                            title="View Customer Profile & Measurements"
-                            onClick={() => handleOpenViewDetails(user)}
-                          >
-                            <VisibilityOutlinedIcon style={{ fontSize: 16 }} />
-                          </AppButton>
-
-                          {/* 2. Add Measurement Shortcut (Emerald Green) */}
-                          <AppButton
-                            variant="success"
-                            size="sm"
-                            square
-                            className="action-btn--measure"
-                            title="Add Measurement Profile"
-                            onClick={() => handleOpenAddMeasure(user)}
-                          >
-                            <StraightenOutlinedIcon style={{ fontSize: 16 }} />
-                          </AppButton>
-
-                          {/* 3. Edit Customer Info (Warm Amber Gold) */}
-                          {userCanEdit && (
+                          <div className="action-btns">
+                            {/* 1. View Details Button (Crystal Blue) */}
                             <AppButton
-                              variant="warning"
+                              variant="info"
                               size="sm"
                               square
-                              className="action-btn--edit"
-                              title="Edit Customer Info"
-                              onClick={() => handleOpenEdit(user)}
+                              className="action-btn--view"
+                              title="View Customer Profile & Measurements"
+                              onClick={() => handleOpenViewDetails(user)}
                             >
-                              <EditOutlinedIcon style={{ fontSize: 16 }} />
+                              <VisibilityOutlinedIcon
+                                style={{ fontSize: 16 }}
+                              />
                             </AppButton>
-                          )}
-                        </div>
-                      </AppTableCell>
-                    </AppTableRow>
+
+                            {/* 2. Add Measurement Shortcut (Emerald Green) */}
+                            <AppButton
+                              variant="success"
+                              size="sm"
+                              square
+                              className="action-btn--measure"
+                              title="Add Measurement Profile"
+                              onClick={() => handleOpenAddMeasure(user)}
+                            >
+                              <StraightenOutlinedIcon
+                                style={{ fontSize: 16 }}
+                              />
+                            </AppButton>
+
+                            {/* 3. Edit Customer Info (Warm Amber Gold) */}
+                            {userCanEdit && (
+                              <AppButton
+                                variant="warning"
+                                size="sm"
+                                square
+                                className="action-btn--edit"
+                                title="Edit Customer Info"
+                                onClick={() => handleOpenEdit(user)}
+                              >
+                                <EditOutlinedIcon style={{ fontSize: 16 }} />
+                              </AppButton>
+                            )}
+
+                            {/* 4. Revamped View More Pill Button */}
+                            <button
+                              type="button"
+                              className={`view-more-pill-btn ${isExpanded ? "is-active" : ""}`}
+                              onClick={() => toggleCustomerExpand(user.id)}
+                              aria-expanded={isExpanded}
+                              title={
+                                isExpanded
+                                  ? "Hide Details"
+                                  : "View More Details"
+                              }
+                            >
+                              <span className="btn-text">
+                                {isExpanded ? "Less" : "More"}
+                              </span>
+                              <span
+                                className={`chevron-wrap ${isExpanded ? "rotated" : ""}`}
+                              >
+                                <KeyboardArrowDownIcon />
+                              </span>
+                            </button>
+                          </div>
+                        </AppTableCell>
+                      </AppTableRow>
+
+                      {/* Expandable View More Row with extra fields: Address, Joined Date, Modified Date */}
+                      {isExpanded && (
+                        <AppTableRow className="table-expanded-row">
+                          <AppTableCell
+                            colSpan={4}
+                            className="table-expanded-cell"
+                          >
+                            <div className="table-expanded-container">
+                              {/* Delivery Address Tile */}
+                              <div className="expanded-tile expanded-tile--address">
+                                <div className="tile-header">
+                                  <LocationOnOutlinedIcon className="tile-icon" />
+                                  <span className="tile-label">
+                                    Delivery Address
+                                  </span>
+                                </div>
+                                <div className="tile-content">
+                                  {user.userAddress ? (
+                                    <span className="address-text">
+                                      {user.userAddress}
+                                    </span>
+                                  ) : (
+                                    <span className="empty-hint">
+                                      No address provided
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Joined Date Tile */}
+                              <div className="expanded-tile">
+                                <div className="tile-header">
+                                  <CalendarTodayOutlinedIcon className="tile-icon" />
+                                  <span className="tile-label">
+                                    Joined Date
+                                  </span>
+                                </div>
+                                <div className="tile-content">
+                                  <DateTimeCell
+                                    value={user.rawCreatedAt || user.createdAt}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Modified At Tile */}
+                              <div className="expanded-tile">
+                                <div className="tile-header">
+                                  <ScheduleOutlinedIcon className="tile-icon" />
+                                  <span className="tile-label">
+                                    Modified At
+                                  </span>
+                                </div>
+                                <div className="tile-content">
+                                  <DateTimeCell
+                                    value={user.rawUpdatedAt || user.updatedAt}
+                                    modifiedFrom={
+                                      user.rawCreatedAt || user.createdAt
+                                    }
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </AppTableCell>
+                        </AppTableRow>
+                      )}
+                    </React.Fragment>
                   );
                 })
               )}
@@ -1435,7 +1494,9 @@ const Customers = () => {
             value={editFormik.values.newPassword}
             onChange={editFormik.handleChange}
             onBlur={editFormik.handleBlur}
-            error={editFormik.touched.newPassword && editFormik.errors.newPassword}
+            error={
+              editFormik.touched.newPassword && editFormik.errors.newPassword
+            }
             disabled={editFormik.isSubmitting}
             helperText="Enter a new password to reset. Leave blank to keep existing password."
             startAdornment={<LockOutlinedIcon />}
@@ -1520,7 +1581,12 @@ const Customers = () => {
                 <div>
                   <div className="item-label">Joined</div>
                   <div className="item-value">
-                    <DateTimeCell value={customerForView.rawCreatedAt || customerForView.createdAt} />
+                    <DateTimeCell
+                      value={
+                        customerForView.rawCreatedAt ||
+                        customerForView.createdAt
+                      }
+                    />
                   </div>
                 </div>
               </div>
@@ -1617,7 +1683,9 @@ const Customers = () => {
                         <span className="measure-date">
                           {measure.createdAt ? (
                             <DateTimeCell value={measure.createdAt} />
-                          ) : ""}
+                          ) : (
+                            ""
+                          )}
                         </span>
 
                         {userCanEdit && (
@@ -1735,7 +1803,6 @@ const Customers = () => {
         )}
       </AppModal>
 
-
       {/* ========================================================================= */}
       {/* 4. Modal: Add Measurement Profile (reusable MeasurementModal component)    */}
       {/* ========================================================================= */}
@@ -1780,7 +1847,6 @@ const Customers = () => {
           });
         }}
       />
-
 
       {/* ========================================================================= */}
       {/* 5. Modal: Edit Measurement Profile Dialog                                 */}

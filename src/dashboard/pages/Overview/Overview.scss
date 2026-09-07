@@ -1,4 +1,4 @@
-@use '../../styles/variables' as *;
+@use "../../styles/variables" as *;
 
 .overview-page {
   padding-top: 0;
@@ -27,7 +27,7 @@
 
       .overview-page-title {
         color: $color-light-gold !important;
-        font-weight: 800 !important;
+        font-weight: 700 !important;
         font-size: 1.85rem !important;
         letter-spacing: -0.3px;
         line-height: 1.2;
@@ -60,7 +60,8 @@
       @media (max-width: 600px) {
         width: 100%;
 
-        .export-btn, .new-booking-btn {
+        .export-btn,
+        .new-booking-btn {
           flex: 1;
           min-height: 42px;
           font-size: 0.82rem;
@@ -72,7 +73,8 @@
       @media (max-width: 370px) {
         flex-direction: column;
 
-        .export-btn, .new-booking-btn {
+        .export-btn,
+        .new-booking-btn {
           width: 100%;
         }
       }
@@ -132,5 +134,4 @@
       margin-bottom: $spacing-lg;
     }
   }
-
 }

@@ -1,4 +1,4 @@
-@use '../../styles/variables' as *;
+@use "../../styles/variables" as *;
 
 .services-page {
   &__header {
@@ -11,7 +11,7 @@
 
     .page-title {
       color: $color-light-gold;
-      font-weight: 800;
+      font-weight: 700;
       letter-spacing: -0.3px;
     }
 
@@ -133,7 +133,7 @@
 
     .service-price {
       color: $color-gold;
-      font-weight: 800;
+      font-weight: 700;
       font-size: 1.5rem;
       letter-spacing: -0.5px;
     }

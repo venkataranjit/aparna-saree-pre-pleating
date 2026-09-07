@@ -14,6 +14,10 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../../auth/context/AuthContext";
 import {
@@ -150,6 +154,20 @@ const Users = () => {
     setSortDirection(isAsc ? "desc" : "asc");
     setSortField(field);
     setPage(0);
+  };
+
+  // Expandable row state for "View More" (to view createdAt, updatedAt, etc.)
+  const [expandedUsers, setExpandedUsers] = useState(new Set());
+  const toggleUserExpand = (id) => {
+    setExpandedUsers((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   };
 
   // Load all users from Firestore with local cache fallback
@@ -667,17 +685,6 @@ const Users = () => {
                 </AppTableCell>
                 <AppTableCell head>
                   <AppTableSortLabel
-                    active={sortField === "userAddress"}
-                    direction={
-                      sortField === "userAddress" ? sortDirection : "asc"
-                    }
-                    onClick={() => handleRequestSort("userAddress")}
-                  >
-                    Address
-                  </AppTableSortLabel>
-                </AppTableCell>
-                <AppTableCell head>
-                  <AppTableSortLabel
                     active={sortField === "role"}
                     direction={sortField === "role" ? sortDirection : "asc"}
                     onClick={() => handleRequestSort("role")}
@@ -685,29 +692,7 @@ const Users = () => {
                     Assigned Role
                   </AppTableSortLabel>
                 </AppTableCell>
-                <AppTableCell head>
-                  <AppTableSortLabel
-                    active={sortField === "createdAt"}
-                    direction={
-                      sortField === "createdAt" ? sortDirection : "asc"
-                    }
-                    onClick={() => handleRequestSort("createdAt")}
-                  >
-                    Created On
-                  </AppTableSortLabel>
-                </AppTableCell>
-                <AppTableCell head>
-                  <AppTableSortLabel
-                    active={sortField === "updatedAt"}
-                    direction={
-                      sortField === "updatedAt" ? sortDirection : "asc"
-                    }
-                    onClick={() => handleRequestSort("updatedAt")}
-                  >
-                    Modified On
-                  </AppTableSortLabel>
-                </AppTableCell>
-                <AppTableCell head style={{ textAlign: "right", minWidth: 100 }}>
+                <AppTableCell head style={{ textAlign: "right", minWidth: 140 }}>
                   Actions
                 </AppTableCell>
               </AppTableRow>
@@ -716,7 +701,7 @@ const Users = () => {
               {loading ? (
                 <AppTableRow>
                   <AppTableCell
-                    colSpan={7}
+                    colSpan={4}
                     style={{ textAlign: "center", padding: "48px 16px" }}
                   >
                     <div
@@ -736,7 +721,7 @@ const Users = () => {
                 </AppTableRow>
               ) : filteredUsers.length === 0 ? (
                 <AppTableRow>
-                  <AppTableCell colSpan={7} className="empty-state-cell">
+                  <AppTableCell colSpan={4} className="empty-state-cell">
                     <div
                       style={{
                         display: "flex",
@@ -771,104 +756,145 @@ const Users = () => {
                 </AppTableRow>
               ) : (
                 paginatedUsers.map((u) => {
+                  const isExpanded = expandedUsers.has(u.id);
+
                   return (
-                    <AppTableRow key={u.id} className="user-table-row">
-                      <AppTableCell>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                          }}
-                        >
-                          <div className="user-avatar-circle">
-                            {u.username?.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="user-name-text">{u.username}</div>
-                            <div className="user-email-text">
-                              {u.email || "No email specified"}
+                    <React.Fragment key={u.id}>
+                      <AppTableRow className="user-table-row">
+                        <AppTableCell>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                            }}
+                          >
+                            <div className="user-avatar-circle">
+                              {u.username?.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="user-name-text">{u.username}</div>
+                              <div className="user-email-text">
+                                {u.email || "No email specified"}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </AppTableCell>
-                      <AppTableCell className="mobile-cell">
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
-                        >
-                          <PhoneIphoneOutlinedIcon
-                            style={{ fontSize: 16, color: "#d4af37" }}
-                          />
-                          <span style={{ fontFamily: "monospace" }}>
-                            {u.userMobile || "—"}
-                          </span>
-                        </div>
-                      </AppTableCell>
-                      <AppTableCell className="address-cell">
-                        {u.userAddress || "—"}
-                      </AppTableCell>
-                      <AppTableCell>{renderRoleBadge(u)}</AppTableCell>
-                      <AppTableCell className="date-cell">
-                        <DateTimeCell value={u.rawCreatedAt || u.createdAt} />
-                      </AppTableCell>
-                      <AppTableCell className="date-cell">
-                        <DateTimeCell
-                          value={u.rawUpdatedAt || u.updatedAt}
-                          modifiedFrom={u.rawCreatedAt || u.createdAt}
-                        />
-                      </AppTableCell>
-                      <AppTableCell
-                        style={{ textAlign: "right", whiteSpace: "nowrap" }}
-                      >
-                        <div className="action-btns">
-                          {userCanEdit && (
-                            <AppButton
-                              variant="warning"
-                              size="sm"
-                              square
-                              className="action-btn--edit"
-                              title="Edit User"
-                              onClick={() => handleOpenEdit(u)}
-                            >
-                              <EditOutlinedIcon style={{ fontSize: 16 }} />
-                            </AppButton>
-                          )}
-                          {userCanDelete && (
-                            <AppButton
-                              variant="danger"
-                              size="sm"
-                              square
-                              className="action-btn--delete"
-                              title="Delete User"
-                              onClick={() =>
-                                setUserToDelete({
-                                  id: u.id,
-                                  name: u.username || u.name || "User",
-                                })
-                              }
-                            >
-                              <DeleteOutlineIcon style={{ fontSize: 16 }} />
-                            </AppButton>
-                          )}
-                          {!userCanEdit && !userCanDelete && (
-                            <span
-                              style={{
-                                color: "rgba(230, 216, 163, 0.5)",
-                                fontStyle: "italic",
-                                padding: "0 8px",
-                                fontSize: "0.78rem",
-                              }}
-                            >
-                              View Only
+                        </AppTableCell>
+                        <AppTableCell className="mobile-cell">
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <PhoneIphoneOutlinedIcon
+                              style={{ fontSize: 16, color: "#d4af37" }}
+                            />
+                            <span style={{ fontFamily: "monospace" }}>
+                              {u.userMobile || "—"}
                             </span>
-                          )}
-                        </div>
-                      </AppTableCell>
-                    </AppTableRow>
+                          </div>
+                        </AppTableCell>
+                        <AppTableCell>{renderRoleBadge(u)}</AppTableCell>
+                        <AppTableCell
+                          style={{ textAlign: "right", whiteSpace: "nowrap" }}
+                        >
+                          <div className="action-btns">
+                            {userCanEdit && (
+                              <AppButton
+                                variant="warning"
+                                size="sm"
+                                square
+                                className="action-btn--edit"
+                                title="Edit User"
+                                onClick={() => handleOpenEdit(u)}
+                              >
+                                <EditOutlinedIcon style={{ fontSize: 16 }} />
+                              </AppButton>
+                            )}
+                            {userCanDelete && (
+                              <AppButton
+                                variant="danger"
+                                size="sm"
+                                square
+                                className="action-btn--delete"
+                                title="Delete User"
+                                onClick={() =>
+                                  setUserToDelete({
+                                    id: u.id,
+                                    name: u.username || u.name || "User",
+                                  })
+                                }
+                              >
+                                <DeleteOutlineIcon style={{ fontSize: 16 }} />
+                              </AppButton>
+                            )}
+                            <button
+                              type="button"
+                              className={`view-more-pill-btn ${isExpanded ? "is-active" : ""}`}
+                              onClick={() => toggleUserExpand(u.id)}
+                              aria-expanded={isExpanded}
+                              title={isExpanded ? "Hide Details" : "View More Details"}
+                            >
+                              <span className="btn-text">{isExpanded ? "Less" : "More"}</span>
+                              <span className={`chevron-wrap ${isExpanded ? "rotated" : ""}`}>
+                                <KeyboardArrowDownIcon />
+                              </span>
+                            </button>
+                          </div>
+                        </AppTableCell>
+                      </AppTableRow>
+
+                      {/* Expandable View More Row with extra fields: Address, Created At, Modified At */}
+                      {isExpanded && (
+                        <AppTableRow className="table-expanded-row">
+                          <AppTableCell colSpan={4} className="table-expanded-cell">
+                            <div className="table-expanded-container">
+                              {/* Address Tile */}
+                              <div className="expanded-tile expanded-tile--address">
+                                <div className="tile-header">
+                                  <LocationOnOutlinedIcon className="tile-icon" />
+                                  <span className="tile-label">Residential / Delivery Address</span>
+                                </div>
+                                <div className="tile-content">
+                                  {u.userAddress ? (
+                                    <span className="address-text">{u.userAddress}</span>
+                                  ) : (
+                                    <span className="empty-hint">No address provided</span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Created At Tile */}
+                              <div className="expanded-tile">
+                                <div className="tile-header">
+                                  <CalendarTodayOutlinedIcon className="tile-icon" />
+                                  <span className="tile-label">Created At</span>
+                                </div>
+                                <div className="tile-content">
+                                  <DateTimeCell value={u.rawCreatedAt || u.createdAt} />
+                                </div>
+                              </div>
+
+                              {/* Modified At Tile */}
+                              <div className="expanded-tile">
+                                <div className="tile-header">
+                                  <ScheduleOutlinedIcon className="tile-icon" />
+                                  <span className="tile-label">Modified At</span>
+                                </div>
+                                <div className="tile-content">
+                                  <DateTimeCell
+                                    value={u.rawUpdatedAt || u.updatedAt}
+                                    modifiedFrom={u.rawCreatedAt || u.createdAt}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </AppTableCell>
+                        </AppTableRow>
+                      )}
+                    </React.Fragment>
                   );
                 })
               )}

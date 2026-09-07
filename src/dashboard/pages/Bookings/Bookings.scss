@@ -1,4 +1,4 @@
-@use '../../styles/variables' as *;
+@use "../../styles/variables" as *;
 
 .bookings-page {
   &__header {
@@ -11,7 +11,7 @@
 
     .page-title {
       color: $color-light-gold;
-      font-weight: 800;
+      font-weight: 700;
       letter-spacing: -0.3px;
     }
 

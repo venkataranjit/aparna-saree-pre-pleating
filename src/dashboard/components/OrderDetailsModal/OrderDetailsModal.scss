@@ -25,7 +25,8 @@
     ) !important;
     border: 1px solid rgba(212, 175, 55, 0.3) !important;
     border-radius: 16px !important;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.95),
+    box-shadow:
+      0 24px 64px rgba(0, 0, 0, 0.95),
       0 0 32px rgba(212, 175, 55, 0.16) !important;
     position: relative;
     overflow: hidden;
@@ -96,7 +97,7 @@
 
     &__id {
       color: $color-gold !important;
-      font-weight: 800 !important;
+      font-weight: 700 !important;
       font-size: 1.6rem !important;
       letter-spacing: 0.5px;
       text-shadow: 0 0 14px rgba(212, 175, 55, 0.35);
@@ -553,7 +554,7 @@
           .pay-total-val {
             color: $color-gold;
             font-size: 1.35rem;
-            font-weight: 800;
+            font-weight: 700;
             text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
 
             @media (max-width: 600px) {

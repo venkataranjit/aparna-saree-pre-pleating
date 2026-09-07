@@ -632,6 +632,41 @@
           }
         }
       }
+
+      // Google Official 4-Color Animated Loader
+      .google-loader {
+        width: 22px;
+        height: 22px;
+        display: block;
+        animation: googleRotate 1.6s linear infinite;
+
+        .google-loader-path {
+          stroke-linecap: round;
+          animation:
+            googleDash 1.4s ease-in-out infinite,
+            googleColors 5.6s ease-in-out infinite;
+        }
+      }
+
+      // Facebook Official White Animated Loader
+      .facebook-loader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+
+        svg {
+          width: 22px;
+          height: 22px;
+          animation: fbRotate 0.85s linear infinite;
+          display: block;
+        }
+
+        .facebook-loader-path {
+          animation: fbDash 1.2s ease-in-out infinite;
+        }
+      }
     }
 
     // Simple & Clean "Don't have an account? Create Account"
@@ -702,3 +737,64 @@
     transform: translateX(6px);
   }
 }
+
+// Google Official 4-Color Spinner Keyframes
+@keyframes googleRotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes googleDash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}
+
+@keyframes googleColors {
+  0%,
+  100% {
+    stroke: #4285f4; // Google Blue
+  }
+  25% {
+    stroke: #ea4335; // Google Red
+  }
+  50% {
+    stroke: #fbbc05; // Google Yellow
+  }
+  75% {
+    stroke: #34a853; // Google Green
+  }
+}
+
+// Facebook Official Spinner Keyframes
+@keyframes fbRotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fbDash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 75, 150;
+    stroke-dashoffset: -30;
+  }
+  100% {
+    stroke-dasharray: 75, 150;
+    stroke-dashoffset: -115;
+  }
+}
+

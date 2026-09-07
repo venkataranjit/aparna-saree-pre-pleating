@@ -63,6 +63,47 @@ const FacebookIcon = () => (
   </svg>
 );
 
+// Google Official 4-Color Animated Loader
+const GoogleLoader = () => (
+  <svg className="google-loader" viewBox="0 0 50 50">
+    <circle
+      className="google-loader-path"
+      cx="25"
+      cy="25"
+      r="20"
+      fill="none"
+      strokeWidth="4"
+    />
+  </svg>
+);
+
+// Facebook Official White Animated Loader
+const FacebookLoader = () => (
+  <div className="facebook-loader">
+    <svg viewBox="0 0 50 50">
+      <circle
+        cx="25"
+        cy="25"
+        r="20"
+        fill="none"
+        stroke="rgba(255, 255, 255, 0.25)"
+        strokeWidth="4.5"
+      />
+      <circle
+        className="facebook-loader-path"
+        cx="25"
+        cy="25"
+        r="20"
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth="4.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  </div>
+);
+
+
 /**
  * Validation schema using Yup
  */
@@ -570,7 +611,7 @@ const Register = () => {
                 title="Sign up with Google"
                 aria-label="Sign up with Google"
               >
-                {googleLoading ? <AppSpinner size={20} /> : <GoogleIcon />}
+                {googleLoading ? <GoogleLoader /> : <GoogleIcon />}
               </button>
 
               <button
@@ -581,7 +622,7 @@ const Register = () => {
                 title="Sign up with Facebook"
                 aria-label="Sign up with Facebook"
               >
-                {facebookLoading ? <AppSpinner size={20} color="white" /> : <FacebookIcon />}
+                {facebookLoading ? <FacebookLoader /> : <FacebookIcon />}
               </button>
             </div>
 

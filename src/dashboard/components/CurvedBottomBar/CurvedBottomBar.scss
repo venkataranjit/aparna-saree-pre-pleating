@@ -1,0 +1,296 @@
+@use '../../styles/variables' as *;
+
+.fixed-bottom-bar-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 990;
+  display: none;
+  pointer-events: auto;
+  user-select: none;
+  background: rgba($bg-secondary, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid $surface-border;
+  box-shadow: 0 -8px 30px rgba($color-black, 0.85),
+              0 -1px 3px rgba($color-gold, 0.12);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.25s ease,
+              left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Glowing royal gold hairline accent across the entire top edge
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba($color-gold, 0.35) 15%,
+      $color-light-gold 50%,
+      rgba($color-gold, 0.35) 85%,
+      transparent 100%
+    );
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  // On desktop, display when sidebar is collapsed (76px sidebar rail)
+  @media (min-width: 900px) {
+    &.is-collapsed-sidebar {
+      display: block;
+      left: 76px;
+      width: calc(100% - 76px);
+      animation: bottomBarSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  }
+
+  // On mobile & tablet, span 100% width across the bottom screen
+  @media (max-width: 899px) {
+    display: block;
+    left: 0;
+    width: 100%;
+
+    &.is-mobile-drawer-open {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(100%);
+    }
+  }
+
+  .fixed-bottom-bar-content {
+    position: relative;
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    height: 60px;
+    padding: 0 $spacing-sm;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    box-sizing: content-box;
+
+    .bottom-nav-item {
+      position: relative;
+      flex: 1;
+      height: 60px;
+      background: transparent;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      overflow: hidden;
+
+      &__inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        width: 100%;
+        height: 100%;
+        padding: 5px 0 3px 0;
+      }
+
+      // Active top highlight glow
+      .active-top-glow {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 44px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, $color-gold, transparent);
+        box-shadow: 0 0 10px rgba($color-gold, 0.85),
+                    0 0 18px rgba($color-gold, 0.45);
+        border-radius: 2px;
+        animation: glowFadeIn 0.3s ease forwards;
+      }
+
+      .icon-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 30px;
+        border-radius: $border-radius-md;
+        transition: background-color 0.25s ease,
+                    box-shadow 0.25s ease,
+                    border-color 0.25s ease;
+      }
+
+      .icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $text-muted;
+        transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    color 0.22s ease,
+                    filter 0.25s ease;
+
+        .nav-bar-icon {
+          font-size: 23px;
+          color: inherit;
+        }
+      }
+
+      .nav-label {
+        font-size: 10.5px;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        color: $text-muted;
+        margin-top: 3px;
+        line-height: 1;
+        transition: color 0.22s ease, transform 0.22s ease, font-weight 0.22s ease;
+      }
+
+      .active-indicator-dot {
+        position: absolute;
+        bottom: 2px;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: $color-gold;
+        box-shadow: 0 0 6px $color-gold, 0 0 10px rgba($color-gold, 0.7);
+        animation: dotSpring 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+
+      // Hover interaction: smoothly increase icon size using brand variable colors (NO WHITE)
+      &:hover {
+        .icon-wrapper {
+          transform: scale(1.24); // Smoothly increase icon size on hover
+          color: $color-light-gold; // Brand color variable only
+          filter: drop-shadow(0 0 8px rgba($color-gold, 0.75));
+        }
+
+        .nav-label {
+          color: $color-light-gold; // Brand color variable only
+          letter-spacing: 0.4px;
+        }
+
+        .icon-badge {
+          background: $surface-gold-tint;
+          border: 1px solid $surface-border;
+        }
+      }
+
+      // Active state styling using brand variable colors (NO WHITE)
+      &.is-active {
+        .icon-badge {
+          background: rgba($color-gold, 0.14);
+          border: 1px solid $surface-border;
+        }
+
+        .icon-wrapper {
+          color: $color-gold;
+          transform: scale(1.06);
+          filter: drop-shadow(0 0 6px rgba($color-gold, 0.55));
+        }
+
+        .nav-label {
+          color: $color-gold;
+          font-weight: 600;
+        }
+
+        &:hover {
+          .icon-wrapper {
+            transform: scale(1.28); // Smoothly scale even larger when active on hover
+            color: $color-light-gold; // Brand color variable only
+            filter: drop-shadow(0 0 10px rgba($color-gold, 0.95));
+          }
+
+          .nav-label {
+            color: $color-light-gold; // Brand color variable only
+          }
+
+          .icon-badge {
+            background: rgba($color-gold, 0.2);
+            border-color: $surface-border-hover;
+          }
+        }
+      }
+
+      // Tap / Click active press feedback
+      &:active .icon-wrapper {
+        transform: scale(0.92);
+        transition-duration: 0.1s;
+      }
+
+      // Android Tap Ripple
+      .android-ripple {
+        position: absolute;
+        inset: 0;
+        border-radius: $border-radius-md;
+        background: radial-gradient(circle, rgba($color-gold, 0.3) 10%, transparent 70%);
+        opacity: 0;
+        transform: scale(0.3);
+        pointer-events: none;
+      }
+
+      &.is-rippling .android-ripple {
+        animation: rippleExpand 0.38s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+      }
+    }
+  }
+}
+
+// Keyframe Animations
+@keyframes bottomBarSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glowFadeIn {
+  0% {
+    opacity: 0;
+    width: 0;
+  }
+  100% {
+    opacity: 1;
+    width: 44px;
+  }
+}
+
+@keyframes dotSpring {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes rippleExpand {
+  0% {
+    opacity: 0.75;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}

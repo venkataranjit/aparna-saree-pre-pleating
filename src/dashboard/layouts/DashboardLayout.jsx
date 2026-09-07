@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar/Sidebar';
-import Header from '../components/Header/Header';
+import CurvedBottomBar from '../components/CurvedBottomBar/CurvedBottomBar';
 import { useAuth } from '../../auth/context/AuthContext';
 import { AppSpinner } from '../../components/common';
 import DashboardFooter from '../components/Footer/DashboardFooter';
@@ -23,8 +23,12 @@ const DashboardLayout = () => {
     setCollapsed((prev) => !prev);
   };
 
-  const toggleMobileSidebar = () => {
-    setMobileOpen((prev) => !prev);
+  const openSidebar = () => {
+    if (window.innerWidth < 900) {
+      setMobileOpen(true);
+    } else {
+      setCollapsed(false);
+    }
   };
 
   const closeMobileSidebar = () => {
@@ -56,14 +60,20 @@ const DashboardLayout = () => {
       )}
 
       <div className="dashboard-layout__content-wrapper">
-        <Header onMobileMenuToggle={toggleMobileSidebar} />
-        <main className="dashboard-layout__main">
+        <main className={`dashboard-layout__main ${collapsed ? 'with-bottom-bar' : ''}`}>
           <div className="dashboard-layout__page-content">
             <Outlet />
           </div>
           <DashboardFooter />
         </main>
       </div>
+
+      {/* Fixed Bottom Bar when sidebar is collapsed or on mobile */}
+      <CurvedBottomBar
+        collapsed={collapsed}
+        mobileOpen={mobileOpen}
+        onOpenSidebar={openSidebar}
+      />
     </div>
   );
 };

@@ -1757,11 +1757,28 @@ const formatOrderDoc = (id, data) => {
   };
 };
 
+// Cache of recently created order signatures to suppress rapid duplicate submissions
+const recentOrderCreations = new Map();
+
 /**
  * Create a new order with 5-digit Order ID: ORD-*****
  * @param {Object} orderData
  */
 export const createOrder = async (orderData) => {
+  // Deduplication check: construct signature to prevent double-booking within 3.5 seconds
+  const clientKey = orderData.clientId || orderData.userMobile || orderData.username || '';
+  const itemsKey = (orderData.items || []).map((it) => `${it.serviceId || it.serviceName}_${it.finalPrice || it.servicePrice}`).join('|');
+  const signature = `${clientKey}_${orderData.totalAmount}_${orderData.deliveryDate || ''}_${itemsKey}`;
+
+  const nowMs = Date.now();
+  if (recentOrderCreations.has(signature)) {
+    const existing = recentOrderCreations.get(signature);
+    if (nowMs - existing.timestamp < 3500 && existing.result) {
+      console.warn('Duplicate createOrder call suppressed for signature:', signature);
+      return existing.result;
+    }
+  }
+
   const orderId = orderData.id || orderData.orderId || generateOrderId();
   const currentUid = orderData.createdBy || auth?.currentUser?.uid || '';
   const model = createOrderModel({ ...orderData, id: orderId, orderId, createdBy: currentUid });
@@ -1798,6 +1815,16 @@ export const createOrder = async (orderData) => {
   const cached = getCachedOrders() || [];
   setCachedOrders([formatted, ...cached.filter((o) => o.id !== createdId)]);
 
+  // Cache created order signature to block duplicate calls
+  recentOrderCreations.set(signature, { result: formatted, timestamp: Date.now() });
+
+  // Cleanup old entries
+  for (const [key, val] of recentOrderCreations.entries()) {
+    if (nowMs - val.timestamp > 10000) {
+      recentOrderCreations.delete(key);
+    }
+  }
+
   return formatted;
 };
 
@@ -1833,6 +1860,82 @@ export const getAllOrders = async () => {
  */
 export const getOrdersByBusiness = async (_businessId) => {
   return await getAllOrders();
+};
+
+/**
+ * Get all orders mapped to a specific client / user ID (strictly isolated)
+ * @param {string} userId - User / Client document ID or auth UID
+ * @param {string} [userEmail] - Optional email for fallback matching
+ * @param {string} [userMobile] - Optional mobile for fallback matching
+ */
+export const getOrdersByUserId = async (userId, userEmail = '', userMobile = '') => {
+  if (!userId && !userEmail && !userMobile) return [];
+  const cleanUid = String(userId || '').trim();
+  const cleanEmail = String(userEmail || '').trim().toLowerCase();
+  const cleanMobile = String(userMobile || '').replace(/\D/g, '').slice(-10);
+
+  const isMatchingOrder = (o) => {
+    if (!o) return false;
+    if (cleanUid && (o.clientId === cleanUid || o.createdBy === cleanUid || o.client?.clientId === cleanUid)) {
+      return true;
+    }
+    if (cleanEmail && (String(o.email || '').toLowerCase().trim() === cleanEmail || String(o.client?.email || '').toLowerCase().trim() === cleanEmail)) {
+      return true;
+    }
+    if (cleanMobile) {
+      const oMobile = String(o.userMobile || o.phone || o.client?.userMobile || '').replace(/\D/g, '').slice(-10);
+      if (oMobile && oMobile === cleanMobile) return true;
+    }
+    return false;
+  };
+
+  const cached = getCachedOrders() || [];
+  const localMatched = cached.filter(isMatchingOrder);
+
+  try {
+    const queries = [];
+    if (cleanUid) {
+      queries.push(
+        withTimeout(
+          getDocs(query(collection(db, COLLECTIONS.ORDERS), where('clientId', '==', cleanUid))),
+          4000,
+          null
+        ),
+        withTimeout(
+          getDocs(query(collection(db, COLLECTIONS.ORDERS), where('createdBy', '==', cleanUid))),
+          4000,
+          null
+        )
+      );
+    }
+
+    const snapshots = await Promise.all(queries);
+    const map = new Map();
+    localMatched.forEach((ord) => map.set(ord.id, ord));
+
+    snapshots.forEach((snap) => {
+      if (snap && !snap.empty) {
+        snap.docs.forEach((docSnap) => {
+          const formatted = formatOrderDoc(docSnap.id, docSnap.data());
+          if (isMatchingOrder(formatted)) {
+            map.set(formatted.id, formatted);
+          }
+        });
+      }
+    });
+
+    const result = Array.from(map.values());
+    result.sort((a, b) => {
+      const timeA = new Date(a.rawCreatedAt || a.createdAt || a.orderDate || 0).getTime();
+      const timeB = new Date(b.rawCreatedAt || b.createdAt || b.orderDate || 0).getTime();
+      return timeB - timeA;
+    });
+
+    return result;
+  } catch (err) {
+    console.warn('getOrdersByUserId note (serving local):', err.message || err);
+    return localMatched;
+  }
 };
 
 /**

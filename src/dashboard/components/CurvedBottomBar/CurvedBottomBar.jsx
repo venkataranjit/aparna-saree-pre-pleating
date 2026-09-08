@@ -37,12 +37,16 @@ export const CurvedBottomBar = ({
       exact: true,
       icon: <HomeOutlinedIcon className="nav-bar-icon" />,
     },
-    {
-      id: 'bookings',
-      label: 'Orders',
-      path: '/dashboard/bookings',
-      icon: <BookOnlineOutlinedIcon className="nav-bar-icon" />,
-    },
+    ...(!isClient
+      ? [
+          {
+            id: 'bookings',
+            label: 'Orders',
+            path: '/dashboard/bookings',
+            icon: <BookOnlineOutlinedIcon className="nav-bar-icon" />,
+          },
+        ]
+      : []),
     {
       id: 'services',
       label: 'Services',

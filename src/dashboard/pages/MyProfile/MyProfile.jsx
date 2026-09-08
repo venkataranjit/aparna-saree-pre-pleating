@@ -14,6 +14,11 @@ import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined
 import SquareFootOutlinedIcon from "@mui/icons-material/SquareFootOutlined";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import DryCleaningOutlinedIcon from "@mui/icons-material/DryCleaningOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import CelebrationOutlinedIcon from "@mui/icons-material/CelebrationOutlined";
+import PaymentOutlinedIcon from "@mui/icons-material/PaymentOutlined";
 import { updatePassword } from "firebase/auth";
 import { auth } from "../../../firebase/config";
 import {
@@ -23,11 +28,12 @@ import {
   AppBadge,
   AppSpinner,
   AppCard,
+  AppTabs,
 } from "../../../components/common";
 import { useAuth } from "../../../auth/context/AuthContext";
 import {
   updateUser,
-  getAllMeasurements,
+  getMeasurementsByUserId,
   createClientMeasurement,
   updateMeasurement,
   deleteClientMeasurement,
@@ -35,10 +41,13 @@ import {
   formatDateSafe,
   formatTimeSafe,
   resetUserPassword,
+  getOrdersByUserId,
 } from "../../../firebase/dbService";
 import { USER_ROLES } from "../../../firebase/schema";
 import "./MyProfile.scss";
 import { MeasurementModal } from "../../components/MeasurementModal/MeasurementModal";
+import CreateOrderModal from "../../components/CreateOrderModal/CreateOrderModal";
+import OrderDetailsModal from "../../components/OrderDetailsModal/OrderDetailsModal";
 
 // Validation schema for editing personal profile
 const profileValidationSchema = Yup.object({
@@ -160,6 +169,52 @@ const measurementValidationSchema = Yup.object({
   notes: Yup.string().trim().max(300, "Notes cannot exceed 300 characters"),
 });
 
+// Helpers for parsing orders in client profile
+const getOrderItems = (order) => {
+  if (!order) return [];
+  if (Array.isArray(order.items) && order.items.length > 0) {
+    return order.items;
+  }
+  return [
+    {
+      id: "item_legacy",
+      serviceName: order.service || "Saree Pre-Pleating",
+      finalPrice:
+        Number(String(order.amount || order.totalAmount || 0).replace(/[^0-9]/g, "")) || 0,
+      sareeType: order.sareeType || "Silk Saree",
+      itemNotes: order.notes || "",
+    },
+  ];
+};
+
+const getOrderTotalAmount = (order) => {
+  if (!order) return "₹0";
+  if (
+    order.totalAmount !== undefined &&
+    order.totalAmount !== null &&
+    order.totalAmount !== ""
+  ) {
+    return `₹${Number(order.totalAmount).toLocaleString("en-IN")}`;
+  }
+  if (order.amount) {
+    if (String(order.amount).includes("₹")) return order.amount;
+    return `₹${Number(order.amount).toLocaleString("en-IN")}`;
+  }
+  const items = getOrderItems(order);
+  const sum = items.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0);
+  return `₹${sum.toLocaleString("en-IN")}`;
+};
+
+const getOrderFabricSummary = (order) => {
+  const items = getOrderItems(order);
+  if (items.length === 0) return order.sareeType || "Silk Saree";
+  const fabrics = items.map((it) => it.sareeType).filter(Boolean);
+  if (fabrics.length === 0) return order.sareeType || "Standard Silk";
+  const unique = [...new Set(fabrics)];
+  if (unique.length === 1) return unique[0];
+  return `${unique[0]} (+${unique.length - 1})`;
+};
+
 const MyProfile = () => {
   const {
     currentUser,
@@ -170,7 +225,14 @@ const MyProfile = () => {
     loading: authLoading,
   } = useAuth();
   const [measurements, setMeasurements] = useState([]);
-  const [loading, setLoading] = useState(true);  // Modals
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("orders");
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [orderForView, setOrderForView] = useState(null);
+
+  // Modals
+  const [openCreateOrderModal, setOpenCreateOrderModal] = useState(false);
   const [openEditProfileModal, setOpenEditProfileModal] = useState(false);
   const [openAddMeasureModal, setOpenAddMeasureModal] = useState(false);
   const [openEditMeasureModal, setOpenEditMeasureModal] = useState(false);
@@ -200,7 +262,7 @@ const MyProfile = () => {
             ? "Client"
             : "";
 
-  // Fetch measurements for the logged-in user
+  // Fetch measurements for the logged-in user (strictly isolated: never fetch other users' measurements)
   const fetchMyMeasurements = async () => {
     setLoading(true);
     try {
@@ -209,11 +271,17 @@ const MyProfile = () => {
         setLoading(false);
         return;
       }
-      const allMeasures = await getAllMeasurements();
-      const myMeasures = allMeasures.filter(
-        (m) => m.userId === currentUid || m.userId === userProfile?.id,
-      );
-      setMeasurements(myMeasures);
+      const myMeasures = await getMeasurementsByUserId(currentUid);
+      if (userProfile?.id && userProfile.id !== currentUid) {
+        const profileMeasures = await getMeasurementsByUserId(userProfile.id);
+        const map = new Map();
+        [...myMeasures, ...profileMeasures].forEach((m) => {
+          if (m && m.id) map.set(m.id, m);
+        });
+        setMeasurements(Array.from(map.values()));
+      } else {
+        setMeasurements(myMeasures);
+      }
     } catch (err) {
       console.warn("Error fetching personal measurements:", err);
       setMeasurements([]);
@@ -222,9 +290,38 @@ const MyProfile = () => {
     }
   };
 
+  // Fetch orders for the logged-in user (strictly isolated: never fetch other users' orders)
+  const fetchMyOrders = async () => {
+    setLoadingOrders(true);
+    try {
+      if (!currentUid && !displayEmail && !displayMobile) {
+        setOrders([]);
+        setLoadingOrders(false);
+        return;
+      }
+      const myOrders = await getOrdersByUserId(
+        currentUid,
+        displayEmail,
+        displayMobile
+      );
+      setOrders(myOrders || []);
+    } catch (err) {
+      console.warn("Error fetching personal orders:", err);
+      setOrders([]);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  const handleRefreshAll = () => {
+    fetchMyMeasurements();
+    fetchMyOrders();
+  };
+
   useEffect(() => {
     fetchMyMeasurements();
-  }, [currentUid, userProfile]);
+    fetchMyOrders();
+  }, [currentUid, displayEmail, displayMobile, userProfile]);
 
   // Edit Profile Formik
   const editProfileFormik = useFormik({
@@ -239,7 +336,7 @@ const MyProfile = () => {
       newPassword: "",
     },
     validationSchema: profileValidationSchema,
-    onSubmit: async (values, { setSubmitting, resetForm }) => {      try {
+    onSubmit: async (values, { setSubmitting, resetForm }) => {      try {
         const cleanEmail = values.email.trim().toLowerCase();
         const cleanMobile = String(values.userMobile).trim();
 
@@ -379,7 +476,7 @@ const MyProfile = () => {
       notes: selectedMeasureForEdit?.notes || "",
     },
     validationSchema: measurementValidationSchema,
-    onSubmit: async (values, { setSubmitting }) => {      try {
+    onSubmit: async (values, { setSubmitting }) => {      try {
         if (!selectedMeasureForEdit?.id)
           throw new Error("Measurement ID is required to update.");
 
@@ -473,20 +570,31 @@ const MyProfile = () => {
             variant="secondary"
             className="refresh-btn"
             startIcon={<RefreshOutlinedIcon />}
-            onClick={fetchMyMeasurements}
-            disabled={loading}
+            onClick={handleRefreshAll}
+            disabled={loading || loadingOrders}
           >
-            {loading ? "Refreshing..." : "Refresh"}
+            {loading || loadingOrders ? "Refreshing..." : "Refresh"}
           </AppButton>
 
-          <AppButton
-            variant="primary"
-            className="primary-action-btn"
-            startIcon={<SquareFootOutlinedIcon />}
-            onClick={() => setOpenAddMeasureModal(true)}
-          >
-            Add Measurement
-          </AppButton>
+          {activeTab === "orders" ? (
+            <AppButton
+              variant="primary"
+              className="primary-action-btn"
+              startIcon={<DryCleaningOutlinedIcon />}
+              onClick={() => setOpenCreateOrderModal(true)}
+            >
+              Create Order
+            </AppButton>
+          ) : (
+            <AppButton
+              variant="primary"
+              className="primary-action-btn"
+              startIcon={<SquareFootOutlinedIcon />}
+              onClick={() => setOpenAddMeasureModal(true)}
+            >
+              Add Measurement
+            </AppButton>
+          )}
         </div>
       </div>
 
@@ -508,15 +616,35 @@ const MyProfile = () => {
             </div>
           </div>
 
-          <AppButton
-            variant="secondary"
-            size="sm"
-            className="edit-profile-btn"
-            startIcon={<EditOutlinedIcon />}
-            onClick={() => setOpenEditProfileModal(true)}
+          <div
+            className="hero-action-buttons"
+            style={{
+              display: "flex",
+              gap: "8px",
+              flexWrap: "wrap",
+              alignItems: "center",
+            }}
           >
-            Edit My Details
-          </AppButton>
+            <AppButton
+              variant="primary"
+              size="sm"
+              className="create-order-hero-btn"
+              startIcon={<DryCleaningOutlinedIcon />}
+              onClick={() => setOpenCreateOrderModal(true)}
+            >
+              Create Order
+            </AppButton>
+
+            <AppButton
+              variant="secondary"
+              size="sm"
+              className="edit-profile-btn"
+              startIcon={<EditOutlinedIcon />}
+              onClick={() => setOpenEditProfileModal(true)}
+            >
+              Edit My Details
+            </AppButton>
+          </div>
         </div>
 
         {/* Contact and address grid */}
@@ -559,8 +687,189 @@ const MyProfile = () => {
         </div>
       </div>
 
-      {/* Saree Pleating Measurements Section */}
-      <div className="section-title-bar">
+      {/* Tab Navigation: Orders vs Measurements */}
+      <div className="my-profile-page__tabs-bar">
+        <AppTabs
+          tabs={[
+            {
+              value: "orders",
+              label: `My Orders (${orders.length})`,
+              icon: <ReceiptLongOutlinedIcon style={{ fontSize: 18 }} />,
+            },
+            {
+              value: "measurements",
+              label: `My Measurements (${measurements.length})`,
+              icon: <StraightenOutlinedIcon style={{ fontSize: 18 }} />,
+            },
+          ]}
+          value={activeTab}
+          onChange={(val) => setActiveTab(val)}
+        />
+      </div>
+
+      {/* Orders Tab Pane */}
+      {activeTab === "orders" && (
+        <div className="profile-orders-section">
+          <div className="section-title-bar">
+            <h3 className="section-title">
+              <ReceiptLongOutlinedIcon />
+              My Orders & Bookings
+            </h3>
+            <span className="count-chip">
+              {orders.length} {orders.length === 1 ? "Order" : "Orders"}
+            </span>
+          </div>
+
+          {loadingOrders ? (
+            <div className="my-profile-page__loading">
+              <AppSpinner size="lg" color="gold" />
+              <span className="loading-text">Loading your orders...</span>
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="empty-measurements-card empty-orders-card">
+              <ReceiptLongOutlinedIcon className="empty-icon" />
+              <h4 className="empty-title">No Orders Placed Yet</h4>
+              <p className="empty-desc">
+                You haven't placed any saree pre-pleating, draping, or box folding
+                orders yet. Book your first order with your tailored measurements!
+              </p>
+              <AppButton
+                variant="primary"
+                className="primary-action-btn"
+                startIcon={<DryCleaningOutlinedIcon />}
+                onClick={() => setOpenCreateOrderModal(true)}
+              >
+                Book Saree Pre-Pleating
+              </AppButton>
+            </div>
+          ) : (
+            <div className="profile-orders-grid">
+              {orders.map((order) => {
+                const items = getOrderItems(order);
+                const statusVal = order.status || order.orderStatus || "in-progress";
+                const paymentVal = order.paymentStatus || "paid";
+                const fabricSummary = getOrderFabricSummary(order);
+                const totalAmountStr = getOrderTotalAmount(order);
+
+                return (
+                  <div key={order.id} className="profile-order-card">
+                    <div className="profile-order-card__header">
+                      <div className="order-id-badge-wrap">
+                        <span className="order-id-pill">{order.id}</span>
+                        {order.occasion && (
+                          <span
+                            className="order-occasion-chip"
+                            title={order.occasion}
+                          >
+                            <CelebrationOutlinedIcon
+                              style={{ fontSize: 13, marginRight: 4 }}
+                            />
+                            {order.occasion}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="order-badges-wrap">
+                        <span className={`status-pill ${statusVal}`}>
+                          <span className="dot" />
+                          {statusVal.replace("-", " ")}
+                        </span>
+                        <span className={`payment-pill ${paymentVal}`}>
+                          <PaymentOutlinedIcon
+                            style={{ fontSize: 12, marginRight: 4 }}
+                          />
+                          {paymentVal}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="profile-order-card__body">
+                      <div className="order-main-info">
+                        <h4 className="service-headline">
+                          {items.length > 1
+                            ? `${items.length} Services Booked`
+                            : items[0]?.serviceName || "Saree Pre-Pleating"}
+                        </h4>
+                        <div className="fabric-chip">
+                          <span className="fabric-label">Fabric: </span>
+                          <span className="fabric-val">{fabricSummary}</span>
+                        </div>
+                      </div>
+
+                      {items.length > 1 && (
+                        <div className="items-mini-chips">
+                          {items.map((it, idx) => (
+                            <span key={it.id || idx} className="item-mini-chip">
+                              <DryCleaningOutlinedIcon
+                                style={{ fontSize: 12, marginRight: 4 }}
+                              />
+                              {it.serviceName} ({it.sareeType || "Saree"}) — ₹
+                              {it.finalPrice || 0}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {order.notes && (
+                        <p className="order-notes-snippet">{order.notes}</p>
+                      )}
+
+                      <div className="order-dates-grid">
+                        <div className="date-tile">
+                          <span className="date-label">Booked On</span>
+                          <span className="date-value">
+                            <CalendarTodayOutlinedIcon
+                              style={{ fontSize: 13, marginRight: 4 }}
+                            />
+                            {formatDateSafe(
+                              order.createdAt || order.orderDate || order.date
+                            )}
+                          </span>
+                        </div>
+                        <div className="date-tile">
+                          <span className="date-label">Target Delivery</span>
+                          <span className="date-value date-value--delivery">
+                            <CalendarTodayOutlinedIcon
+                              style={{ fontSize: 13, marginRight: 4 }}
+                            />
+                            {order.deliveryDate
+                              ? formatDateSafe(order.deliveryDate)
+                              : "Standard"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="profile-order-card__footer">
+                      <div className="order-amount-wrap">
+                        <span className="amount-label">Total Amount</span>
+                        <span className="amount-val">{totalAmountStr}</span>
+                      </div>
+
+                      <AppButton
+                        size="sm"
+                        variant="secondary"
+                        className="view-order-details-btn"
+                        startIcon={
+                          <VisibilityOutlinedIcon style={{ fontSize: 16 }} />
+                        }
+                        onClick={() => setOrderForView(order)}
+                      >
+                        View Details
+                      </AppButton>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Measurements Tab Pane */}
+      {activeTab === "measurements" && (
+        <div className="profile-measurements-section">
+          <div className="section-title-bar">
         <h3 className="section-title">
           <StraightenOutlinedIcon />
           My Saree Pleating Measurements
@@ -727,6 +1036,8 @@ const MyProfile = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
         </div>
       )}
 
@@ -1113,6 +1424,45 @@ const MyProfile = () => {
           ? This action cannot be undone.
         </p>
       </AppModal>
+
+      {/* ========================================================================= */}
+      {/* 5. Modal: Order Details Modal                                             */}
+      {/* ========================================================================= */}
+      {/* 5. Modal: Order Details Modal (Client View: Read-Only)                     */}
+      {/* ========================================================================= */}
+      <OrderDetailsModal
+        open={Boolean(orderForView)}
+        onClose={() => setOrderForView(null)}
+        order={orderForView}
+        readOnly={true}
+        onStatusUpdated={fetchMyOrders}
+        onOrderUpdated={fetchMyOrders}
+      />
+
+      {/* ========================================================================= */}
+      {/* 6. Modal: Create Order Modal (Client Mode - Strict Data Isolation)       */}
+      {/* ========================================================================= */}
+      <CreateOrderModal
+        open={openCreateOrderModal}
+        onClose={() => setOpenCreateOrderModal(false)}
+        onOrderCreated={(newOrder) => {
+          fetchMyOrders();
+          fetchMyMeasurements();
+          setActiveTab("orders");
+        }}
+        clientMode={true}
+        initialClient={{
+          id: currentUid,
+          username: displayName,
+          userMobile: displayMobile
+            ? displayMobile.replace(/\D/g, "").slice(-10)
+            : "",
+          email: displayEmail,
+          userAddress: displayAddress,
+          role: USER_ROLES.CLIENT,
+        }}
+        initialMeasurements={measurements}
+      />
     </div>
   );
 };

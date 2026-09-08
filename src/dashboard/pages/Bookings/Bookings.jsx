@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Navigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 // Material UI Icons
@@ -43,6 +44,8 @@ import {
   getLatestItemTimestamp,
   formatDateSafe,
 } from '../../../firebase/dbService';
+import { useAuth } from '../../../auth/context/AuthContext';
+import { USER_ROLES } from '../../../firebase/schema';
 import './Bookings.scss';
 
 // Helpers for robust data access across single / multi-service and legacy formats
@@ -58,7 +61,6 @@ export const getOrderClientMobile = (order) => {
   if (!order) return '—';
   if (order.client?.userMobile) return order.client.userMobile;
   if (order.userMobile) return order.userMobile;
-  if (order.phone) return order.phone;
   return '—';
 };
 
@@ -78,11 +80,8 @@ export const getOrderItems = (order) => {
     {
       id: 'item_legacy',
       serviceName: order.service || 'Saree Pre-Pleating',
-      servicePrice: Number(String(order.baseAmount || order.amount || 0).replace(/[^0-9]/g, '')) || 0,
-      serviceDiscountedPrice: Number(String(order.amount || order.baseAmount || 0).replace(/[^0-9]/g, '')) || 0,
-      finalPrice: Number(String(order.amount || 0).replace(/[^0-9]/g, '')) || 0,
+      finalPrice: Number(String(order.amount || order.baseAmount || 0).replace(/[^0-9]/g, '')) || 0,
       sareeType: order.sareeType || 'Silk Saree',
-      serviceDescription: order.packaging || '',
       itemNotes: order.notes || '',
     },
   ];
@@ -101,8 +100,7 @@ export const getOrderFabricSummary = (order) => {
   const items = getOrderItems(order);
   if (items.length === 0) return order.sareeType || 'Silk Saree';
   const fabrics = items.map((it) => it.sareeType).filter(Boolean);
-  if (fabrics.length === 0) return 'Standard Silk';
-  if (fabrics.length === 1) return fabrics[0];
+  if (fabrics.length === 0) return order.sareeType || 'Standard Silk';
   const unique = [...new Set(fabrics)];
   if (unique.length === 1) return unique[0];
   return `${unique[0]} (+${unique.length - 1})`;
@@ -110,7 +108,7 @@ export const getOrderFabricSummary = (order) => {
 
 export const getOrderTotalAmount = (order) => {
   if (!order) return '₹0';
-  if (order.totalAmount !== undefined && order.totalAmount !== null) {
+  if (order.totalAmount !== undefined && order.totalAmount !== null && order.totalAmount !== '') {
     return `₹${Number(order.totalAmount).toLocaleString('en-IN')}`;
   }
   if (order.amount) {
@@ -124,7 +122,7 @@ export const getOrderTotalAmount = (order) => {
 
 export const getOrderAmountNumeric = (order) => {
   if (!order) return 0;
-  if (order.totalAmount !== undefined && order.totalAmount !== null) {
+  if (order.totalAmount !== undefined && order.totalAmount !== null && order.totalAmount !== '') {
     return Number(order.totalAmount) || 0;
   }
   if (order.amount) {
@@ -135,6 +133,19 @@ export const getOrderAmountNumeric = (order) => {
 };
 
 const Bookings = () => {
+  const { isSuperAdmin, role } = useAuth();
+  const userRole = (role || '').toLowerCase();
+  const isClient =
+    !isSuperAdmin &&
+    (userRole === USER_ROLES.CLIENT ||
+      userRole === 'client' ||
+      userRole === '');
+
+  // If a client accesses the Orders screen, redirect them to My Profile
+  if (isClient) {
+    return <Navigate to="/dashboard/profile" replace />;
+  }
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -156,6 +167,7 @@ const Bookings = () => {
 
   // Fetch orders
   const fetchOrders = useCallback(async (isManualRefresh = false) => {
+    if (isClient) return;
     setLoading(true);
     if (isManualRefresh) setRefreshing(true);
     try {
@@ -171,7 +183,7 @@ const Bookings = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [isClient]);
 
   useEffect(() => {
     fetchOrders();

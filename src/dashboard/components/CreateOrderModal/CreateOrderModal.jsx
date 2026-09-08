@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
 
@@ -34,6 +34,7 @@ import {
   getAllOrders,
   getAllServices,
   getAllMeasurements,
+  getMeasurementsByUserId,
   createOrder,
   createUser,
 } from "../../../firebase/dbService";
@@ -116,8 +117,8 @@ const orderValidationSchema = Yup.object({
       .trim()
       .required("Mobile number is required")
       .matches(
-        /^[0-9+\s-]{8,15}$/,
-        "Please enter a valid mobile number (8-15 digits)",
+        /^[6-9]\d{9}$/,
+        "Please enter a valid 10-digit Indian mobile number (e.g. 9849012345)",
       ),
     email: Yup.string()
       .trim()
@@ -180,10 +181,19 @@ const createEmptyItem = (idx = 1) => ({
   itemNotes: "",
 });
 
-export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
-  const { currentUser, userProfile } = useAuth();
+export default function CreateOrderModal({
+  open,
+  onClose,
+  onOrderCreated,
+  clientMode = false,
+  initialClient = null,
+  initialMeasurements = null,
+}) {
+  const { currentUser, userProfile, role } = useAuth();
+  const isClientMode = Boolean(clientMode || role === USER_ROLES.CLIENT);
   const [loadingInitial, setLoadingInitial] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   // Reference catalog data loaded dynamically from database
   const [clients, setClients] = useState([]);
@@ -228,6 +238,113 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
     const loadData = async () => {
       setLoadingInitial(true);
       try {
+        if (isClientMode) {
+          // Strictly ONLY fetch services in client mode!
+          // NEVER fetch other clients, orders, or other users' measurements!
+          const servicesData = await getAllServices(false).catch(() => []);
+          setServices(servicesData || []);
+
+          const currentClientObj = initialClient || {
+            id: currentUser?.uid || userProfile?.id || "client_me",
+            username: userProfile?.username || currentUser?.displayName || "Client",
+            userMobile: userProfile?.userMobile || currentUser?.phoneNumber || "",
+            email: userProfile?.email || currentUser?.email || "",
+            userAddress: userProfile?.userAddress || "",
+            role: USER_ROLES.CLIENT,
+          };
+
+          setClients([currentClientObj]);
+          setSelectedClientId(currentClientObj.id);
+          setClientForm({
+            username: currentClientObj.username || "",
+            userMobile: (currentClientObj.userMobile || "").replace(/\D/g, "").slice(-10),
+            email: currentClientObj.email || "",
+            userAddress: currentClientObj.userAddress || "",
+          });
+
+          // Fetch or use ONLY this client's measurements
+          let myMeasures = initialMeasurements;
+          if (!myMeasures || myMeasures.length === 0) {
+            if (currentClientObj.id) {
+              myMeasures = await getMeasurementsByUserId(currentClientObj.id).catch(() => []);
+            }
+          }
+          const safeMeasures = Array.isArray(myMeasures) ? myMeasures : [];
+
+          // Deduplicate by ID and unique dimensions signature
+          const seenIds = new Set();
+          const seenSigs = new Set();
+          const uniqueMeasures = [];
+
+          safeMeasures.forEach((m) => {
+            if (!m || !m.id) return;
+            if (String(m.id).startsWith("ord_")) return;
+            const sig = `${(m.title || "").trim().toLowerCase()}|${m.pallu || ""}|${m.shoulderToRightTight || ""}|${m.chest || ""}|${m.hip || ""}|${m.firstPleatSize || ""}|${m.noOfChestPleats || ""}|${m.height || ""}|${m.dressSize || ""}`;
+            if (!seenIds.has(m.id) && !seenSigs.has(sig)) {
+              seenIds.add(m.id);
+              seenSigs.add(sig);
+              uniqueMeasures.push(m);
+            }
+          });
+
+          const clientMap = {
+            [currentClientObj.id]: uniqueMeasures,
+            [String(currentClientObj.id).toLowerCase()]: uniqueMeasures,
+          };
+          if (currentClientObj.email) {
+            clientMap[currentClientObj.email.toLowerCase().trim()] = uniqueMeasures;
+          }
+          setMeasurementsMap(clientMap);
+
+          // If client has saved measurement profiles, select the first one by default on item 0
+          if (uniqueMeasures.length > 0) {
+            const first = uniqueMeasures[0];
+            setItems([
+              {
+                ...createEmptyItem(1),
+                selectedMeasurementId: first.id,
+                customMeasurement: {
+                  title: first.title || "Saved Profile",
+                  pallu: first.pallu || "",
+                  shoulderToRightTight: first.shoulderToRightTight || "",
+                  chest: first.chest || "",
+                  hip: first.hip || "",
+                  firstPleatSize: first.firstPleatSize || "",
+                  noOfChestPleats: first.noOfChestPleats || first.chestPleats || "",
+                  height: first.height || "",
+                  dressSize: first.dressSize || "",
+                  notes: first.notes || "",
+                },
+              },
+            ]);
+          } else {
+            setItems([
+              {
+                ...createEmptyItem(1),
+                selectedMeasurementId: "custom",
+                customMeasurement: {
+                  title: "Custom Sizing",
+                  pallu: "",
+                  shoulderToRightTight: "",
+                  chest: "",
+                  hip: "",
+                  firstPleatSize: "",
+                  noOfChestPleats: "",
+                  height: "",
+                  dressSize: "",
+                  notes: "",
+                },
+              },
+            ]);
+          }
+
+          setOrderStatus("pending");
+          setPaymentStatus("pending");
+          setLoadingInitial(false);
+          return;
+        }
+
+        // Standard Admin / Staff Loader
         const [
           usersData,
           clientsData,
@@ -324,48 +441,39 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
         );
         setServices(validServices);
 
-        // Group measurements by clientId / userId
+        // Group authentic measurements by clientId / userId
         const map = {};
-        const allMeasures = [...(measurementsData || [])];
-
-        // Also extract any measurement profiles from existing orders
-        (ordersData || []).forEach((ord) => {
-          const cid =
-            ord.client?.clientId ||
-            ord.clientId ||
-            (ord.client?.username
-              ? `client_${ord.client.username.toLowerCase().replace(/\s+/g, "_")}`
-              : null);
-          if (cid && Array.isArray(ord.items)) {
-            ord.items.forEach((it, idx) => {
-              if (it.measurementProfile && it.measurementProfile.title) {
-                const mp = it.measurementProfile;
-                const mId =
-                  mp.measurementId || `ord_${ord.id || "temp"}_${idx}`;
-                if (!allMeasures.some((x) => x.id === mId)) {
-                  allMeasures.push({
-                    id: mId,
-                    userId: cid,
-                    clientId: cid,
-                    ...mp,
-                  });
-                }
-              }
-            });
-          }
-        });
+        const allMeasures = (measurementsData || []).filter(
+          (m) => m && m.id && !String(m.id).startsWith("ord_"),
+        );
 
         allMeasures.forEach((m) => {
           const uids = new Set();
           if (m.userId) uids.add(String(m.userId).trim());
           if (m.clientId) uids.add(String(m.clientId).trim());
-          if (m.userEmail) uids.add(String(m.userEmail).trim().toLowerCase());
-          if (m.email) uids.add(String(m.email).trim().toLowerCase());
-          if (m.username) uids.add(String(m.username).trim().toLowerCase());
+          if (m.userEmail && m.userEmail.includes("@"))
+            uids.add(String(m.userEmail).trim().toLowerCase());
+          if (m.email && m.email.includes("@"))
+            uids.add(String(m.email).trim().toLowerCase());
+          if (
+            m.username &&
+            m.username.trim().toLowerCase() !== "client" &&
+            m.username.trim() !== "—"
+          ) {
+            uids.add(String(m.username).trim().toLowerCase());
+          }
 
           uids.forEach((uid) => {
             if (!map[uid]) map[uid] = [];
-            if (!map[uid].some((existing) => existing.id === m.id)) {
+            const sig = `${(m.title || "").trim().toLowerCase()}|${m.pallu || ""}|${m.shoulderToRightTight || ""}|${m.chest || ""}|${m.hip || ""}|${m.firstPleatSize || ""}|${m.noOfChestPleats || ""}|${m.height || ""}|${m.dressSize || ""}`;
+            if (
+              !map[uid].some(
+                (existing) =>
+                  existing.id === m.id ||
+                  `${(existing.title || "").trim().toLowerCase()}|${existing.pallu || ""}|${existing.shoulderToRightTight || ""}|${existing.chest || ""}|${existing.hip || ""}|${existing.firstPleatSize || ""}|${existing.noOfChestPleats || ""}|${existing.height || ""}|${existing.dressSize || ""}` ===
+                    sig,
+              )
+            ) {
               map[uid].push(m);
             }
           });
@@ -379,7 +487,7 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
     };
 
     loadData();
-  }, [open]);
+  }, [open, isClientMode, initialClient, initialMeasurements]);
 
   // Dedicated helper to retrieve ONLY the measurement profiles belonging to the specified client
   const getMeasuresForClient = useCallback(
@@ -389,7 +497,8 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
       const foundClient =
         targetClient || clients.find((c) => c.id === targetClientId);
       const clientKeys = new Set();
-      clientKeys.add(String(targetClientId).toLowerCase().trim());
+      const rawTargetId = String(targetClientId).toLowerCase().trim();
+      clientKeys.add(rawTargetId);
 
       if (foundClient) {
         if (foundClient.id)
@@ -398,36 +507,45 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
           clientKeys.add(String(foundClient.uid).toLowerCase().trim());
         if (foundClient.authUid)
           clientKeys.add(String(foundClient.authUid).toLowerCase().trim());
-        if (foundClient.email)
+        if (foundClient.email && foundClient.email.includes("@"))
           clientKeys.add(foundClient.email.toLowerCase().trim());
-        if (foundClient.username) {
+        if (
+          foundClient.username &&
+          foundClient.username.trim().toLowerCase() !== "client" &&
+          foundClient.username.trim() !== "—"
+        ) {
           clientKeys.add(foundClient.username.toLowerCase().trim());
-          clientKeys.add(
-            `client_${foundClient.username.toLowerCase().replace(/\s+/g, "_")}`,
-          );
         }
       }
 
       const matched = [];
       const seenIds = new Set();
+      const seenSigs = new Set();
+
+      const addMeasureIfUnique = (m) => {
+        if (!m || !m.id) return;
+        if (String(m.id).startsWith("ord_")) return;
+        const sig = `${(m.title || "").trim().toLowerCase()}|${m.pallu || ""}|${m.shoulderToRightTight || ""}|${m.chest || ""}|${m.hip || ""}|${m.firstPleatSize || ""}|${m.noOfChestPleats || ""}|${m.height || ""}|${m.dressSize || ""}`;
+
+        if (!seenIds.has(m.id) && !seenSigs.has(sig)) {
+          seenIds.add(m.id);
+          seenSigs.add(sig);
+          matched.push(m);
+        }
+      };
 
       // 1. Direct keys in mMap
       Object.entries(mMap || {}).forEach(([k, list]) => {
         const normalizedKey = String(k).toLowerCase().trim();
         if (clientKeys.has(normalizedKey) && Array.isArray(list)) {
-          list.forEach((m) => {
-            if (m && m.id && !seenIds.has(m.id)) {
-              seenIds.add(m.id);
-              matched.push(m);
-            }
-          });
+          list.forEach(addMeasureIfUnique);
         }
       });
 
       // 2. Scan all measurements to ensure any that carry this client's identifier match
       const all = Object.values(mMap || {}).flat();
       all.forEach((m) => {
-        if (!m || !m.id || seenIds.has(m.id)) return;
+        if (!m || !m.id) return;
         const mUserId = (m.userId || m.clientId || "")
           .toString()
           .toLowerCase()
@@ -442,19 +560,20 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
           (mUserId && clientKeys.has(mUserId)) ||
           (foundClient?.email &&
             mEmail &&
+            mEmail.includes("@") &&
             mEmail === foundClient.email.toLowerCase().trim()) ||
           (foundClient?.username &&
+            foundClient.username.trim().toLowerCase() !== "client" &&
+            foundClient.username.trim() !== "—" &&
             mUsername &&
             mUsername === foundClient.username.toLowerCase().trim());
 
         if (belongs) {
-          seenIds.add(m.id);
-          matched.push(m);
+          addMeasureIfUnique(m);
         }
       });
 
       // STRICT: Return ONLY profiles belonging to this client.
-      // If none exist, return [] (never return other users' profiles!).
       return matched;
     },
     [clients, measurementsMap],
@@ -501,7 +620,7 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
     if (found) {
       setClientForm({
         username: found.username || "",
-        userMobile: found.userMobile || "",
+        userMobile: (found.userMobile || "").replace(/\D/g, "").slice(-10),
         email: found.email || "",
         userAddress: found.userAddress || "",
       });
@@ -782,20 +901,34 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
   }, [items]);
 
   const handleResetForm = () => {
-    setSelectedClientId("");
-    setClientForm({
-      username: "",
-      userMobile: "",
-      email: "",
-      userAddress: "",
-    });
+    isSubmittingRef.current = false;
+    if (isClientMode) {
+      const cObj = clients[0] || initialClient;
+      if (cObj) {
+        setSelectedClientId(cObj.id);
+        setClientForm({
+          username: cObj.username || "",
+          userMobile: cObj.userMobile || "",
+          email: cObj.email || "",
+          userAddress: cObj.userAddress || "",
+        });
+      }
+    } else {
+      setSelectedClientId("");
+      setClientForm({
+        username: "",
+        userMobile: "",
+        email: "",
+        userAddress: "",
+      });
+    }
     setItems([createEmptyItem(1)]);
     setOrderDate(todayStr);
     setDeliveryDate(defaultDeliveryStr);
     setOccasion("");
     setCustomOccasion("");
-    setOrderStatus("in-progress");
-    setPaymentStatus("paid");
+    setOrderStatus(isClientMode ? "pending" : "in-progress");
+    setPaymentStatus(isClientMode ? "pending" : "paid");
     setPaymentMethod("UPI");
     setOrderNotes("");
     setValidationErrors({});
@@ -803,6 +936,14 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
 
   const handleSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
+    if (e && e.stopPropagation) e.stopPropagation();
+
+    // Synchronously block duplicate calls / double clicks
+    if (isSubmittingRef.current || submitting) {
+      return;
+    }
+    isSubmittingRef.current = true;
+    setSubmitting(true);
 
     const cleanName = (clientForm.username || "").trim();
     const cleanMobile = (clientForm.userMobile || "").trim();
@@ -898,6 +1039,8 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
         { abortEarly: false },
       );
     } catch (yupErr) {
+      isSubmittingRef.current = false;
+      setSubmitting(false);
       if (yupErr.inner && yupErr.inner.length > 0) {
         const errMap = {};
         yupErr.inner.forEach((err) => {
@@ -922,7 +1065,6 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
       return;
     }
 
-    setSubmitting(true);
     try {
       const finalOccasion =
         occasion === "Other Occasion" && customOccasion.trim()
@@ -1002,6 +1144,7 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
           (err.message || "Please check details and retry."),
       );
     } finally {
+      isSubmittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -1035,8 +1178,16 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
     <AppModal
       open={open}
       onClose={() => !submitting && onClose()}
-      title="Create New Saree Pre-Pleating Order"
-      subtitle="Register client details, select services & measurement profiles, and schedule delivery"
+      title={
+        isClientMode
+          ? "Book Saree Pre-Pleating Order"
+          : "Create New Saree Pre-Pleating Order"
+      }
+      subtitle={
+        isClientMode
+          ? "Select services, choose your measurement profile, and schedule delivery"
+          : "Register client details, select services & measurement profiles, and schedule delivery"
+      }
       maxWidth="lg"
       actions={
         <div className="create-order-actions-bar">
@@ -1066,6 +1217,7 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
               variant="primary"
               onClick={handleSubmit}
               loading={submitting}
+              disabled={submitting}
               startIcon={<CheckCircleOutlineIcon />}
               className="book-now-btn"
             >
@@ -1078,7 +1230,7 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
       {loadingInitial ? (
         <div className="modal-loading-state">
           <AppSpinner size="lg" color="gold" />
-          <p>Loading clients & services catalog...</p>
+          <p>{isClientMode ? "Loading services catalog..." : "Loading clients & services catalog..."}</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="create-order-form">
@@ -1092,25 +1244,28 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
                 <div>
                   <h3 className="section-title">Client Information</h3>
                   <p className="section-subtitle">
-                    Select an existing registered client or enter details for a
-                    new client
+                    {isClientMode
+                      ? "Your contact details and delivery location"
+                      : "Select an existing registered client or enter details for a new client"}
                   </p>
                 </div>
               </div>
 
-              <div className="client-picker-wrap">
-                <AppSelect
-                  placeholder="-- Choose Existing Client --"
-                  value={selectedClientId}
-                  onChange={(e) => handleClientSelect(e.target.value)}
-                  options={clientSelectOptions}
-                  startAdornment={<PersonOutlineIcon />}
-                  disabled={submitting}
-                  searchable
-                  allowClear
-                  className="client-select-box"
-                />
-              </div>
+              {!isClientMode && (
+                <div className="client-picker-wrap">
+                  <AppSelect
+                    placeholder="-- Choose Existing Client --"
+                    value={selectedClientId}
+                    onChange={(e) => handleClientSelect(e.target.value)}
+                    options={clientSelectOptions}
+                    startAdornment={<PersonOutlineIcon />}
+                    disabled={submitting}
+                    searchable
+                    allowClear
+                    className="client-select-box"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="form-grid form-grid--2col">
@@ -1138,11 +1293,23 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
               <AppInput
                 label="Mobile Number (10 Digits)"
                 placeholder="e.g. 9849012345"
+                inputMode="numeric"
+                maxLength={10}
+                onKeyDown={(e) => {
+                  if (
+                    !/^\d$/.test(e.key) &&
+                    !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key) &&
+                    !(e.ctrlKey || e.metaKey)
+                  ) {
+                    e.preventDefault();
+                  }
+                }}
                 value={clientForm.userMobile}
                 onChange={(e) => {
+                  const sanitized = e.target.value.replace(/\D/g, "").slice(0, 10);
                   setClientForm((prev) => ({
                     ...prev,
-                    userMobile: e.target.value,
+                    userMobile: sanitized,
                   }));
                   setValidationErrors((prev) => ({
                     ...prev,
@@ -1175,15 +1342,19 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
               />
 
               <AppInput
-                label="Address / Location (optional)"
-                placeholder="e.g. Flat 302, Green Meadows, Jubilee Hills"
+                label={isClientMode ? "Delivery / Pickup Address" : "Address / Location (optional)"}
+                placeholder={isClientMode ? "e.g. Flat 301, Sri Sai Heights, Madhapur, Hyderabad" : "e.g. Flat 302, Green Meadows, Jubilee Hills"}
                 value={clientForm.userAddress}
-                onChange={(e) =>
+                onChange={(e) => {
                   setClientForm((prev) => ({
                     ...prev,
                     userAddress: e.target.value,
-                  }))
-                }
+                  }));
+                  setValidationErrors((prev) => ({
+                    ...prev,
+                    "client.userAddress": undefined,
+                  }));
+                }}
                 disabled={submitting}
                 startAdornment={<LocationOnOutlinedIcon />}
               />
@@ -1796,38 +1967,47 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }) {
             )}
 
             <div
-              className="form-grid form-grid--3col"
+              className={`form-grid ${isClientMode ? "form-grid--2col" : "form-grid--3col"}`}
               style={{ marginTop: 14 }}
             >
-              <div className="form-field-wrap">
-                <AppSelect
-                  label="Order Status"
-                  value={orderStatus}
-                  onChange={(e) => setOrderStatus(e.target.value)}
-                  options={[
-                    { value: "in-progress", label: "In-Progress (Pleating)" },
-                    { value: "pending", label: "Pending (Received)" },
-                    {
-                      value: "completed",
-                      label: "Completed (Ready / Delivered)",
-                    },
-                    { value: "cancelled", label: "Cancelled" },
-                  ]}
-                  startAdornment={<CheckCircleOutlineIcon />}
-                  disabled={submitting}
-                />
-              </div>
+              {!isClientMode && (
+                <div className="form-field-wrap">
+                  <AppSelect
+                    label="Order Status"
+                    value={orderStatus}
+                    onChange={(e) => setOrderStatus(e.target.value)}
+                    options={[
+                      { value: "in-progress", label: "In-Progress (Pleating)" },
+                      { value: "pending", label: "Pending (Received)" },
+                      {
+                        value: "completed",
+                        label: "Completed (Ready / Delivered)",
+                      },
+                      { value: "cancelled", label: "Cancelled" },
+                    ]}
+                    startAdornment={<CheckCircleOutlineIcon />}
+                    disabled={submitting}
+                  />
+                </div>
+              )}
 
               <div className="form-field-wrap">
                 <AppSelect
-                  label="Payment Status"
+                  label={isClientMode ? "Payment Preference" : "Payment Status"}
                   value={paymentStatus}
                   onChange={(e) => setPaymentStatus(e.target.value)}
-                  options={[
-                    { value: "paid", label: "Paid in Full" },
-                    { value: "pending", label: "Pending Payment" },
-                    { value: "partial", label: "Advance / Partial Paid" },
-                  ]}
+                  options={
+                    isClientMode
+                      ? [
+                          { value: "pending", label: "Pay on Delivery / Pickup" },
+                          { value: "paid", label: "Prepaid / Paid Online" },
+                        ]
+                      : [
+                          { value: "paid", label: "Paid in Full" },
+                          { value: "pending", label: "Pending Payment" },
+                          { value: "partial", label: "Advance / Partial Paid" },
+                        ]
+                  }
                   startAdornment={<PaymentOutlinedIcon />}
                   disabled={submitting}
                 />

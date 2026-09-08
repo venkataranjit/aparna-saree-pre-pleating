@@ -164,6 +164,9 @@ const Sidebar = ({
           if (item.path === "/dashboard/clients" && isClient) {
             return false;
           }
+          if (item.path === "/dashboard/bookings" && isClient) {
+            return false;
+          }
           return true;
         }),
       }))

@@ -8,6 +8,8 @@ import {
   GoogleAuthProvider,
   FacebookAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   setPersistence,
   browserLocalPersistence,
 } from "firebase/auth";
@@ -15,6 +17,7 @@ import { auth } from "../../../firebase/config";
 import { createUserProfile } from "../../../firebase/dbService";
 import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
 import { useAuth } from "../../context/AuthContext";
+import { initSocialAuth, performGoogleAuth } from "../../services/socialAuth";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import PhoneIphoneOutlinedIcon from "@mui/icons-material/PhoneIphoneOutlined";
@@ -115,6 +118,56 @@ const Login = () => {
     }
   }, [currentUser, navigate]);
 
+  // Initialize Social Auth for Native Android & Web
+  useEffect(() => {
+    initSocialAuth();
+  }, []);
+
+  // Handle OAuth Redirect Result (for Mobile WebViews and Browsers)
+  useEffect(() => {
+    let isMounted = true;
+    if (!auth) return;
+
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (!isMounted || !result || !result.user) return;
+        const user = result.user;
+        const userEmail = (user.email || "").trim().toLowerCase();
+        const isSuper = userEmail === SUPERADMIN_EMAIL.toLowerCase();
+
+        try {
+          await createUserProfile(user.uid, {
+            username: user.displayName || (isSuper ? "Victory Ranjit" : "User"),
+            email: userEmail,
+            userMobile: user.phoneNumber || "",
+            userAddress: "",
+          });
+        } catch (dbErr) {
+          console.warn("Firestore user sync after redirect note:", dbErr);
+        }
+
+        if (refreshProfile) {
+          try {
+            await refreshProfile(user);
+          } catch {}
+        }
+
+        toast.success(`Welcome, ${user.displayName || "User"}! Signed in successfully.`);
+        navigate("/dashboard", { replace: true });
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        console.warn("OAuth redirect result note:", err);
+        if (err.code && err.code !== "auth/null-user" && err.code !== "auth/popup-closed-by-user") {
+          toast.error(err.message || "Failed to complete authentication.");
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [navigate, refreshProfile]);
+
   // Login Mode: 'email' | 'phone'
   const [loginMethod, setLoginMethod] = useState("email");
 
@@ -191,7 +244,9 @@ const Login = () => {
     setSuccessMsg("");
 
     if (!email.trim() || !password) {
-      setError("Please enter both email and password.");
+      const msg = "Please enter both email and password.";
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -209,7 +264,6 @@ const Login = () => {
           email.trim(),
           password,
         );
-        setSuccessMsg("Authentication successful. Loading profile...");
         if (userCredential?.user && refreshProfile) {
           try {
             await refreshProfile(userCredential.user);
@@ -218,16 +272,17 @@ const Login = () => {
           }
         }
         setSuccessMsg("Welcome back! Redirecting to Dashboard...");
+        toast.success("Welcome back! Signed in successfully.");
         setTimeout(() => {
           navigate("/dashboard");
         }, 300);
       } else {
+        toast.success("Welcome back! Redirecting to Dashboard...");
         navigate("/dashboard");
       }
     } catch (err) {
       console.warn("Firebase login warning:", err);
-      let message =
-        "Invalid email or password. Please verify your credentials.";
+      let message = "Invalid email or password.";
       if (
         err.code === "auth/configuration-not-found" ||
         err.message?.includes("CONFIGURATION_NOT_FOUND")
@@ -239,16 +294,22 @@ const Login = () => {
           'Email/Password sign-in is disabled. Please enable "Email/Password" in Firebase Console > Build > Authentication > Sign-in method.';
       } else if (
         err.code === "auth/user-not-found" ||
+        err.code === "auth/wrong-password" ||
         err.code === "auth/invalid-credential"
       ) {
+        message = "Invalid email or password.";
+      } else if (err.code === "auth/invalid-email") {
+        message = "Please enter a valid email address.";
+      } else if (err.code === "auth/user-disabled") {
         message =
-          "Account not found or password incorrect. Please verify your credentials.";
+          "This account has been disabled. Please contact the administrator.";
       } else if (err.code === "auth/too-many-requests") {
         message = "Too many attempts. Please try again in a few moments.";
       } else if (err.code === "auth/network-request-failed") {
         message = "Network error. Please check your internet connection.";
       }
       setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -262,7 +323,9 @@ const Login = () => {
 
     const cleanPhone = phone.trim().replace(/\D/g, "");
     if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
-      setError("Please enter a valid 10-digit Indian mobile number.");
+      const msg = "Please enter a valid 10-digit Indian mobile number.";
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -278,9 +341,9 @@ const Login = () => {
       );
       setConfirmationResult(confirmation);
       setOtpSent(true);
-      setSuccessMsg(
-        `OTP sent to ${fullPhoneNumber}. Please enter the 6-digit verification code below.`,
-      );
+      const successText = `OTP sent to ${fullPhoneNumber}. Please enter the 6-digit verification code below.`;
+      setSuccessMsg(successText);
+      toast.success(successText);
     } catch (err) {
       console.error("Phone sign-in error:", err);
       if (window.recaptchaVerifier) {
@@ -321,6 +384,7 @@ const Login = () => {
         msg = `Failed to send OTP: ${err.message}`;
       }
       setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -409,14 +473,18 @@ const Login = () => {
 
     const cleanOtp = otpDigits.join("").trim();
     if (cleanOtp.length !== 6) {
-      setError("Please enter all 6 digits of your OTP code.");
+      const msg = "Please enter all 6 digits of your OTP code.";
+      setError(msg);
       setOtpError(true);
+      toast.error(msg);
       return;
     }
 
     if (!confirmationResult) {
-      setError("Session expired. Please request a new OTP code.");
+      const msg = "Session expired. Please request a new OTP code.";
+      setError(msg);
       setOtpError(true);
+      toast.error(msg);
       return;
     }
 
@@ -452,6 +520,7 @@ const Login = () => {
       }
 
       setSuccessMsg("Phone verified successfully! Redirecting to Dashboard...");
+      toast.success("Phone verified successfully! Welcome back.");
       setTimeout(() => {
         navigate("/dashboard");
       }, 300);
@@ -465,6 +534,7 @@ const Login = () => {
         msg = "The verification code has expired. Please request a new OTP.";
       }
       setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -482,10 +552,9 @@ const Login = () => {
           await setPersistence(auth, browserLocalPersistence);
         } catch {}
       }
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+
+      const user = await performGoogleAuth(auth);
+      if (!user) return;
 
       // Sync user profile in Firestore
       try {
@@ -511,25 +580,37 @@ const Login = () => {
       setSuccessMsg(
         `Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`,
       );
+      toast.success(
+        `Welcome, ${user.displayName || "User"}! Signed in with Google.`,
+      );
       setTimeout(() => {
         navigate("/dashboard");
       }, 300);
     } catch (err) {
       console.warn("Google sign-in error:", err);
-      if (err.code === "auth/popup-closed-by-user") {
-        setError("Google sign-in was cancelled.");
+      let msg = "Unable to sign in with Google. Please try again.";
+      if (
+        err.code === "auth/popup-closed-by-user" ||
+        err.message?.includes("closed") ||
+        err.message?.includes("cancelled") ||
+        err.message?.includes("Canceled") ||
+        err.message?.includes("user cancelled") ||
+        err.message?.includes("User cancelled")
+      ) {
+        msg = "Google sign-in was cancelled.";
       } else if (err.code === "auth/cancelled-popup-request") {
-        // Ignored
+        return;
       } else if (
         err.code === "auth/configuration-not-found" ||
         err.message?.includes("CONFIGURATION_NOT_FOUND")
       ) {
-        setError(
-          "Google Sign-in is not enabled in Firebase Console. Please enable Google provider.",
-        );
-      } else {
-        setError("Unable to sign in with Google. Please try again.");
+        msg =
+          "Google Sign-in is not enabled in Firebase Console. Please enable Google provider.";
+      } else if (err.message) {
+        msg = err.message;
       }
+      setError(msg);
+      toast.error(msg);
     } finally {
       setGoogleLoading(false);
     }
@@ -577,29 +658,31 @@ const Login = () => {
       setSuccessMsg(
         `Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`,
       );
+      toast.success(
+        `Welcome, ${user.displayName || "User"}! Signed in with Meta.`,
+      );
       setTimeout(() => {
         navigate("/dashboard");
       }, 300);
     } catch (err) {
       console.warn("Meta sign-in error:", err);
+      let msg = "Unable to sign in with Meta. Please try again.";
       if (err.code === "auth/popup-closed-by-user") {
-        setError("Meta sign-in was cancelled.");
+        msg = "Meta sign-in was cancelled.";
       } else if (err.code === "auth/cancelled-popup-request") {
-        // Ignored
+        return;
       } else if (
         err.code === "auth/configuration-not-found" ||
         err.message?.includes("CONFIGURATION_NOT_FOUND")
       ) {
-        setError(
-          "Meta Sign-in is not enabled in Firebase Console. Please enable Facebook/Meta provider in Firebase Console > Authentication > Sign-in method.",
-        );
+        msg =
+          "Meta Sign-in is not enabled in Firebase Console. Please enable Facebook/Meta provider in Firebase Console > Authentication > Sign-in method.";
       } else if (err.code === "auth/account-exists-with-different-credential") {
-        setError(
-          "An account already exists with the same email. Please sign in with Google or Email/Password.",
-        );
-      } else {
-        setError("Unable to sign in with Meta. Please try again.");
+        msg =
+          "An account already exists with the same email. Please sign in with Google or Email/Password.";
       }
+      setError(msg);
+      toast.error(msg);
     } finally {
       setMetaLoading(false);
     }

@@ -71,12 +71,16 @@ const ResetPassword = () => {
     setSubmitError('');
 
     if (!password || password.length < 6) {
-      setSubmitError('New password must be at least 6 characters long.');
+      const msg = 'New password must be at least 6 characters long.';
+      setSubmitError(msg);
+      toast.error(msg);
       return;
     }
 
     if (password !== confirmPassword) {
-      setSubmitError('Passwords do not match. Please ensure both passwords are identical.');
+      const msg = 'Passwords do not match. Please ensure both passwords are identical.';
+      setSubmitError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -86,15 +90,19 @@ const ResetPassword = () => {
       if (!auth) throw new Error('Firebase Auth is not initialized');
       await confirmPasswordReset(auth, oobCode, password.trim());
       setResetSuccess(true);
+      toast.success('Your password has been reset successfully!');
     } catch (err) {
       console.error('confirmPasswordReset error:', err);
+      let msg = 'Failed to update password. Please try again.';
       if (err.code === 'auth/weak-password') {
-        setSubmitError('Password must be at least 6 characters long.');
+        msg = 'Password must be at least 6 characters long.';
       } else if (err.code === 'auth/expired-action-code') {
-        setSubmitError('Your reset link has expired. Please request a new one.');
-      } else {
-        setSubmitError(err.message || 'Failed to update password. Please try again.');
+        msg = 'Your reset link has expired. Please request a new one.';
+      } else if (err.message) {
+        msg = err.message;
       }
+      setSubmitError(msg);
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }

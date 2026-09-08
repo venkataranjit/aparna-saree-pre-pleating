@@ -40,6 +40,18 @@ function run(cmd, cwd = rootDir) {
 }
 
 try {
+  // Automatically activate the correct google-services.json (src/dev or src/prod)
+  const androidAppDir = path.join(rootDir, 'android', 'app');
+  const targetGoogleServices = path.join(androidAppDir, 'google-services.json');
+  const sourceGoogleServices = path.join(androidAppDir, 'src', mode, 'google-services.json');
+
+  if (fs.existsSync(sourceGoogleServices)) {
+    fs.copyFileSync(sourceGoogleServices, targetGoogleServices);
+    console.log(`[Google Services] Active configuration: [${mode.toUpperCase()}] from src/${mode}/google-services.json\n`);
+  } else {
+    console.warn(`[Google Services] Note: src/${mode}/google-services.json not found, using existing file.\n`);
+  }
+
   console.log(`--- 1. Building web application for [${mode}] ---`);
   run(`npx vite build --mode ${mode}`);
 

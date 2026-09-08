@@ -28,7 +28,9 @@ const ForgotPassword = () => {
     setSuccessMsg('');
 
     if (!email.trim()) {
-      setError('Please enter your registered email address.');
+      const msg = 'Please enter your registered email address.';
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -42,7 +44,9 @@ const ForgotPassword = () => {
         } : undefined;
         await sendPasswordResetEmail(auth, email.trim(), actionCodeSettings);
       }
-      setSuccessMsg(`Password reset link sent to ${email.trim()}. Please check your inbox and spam folder.`);
+      const successText = `Password reset link sent to ${email.trim()}. Please check your inbox and spam folder.`;
+      setSuccessMsg(successText);
+      toast.success(successText);
     } catch (err) {
       console.warn('Firebase password reset error:', err);
       let message = 'Unable to send reset email. Please verify the address.';
@@ -52,8 +56,11 @@ const ForgotPassword = () => {
         message = 'The email address format is invalid.';
       } else if (err.code === 'auth/too-many-requests') {
         message = 'Too many requests. Please wait a few moments before trying again.';
+      } else if (err.message) {
+        message = err.message;
       }
       setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

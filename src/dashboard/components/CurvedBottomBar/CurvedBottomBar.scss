@@ -71,7 +71,7 @@
     width: 100%;
     max-width: 960px;
     margin: 0 auto;
-    height: 60px;
+    height: 62px;
     padding: 0 $spacing-sm;
     padding-bottom: env(safe-area-inset-bottom, 0px);
     display: flex;
@@ -82,7 +82,7 @@
     .bottom-nav-item {
       position: relative;
       flex: 1;
-      height: 60px;
+      height: 62px;
       background: transparent;
       border: none;
       outline: none;
@@ -95,6 +95,27 @@
       -webkit-tap-highlight-color: transparent;
       overflow: hidden;
 
+      // Illuminated royal gold top pill indicator
+      .active-top-pill {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 28px;
+        height: 3px;
+        border-radius: 9999px;
+        background: linear-gradient(
+          90deg,
+          rgba($color-gold, 0.5) 0%,
+          $color-light-gold 50%,
+          rgba($color-gold, 0.5) 100%
+        );
+        box-shadow:
+          0 0 8px rgba($color-gold, 0.85),
+          0 0 16px rgba($color-gold, 0.45);
+        animation: pillDrop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+
       &__inner {
         display: flex;
         flex-direction: column;
@@ -103,52 +124,42 @@
         position: relative;
         width: 100%;
         height: 100%;
-        padding: 5px 0 3px 0;
+        padding: 4px 0 2px 0;
       }
 
-      // Active top highlight glow
-      .active-top-glow {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 44px;
-        height: 2px;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          $color-gold,
-          transparent
-        );
-        box-shadow:
-          0 0 10px rgba($color-gold, 0.85),
-          0 0 18px rgba($color-gold, 0.45);
-        border-radius: 2px;
-        animation: glowFadeIn 0.3s ease forwards;
-      }
-
-      .icon-badge {
+      .icon-container {
+        position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 40px;
+        width: 42px;
         height: 30px;
-        border-radius: $border-radius-md;
-        transition:
-          background-color 0.25s ease,
-          box-shadow 0.25s ease,
-          border-color 0.25s ease;
+
+        // Ambient radial spotlight behind active icon (No harsh box border)
+        .active-spotlight {
+          position: absolute;
+          inset: -6px -12px;
+          border-radius: 50%;
+          background: radial-gradient(
+            circle,
+            rgba($color-gold, 0.28) 0%,
+            rgba($color-gold, 0.08) 50%,
+            transparent 75%
+          );
+          pointer-events: none;
+          animation: spotlightGlow 0.35s ease forwards;
+        }
       }
 
       .icon-wrapper {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: $text-muted;
+        color: rgba(230, 216, 163, 0.55);
         transition:
-          transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
-          color 0.22s ease,
-          filter 0.25s ease;
+          transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+          color 0.2s ease,
+          filter 0.22s ease;
 
         .nav-bar-icon {
           font-size: 23px;
@@ -159,89 +170,61 @@
       .nav-label {
         font-size: 10.5px;
         font-weight: 500;
-        letter-spacing: 0.3px;
-        color: $text-muted;
-        margin-top: 3px;
+        letter-spacing: 0.2px;
+        color: rgba(230, 216, 163, 0.55);
+        margin-top: 2px;
         line-height: 1;
         transition:
-          color 0.22s ease,
-          transform 0.22s ease,
-          font-weight 0.22s ease;
+          color 0.2s ease,
+          transform 0.2s ease,
+          font-weight 0.2s ease;
       }
 
-      .active-indicator-dot {
-        position: absolute;
-        bottom: 2px;
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background: $color-gold;
-        box-shadow:
-          0 0 6px $color-gold,
-          0 0 10px rgba($color-gold, 0.7);
-        animation: dotSpring 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-      }
-
-      // Hover interaction: smoothly increase icon size using brand variable colors (NO WHITE)
+      // Hover interaction using brand variable colors (NO WHITE)
       &:hover {
         .icon-wrapper {
-          transform: scale(1.24); // Smoothly increase icon size on hover
-          color: $color-light-gold; // Brand color variable only
+          transform: translateY(-2px) scale(1.15);
+          color: $color-light-gold;
+          filter: drop-shadow(0 0 8px rgba($color-gold, 0.7));
+        }
+
+        .nav-label {
+          color: $color-light-gold;
+          letter-spacing: 0.3px;
+        }
+      }
+
+      // Active state styling: Radiant gold icon with ambient spotlight and clean typography
+      &.is-active {
+        .icon-wrapper {
+          color: $color-gold;
+          transform: translateY(-2px) scale(1.12);
           filter: drop-shadow(0 0 8px rgba($color-gold, 0.75));
         }
 
         .nav-label {
-          color: $color-light-gold; // Brand color variable only
-          letter-spacing: 0.4px;
-        }
-
-        .icon-badge {
-          background: $surface-gold-tint;
-        }
-      }
-
-      // Active state styling using brand variable colors (NO WHITE)
-      &.is-active {
-        .icon-badge {
-          background: rgba($color-gold, 0.14);
-          border: 1px solid $surface-border;
-        }
-
-        .icon-wrapper {
-          color: $color-gold;
-          transform: scale(1.06);
-          filter: drop-shadow(0 0 6px rgba($color-gold, 0.55));
-        }
-
-        .nav-label {
-          color: $color-gold;
+          color: $color-light-gold;
           font-weight: 600;
+          letter-spacing: 0.35px;
         }
 
         &:hover {
           .icon-wrapper {
-            transform: scale(
-              1.28
-            ); // Smoothly scale even larger when active on hover
-            color: $color-light-gold; // Brand color variable only
-            filter: drop-shadow(0 0 10px rgba($color-gold, 0.95));
+            transform: translateY(-2px) scale(1.22);
+            color: $color-light-gold;
+            filter: drop-shadow(0 0 12px rgba($color-gold, 0.95));
           }
 
           .nav-label {
-            color: $color-light-gold; // Brand color variable only
-          }
-
-          .icon-badge {
-            background: rgba($color-gold, 0.2);
-            border-color: $surface-border-hover;
+            color: $color-light-gold;
           }
         }
       }
 
       // Tap / Click active press feedback
       &:active .icon-wrapper {
-        transform: scale(0.92);
-        transition-duration: 0.1s;
+        transform: translateY(0) scale(0.95);
+        transition-duration: 0.08s;
       }
 
       // Android Tap Ripple
@@ -251,7 +234,7 @@
         border-radius: $border-radius-md;
         background: radial-gradient(
           circle,
-          rgba($color-gold, 0.3) 10%,
+          rgba($color-gold, 0.25) 10%,
           transparent 70%
         );
         opacity: 0;
@@ -278,29 +261,25 @@
   }
 }
 
-@keyframes glowFadeIn {
+@keyframes pillDrop {
   0% {
     opacity: 0;
-    width: 0;
+    transform: translateX(-50%) scaleX(0.2);
   }
   100% {
     opacity: 1;
-    width: 44px;
+    transform: translateX(-50%) scaleX(1);
   }
 }
 
-@keyframes dotSpring {
+@keyframes spotlightGlow {
   0% {
-    transform: scale(0);
     opacity: 0;
-  }
-  70% {
-    transform: scale(1.4);
-    opacity: 1;
+    transform: scale(0.6);
   }
   100% {
-    transform: scale(1);
     opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -314,3 +293,4 @@
     transform: scale(1.8);
   }
 }
+

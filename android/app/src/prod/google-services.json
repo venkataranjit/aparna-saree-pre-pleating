@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "860946669549",
+    "project_id": "aparna-saree-pre-pleatin-3de8c",
+    "storage_bucket": "aparna-saree-pre-pleatin-3de8c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:860946669549:android:777f30d49e9fc3147cd1e4",
+        "android_client_info": {
+          "package_name": "com.aparnasaree.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "860946669549-u6it5slpgn4k4ek87i9eag28sfpv7htc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkJDHMi_Wj_9DL3MpVgMm2WSMNTsfUToo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "860946669549-u6it5slpgn4k4ek87i9eag28sfpv7htc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

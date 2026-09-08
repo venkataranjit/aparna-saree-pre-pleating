@@ -5,7 +5,7 @@ import BookOnlineOutlinedIcon from '@mui/icons-material/BookOnlineOutlined';
 import DryCleaningOutlinedIcon from '@mui/icons-material/DryCleaningOutlined';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import { useAuth } from '../../../auth/context/AuthContext';
 import './CurvedBottomBar.scss';
 
@@ -13,7 +13,7 @@ import './CurvedBottomBar.scss';
  * CurvedBottomBar
  * Fixed 100% width bottom navigation bar with luxury obsidian & gold styling.
  * Smoothly scales up icon size on hover with spring animation.
- * Features Home, Orders, Services, Clients/Store, and More (opens sidebar).
+ * Features Home, Orders, Services, Clients/Store, and Menu (opens sidebar).
  */
 export const CurvedBottomBar = ({
   collapsed = false,
@@ -61,18 +61,14 @@ export const CurvedBottomBar = ({
     },
     {
       id: 'more',
-      label: 'More',
-      icon: <MoreHorizIcon className="nav-bar-icon" />,
+      label: 'Menu',
+      icon: <MenuOutlinedIcon className="nav-bar-icon" />,
     },
   ];
 
   const isItemActive = (item) => {
     if (item.id === 'more') {
-      return (
-        mobileOpen ||
-        location.pathname === '/dashboard/profile' ||
-        location.pathname.startsWith('/dashboard/users')
-      );
+      return false;
     }
     if (item.id === 'clients') {
       return location.pathname.startsWith('/dashboard/clients');
@@ -116,13 +112,13 @@ export const CurvedBottomBar = ({
               aria-label={item.label}
               title={item.label}
             >
+              {active && <span className="active-top-pill" />}
               <div className="bottom-nav-item__inner">
-                {active && <span className="active-top-glow" />}
-                <div className="icon-badge">
+                <div className="icon-container">
+                  {active && <span className="active-spotlight" />}
                   <span className="icon-wrapper">{item.icon}</span>
                 </div>
                 <span className="nav-label">{item.label}</span>
-                {active && <span className="active-indicator-dot" />}
               </div>
               <span className="android-ripple" />
             </button>

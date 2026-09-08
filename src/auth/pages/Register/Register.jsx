@@ -7,6 +7,8 @@ import {
   GoogleAuthProvider,
   FacebookAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   setPersistence,
   browserLocalPersistence,
 } from "firebase/auth";
@@ -19,6 +21,7 @@ import {
 } from "../../../firebase/dbService";
 import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
 import { useAuth } from "../../context/AuthContext";
+import { initSocialAuth, performGoogleAuth } from "../../services/socialAuth";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import PhoneIphoneOutlinedIcon from "@mui/icons-material/PhoneIphoneOutlined";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
@@ -145,7 +148,7 @@ const registerValidationSchema = Yup.object({
 
 const Register = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, refreshProfile } = useAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -154,13 +157,68 @@ const Register = () => {
     }
   }, [currentUser, navigate]);
 
+  // Initialize Social Auth for Native Android & Web
+  useEffect(() => {
+    initSocialAuth();
+  }, []);
+
+  // Handle OAuth Redirect Result (for Mobile WebViews and Browsers)
+  useEffect(() => {
+    let isMounted = true;
+    if (!auth) return;
+
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (!isMounted || !result || !result.user) return;
+        const user = result.user;
+        const userEmail = (user.email || "").trim().toLowerCase();
+        const isSuper = userEmail === SUPERADMIN_EMAIL.toLowerCase();
+
+        try {
+          await createUserProfile(user.uid, {
+            username: user.displayName || (isSuper ? "Victory Ranjit" : "User"),
+            email: userEmail,
+            userMobile: user.phoneNumber || "",
+            userAddress: "",
+          });
+        } catch (dbErr) {
+          console.warn("Firestore user sync after redirect note:", dbErr);
+        }
+
+        if (refreshProfile) {
+          try {
+            await refreshProfile(user);
+          } catch {}
+        }
+
+        toast.success(
+          `Welcome, ${user.displayName || "User"}! Account created successfully.`,
+        );
+        navigate("/dashboard", { replace: true });
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        console.warn("OAuth redirect result note:", err);
+        if (
+          err.code &&
+          err.code !== "auth/null-user" &&
+          err.code !== "auth/popup-closed-by-user"
+        ) {
+          toast.error(err.message || "Failed to complete authentication.");
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [navigate, refreshProfile]);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [googleLoading, setGoogleLoading] = useState(false);
   const [metaLoading, setMetaLoading] = useState(false);
-  const { refreshProfile } = useAuth();
 
   const handleGoogleSignUp = async () => {
     setError("");
@@ -173,10 +231,9 @@ const Register = () => {
           await setPersistence(auth, browserLocalPersistence);
         } catch {}
       }
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+
+      const user = await performGoogleAuth(auth);
+      if (!user) return;
 
       try {
         const userEmail = (user.email || "").trim().toLowerCase();
@@ -198,19 +255,33 @@ const Register = () => {
         } catch {}
       }
 
-      setSuccessMsg(
-        `Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`,
+      const welcomeMsg = `Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`;
+      setSuccessMsg(welcomeMsg);
+      toast.success(
+        `Welcome, ${user.displayName || "User"}! Account created with Google.`,
       );
       setTimeout(() => {
         navigate("/dashboard");
       }, 300);
     } catch (err) {
       console.warn("Google signup error:", err);
-      if (err.code === "auth/popup-closed-by-user") {
-        setError("Google sign-in was cancelled.");
-      } else {
-        setError("Unable to sign in with Google. Please try again.");
+      let msg = "Unable to sign in with Google. Please try again.";
+      if (
+        err.code === "auth/popup-closed-by-user" ||
+        err.message?.includes("closed") ||
+        err.message?.includes("cancelled") ||
+        err.message?.includes("Canceled") ||
+        err.message?.includes("user cancelled") ||
+        err.message?.includes("User cancelled")
+      ) {
+        msg = "Google sign-in was cancelled.";
+      } else if (err.code === "auth/cancelled-popup-request") {
+        return;
+      } else if (err.message) {
+        msg = err.message;
       }
+      setError(msg);
+      toast.error(msg);
     } finally {
       setGoogleLoading(false);
     }
@@ -253,25 +324,29 @@ const Register = () => {
         } catch {}
       }
 
-      setSuccessMsg(
-        `Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`,
+      const welcomeMsg = `Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`;
+      setSuccessMsg(welcomeMsg);
+      toast.success(
+        `Welcome, ${user.displayName || "User"}! Account created with Meta.`,
       );
       setTimeout(() => {
         navigate("/dashboard");
       }, 300);
     } catch (err) {
       console.warn("Meta signup error:", err);
+      let msg = "Unable to sign in with Meta. Please try again.";
       if (err.code === "auth/popup-closed-by-user") {
-        setError("Meta sign-in was cancelled.");
+        msg = "Meta sign-in was cancelled.";
+      } else if (err.code === "auth/cancelled-popup-request") {
+        return;
       } else if (err.code === "auth/account-exists-with-different-credential") {
-        setError(
-          "An account already exists with the same email. Please sign in with Google or Email/Password.",
-        );
-      } else {
-        setError(
-          err.message || "Unable to sign in with Meta. Please try again.",
-        );
+        msg =
+          "An account already exists with the same email. Please sign in with Google or Email/Password.";
+      } else if (err.message) {
+        msg = err.message;
       }
+      setError(msg);
+      toast.error(msg);
     } finally {
       setMetaLoading(false);
     }
@@ -318,6 +393,7 @@ const Register = () => {
             formik.setFieldTouched("userMobile", true, false);
           }
           setError(uniqueness.message);
+          toast.error(uniqueness.message);
           setSubmitting(false);
           return;
         }
@@ -348,7 +424,11 @@ const Register = () => {
           photoURL: user.photoURL || null,
         });
 
-        setSuccessMsg("Account registered successfully! Redirecting...");
+        const successText = "Account registered successfully! Redirecting...";
+        setSuccessMsg(successText);
+        toast.success(
+          `Welcome, ${values.username.trim()}! Account registered successfully.`,
+        );
         resetForm();
 
         setTimeout(() => {
@@ -374,6 +454,7 @@ const Register = () => {
         }
 
         setError(message);
+        toast.error(message);
       } finally {
         setSubmitting(false);
       }

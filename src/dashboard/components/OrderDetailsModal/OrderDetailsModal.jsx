@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import CloseIcon from '@mui/icons-material/Close';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
@@ -8,28 +7,31 @@ import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import DryCleaningOutlinedIcon from '@mui/icons-material/DryCleaningOutlined';
 import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
 import StraightenOutlinedIcon from '@mui/icons-material/StraightenOutlined';
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
-import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import { AppButton } from '../../../components/common';
-import { formatDateSafe, formatTimeSafe } from '../../../firebase/dbService';
+import CelebrationOutlinedIcon from '@mui/icons-material/CelebrationOutlined';
+import NotesOutlinedIcon from '@mui/icons-material/NotesOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+
+import { AppModal, AppButton } from '../../../components/common';
+import { formatDateSafe, formatTimeSafe, updateOrder } from '../../../firebase/dbService';
+import { useAuth } from '../../../auth/context/AuthContext';
 import './OrderDetailsModal.scss';
 
-const OrderDetailsModal = ({ open, onClose, order }) => {
+const OrderDetailsModal = ({ open, onClose, order, onStatusUpdated, onOrderUpdated }) => {
+  const { currentUser, userProfile } = useAuth();
+  const [currentStatus, setCurrentStatus] = useState('in-progress');
+  const [currentPaymentStatus, setCurrentPaymentStatus] = useState('paid');
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+    if (order) {
+      setCurrentStatus(order.status || order.orderStatus || 'in-progress');
+      setCurrentPaymentStatus(order.paymentStatus || 'paid');
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [open]);
+  }, [order]);
 
   if (!open || !order) return null;
 
@@ -37,43 +39,138 @@ const OrderDetailsModal = ({ open, onClose, order }) => {
     window.print();
   };
 
-  const modalElement = (
-    <div className="order-details-modal">
-      <div className="order-details-backdrop" onClick={onClose} />
+  const handleStatusChange = async (newStatus) => {
+    if (newStatus === currentStatus) return;
+    setUpdatingStatus(true);
+    try {
+      const activeUid = currentUser?.uid || userProfile?.id || '';
+      await updateOrder(order.id, {
+        status: newStatus,
+        orderStatus: newStatus,
+        updatedBy: activeUid,
+      });
+      setCurrentStatus(newStatus);
+      toast.success(`Order ${order.id} status updated to "${newStatus}"!`);
+      if (onStatusUpdated) {
+        onStatusUpdated(order.id, newStatus);
+      }
+      if (onOrderUpdated) {
+        onOrderUpdated(order.id, {
+          status: newStatus,
+          orderStatus: newStatus,
+          updatedBy: activeUid,
+        });
+      }
+    } catch (err) {
+      console.error('Status update failed:', err);
+      toast.error('Failed to update status.');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
-      <div className="order-details-paper" role="dialog" aria-modal="true">
-        <div className="order-details-paper__top-bar" />
+  const handlePaymentStatusChange = async (newPayStatus) => {
+    if (newPayStatus === currentPaymentStatus) return;
+    setUpdatingStatus(true);
+    try {
+      const activeUid = currentUser?.uid || userProfile?.id || '';
+      await updateOrder(order.id, {
+        paymentStatus: newPayStatus,
+        updatedBy: activeUid,
+      });
+      setCurrentPaymentStatus(newPayStatus);
+      const label =
+        newPayStatus === 'paid'
+          ? 'Paid in Full'
+          : newPayStatus === 'partial'
+          ? 'Advance / Partial'
+          : 'Pending Payment';
+      toast.success(`Order ${order.id} payment updated to "${label}"!`);
+      if (onOrderUpdated) {
+        onOrderUpdated(order.id, {
+          paymentStatus: newPayStatus,
+          updatedBy: activeUid,
+        });
+      }
+    } catch (err) {
+      console.error('Payment status update failed:', err);
+      toast.error('Failed to update payment status.');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
-        {/* Header */}
-        <div className="modal-header">
-          <div className="modal-header__title-wrap">
-            <span className="modal-header__subtitle">
-              Booking Specification & Order Details
-            </span>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <h3 className="modal-header__id">
-                {order.id}
-              </h3>
-              <span className={`status-pill ${order.status}`}>
-                <span className="dot" />
-                {order.status.replace('-', ' ')}
-              </span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="modal-close-btn"
-            aria-label="close"
-          >
-            <CloseIcon />
-          </button>
+  const clientName = order.username || order.client?.username || (typeof order.client === 'string' ? order.client : 'Client');
+  const clientMobile = order.userMobile || order.client?.userMobile || order.phone || '—';
+  const clientEmail = order.email || order.client?.email || '—';
+  const clientAddress = order.userAddress || order.client?.userAddress || order.address || '—';
+
+  // Normalize items array
+  const rawItems = Array.isArray(order.items) && order.items.length > 0 ? order.items : [
+    {
+      itemId: 'default_1',
+      serviceName: order.service || 'Saree Pre-Pleating & Fold',
+      servicePrice: Number(String(order.amount || order.baseAmount || '0').replace(/[^0-9]/g, '')) || 1000,
+      serviceDiscountedPrice: Number(String(order.amount || '0').replace(/[^0-9]/g, '')) || 1000,
+      finalPrice: Number(String(order.amount || '0').replace(/[^0-9]/g, '')) || 1000,
+      sareeType: order.sareeType || 'Silk Saree',
+      measurementProfile: {
+        title: 'Saved Profile',
+        pallu: order.palluStyle || 'Standard Pin Fold',
+        firstPleatSize: order.pleatCount || '6 Pleats (5.5" width)',
+        notes: order.packaging || '',
+      },
+      itemNotes: order.notes || '',
+    }
+  ];
+
+  const totalCalculatedAmount = order.totalAmount || rawItems.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0);
+
+  return (
+    <AppModal
+      open={open}
+      onClose={onClose}
+      title={
+        <div className="order-details-modal-title">
+          <span className="order-id-label">{order.id}</span>
+          <span className={`status-pill ${currentStatus}`}>
+            <span className="dot" />
+            {currentStatus.replace('-', ' ')}
+          </span>
         </div>
-
-        <div className="modal-divider" />
-
-        {/* Main Content */}
-        <div className="modal-content">
+      }
+      subtitle="Saree Pre-Pleating Job Sheet & Order Specifications"
+      maxWidth="lg"
+      className="order-details-app-modal"
+      bodyClassName="order-details-modal-body"
+      actions={
+        <div className="order-details-actions-bar">
+          <div className="order-summary-pill">
+            <span className="summary-label">Total Amount:</span>
+            <span className="summary-val">₹{Number(totalCalculatedAmount).toLocaleString('en-IN')}</span>
+            <span className="summary-count">({rawItems.length} {rawItems.length === 1 ? 'Service' : 'Services'})</span>
+          </div>
+          <div className="actions-right">
+            <AppButton
+              variant="secondary"
+              startIcon={<PrintOutlinedIcon />}
+              onClick={handlePrint}
+              className="print-btn"
+            >
+              Print Job Sheet / Invoice
+            </AppButton>
+            <AppButton
+              variant="primary"
+              onClick={onClose}
+              className="close-btn"
+            >
+              Close
+            </AppButton>
+          </div>
+        </div>
+      }
+    >
+      <div className="order-details-content">
           <div className="modal-grid-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '16px' }}>
             {/* 1. Client Profile */}
             <div className="details-card">
@@ -84,186 +181,299 @@ const OrderDetailsModal = ({ open, onClose, order }) => {
               <div className="details-card__body">
                 <div className="info-row">
                   <span className="info-label">Full Name</span>
-                  <span className="info-val highlight">{order.client}</span>
+                  <span className="info-val highlight">{clientName}</span>
                 </div>
                 <div className="info-row">
-                  <span className="info-label">Phone</span>
+                  <span className="info-label">Mobile</span>
                   <span className="info-val">
                     <PhoneOutlinedIcon className="inline-icon" />
-                    {order.phone || '+91 98490 12345'}
+                    {clientMobile}
                   </span>
                 </div>
                 <div className="info-row">
                   <span className="info-label">Email</span>
                   <span className="info-val">
                     <EmailOutlinedIcon className="inline-icon" />
-                    {order.email || `${(order.client || 'client').toLowerCase().replace(/\s+/g, '.')}@example.com`}
+                    {clientEmail}
                   </span>
                 </div>
                 <div className="info-row">
-                  <span className="info-label">Location</span>
+                  <span className="info-label">Address</span>
                   <span className="info-val">
                     <LocationOnOutlinedIcon className="inline-icon" />
-                    {order.address || 'Jubilee Hills, Hyderabad'}
+                    {clientAddress}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* 2. Timeline & Delivery */}
+            {/* 2. Timeline & Occasion */}
             <div className="details-card">
               <div className="details-card__head">
                 <CalendarMonthOutlinedIcon className="card-head-icon" />
-                <span className="card-head-title">Timeline & Fulfillment</span>
+                <span className="card-head-title">Timeline & Occasion</span>
               </div>
               <div className="details-card__body">
                 <div className="info-row">
                   <span className="info-label">Booking Date</span>
                   <span className="info-val">
-                    {formatDateSafe(order.date || order.createdAt)}
-                    {formatTimeSafe(order.date || order.createdAt) ? ` (${formatTimeSafe(order.date || order.createdAt)})` : ''}
+                    {formatDateSafe(order.orderDate || order.date || order.createdAt)}
+                    {formatTimeSafe(order.orderDate || order.date || order.createdAt) ? ` (${formatTimeSafe(order.orderDate || order.date || order.createdAt)})` : ''}
                   </span>
                 </div>
                 <div className="info-row">
-                  <span className="info-label">Event / Due Date</span>
+                  <span className="info-label">Expected Delivery</span>
                   <span className="info-val highlight">
                     <EventAvailableOutlinedIcon className="inline-icon" />
-                    {order.eventDate || '08-Sep-2026 (Reception)'}
+                    {formatDateSafe(order.deliveryDate || order.eventDate)}
                   </span>
                 </div>
+                {order.occasion && (
+                  <div className="info-row">
+                    <span className="info-label">Occasion / Event</span>
+                    <span className="info-val">
+                      <CelebrationOutlinedIcon className="inline-icon" />
+                      {order.occasion}
+                    </span>
+                  </div>
+                )}
                 <div className="info-row">
-                  <span className="info-label">Fulfillment Mode</span>
-                  <span className="info-val">
-                    <LocalShippingOutlinedIcon className="inline-icon" />
-                    {order.deliveryType || 'Store Pickup (Scheduled)'}
-                  </span>
-                </div>
-                <div className="info-row">
-                  <span className="info-label">Order Status</span>
-                  <span className="info-val status-text">
-                    <CheckCircleOutlineIcon className="inline-icon" />
-                    {order.status === 'completed'
-                      ? 'Ready for Pickup / Delivered'
-                      : order.status === 'in-progress'
-                      ? 'Pleating in Progress'
-                      : 'Pending Processing'}
+                  <span className="info-label">Total Sarees</span>
+                  <span className="info-val highlight">
+                    {rawItems.length} {rawItems.length === 1 ? 'Saree Service' : 'Saree Services'}
                   </span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* 3. Saree & Pleating Specifications */}
+          {/* 3. Ordered Services & Detailed Measurement Breakdown */}
           <div className="details-card" style={{ marginBottom: '16px' }}>
             <div className="details-card__head">
               <DryCleaningOutlinedIcon className="card-head-icon" />
-              <span className="card-head-title">Saree Pre-Pleating Specifications</span>
+              <span className="card-head-title">Ordered Saree Services ({rawItems.length})</span>
             </div>
             <div className="details-card__body">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
-                <div className="spec-tile">
-                  <LayersOutlinedIcon className="spec-icon" />
-                  <span className="spec-label">Service Type</span>
-                  <span className="spec-val">{order.service}</span>
-                </div>
+              <div className="dossier-items-list">
+                {rawItems.map((item, idx) => {
+                  const m = item.measurementProfile;
+                  return (
+                    <div key={item.itemId || idx} className="dossier-item-box">
+                      <div className="dossier-item-header">
+                        <div className="item-title-wrap">
+                          <span className="item-idx-tag">Service #{idx + 1}</span>
+                          <span className="item-name-text">{item.serviceName}</span>
+                        </div>
+                        <div className="item-price-tag">
+                          ₹{Number(item.finalPrice || 0).toLocaleString('en-IN')}
+                        </div>
+                      </div>
 
-                <div className="spec-tile">
-                  <DryCleaningOutlinedIcon className="spec-icon" />
-                  <span className="spec-label">Saree Fabric</span>
-                  <span className="spec-val highlight">{order.sareeType}</span>
-                </div>
+                      <div className="dossier-item-specs-grid">
+                        <div className="spec-tile">
+                          <DryCleaningOutlinedIcon className="spec-icon" />
+                          <span className="spec-label">Saree Fabric</span>
+                          <span className="spec-val highlight">{item.sareeType || 'Silk'}</span>
+                        </div>
 
-                <div className="spec-tile">
-                  <StraightenOutlinedIcon className="spec-icon" />
-                  <span className="spec-label">Front Pleats</span>
-                  <span className="spec-val">
-                    {order.pleatCount || '6 Front Pleats (5.5" width)'}
-                  </span>
-                </div>
+                        {m?.title && (
+                          <div className="spec-tile">
+                            <StraightenOutlinedIcon className="spec-icon" />
+                            <span className="spec-label">Measurement Profile</span>
+                            <span className="spec-val">{m.title}</span>
+                          </div>
+                        )}
 
-                <div className="spec-tile">
-                  <Inventory2OutlinedIcon className="spec-icon" />
-                  <span className="spec-label">Pallu & Packaging</span>
-                  <span className="spec-val">
-                    {order.packaging || 'Hardboard Box Fold + Butter Paper'}
-                  </span>
-                </div>
+                        {m?.pallu && (
+                          <div className="spec-tile">
+                            <LayersOutlinedIcon className="spec-icon" />
+                            <span className="spec-label">Pallu Spec</span>
+                            <span className="spec-val">{m.pallu}&quot;</span>
+                          </div>
+                        )}
+
+                        {m?.shoulderToRightTight && (
+                          <div className="spec-tile">
+                            <StraightenOutlinedIcon className="spec-icon" />
+                            <span className="spec-label">Shoulder to Tight</span>
+                            <span className="spec-val">{m.shoulderToRightTight}&quot;</span>
+                          </div>
+                        )}
+
+                        {m?.chest && (
+                          <div className="spec-tile">
+                            <StraightenOutlinedIcon className="spec-icon" />
+                            <span className="spec-label">Chest Size</span>
+                            <span className="spec-val">{m.chest}&quot;</span>
+                          </div>
+                        )}
+
+                        {m?.hip && (
+                          <div className="spec-tile">
+                            <StraightenOutlinedIcon className="spec-icon" />
+                            <span className="spec-label">Hip Size</span>
+                            <span className="spec-val">{m.hip}&quot;</span>
+                          </div>
+                        )}
+
+                        {m?.firstPleatSize && (
+                          <div className="spec-tile">
+                            <StraightenOutlinedIcon className="spec-icon" />
+                            <span className="spec-label">First Pleat</span>
+                            <span className="spec-val">{m.firstPleatSize}&quot;</span>
+                          </div>
+                        )}
+
+                        {m?.noOfChestPleats && (
+                          <div className="spec-tile">
+                            <LayersOutlinedIcon className="spec-icon" />
+                            <span className="spec-label">Chest Pleats</span>
+                            <span className="spec-val">{m.noOfChestPleats}</span>
+                          </div>
+                        )}
+
+                        {m?.height && (
+                          <div className="spec-tile">
+                            <PersonOutlineIcon className="spec-icon" />
+                            <span className="spec-label">Height</span>
+                            <span className="spec-val">{m.height}</span>
+                          </div>
+                        )}
+
+                        {m?.dressSize && (
+                          <div className="spec-tile">
+                            <StraightenOutlinedIcon className="spec-icon" />
+                            <span className="spec-label">Dress Size</span>
+                            <span className="spec-val">{m.dressSize}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {item.itemNotes && (
+                        <div className="item-note-callout">
+                          <InfoOutlinedIcon style={{ fontSize: 14 }} />
+                          <span><strong>Special Care:</strong> {item.itemNotes}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
 
           {/* 4. Special Instructions Callout */}
-          <div className="instructions-callout" style={{ marginBottom: '16px' }}>
-            <InfoOutlinedIcon className="callout-icon" />
-            <div>
-              <span className="callout-title">Special Instructions & Care Notes</span>
-              <p className="callout-text">
-                {order.notes ||
-                  'Handle delicate zari border with extra care. Steam iron on reverse side only. Pre-pinned with brass safety pins.'}
-              </p>
+          {order.notes && (
+            <div className="instructions-callout" style={{ marginBottom: '16px' }}>
+              <NotesOutlinedIcon className="callout-icon" />
+              <div>
+                <span className="callout-title">Order Notes & Booking Instructions</span>
+                <p className="callout-text">{order.notes}</p>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* 5. Payment Breakdown */}
+          {/* 5. Payment & Status Controls */}
           <div className="payment-card">
             <div className="payment-card__left">
               <div className="payment-head">
                 <PaymentOutlinedIcon className="pay-icon" />
-                <span className="pay-title">Billing & Payment Summary</span>
+                <span className="pay-title">Billing & Workflow Controls</span>
               </div>
-              <span className="pay-method">
-                Payment Status:{' '}
-                <span className="pay-method-bold">
-                  {order.paymentStatus || 'Paid in Full (UPI / Online)'}
-                </span>
-              </span>
+              <div className="status-button-group">
+                <span className="status-label">Update Order Status:</span>
+                <div className="status-buttons">
+                  <button
+                    type="button"
+                    className={`btn-status btn-status--in-progress ${currentStatus === 'in-progress' ? 'active' : ''}`}
+                    onClick={() => handleStatusChange('in-progress')}
+                    disabled={updatingStatus}
+                  >
+                    In-Progress
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn-status btn-status--completed ${currentStatus === 'completed' ? 'active' : ''}`}
+                    onClick={() => handleStatusChange('completed')}
+                    disabled={updatingStatus}
+                  >
+                    Completed
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn-status btn-status--pending ${currentStatus === 'pending' ? 'active' : ''}`}
+                    onClick={() => handleStatusChange('pending')}
+                    disabled={updatingStatus}
+                  >
+                    Pending
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn-status btn-status--cancelled ${currentStatus === 'cancelled' ? 'active' : ''}`}
+                    onClick={() => handleStatusChange('cancelled')}
+                    disabled={updatingStatus}
+                  >
+                    Cancelled
+                  </button>
+                </div>
+              </div>
+
+              <div className="status-button-group" style={{ marginTop: 12 }}>
+                <span className="status-label">Update Payment Status:</span>
+                <div className="status-buttons">
+                  <button
+                    type="button"
+                    className={`btn-status btn-pay--paid ${currentPaymentStatus === 'paid' ? 'active' : ''}`}
+                    onClick={() => handlePaymentStatusChange('paid')}
+                    disabled={updatingStatus}
+                  >
+                    Paid in Full
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn-status btn-pay--partial ${currentPaymentStatus === 'partial' ? 'active' : ''}`}
+                    onClick={() => handlePaymentStatusChange('partial')}
+                    disabled={updatingStatus}
+                  >
+                    Partial / Advance
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn-status btn-pay--pending ${currentPaymentStatus === 'pending' ? 'active' : ''}`}
+                    onClick={() => handlePaymentStatusChange('pending')}
+                    disabled={updatingStatus}
+                  >
+                    Pending Payment
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="payment-card__breakdown">
               <div className="pay-row">
-                <span className="pay-label">Base Pleating Service:</span>
-                <span className="pay-val">{order.baseAmount || '₹1,000'}</span>
+                <span className="pay-label">Payment Method:</span>
+                <span className="pay-val">{order.paymentMethod || 'UPI / Cash'}</span>
               </div>
               <div className="pay-row">
-                <span className="pay-label">Steam Iron & Box Add-on:</span>
-                <span className="pay-val">{order.addonAmount || '₹200'}</span>
+                <span className="pay-label">Payment Status:</span>
+                <span className="pay-val highlight" style={{ textTransform: 'capitalize' }}>
+                  {currentPaymentStatus === 'paid'
+                    ? 'Paid in Full'
+                    : currentPaymentStatus === 'partial'
+                    ? 'Advance / Partial'
+                    : 'Pending Payment'}
+                </span>
               </div>
               <div className="pay-divider" />
               <div className="pay-row total">
-                <span className="pay-total-label">Total Amount:</span>
-                <span className="pay-total-val">{order.amount}</span>
+                <span className="pay-total-label">Total Billed Amount:</span>
+                <span className="pay-total-val">₹{Number(totalCalculatedAmount).toLocaleString('en-IN')}</span>
               </div>
             </div>
           </div>
         </div>
-
-        <div className="modal-divider" />
-
-        {/* Footer Actions */}
-        <div className="modal-actions">
-          <AppButton
-            variant="secondary"
-            startIcon={<PrintOutlinedIcon />}
-            onClick={handlePrint}
-            className="print-btn"
-          >
-            Print Invoice
-          </AppButton>
-          <AppButton
-            variant="primary"
-            onClick={onClose}
-            className="close-btn"
-          >
-            Close
-          </AppButton>
-        </div>
-      </div>
-    </div>
-  );
-
-  return typeof document !== 'undefined'
-    ? createPortal(modalElement, document.body)
-    : modalElement;
-};
+      </AppModal>
+    );
+  };
 
 export default OrderDetailsModal;

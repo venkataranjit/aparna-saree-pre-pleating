@@ -41,6 +41,7 @@ import {
   formatDateSafe,
   formatModifiedDate,
   getTimestampMillis,
+  getLatestItemTimestamp,
   createAuthUser,
   resetUserPassword,
 } from "../../../firebase/dbService";
@@ -61,6 +62,7 @@ import {
   AppTableCell,
   AppTableSortLabel,
   AppTablePagination,
+  AppViewToggle,
 } from "../../../components/common";
 import "./Clients.scss";
 import { MeasurementModal } from "../../components/MeasurementModal/MeasurementModal";
@@ -81,8 +83,7 @@ const clientValidationSchema = Yup.object({
     .required("Mobile Number is required"),
   email: Yup.string()
     .trim()
-    .email("Please enter a valid email address")
-    .required("Email Address is required"),
+    .email("Please enter a valid email address"),
   userAddress: Yup.string()
     .trim()
     .max(150, "Address cannot exceed 150 characters"),
@@ -219,6 +220,8 @@ const Clients = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("ALL");
+  const [viewMode, setViewMode] = useState("table");
+
 
   // Sorting and Pagination states
   const [sortField, setSortField] = useState("createdAt");
@@ -227,9 +230,16 @@ const Clients = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const handleRequestSort = (field) => {
-    const isAsc = sortField === field && sortDirection === "asc";
-    setSortDirection(isAsc ? "desc" : "asc");
-    setSortField(field);
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection(
+        field === "createdAt" || field === "updatedAt" || field === "recent"
+          ? "desc"
+          : "asc",
+      );
+    }
     setPage(0);
   };
 
@@ -662,6 +672,19 @@ const Clients = () => {
           };
         });
 
+        const editNow = new Date();
+        setClients((prev) =>
+          prev.map((c) =>
+            c.id === clientId
+              ? {
+                  ...c,
+                  updatedAt: editNow.toISOString(),
+                  rawUpdatedAt: editNow,
+                }
+              : c,
+          ),
+        );
+
         toast.success(`Measurement profile "${values.title.trim()}" updated successfully!`,);
         setOpenEditMeasureModal(false);
         setSelectedMeasureForEdit(null);
@@ -730,17 +753,13 @@ const Clients = () => {
         const bCount = (measurementsMap[b.id] || []).length;
         return sortDirection === "asc" ? aCount - bCount : bCount - aCount;
       }
-      if (sortField === "createdAt" || sortField === "updatedAt") {
-        const aVal =
-          sortField === "createdAt"
-            ? a.rawCreatedAt || a.createdAt
-            : a.rawUpdatedAt || a.updatedAt;
-        const bVal =
-          sortField === "createdAt"
-            ? b.rawCreatedAt || b.createdAt
-            : b.rawUpdatedAt || b.updatedAt;
-        const aTime = getTimestampMillis(aVal) || 0;
-        const bTime = getTimestampMillis(bVal) || 0;
+      if (
+        sortField === "createdAt" ||
+        sortField === "updatedAt" ||
+        sortField === "recent"
+      ) {
+        const aTime = getLatestItemTimestamp(a);
+        const bTime = getLatestItemTimestamp(b);
         return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
       }
       const aVal = a[sortField] ?? "";
@@ -865,128 +884,101 @@ const Clients = () => {
         />
       </div>
 
-      {/* Filter Tabs & Search Bar matching Manage Users Toolbar */}
-      <div className="clients-page__toolbar">
+      {/* 1. Filter Tabs Row */}
+      <div className="clients-page__tabs-row">
         <AppTabs
           tabs={clientTabs}
           value={activeTab}
-          onChange={(val) => setActiveTab(val)}
+          onChange={(val) => {
+            setActiveTab(val);
+            setPage(0);
+          }}
         />
+      </div>
 
+      {/* 2. Controls Row: View Mode Switcher on LEFT, Search on RIGHT */}
+      <div className="clients-page__toolbar">
+        <AppViewToggle value={viewMode} onChange={setViewMode} />
         <div className="clients-search-field">
           <AppInput
             placeholder="Search by name, mobile, email, address..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(0);
+            }}
             startAdornment={<SearchOutlinedIcon />}
           />
         </div>
       </div>
 
-      {/* Main Clients Table Card */}
-      <div className="clients-table-card">
-        <AppTableContainer className="table-responsive">
-          <AppTable className="clients-table">
-            <AppTableHead>
-              <AppTableRow>
-                <AppTableCell head>
-                  <AppTableSortLabel
-                    active={sortField === "username"}
-                    direction={sortField === "username" ? sortDirection : "asc"}
-                    onClick={() => handleRequestSort("username")}
-                  >
-                    CLIENT NAME
-                  </AppTableSortLabel>
-                </AppTableCell>
-                <AppTableCell head>
-                  <AppTableSortLabel
-                    active={sortField === "userMobile"}
-                    direction={
-                      sortField === "userMobile" ? sortDirection : "asc"
-                    }
-                    onClick={() => handleRequestSort("userMobile")}
-                  >
-                    MOBILE
-                  </AppTableSortLabel>
-                </AppTableCell>
-                <AppTableCell head style={{ textAlign: "center" }}>
-                  <AppTableSortLabel
-                    active={sortField === "measureCount"}
-                    direction={
-                      sortField === "measureCount" ? sortDirection : "asc"
-                    }
-                    onClick={() => handleRequestSort("measureCount")}
-                  >
-                    MEASUREMENTS
-                  </AppTableSortLabel>
-                </AppTableCell>
-                <AppTableCell
-                  head
-                  style={{ textAlign: "right", minWidth: 160 }}
-                >
-                  ACTIONS
-                </AppTableCell>
-              </AppTableRow>
-            </AppTableHead>
-
-            <AppTableBody>
-              {loading ? (
+      {/* Main Clients Content */}
+      {loading ? (
+        <div className="clients-loading-wrapper">
+          <AppSpinner size="lg" color="gold" />
+          <span className="clients-loading-text">Loading client directory...</span>
+        </div>
+      ) : filteredClients.length === 0 ? (
+        <div className="clients-empty-wrapper">
+          <PeopleOutlineIcon style={{ fontSize: 44, color: "#d4af37", opacity: 0.5 }} />
+          <span className="empty-title">No clients found matching your criteria.</span>
+          <span className="empty-subtitle">
+            {searchTerm || activeTab !== "ALL"
+              ? "Try changing your search term or active tab filter."
+              : 'Click "Add Client" to register the first client profile.'}
+          </span>
+        </div>
+      ) : viewMode === "table" ? (
+        /* ========================================================== */
+        /* 1. TABLE VIEW                                              */
+        /* ========================================================== */
+        <div className="clients-table-card">
+          <AppTableContainer className="table-responsive">
+            <AppTable className="clients-table">
+              <AppTableHead>
                 <AppTableRow>
+                  <AppTableCell head>
+                    <AppTableSortLabel
+                      active={sortField === "username"}
+                      direction={sortField === "username" ? sortDirection : "asc"}
+                      onClick={() => handleRequestSort("username")}
+                    >
+                      CLIENT NAME
+                    </AppTableSortLabel>
+                  </AppTableCell>
+                  <AppTableCell head>
+                    <AppTableSortLabel
+                      active={sortField === "userMobile"}
+                      direction={
+                        sortField === "userMobile" ? sortDirection : "asc"
+                      }
+                      onClick={() => handleRequestSort("userMobile")}
+                    >
+                      MOBILE
+                    </AppTableSortLabel>
+                  </AppTableCell>
+                  <AppTableCell head style={{ textAlign: "center" }}>
+                    <AppTableSortLabel
+                      active={sortField === "measureCount"}
+                      direction={
+                        sortField === "measureCount" ? sortDirection : "asc"
+                      }
+                      onClick={() => handleRequestSort("measureCount")}
+                    >
+                      MEASUREMENTS
+                    </AppTableSortLabel>
+                  </AppTableCell>
                   <AppTableCell
-                    colSpan={4}
-                    style={{ textAlign: "center", padding: "48px 16px" }}
+                    head
+                    style={{ textAlign: "right", minWidth: 160 }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 12,
-                      }}
-                    >
-                      <AppSpinner size="lg" color="gold" />
-                      <span style={{ color: "#e6d8a3", fontSize: "0.9rem" }}>
-                        Loading client directory...
-                      </span>
-                    </div>
+                    ACTIONS
                   </AppTableCell>
                 </AppTableRow>
-              ) : filteredClients.length === 0 ? (
-                <AppTableRow>
-                  <AppTableCell colSpan={4} className="empty-state-cell">
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <PeopleOutlineIcon
-                        style={{ fontSize: 44, color: "#d4af37", opacity: 0.5 }}
-                      />
-                      <span
-                        style={{
-                          color: "#e6d8a3",
-                          fontWeight: 600,
-                          fontSize: "0.95rem",
-                        }}
-                      >
-                        No clients found matching your criteria.
-                      </span>
-                      <span
-                        style={{
-                          color: "rgba(230, 216, 163, 0.6)",
-                          fontSize: "0.8rem",
-                        }}
-                      >
-                        Click "Add Client" to create the first client profile.
-                      </span>
-                    </div>
-                  </AppTableCell>
-                </AppTableRow>
-              ) : (
-                paginatedClients.map((user) => {
+              </AppTableHead>
+
+              <AppTableBody>
+                {paginatedClients.map((user) => {
                   const initial = (
                     user.username?.charAt(0) ||
                     user.email?.charAt(0) ||
@@ -998,7 +990,11 @@ const Clients = () => {
 
                   return (
                     <React.Fragment key={user.id}>
-                      <AppTableRow className="client-table-row">
+                      <AppTableRow
+                        className="client-table-row"
+                        onClick={() => toggleClientExpand(user.id)}
+                        style={{ cursor: "pointer" }}
+                      >
                         {/* Client Avatar & Name */}
                         <AppTableCell>
                           <div
@@ -1020,40 +1016,35 @@ const Clients = () => {
                           </div>
                         </AppTableCell>
 
-                        {/* Phone Number */}
-                        <AppTableCell className="mobile-cell">
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 6,
-                            }}
-                          >
-                            <PhoneIphoneOutlinedIcon
-                              style={{ fontSize: 16, color: "#d4af37" }}
-                            />
-                            <span style={{ fontFamily: "monospace" }}>
-                              {user.userMobile || "—"}
-                            </span>
-                          </div>
+                        {/* Mobile Number */}
+                        <AppTableCell>
+                          <span className="mobile-cell">
+                            {user.userMobile || "—"}
+                          </span>
                         </AppTableCell>
 
-                        {/* Saree Measurement Status */}
+                        {/* Measurement Profiles Badge */}
                         <AppTableCell style={{ textAlign: "center" }}>
                           {measureCount > 0 ? (
                             <span
-                              onClick={() => handleOpenViewDetails(user)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenViewDetails(user);
+                              }}
                               style={{ cursor: "pointer" }}
-                              title="View Measurements"
+                              title="Click to view measurement profiles"
                             >
                               <AppBadge variant="completed">
-                                ✓ {measureCount} Profile
+                                {measureCount} Profile
                                 {measureCount > 1 ? "s" : ""}
                               </AppBadge>
                             </span>
                           ) : (
                             <span
-                              onClick={() => handleOpenAddMeasure(user)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenAddMeasure(user);
+                              }}
                               style={{ cursor: "pointer" }}
                               title="Add Measurement"
                             >
@@ -1076,7 +1067,10 @@ const Clients = () => {
                               square
                               className="action-btn--view"
                               title="View Client Profile & Measurements"
-                              onClick={() => handleOpenViewDetails(user)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenViewDetails(user);
+                              }}
                             >
                               <VisibilityOutlinedIcon
                                 style={{ fontSize: 16 }}
@@ -1090,7 +1084,10 @@ const Clients = () => {
                               square
                               className="action-btn--measure"
                               title="Add Measurement Profile"
-                              onClick={() => handleOpenAddMeasure(user)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenAddMeasure(user);
+                              }}
                             >
                               <StraightenOutlinedIcon
                                 style={{ fontSize: 16 }}
@@ -1105,17 +1102,40 @@ const Clients = () => {
                                 square
                                 className="action-btn--edit"
                                 title="Edit Client Info"
-                                onClick={() => handleOpenEdit(user)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenEdit(user);
+                                }}
                               >
                                 <EditOutlinedIcon style={{ fontSize: 16 }} />
                               </AppButton>
                             )}
 
-                            {/* 4. Revamped View More Pill Button */}
+                            {/* 4. Delete Client Button (Rose Red) */}
+                            {userCanDelete && (
+                              <AppButton
+                                variant="danger"
+                                size="sm"
+                                square
+                                className="action-btn--delete"
+                                title="Delete Client"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenDelete(user);
+                                }}
+                              >
+                                <DeleteOutlineIcon style={{ fontSize: 16 }} />
+                              </AppButton>
+                            )}
+
+                            {/* 5. Revamped View More Pill Button */}
                             <button
                               type="button"
                               className={`view-more-pill-btn ${isExpanded ? "is-active" : ""}`}
-                              onClick={() => toggleClientExpand(user.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleClientExpand(user.id);
+                              }}
                               aria-expanded={isExpanded}
                               title={
                                 isExpanded
@@ -1136,7 +1156,7 @@ const Clients = () => {
                         </AppTableCell>
                       </AppTableRow>
 
-                      {/* Expandable View More Row with extra fields: Address, Created At, Modified Date */}
+                      {/* Expandable View More Row */}
                       {isExpanded && (
                         <AppTableRow className="table-expanded-row">
                           <AppTableCell
@@ -1144,12 +1164,12 @@ const Clients = () => {
                             className="table-expanded-cell"
                           >
                             <div className="table-expanded-container">
-                              {/* Residential / Delivery Address Tile */}
+                              {/* Address Tile */}
                               <div className="expanded-tile expanded-tile--address">
                                 <div className="tile-header">
                                   <LocationOnOutlinedIcon className="tile-icon" />
                                   <span className="tile-label">
-                                    Residential / Delivery Address
+                                    Delivery / Boutique Address
                                   </span>
                                 </div>
                                 <div className="tile-content">
@@ -1159,34 +1179,32 @@ const Clients = () => {
                                     </span>
                                   ) : (
                                     <span className="empty-hint">
-                                      No address provided
+                                      No address on file
                                     </span>
                                   )}
                                 </div>
                               </div>
 
-                              {/* Created At Tile */}
+                              {/* Joined Date Tile */}
                               <div className="expanded-tile">
                                 <div className="tile-header">
                                   <CalendarTodayOutlinedIcon className="tile-icon" />
-                                  <span className="tile-label">
-                                    Created At
-                                  </span>
+                                  <span className="tile-label">Joined</span>
                                 </div>
                                 <div className="tile-content">
                                   <DateTimeCell
-                                    value={user.rawCreatedAt || user.createdAt}
+                                    value={
+                                      user.rawCreatedAt || user.createdAt
+                                    }
                                   />
                                 </div>
                               </div>
 
-                              {/* Updated At Tile */}
+                              {/* Modified Date Tile */}
                               <div className="expanded-tile">
                                 <div className="tile-header">
                                   <ScheduleOutlinedIcon className="tile-icon" />
-                                  <span className="tile-label">
-                                    Updated At
-                                  </span>
+                                  <span className="tile-label">Modified</span>
                                 </div>
                                 <div className="tile-content">
                                   <DateTimeCell
@@ -1203,23 +1221,302 @@ const Clients = () => {
                       )}
                     </React.Fragment>
                   );
-                })
-              )}
-            </AppTableBody>
-          </AppTable>
-        </AppTableContainer>
-        <AppTablePagination
-          count={filteredClients.length}
-          page={page}
-          onPageChange={(e, newPage) => setPage(newPage)}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
-          }}
-          rowsPerPageOptions={[5, 10, 25, 50]}
-        />
-      </div>
+                })}
+              </AppTableBody>
+            </AppTable>
+          </AppTableContainer>
+          <AppTablePagination
+            count={filteredClients.length}
+            page={page}
+            onPageChange={(e, newPage) => setPage(newPage)}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={(e) => {
+              setRowsPerPage(parseInt(e.target.value, 10));
+              setPage(0);
+            }}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+          />
+        </div>
+      ) : viewMode === "grid" ? (
+        /* ========================================================== */
+        /* 2. GRID VIEW (Multi-Column Luxury Gold Cards)              */
+        /* ========================================================== */
+        <div className="clients-grid-wrapper">
+          <div className="clients-grid">
+            {paginatedClients.map((user) => {
+              const initial = (
+                user.username?.charAt(0) ||
+                user.email?.charAt(0) ||
+                "C"
+              ).toUpperCase();
+              const userMeasures = measurementsMap[user.id] || [];
+              const measureCount = userMeasures.length;
+
+              return (
+                <div key={user.id} className="client-grid-card">
+                  <div className="card-top-accent" />
+                  <div className="card-header">
+                    <div className="user-avatar-circle">{initial}</div>
+                    <span
+                      onClick={() =>
+                        measureCount > 0
+                          ? handleOpenViewDetails(user)
+                          : handleOpenAddMeasure(user)
+                      }
+                      style={{ cursor: "pointer" }}
+                      title={
+                        measureCount > 0
+                          ? "View Measurement Profiles"
+                          : "Add Measurement Profile"
+                      }
+                    >
+                      <AppBadge
+                        variant={measureCount > 0 ? "completed" : "pending"}
+                      >
+                        {measureCount > 0
+                          ? `${measureCount} Profile${measureCount > 1 ? "s" : ""}`
+                          : "+ Add Measure"}
+                      </AppBadge>
+                    </span>
+                  </div>
+
+                  <div className="card-body">
+                    <h3 className="card-title">{user.username || "Client"}</h3>
+                    <div className="card-info-rows">
+                      <div className="info-item">
+                        <PhoneIphoneOutlinedIcon style={{ fontSize: 14 }} />
+                        <span>{user.userMobile || "—"}</span>
+                      </div>
+                      <div className="info-item">
+                        <EmailOutlinedIcon style={{ fontSize: 14 }} />
+                        <span className="truncate-text">{user.email || "No email"}</span>
+                      </div>
+                      {user.userAddress && (
+                        <div className="info-item">
+                          <LocationOnOutlinedIcon style={{ fontSize: 14 }} />
+                          <span className="truncate-text">{user.userAddress}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="card-footer">
+                    <div className="card-date">
+                      <CalendarTodayOutlinedIcon style={{ fontSize: 13 }} />
+                      <DateTimeCell
+                        value={user.rawCreatedAt || user.createdAt}
+                      />
+                    </div>
+                    <div className="action-btns">
+                      <AppButton
+                        variant="info"
+                        size="sm"
+                        square
+                        className="action-btn--view"
+                        title="View Client Profile"
+                        onClick={() => handleOpenViewDetails(user)}
+                      >
+                        <VisibilityOutlinedIcon style={{ fontSize: 16 }} />
+                      </AppButton>
+                      <AppButton
+                        variant="success"
+                        size="sm"
+                        square
+                        className="action-btn--measure"
+                        title="Add Measurement"
+                        onClick={() => handleOpenAddMeasure(user)}
+                      >
+                        <StraightenOutlinedIcon style={{ fontSize: 16 }} />
+                      </AppButton>
+                      {userCanEdit && (
+                        <AppButton
+                          variant="warning"
+                          size="sm"
+                          square
+                          className="action-btn--edit"
+                          title="Edit Client"
+                          onClick={() => handleOpenEdit(user)}
+                        >
+                          <EditOutlinedIcon style={{ fontSize: 16 }} />
+                        </AppButton>
+                      )}
+                      {userCanDelete && (
+                        <AppButton
+                          variant="danger"
+                          size="sm"
+                          square
+                          className="action-btn--delete"
+                          title="Delete Client"
+                          onClick={() => handleOpenDelete(user)}
+                        >
+                          <DeleteOutlineIcon style={{ fontSize: 16 }} />
+                        </AppButton>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="clients-pagination-card">
+            <AppTablePagination
+              count={filteredClients.length}
+              page={page}
+              onPageChange={(e, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPageOptions={[5, 10, 25, 50]}
+            />
+          </div>
+        </div>
+      ) : (
+        /* ========================================================== */
+        /* 3. CARD VIEW (Detailed Full-Width Dossier Cards)           */
+        /* ========================================================== */
+        <div className="clients-card-list-wrapper">
+          <div className="clients-card-list">
+            {paginatedClients.map((user) => {
+              const initial = (
+                user.username?.charAt(0) ||
+                user.email?.charAt(0) ||
+                "C"
+              ).toUpperCase();
+              const userMeasures = measurementsMap[user.id] || [];
+              const measureCount = userMeasures.length;
+
+              return (
+                <div key={user.id} className="client-detailed-card">
+                  <div className="detailed-card-left">
+                    <div className="user-avatar-circle user-avatar-circle-lg">
+                      {initial}
+                    </div>
+                  </div>
+
+                  <div className="detailed-card-main">
+                    <div className="detailed-card-header">
+                      <div className="detailed-card-title-row">
+                        <h3 className="client-heading">{user.username || "Client"}</h3>
+                        <span
+                          onClick={() =>
+                            measureCount > 0
+                              ? handleOpenViewDetails(user)
+                              : handleOpenAddMeasure(user)
+                          }
+                          style={{ cursor: "pointer" }}
+                        >
+                          <AppBadge
+                            variant={measureCount > 0 ? "completed" : "pending"}
+                          >
+                            {measureCount > 0
+                              ? `${measureCount} Measurement Profile${measureCount > 1 ? "s" : ""}`
+                              : "No Measurements Saved"}
+                          </AppBadge>
+                        </span>
+                      </div>
+                      <p className="client-address-text">
+                        <LocationOnOutlinedIcon style={{ fontSize: 15 }} />
+                        {user.userAddress || "No physical address specified"}
+                      </p>
+                    </div>
+
+                    <div className="detailed-card-meta">
+                      <div className="meta-tile">
+                        <span className="meta-label">Mobile</span>
+                        <span className="meta-value">
+                          {user.userMobile || "—"}
+                        </span>
+                      </div>
+                      <div className="meta-tile">
+                        <span className="meta-label">Email</span>
+                        <span className="meta-value truncate-text">
+                          {user.email || "—"}
+                        </span>
+                      </div>
+                      <div className="meta-tile">
+                        <span className="meta-label">Joined</span>
+                        <span className="meta-value">
+                          <DateTimeCell
+                            value={user.rawCreatedAt || user.createdAt}
+                          />
+                        </span>
+                      </div>
+                      <div className="meta-tile">
+                        <span className="meta-label">Last Updated</span>
+                        <span className="meta-value">
+                          <DateTimeCell
+                            value={user.rawUpdatedAt || user.updatedAt}
+                            modifiedFrom={
+                              user.rawCreatedAt || user.createdAt
+                            }
+                          />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="detailed-card-actions">
+                    <AppButton
+                      variant="info"
+                      size="sm"
+                      startIcon={<VisibilityOutlinedIcon />}
+                      onClick={() => handleOpenViewDetails(user)}
+                    >
+                      View Details
+                    </AppButton>
+                    <AppButton
+                      variant="success"
+                      size="sm"
+                      startIcon={<StraightenOutlinedIcon />}
+                      onClick={() => handleOpenAddMeasure(user)}
+                    >
+                      Add Measure
+                    </AppButton>
+                    {userCanEdit && (
+                      <AppButton
+                        variant="warning"
+                        size="sm"
+                        startIcon={<EditOutlinedIcon />}
+                        onClick={() => handleOpenEdit(user)}
+                      >
+                        Edit
+                      </AppButton>
+                    )}
+                    {userCanDelete && (
+                      <AppButton
+                        variant="danger"
+                        size="sm"
+                        startIcon={<DeleteOutlineIcon />}
+                        onClick={() => handleOpenDelete(user)}
+                      >
+                        Delete
+                      </AppButton>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="clients-pagination-card">
+            <AppTablePagination
+              count={filteredClients.length}
+              page={page}
+              onPageChange={(e, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPageOptions={[5, 10, 25, 50]}
+            />
+          </div>
+        </div>
+      )}
+
 
       {/* ========================================================================= */}
       {/* 1. Modal: Add New Client Dialog                                         */}
@@ -1287,7 +1584,6 @@ const Clients = () => {
 
           <AppInput
             label="Email Address"
-            required
             id="create-email"
             name="email"
             type="email"
@@ -1392,7 +1688,6 @@ const Clients = () => {
 
           <AppInput
             label="Email Address"
-            required
             id="edit-email"
             name="email"
             type="email"
@@ -1773,6 +2068,19 @@ const Clients = () => {
             const userList = prev[clientId] ? [...prev[clientId]] : [];
             return { ...prev, [clientId]: [saved, ...userList] };
           });
+
+          const editNow = new Date();
+          setClients((prev) =>
+            prev.map((c) =>
+              c.id === clientId
+                ? {
+                    ...c,
+                    updatedAt: editNow.toISOString(),
+                    rawUpdatedAt: editNow,
+                  }
+                : c,
+            ),
+          );
 
           toast.success(`Measurement profile "${values.title.trim()}" added successfully for ${clientForMeasure.username}!`,);
         }}

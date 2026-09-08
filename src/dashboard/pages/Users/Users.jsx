@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
@@ -8,7 +8,6 @@ import PhoneIphoneOutlinedIcon from "@mui/icons-material/PhoneIphoneOutlined";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
@@ -24,7 +23,6 @@ import { useAuth } from "../../../auth/context/AuthContext";
 import {
   getAllUsers,
   createUser,
-  deleteUser,
   updateUser,
   getLocalUsers,
   createAuthUser,
@@ -32,6 +30,7 @@ import {
   formatDateSafe,
   formatModifiedDate,
   getTimestampMillis,
+  getLatestItemTimestamp,
 } from "../../../firebase/dbService";
 import { USER_ROLES, SUPERADMIN_EMAIL } from "../../../firebase/schema";
 import { DateTimeCell } from "../../components/DateTimeCell/DateTimeCell";
@@ -50,8 +49,31 @@ import {
   AppTableCell,
   AppTableSortLabel,
   AppTablePagination,
+  AppViewToggle,
 } from "../../../components/common";
 import "./Users.scss";
+
+/**
+ * Role badge styling helper for AppBadge
+ */
+const getRoleBadgeVariant = (role) => {
+  switch ((role || "").toLowerCase()) {
+    case USER_ROLES.SUPERADMIN:
+    case "superadmin":
+      return "superadmin";
+    case USER_ROLES.ADMIN:
+    case "admin":
+      return "admin";
+    case USER_ROLES.STAFF:
+    case "staff":
+      return "staff";
+    case USER_ROLES.CLIENT:
+    case "client":
+      return "client";
+    default:
+      return "neutral";
+  }
+};
 
 /**
  * Formik Validation Schema using Yup
@@ -66,13 +88,10 @@ const userValidationSchema = Yup.object({
     .trim()
     .matches(
       /^[6-9]\d{9}$/,
-      "Please enter a valid 10-digit Indian mobile number"
+      "Please enter a valid 10-digit Indian mobile number",
     )
     .required("Mobile Number is required"),
-  email: Yup.string()
-    .trim()
-    .email("Please enter a valid email address")
-    .required("Email Address is required"),
+  email: Yup.string().trim().email("Please enter a valid email address"),
   userAddress: Yup.string()
     .trim()
     .max(150, "Address cannot exceed 150 characters"),
@@ -94,13 +113,10 @@ const editUserValidationSchema = Yup.object({
     .trim()
     .matches(
       /^[6-9]\d{9}$/,
-      "Please enter a valid 10-digit Indian mobile number"
+      "Please enter a valid 10-digit Indian mobile number",
     )
     .required("Mobile Number is required"),
-  email: Yup.string()
-    .trim()
-    .email("Please enter a valid email address")
-    .required("Email Address is required"),
+  email: Yup.string().trim().email("Please enter a valid email address"),
   userAddress: Yup.string()
     .trim()
     .max(150, "Address cannot exceed 150 characters"),
@@ -114,7 +130,6 @@ const Users = () => {
     role,
     isSuperAdmin,
     canEdit,
-    canDelete,
     canManageUsers,
   } = useAuth();
 
@@ -130,8 +145,6 @@ const Users = () => {
     (isSuperAdmin ||
       userRoleLower === "admin" ||
       userRoleLower === "superadmin");
-  const userCanDelete =
-    canDelete ?? (isSuperAdmin || userRoleLower === "superadmin");
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -140,8 +153,7 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("ALL");
-  const [userToDelete, setUserToDelete] = useState(null);
-  const [deletingUser, setDeletingUser] = useState(false);
+  const [viewMode, setViewMode] = useState("table");
 
   // Sorting and Pagination states
   const [sortField, setSortField] = useState("createdAt");
@@ -150,9 +162,16 @@ const Users = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const handleRequestSort = (field) => {
-    const isAsc = sortField === field && sortDirection === "asc";
-    setSortDirection(isAsc ? "desc" : "asc");
-    setSortField(field);
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection(
+        field === "createdAt" || field === "updatedAt" || field === "recent"
+          ? "desc"
+          : "asc",
+      );
+    }
     setPage(0);
   };
 
@@ -212,6 +231,7 @@ const Users = () => {
     });
     setOpenEditModal(true);
   };
+  const handleOpenEditModal = handleOpenEdit;
 
   const editFormik = useFormik({
     initialValues: {
@@ -239,14 +259,14 @@ const Users = () => {
           if (uniqueness.emailExists) {
             editFormik.setFieldError(
               "email",
-              "This email address is already registered."
+              "This email address is already registered.",
             );
             editFormik.setFieldTouched("email", true, false);
           }
           if (uniqueness.mobileExists) {
             editFormik.setFieldError(
               "userMobile",
-              "This mobile number is already registered."
+              "This mobile number is already registered.",
             );
             editFormik.setFieldTouched("userMobile", true, false);
           }
@@ -278,8 +298,8 @@ const Users = () => {
                   updatedAt: editNow.toISOString(),
                   rawUpdatedAt: editNow,
                 }
-              : u
-          )
+              : u,
+          ),
         );
 
         if (currentUser?.uid === selectedUser.id) {
@@ -290,7 +310,9 @@ const Users = () => {
         setOpenEditModal(false);
       } catch (err) {
         console.error("Error updating user:", err);
-        toast.error("Failed to update user: " + (err.message || "Please try again."));
+        toast.error(
+          "Failed to update user: " + (err.message || "Please try again."),
+        );
       } finally {
         setSubmitting(false);
       }
@@ -323,14 +345,14 @@ const Users = () => {
           if (uniqueness.emailExists) {
             formik.setFieldError(
               "email",
-              "This email address is already registered."
+              "This email address is already registered.",
             );
             formik.setFieldTouched("email", true, false);
           }
           if (uniqueness.mobileExists) {
             formik.setFieldError(
               "userMobile",
-              "This mobile number is already registered."
+              "This mobile number is already registered.",
             );
             formik.setFieldTouched("userMobile", true, false);
           }
@@ -350,11 +372,15 @@ const Users = () => {
         } catch (authErr) {
           console.warn("Firebase Auth creation note:", authErr);
           if (authErr.code === "auth/email-already-in-use") {
-            toast.error(`The email "${cleanEmail}" is already registered in Firebase Authentication.`);
+            toast.error(
+              `The email "${cleanEmail}" is already registered in Firebase Authentication.`,
+            );
             setSubmitting(false);
             return;
           } else if (authErr.code === "auth/weak-password") {
-            toast.error("Temporary password must be at least 6 characters long.");
+            toast.error(
+              "Temporary password must be at least 6 characters long.",
+            );
             setSubmitting(false);
             return;
           } else if (authErr.code === "auth/invalid-email") {
@@ -389,11 +415,13 @@ const Users = () => {
           newUserItem,
           ...prev.filter(
             (u) =>
-              u.id !== authUid && (u.email || "").toLowerCase() !== cleanEmail
+              u.id !== authUid && (u.email || "").toLowerCase() !== cleanEmail,
           ),
         ]);
 
-        toast.success(`User "${values.username}" successfully registered in Firebase! They can now log in with email "${cleanEmail}" and default password "aparna".`);
+        toast.success(
+          `User "${values.username}" successfully registered in Firebase! They can now log in with email "${cleanEmail}" and default password "aparna".`,
+        );
         resetForm({
           values: {
             username: "",
@@ -407,37 +435,20 @@ const Users = () => {
         setOpenModal(false);
       } catch (err) {
         console.error("Error creating user:", err);
-        toast.error("Failed to create user: " + (err.message || "Please try again."));
+        toast.error(
+          "Failed to create user: " + (err.message || "Please try again."),
+        );
       } finally {
         setSubmitting(false);
       }
     },
   });
 
-  const confirmDeleteUser = async () => {
-    if (!userCanDelete || !userToDelete) return;
-    const { id, name } = userToDelete;
-    setDeletingUser(true);
-    try {
-      await deleteUser(id);
-      setUsers((prev) => prev.filter((u) => u.id !== id));
-      toast.success(`User "${name}" has been removed from Firebase.`);
-      setUserToDelete(null);
-    } catch (err) {
-      console.error("Error deleting user:", err);
-      toast.error("Failed to delete user: " + (err.message || "Permission denied"));
-    } finally {
-      setDeletingUser(false);
-    }
-  };
-
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
       const uRole = (u.role || "").toLowerCase();
       const tabLower = activeTab.toLowerCase();
-      const matchesTab =
-        activeTab === "ALL" ||
-        uRole === tabLower;
+      const matchesTab = activeTab === "ALL" || uRole === tabLower;
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         !query ||
@@ -450,17 +461,13 @@ const Users = () => {
 
   const sortedUsers = useMemo(() => {
     return [...filteredUsers].sort((a, b) => {
-      if (sortField === "createdAt" || sortField === "updatedAt") {
-        const aVal =
-          sortField === "createdAt"
-            ? a.rawCreatedAt || a.createdAt
-            : a.rawUpdatedAt || a.updatedAt;
-        const bVal =
-          sortField === "createdAt"
-            ? b.rawCreatedAt || b.createdAt
-            : b.rawUpdatedAt || b.updatedAt;
-        const aTime = getTimestampMillis(aVal) || 0;
-        const bTime = getTimestampMillis(bVal) || 0;
+      if (
+        sortField === "createdAt" ||
+        sortField === "updatedAt" ||
+        sortField === "recent"
+      ) {
+        const aTime = getLatestItemTimestamp(a);
+        const bTime = getLatestItemTimestamp(b);
         return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
       }
 
@@ -475,7 +482,7 @@ const Users = () => {
   const paginatedUsers = useMemo(() => {
     return sortedUsers.slice(
       page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage
+      page * rowsPerPage + rowsPerPage,
     );
   }, [sortedUsers, page, rowsPerPage]);
 
@@ -489,25 +496,30 @@ const Users = () => {
     { label: `All (${users.length})`, value: "ALL" },
     {
       label: `Super Admins (${
-        users.filter((u) => (u.role || "").toLowerCase() === USER_ROLES.SUPERADMIN).length
+        users.filter(
+          (u) => (u.role || "").toLowerCase() === USER_ROLES.SUPERADMIN,
+        ).length
       })`,
       value: USER_ROLES.SUPERADMIN,
     },
     {
       label: `Admins (${
-        users.filter((u) => (u.role || "").toLowerCase() === USER_ROLES.ADMIN).length
+        users.filter((u) => (u.role || "").toLowerCase() === USER_ROLES.ADMIN)
+          .length
       })`,
       value: USER_ROLES.ADMIN,
     },
     {
       label: `Staff (${
-        users.filter((u) => (u.role || "").toLowerCase() === USER_ROLES.STAFF).length
+        users.filter((u) => (u.role || "").toLowerCase() === USER_ROLES.STAFF)
+          .length
       })`,
       value: USER_ROLES.STAFF,
     },
     {
       label: `Clients (${
-        users.filter((u) => (u.role || "").toLowerCase() === USER_ROLES.CLIENT).length
+        users.filter((u) => (u.role || "").toLowerCase() === USER_ROLES.CLIENT)
+          .length
       })`,
       value: USER_ROLES.CLIENT,
     },
@@ -572,128 +584,111 @@ const Users = () => {
         </div>
       </div>
 
-      {/* Filter Tabs & Search Bar */}
-      <div className="users-page__toolbar">
+      {/* 1. Filter Tabs Row */}
+      <div className="users-page__tabs-row">
         <AppTabs
           tabs={roleTabs}
           value={activeTab}
-          onChange={(val) => setActiveTab(val)}
+          onChange={(val) => {
+            setActiveTab(val);
+            setPage(0);
+          }}
         />
+      </div>
 
+      {/* 2. Controls Row: View Mode Switcher on LEFT, Search on RIGHT */}
+      <div className="users-page__toolbar">
+        <AppViewToggle value={viewMode} onChange={setViewMode} />
         <div className="users-search-field">
           <AppInput
             placeholder="Search by name, mobile, email..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(0);
+            }}
             startAdornment={<SearchOutlinedIcon />}
           />
         </div>
       </div>
 
-      {/* Users Table Card */}
-      <div className="users-table-card">
-        <AppTableContainer className="table-responsive">
-          <AppTable className="users-table">
-            <AppTableHead>
-              <AppTableRow>
-                <AppTableCell head>
-                  <AppTableSortLabel
-                    active={sortField === "username"}
-                    direction={sortField === "username" ? sortDirection : "asc"}
-                    onClick={() => handleRequestSort("username")}
-                  >
-                    User Name
-                  </AppTableSortLabel>
-                </AppTableCell>
-                <AppTableCell head>
-                  <AppTableSortLabel
-                    active={sortField === "userMobile"}
-                    direction={
-                      sortField === "userMobile" ? sortDirection : "asc"
-                    }
-                    onClick={() => handleRequestSort("userMobile")}
-                  >
-                    Mobile Number
-                  </AppTableSortLabel>
-                </AppTableCell>
-                <AppTableCell head>
-                  <AppTableSortLabel
-                    active={sortField === "role"}
-                    direction={sortField === "role" ? sortDirection : "asc"}
-                    onClick={() => handleRequestSort("role")}
-                  >
-                    Assigned Role
-                  </AppTableSortLabel>
-                </AppTableCell>
-                <AppTableCell head style={{ textAlign: "right", minWidth: 140 }}>
-                  Actions
-                </AppTableCell>
-              </AppTableRow>
-            </AppTableHead>
-            <AppTableBody>
-              {loading ? (
+      {/* Main Users Content */}
+      {loading ? (
+        <div className="users-loading-wrapper">
+          <AppSpinner size="lg" color="gold" />
+          <span className="users-loading-text">Loading users from Firebase...</span>
+        </div>
+      ) : filteredUsers.length === 0 ? (
+        <div className="users-empty-wrapper">
+          <PersonOutlineIcon style={{ fontSize: 44, color: "rgba(212, 175, 55, 0.4)" }} />
+          <span className="empty-title">
+            {users.length === 0
+              ? "No users found in Firebase"
+              : "No users found matching your filter criteria"}
+          </span>
+          <span className="empty-subtitle">
+            {users.length === 0
+              ? 'Click "Create New User" to register a new user into Firebase.'
+              : "Try changing your search term or role filter."}
+          </span>
+        </div>
+      ) : viewMode === "table" ? (
+        /* ========================================================== */
+        /* 1. TABLE VIEW                                              */
+        /* ========================================================== */
+        <div className="users-table-card">
+          <AppTableContainer className="table-responsive">
+            <AppTable className="users-table">
+              <AppTableHead>
                 <AppTableRow>
+                  <AppTableCell head>
+                    <AppTableSortLabel
+                      active={sortField === "username"}
+                      direction={sortField === "username" ? sortDirection : "asc"}
+                      onClick={() => handleRequestSort("username")}
+                    >
+                      User Name
+                    </AppTableSortLabel>
+                  </AppTableCell>
+                  <AppTableCell head>
+                    <AppTableSortLabel
+                      active={sortField === "userMobile"}
+                      direction={
+                        sortField === "userMobile" ? sortDirection : "asc"
+                      }
+                      onClick={() => handleRequestSort("userMobile")}
+                    >
+                      Mobile Number
+                    </AppTableSortLabel>
+                  </AppTableCell>
+                  <AppTableCell head>
+                    <AppTableSortLabel
+                      active={sortField === "role"}
+                      direction={sortField === "role" ? sortDirection : "asc"}
+                      onClick={() => handleRequestSort("role")}
+                    >
+                      Assigned Role
+                    </AppTableSortLabel>
+                  </AppTableCell>
                   <AppTableCell
-                    colSpan={4}
-                    style={{ textAlign: "center", padding: "48px 16px" }}
+                    head
+                    style={{ textAlign: "right", minWidth: 140 }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 12,
-                      }}
-                    >
-                      <AppSpinner size="lg" color="gold" />
-                      <span style={{ color: "#e6d8a3", fontSize: "0.9rem" }}>
-                        Loading users from Firebase...
-                      </span>
-                    </div>
+                    Actions
                   </AppTableCell>
                 </AppTableRow>
-              ) : filteredUsers.length === 0 ? (
-                <AppTableRow>
-                  <AppTableCell colSpan={4} className="empty-state-cell">
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <PersonOutlineIcon
-                        style={{
-                          fontSize: 40,
-                          color: "rgba(212, 175, 55, 0.4)",
-                        }}
-                      />
-                      <span style={{ color: "#e6d8a3", fontWeight: 600 }}>
-                        {users.length === 0
-                          ? "No users found in Firebase"
-                          : "No users found matching your filter criteria"}
-                      </span>
-                      <span
-                        style={{
-                          color: "rgba(230, 216, 163, 0.6)",
-                          fontSize: "0.8rem",
-                        }}
-                      >
-                        {users.length === 0
-                          ? 'Click "Create New User" to register a new user into Firebase.'
-                          : "Try changing your search term or role filter."}
-                      </span>
-                    </div>
-                  </AppTableCell>
-                </AppTableRow>
-              ) : (
-                paginatedUsers.map((u) => {
+              </AppTableHead>
+              <AppTableBody>
+                {paginatedUsers.map((u) => {
                   const isExpanded = expandedUsers.has(u.id);
 
                   return (
                     <React.Fragment key={u.id}>
-                      <AppTableRow className="user-table-row">
+                      <AppTableRow
+                        className="user-table-row"
+                        onClick={() => toggleUserExpand(u.id)}
+                        style={{ cursor: "pointer" }}
+                      >
                         <AppTableCell>
                           <div
                             style={{
@@ -706,30 +701,23 @@ const Users = () => {
                               {u.username?.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <div className="user-name-text">{u.username}</div>
+                              <div className="user-name-text">
+                                {u.username || "—"}
+                              </div>
                               <div className="user-email-text">
-                                {u.email || "No email specified"}
+                                {u.email || "—"}
                               </div>
                             </div>
                           </div>
                         </AppTableCell>
-                        <AppTableCell className="mobile-cell">
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 6,
-                            }}
-                          >
-                            <PhoneIphoneOutlinedIcon
-                              style={{ fontSize: 16, color: "#d4af37" }}
-                            />
-                            <span style={{ fontFamily: "monospace" }}>
-                              {u.userMobile || "—"}
-                            </span>
-                          </div>
+                        <AppTableCell>
+                          <span className="mobile-cell">{u.userMobile || "—"}</span>
                         </AppTableCell>
-                        <AppTableCell>{renderRoleBadge(u)}</AppTableCell>
+                        <AppTableCell>
+                          <AppBadge variant={getRoleBadgeVariant(u.role)}>
+                            {u.role ? u.role.toUpperCase() : "STAFF"}
+                          </AppBadge>
+                        </AppTableCell>
                         <AppTableCell
                           style={{ textAlign: "right", whiteSpace: "nowrap" }}
                         >
@@ -741,37 +729,35 @@ const Users = () => {
                                 square
                                 className="action-btn--edit"
                                 title="Edit User"
-                                onClick={() => handleOpenEdit(u)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenEditModal(u);
+                                }}
                               >
                                 <EditOutlinedIcon style={{ fontSize: 16 }} />
                               </AppButton>
                             )}
-                            {userCanDelete && (
-                              <AppButton
-                                variant="danger"
-                                size="sm"
-                                square
-                                className="action-btn--delete"
-                                title="Delete User"
-                                onClick={() =>
-                                  setUserToDelete({
-                                    id: u.id,
-                                    name: u.username || u.name || "User",
-                                  })
-                                }
-                              >
-                                <DeleteOutlineIcon style={{ fontSize: 16 }} />
-                              </AppButton>
-                            )}
+                            {/* Revamped View More Pill Button */}
                             <button
                               type="button"
                               className={`view-more-pill-btn ${isExpanded ? "is-active" : ""}`}
-                              onClick={() => toggleUserExpand(u.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleUserExpand(u.id);
+                              }}
                               aria-expanded={isExpanded}
-                              title={isExpanded ? "Hide Details" : "View More Details"}
+                              title={
+                                isExpanded
+                                  ? "Hide Details"
+                                  : "View More Details"
+                              }
                             >
-                              <span className="btn-text">{isExpanded ? "Less" : "More"}</span>
-                              <span className={`chevron-wrap ${isExpanded ? "rotated" : ""}`}>
+                              <span className="btn-text">
+                                {isExpanded ? "Less" : "More"}
+                              </span>
+                              <span
+                                className={`chevron-wrap ${isExpanded ? "rotated" : ""}`}
+                              >
                                 <KeyboardArrowDownIcon />
                               </span>
                             </button>
@@ -782,19 +768,28 @@ const Users = () => {
                       {/* Expandable View More Row with extra fields: Address, Created At, Modified At */}
                       {isExpanded && (
                         <AppTableRow className="table-expanded-row">
-                          <AppTableCell colSpan={4} className="table-expanded-cell">
+                          <AppTableCell
+                            colSpan={4}
+                            className="table-expanded-cell"
+                          >
                             <div className="table-expanded-container">
                               {/* Address Tile */}
                               <div className="expanded-tile expanded-tile--address">
                                 <div className="tile-header">
                                   <LocationOnOutlinedIcon className="tile-icon" />
-                                  <span className="tile-label">Residential / Delivery Address</span>
+                                  <span className="tile-label">
+                                    Full Address
+                                  </span>
                                 </div>
                                 <div className="tile-content">
                                   {u.userAddress ? (
-                                    <span className="address-text">{u.userAddress}</span>
+                                    <span className="address-text">
+                                      {u.userAddress}
+                                    </span>
                                   ) : (
-                                    <span className="empty-hint">No address provided</span>
+                                    <span className="empty-hint">
+                                      No address provided
+                                    </span>
                                   )}
                                 </div>
                               </div>
@@ -803,10 +798,14 @@ const Users = () => {
                               <div className="expanded-tile">
                                 <div className="tile-header">
                                   <CalendarTodayOutlinedIcon className="tile-icon" />
-                                  <span className="tile-label">Created At</span>
+                                  <span className="tile-label">
+                                    Created At
+                                  </span>
                                 </div>
                                 <div className="tile-content">
-                                  <DateTimeCell value={u.rawCreatedAt || u.createdAt} />
+                                  <DateTimeCell
+                                    value={u.rawCreatedAt || u.createdAt}
+                                  />
                                 </div>
                               </div>
 
@@ -814,7 +813,9 @@ const Users = () => {
                               <div className="expanded-tile">
                                 <div className="tile-header">
                                   <ScheduleOutlinedIcon className="tile-icon" />
-                                  <span className="tile-label">Modified At</span>
+                                  <span className="tile-label">
+                                    Modified At
+                                  </span>
                                 </div>
                                 <div className="tile-content">
                                   <DateTimeCell
@@ -829,23 +830,200 @@ const Users = () => {
                       )}
                     </React.Fragment>
                   );
-                })
-              )}
-            </AppTableBody>
-          </AppTable>
-        </AppTableContainer>
-        <AppTablePagination
-          count={filteredUsers.length}
-          page={page}
-          onPageChange={(e, newPage) => setPage(newPage)}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
-          }}
-          rowsPerPageOptions={[5, 10, 25, 50]}
-        />
-      </div>
+                })}
+              </AppTableBody>
+            </AppTable>
+          </AppTableContainer>
+          <AppTablePagination
+            count={filteredUsers.length}
+            page={page}
+            onPageChange={(e, newPage) => setPage(newPage)}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={(e) => {
+              setRowsPerPage(parseInt(e.target.value, 10));
+              setPage(0);
+            }}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+          />
+        </div>
+      ) : viewMode === "grid" ? (
+        /* ========================================================== */
+        /* 2. GRID VIEW (Multi-Column Luxury Gold Cards)              */
+        /* ========================================================== */
+        <div className="users-grid-wrapper">
+          <div className="users-grid">
+            {paginatedUsers.map((u) => {
+              const initial = (
+                u.username?.charAt(0) ||
+                u.email?.charAt(0) ||
+                "U"
+              ).toUpperCase();
+
+              return (
+                <div key={u.id} className="user-grid-card">
+                  <div className="card-top-accent" />
+                  <div className="card-header">
+                    <div className="user-avatar-circle">{initial}</div>
+                    <AppBadge variant={getRoleBadgeVariant(u.role)}>
+                      {u.role ? u.role.toUpperCase() : "STAFF"}
+                    </AppBadge>
+                  </div>
+
+                  <div className="card-body">
+                    <h3 className="card-title">{u.username || "Team Member"}</h3>
+                    <div className="card-info-rows">
+                      <div className="info-item">
+                        <PhoneIphoneOutlinedIcon style={{ fontSize: 14 }} />
+                        <span>{u.userMobile || "—"}</span>
+                      </div>
+                      <div className="info-item">
+                        <EmailOutlinedIcon style={{ fontSize: 14 }} />
+                        <span className="truncate-text">{u.email || "—"}</span>
+                      </div>
+                      {u.userAddress && (
+                        <div className="info-item">
+                          <LocationOnOutlinedIcon style={{ fontSize: 14 }} />
+                          <span className="truncate-text">{u.userAddress}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="card-footer">
+                    <div className="card-date">
+                      <CalendarTodayOutlinedIcon style={{ fontSize: 13 }} />
+                      <DateTimeCell value={u.rawCreatedAt || u.createdAt} />
+                    </div>
+                    <div className="action-btns">
+                      {userCanEdit && (
+                        <AppButton
+                          variant="warning"
+                          size="sm"
+                          square
+                          className="action-btn--edit"
+                          title="Edit User"
+                          onClick={() => handleOpenEditModal(u)}
+                        >
+                          <EditOutlinedIcon style={{ fontSize: 16 }} />
+                        </AppButton>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="users-pagination-card">
+            <AppTablePagination
+              count={filteredUsers.length}
+              page={page}
+              onPageChange={(e, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPageOptions={[5, 10, 25, 50]}
+            />
+          </div>
+        </div>
+      ) : (
+        /* ========================================================== */
+        /* 3. CARD VIEW (Detailed Full-Width Dossier Cards)           */
+        /* ========================================================== */
+        <div className="users-card-list-wrapper">
+          <div className="users-card-list">
+            {paginatedUsers.map((u) => {
+              const initial = (
+                u.username?.charAt(0) ||
+                u.email?.charAt(0) ||
+                "U"
+              ).toUpperCase();
+
+              return (
+                <div key={u.id} className="user-detailed-card">
+                  <div className="detailed-card-left">
+                    <div className="user-avatar-circle user-avatar-circle-lg">
+                      {initial}
+                    </div>
+                  </div>
+
+                  <div className="detailed-card-main">
+                    <div className="detailed-card-header">
+                      <div className="detailed-card-title-row">
+                        <h3 className="user-heading">{u.username || "Team Member"}</h3>
+                        <AppBadge variant={getRoleBadgeVariant(u.role)}>
+                          {u.role ? u.role.toUpperCase() : "STAFF"}
+                        </AppBadge>
+                      </div>
+                      <p className="user-address-text">
+                        <LocationOnOutlinedIcon style={{ fontSize: 15 }} />
+                        {u.userAddress || "No physical address specified"}
+                      </p>
+                    </div>
+
+                    <div className="detailed-card-meta">
+                      <div className="meta-tile">
+                        <span className="meta-label">Mobile</span>
+                        <span className="meta-value">{u.userMobile || "—"}</span>
+                      </div>
+                      <div className="meta-tile">
+                        <span className="meta-label">Email Address</span>
+                        <span className="meta-value truncate-text">
+                          {u.email || "—"}
+                        </span>
+                      </div>
+                      <div className="meta-tile">
+                        <span className="meta-label">Account Created</span>
+                        <span className="meta-value">
+                          <DateTimeCell value={u.rawCreatedAt || u.createdAt} />
+                        </span>
+                      </div>
+                      <div className="meta-tile">
+                        <span className="meta-label">Last Modified</span>
+                        <span className="meta-value">
+                          <DateTimeCell
+                            value={u.rawUpdatedAt || u.updatedAt}
+                            modifiedFrom={u.rawCreatedAt || u.createdAt}
+                          />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="detailed-card-actions">
+                    {userCanEdit && (
+                      <AppButton
+                        variant="warning"
+                        size="sm"
+                        startIcon={<EditOutlinedIcon />}
+                        onClick={() => handleOpenEditModal(u)}
+                      >
+                        Edit User
+                      </AppButton>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="users-pagination-card">
+            <AppTablePagination
+              count={filteredUsers.length}
+              page={page}
+              onPageChange={(e, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPageOptions={[5, 10, 25, 50]}
+            />
+          </div>
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* Formik-Powered User Creation Modal Dialog */}
@@ -910,7 +1088,6 @@ const Users = () => {
 
           <AppInput
             label="Email Address"
-            required
             id="email"
             name="email"
             type="email"
@@ -1035,7 +1212,6 @@ const Users = () => {
 
           <AppInput
             label="Email Address"
-            required
             id="edit-email"
             name="email"
             type="email"
@@ -1105,60 +1281,6 @@ const Users = () => {
             startAdornment={<LocationOnOutlinedIcon />}
           />
         </form>
-      </AppModal>
-
-      {/* ========================================================================= */}
-      {/* Custom Delete Confirmation Dialog Popup                                   */}
-      {/* ========================================================================= */}
-      <AppModal
-        open={Boolean(userToDelete)}
-        onClose={() => !deletingUser && setUserToDelete(null)}
-        title="Delete User Account"
-        maxWidth="xs"
-        actions={
-          <>
-            <AppButton
-              variant="secondary"
-              onClick={() => setUserToDelete(null)}
-              disabled={deletingUser}
-            >
-              Cancel
-            </AppButton>
-            <AppButton
-              variant="danger"
-              onClick={confirmDeleteUser}
-              loading={deletingUser}
-            >
-              Delete User
-            </AppButton>
-          </>
-        }
-      >
-        <p
-          style={{
-            color: "#e6d8a3",
-            fontSize: "0.95rem",
-            marginBottom: 12,
-            marginTop: 0,
-          }}
-        >
-          Are you sure you want to remove user{" "}
-          <strong style={{ color: "#d4af37" }}>
-            "{userToDelete?.name || "this user"}"
-          </strong>{" "}
-          from Firebase?
-        </p>
-        <p
-          style={{
-            color: "rgba(230, 216, 163, 0.65)",
-            fontSize: "0.82rem",
-            lineHeight: 1.5,
-            margin: 0,
-          }}
-        >
-          This will permanently remove the user from the database and invalidate
-          their access.
-        </p>
       </AppModal>
     </div>
   );

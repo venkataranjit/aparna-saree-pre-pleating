@@ -1,0 +1,335 @@
+@use "../../../dashboard/styles/variables.scss" as *;
+
+.app-datepicker-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+
+  .app-datepicker-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(230, 216, 163, 0.85);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    @include mobile {
+      font-size: 12px;
+    }
+
+    .app-datepicker-required {
+      color: $color-gold;
+    }
+  }
+
+  &--disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+.app-datepicker-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #0d0d0d;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: $border-radius-md;
+  padding: 0 12px;
+  min-height: 42px;
+  cursor: pointer;
+  user-select: none;
+  transition: $transition-fast;
+  outline: none;
+
+  @include mobile {
+    min-height: 38px;
+    padding: 0 10px;
+    gap: 6px;
+  }
+
+  &:hover {
+    border-color: rgba(212, 175, 55, 0.6);
+    background: #111111;
+  }
+
+  &:focus,
+  &.is-open {
+    border-color: $color-gold !important;
+    box-shadow:
+      0 0 0 2px rgba(212, 175, 55, 0.22),
+      0 0 10px rgba(212, 175, 55, 0.15) !important;
+    background: #121213 !important;
+  }
+
+  &.is-error {
+    border-color: #ef4444 !important;
+
+    &:focus,
+    &.is-open {
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.22) !important;
+    }
+  }
+
+  .datepicker-adornment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $color-gold;
+    flex-shrink: 0;
+  }
+
+  .datepicker-value-wrap {
+    flex: 1;
+    min-width: 0;
+
+    .datepicker-value-text {
+      color: $color-light-gold;
+      font-size: 13.5px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+
+      @include mobile {
+        font-size: 12.5px;
+      }
+    }
+
+    .datepicker-placeholder {
+      color: rgba(230, 216, 163, 0.4);
+      font-size: 13.5px;
+
+      @include mobile {
+        font-size: 12px;
+      }
+    }
+  }
+
+  .datepicker-actions {
+    display: flex;
+    align-items: center;
+
+    .datepicker-clear-btn {
+      background: transparent;
+      border: none;
+      color: rgba(230, 216, 163, 0.5);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+      border-radius: 50%;
+      transition: $transition-fast;
+
+      &:hover {
+        color: $color-gold;
+        background: rgba(212, 175, 55, 0.15);
+      }
+    }
+  }
+}
+
+.app-datepicker-helper {
+  font-size: 11.5px;
+  color: rgba(230, 216, 163, 0.6);
+  padding-left: 2px;
+
+  &--error {
+    color: #f87171 !important;
+  }
+}
+
+/* Popover root and paper */
+.app-datepicker-popover-root {
+  z-index: 9999 !important;
+}
+
+.app-datepicker-popover-paper {
+  z-index: 9999 !important;
+  background: linear-gradient(165deg, #141414 0%, #0a0a0b 100%) !important;
+  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.95),
+    0 0 18px rgba(212, 175, 55, 0.15) !important;
+  color: $color-light-gold !important;
+  margin-top: 6px;
+  overflow: hidden !important;
+  width: 296px;
+}
+
+.app-datepicker-calendar {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .calendar-presets-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+
+    &::-webkit-scrollbar {
+      height: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(212, 175, 55, 0.3);
+      border-radius: 3px;
+    }
+
+    .preset-chip {
+      background: rgba(212, 175, 55, 0.08);
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      color: #e6d8a3;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: $transition-fast;
+
+      &:hover {
+        background: rgba(212, 175, 55, 0.22);
+        color: $color-gold;
+        border-color: $color-gold;
+      }
+    }
+  }
+
+  .calendar-nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+
+    .calendar-current-month {
+      font-size: 14px;
+      font-weight: 700;
+      color: $color-light-gold;
+      letter-spacing: 0.3px;
+    }
+
+    .calendar-nav-btn {
+      background: transparent;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      color: $color-gold;
+      border-radius: 6px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: $transition-fast;
+
+      &:hover {
+        background: rgba(212, 175, 55, 0.15);
+        border-color: $color-gold;
+      }
+    }
+  }
+
+  .calendar-weekdays-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 2px;
+
+    .weekday-header-cell {
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(212, 175, 55, 0.7);
+      text-transform: uppercase;
+      padding: 4px 0;
+    }
+  }
+
+  .calendar-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+
+    .calendar-day-cell {
+      background: transparent;
+      border: 1px solid transparent;
+      color: $color-light-gold;
+      font-size: 12.5px;
+      font-weight: 500;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+
+      &:hover:not(.is-disabled) {
+        background: rgba(212, 175, 55, 0.16);
+        border-color: rgba(212, 175, 55, 0.4);
+      }
+
+      &.is-other-month {
+        opacity: 0.3;
+        color: rgba(230, 216, 163, 0.4);
+      }
+
+      &.is-today {
+        border-color: rgba(212, 175, 55, 0.6);
+        color: $color-gold;
+        font-weight: 700;
+      }
+
+      &.is-selected {
+        background: $color-gold !important;
+        color: #000000 !important;
+        font-weight: 700 !important;
+        box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+      }
+
+      &.is-disabled {
+        opacity: 0.25;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .calendar-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 6px;
+    border-top: 1px solid rgba(212, 175, 55, 0.12);
+
+    .calendar-footer-btn {
+      background: transparent;
+      border: none;
+      color: $color-gold;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 6px;
+      border-radius: 4px;
+      transition: $transition-fast;
+
+      &:hover {
+        background: rgba(212, 175, 55, 0.12);
+      }
+
+      &--clear {
+        color: rgba(230, 216, 163, 0.5);
+
+        &:hover {
+          color: #f87171;
+          background: rgba(239, 68, 68, 0.1);
+        }
+      }
+    }
+  }
+}

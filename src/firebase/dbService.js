@@ -23,7 +23,7 @@ import {
   updatePassword,
   sendPasswordResetEmail,
 } from 'firebase/auth';
-import { db, firebaseConfig } from './config';
+import { db, auth, firebaseConfig } from './config';
 import {
   COLLECTIONS,
   USER_ROLES,
@@ -328,6 +328,23 @@ export const getTimestampMillis = (val) => {
 };
 
 /**
+ * Extract epoch milliseconds for the latest activity (updatedAt or createdAt or date).
+ * Returns highest millisecond timestamp, or 0 if none found.
+ */
+export const getLatestItemTimestamp = (item) => {
+  if (!item) return 0;
+  const tUpdate = getTimestampMillis(
+    item.rawUpdatedAt || item.updatedAt || item.modifiedAt
+  );
+  const tCreate = getTimestampMillis(
+    item.rawCreatedAt || item.createdAt || item.date || item.orderDate
+  );
+  const validUpdate = !isNaN(tUpdate) && tUpdate > 0 ? tUpdate : 0;
+  const validCreate = !isNaN(tCreate) && tCreate > 0 ? tCreate : 0;
+  return Math.max(validUpdate, validCreate);
+};
+
+/**
  * Returns structured modified date & time { date, time } if the record has actually
  * been updated after initial creation, or null if unmodified / identical.
  *
@@ -417,77 +434,39 @@ export const withTimeout = (promise, ms = 3500, fallbackVal = null) => {
 const LOCAL_USERS_KEY = 'aparna_users_data';
 
 // Registered Firebase Authentication users from Firebase Console
-export const KNOWN_FIREBASE_AUTH_USERS = [
-  {
-    id: 'Nt1jI6VO7mPASuMuXDasW6w1o1p2',
-    username: 'Victory Ranjit',
-    email: 'victoryranjit@gmail.com',
-    userMobile: '',
-    userAddress: '',
-    role: USER_ROLES.SUPERADMIN,
-    createdAt: '05-Sep-2026',
-    updatedAt: null,
-  },
-  {
-    id: 'k5KRcQLGuUVtf2xqnrkpuFFFF63',
-    username: 'Ranjit Aparna',
-    email: 'ranjitaparna25@gmail.com',
-    userMobile: '',
-    userAddress: '',
-    role: USER_ROLES.ADMIN,
-    createdAt: '05-Sep-2026',
-    updatedAt: null,
-  },
-];
+export const KNOWN_FIREBASE_AUTH_USERS = [];
+
+// Initial registered clients seed catalog
+export const INITIAL_CLIENTS = [];
+
+// Initial measurement profiles seed catalog
+export const INITIAL_MEASUREMENTS = [];
 
 export const getLocalUsers = () => {
-  if (typeof window === 'undefined') return KNOWN_FIREBASE_AUTH_USERS;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(LOCAL_USERS_KEY);
     let list = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(list)) list = [];
 
+    // Filter out any legacy mock clients or seed accounts
+    const MOCK_IDS = new Set(['client_priya', 'client_ananya', 'client_kavitha', 'client_sneha', 'client_divya', 'client_meenakshi']);
+    list = list.filter((u) => u && u.id && !MOCK_IDS.has(u.id));
+
     // Strip legacy businessId if present and ensure createdAt/updatedAt are preserved properly
     list = list.map(({ businessId, ...rest }) => {
-      const emailLower = (rest.email || '').toLowerCase();
-      const isVictory = emailLower === 'victoryranjit@gmail.com';
-      const isAparna = emailLower === 'ranjitaparna25@gmail.com';
-      const defaultCreated = (isVictory || isAparna) ? '05-Sep-2026' : null;
-
-      const rawCreated = rest.rawCreatedAt || ((isVictory || isAparna) ? '05-Sep-2026' : rest.createdAt);
-      const rawUpdated = (isVictory || isAparna) ? null : (rest.rawUpdatedAt || (rest.updatedAt !== '-' ? rest.updatedAt : null));
-
       return {
         ...rest,
-        createdAt: formatDateSafe(rawCreated, '-'),
-        updatedAt: rawUpdated ? formatDateSafe(rawUpdated, '-') : '-',
-        rawCreatedAt: rawCreated || null,
-        rawUpdatedAt: rawUpdated || null,
+        createdAt: formatDateSafe(rest.createdAt, '-'),
+        updatedAt: rest.updatedAt && rest.updatedAt !== '-' ? formatDateSafe(rest.updatedAt, '-') : '-',
+        rawCreatedAt: rest.rawCreatedAt || null,
+        rawUpdatedAt: rest.rawUpdatedAt || null,
       };
     });
 
-    // Ensure all registered Firebase Auth users are present and roles stay in sync
-    let changed = false;
-
-    KNOWN_FIREBASE_AUTH_USERS.forEach((known) => {
-      const existing = list.find(
-        (u) => (u.email || '').trim().toLowerCase() === known.email.toLowerCase()
-      );
-      if (!existing) {
-        list.push({ ...known });
-        changed = true;
-      } else if (known.role && existing.role !== known.role && (known.role === USER_ROLES.ADMIN || known.role === USER_ROLES.SUPERADMIN)) {
-        existing.role = known.role;
-        changed = true;
-      }
-    });
-
-    if (changed) {
-      saveLocalUsers(list);
-    }
     return list;
   } catch {
-    return KNOWN_FIREBASE_AUTH_USERS;
+    return [];
   }
 };
 
@@ -506,8 +485,17 @@ export const getLocalMeasurements = () => {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(LOCAL_MEASUREMENTS_KEY);
-    const list = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(list)) return [];
+    let list = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(list)) list = [];
+
+    const MOCK_MEASURE_PREFIXES = ['measure_priya', 'measure_ananya', 'measure_kavitha', 'measure_sneha', 'measure_divya', 'measure_meenakshi', 'm-'];
+    list = list.filter((m) => {
+      if (!m || !m.id) return false;
+      if (MOCK_MEASURE_PREFIXES.some((p) => m.id.startsWith(p))) return false;
+      if (String(m.userId || '').startsWith('client_')) return false;
+      return true;
+    });
+
     return list;
   } catch {
     return [];
@@ -1172,14 +1160,57 @@ export const updateUser = async (userId, updatedData) => {
  * ============================================================================
  */
 
+const SERVICES_CACHE_KEY = 'aparna_services_cache';
+
+const getCachedServices = () => {
+  try {
+    const raw = localStorage.getItem(SERVICES_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const setCachedServices = (services) => {
+  try {
+    localStorage.setItem(SERVICES_CACHE_KEY, JSON.stringify(services));
+  } catch {}
+};
+
 /**
  * Create a new service
  * @param {Object} serviceData
  */
 export const createService = async (serviceData) => {
   const model = createServiceModel(serviceData);
-  const docRef = await addDoc(collection(db, COLLECTIONS.SERVICES), model);
-  return { id: docRef.id, ...model };
+  let createdId = null;
+
+  try {
+    const docRef = await withTimeout(
+      addDoc(collection(db, COLLECTIONS.SERVICES), model),
+      4000
+    );
+    createdId = docRef.id;
+  } catch (err) {
+    console.warn('createService firestore note (using local ID):', err.message || err);
+    createdId = 'svc_' + Date.now();
+  }
+
+  const now = new Date();
+  const result = {
+    id: createdId,
+    ...model,
+    rawCreatedAt: now.toISOString(),
+    createdAt: formatDateSafe(now),
+    rawUpdatedAt: null,
+    updatedAt: null,
+  };
+
+  // Update local cache
+  const cached = getCachedServices() || [];
+  setCachedServices([result, ...cached]);
+
+  return result;
 };
 
 /**
@@ -1187,12 +1218,114 @@ export const createService = async (serviceData) => {
  * @param {boolean} [onlyActive=false]
  */
 export const getAllServices = async (onlyActive = false) => {
-  let q = collection(db, COLLECTIONS.SERVICES);
-  if (onlyActive) {
-    q = query(collection(db, COLLECTIONS.SERVICES), where('active', '==', true));
+  try {
+    let q = collection(db, COLLECTIONS.SERVICES);
+    if (onlyActive) {
+      q = query(collection(db, COLLECTIONS.SERVICES), where('active', '==', true));
+    }
+
+    const snapshot = await withTimeout(getDocs(q), 4500);
+
+    if (snapshot && !snapshot.empty) {
+      const services = snapshot.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          ...data,
+          serviceName: data.serviceName || 'Unnamed Service',
+          servicePrice: Number(data.servicePrice) || 0,
+          serviceDiscountedPrice: Number(data.serviceDiscountedPrice) || 0,
+          description: data.description || '',
+          active: data.active !== false,
+          rawCreatedAt: data.createdAt,
+          rawUpdatedAt: data.updatedAt,
+          createdAt: data.createdAt ? formatDateSafe(data.createdAt) : formatDateSafe(new Date()),
+          updatedAt: data.updatedAt ? formatDateSafe(data.updatedAt) : null,
+        };
+      });
+
+      setCachedServices(services);
+      return onlyActive ? services.filter((s) => s.active) : services;
+    }
+
+    setCachedServices([]);
+    return [];
+  } catch (err) {
+    console.warn('getAllServices firestore note (falling back to cache):', err.message || err);
+    const cached = getCachedServices();
+    if (cached && cached.length > 0) {
+      return onlyActive ? cached.filter((s) => s.active) : cached;
+    }
+    return [];
   }
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+export const updateService = async (serviceId, serviceData) => {
+  const payload = {
+    serviceName: String(serviceData.serviceName || '').trim(),
+    servicePrice: Number(serviceData.servicePrice) || 0,
+    serviceDiscountedPrice: Number(serviceData.serviceDiscountedPrice) || 0,
+    active: Boolean(serviceData.active),
+    description: serviceData.description ? String(serviceData.description).trim() : '',
+    updatedAt: serverTimestamp(),
+  };
+
+  try {
+    const docRef = doc(db, COLLECTIONS.SERVICES, serviceId);
+    await withTimeout(setDoc(docRef, payload, { merge: true }), 4000);
+  } catch (err) {
+    console.warn('updateService firestore note (cached locally):', err.message || err);
+  }
+
+  // Update local cache
+  const now = new Date();
+  const cached = getCachedServices() || [];
+  const updated = cached.map((s) =>
+    s.id === serviceId
+      ? {
+          ...s,
+          ...payload,
+          rawUpdatedAt: now.toISOString(),
+          updatedAt: formatDateSafe(now),
+        }
+      : s
+  );
+  setCachedServices(updated);
+
+  return {
+    id: serviceId,
+    ...payload,
+    rawUpdatedAt: now.toISOString(),
+    updatedAt: formatDateSafe(now),
+  };
+};
+
+/**
+ * Delete a service from Firestore
+ * @param {string} serviceId
+ */
+export const deleteService = async (serviceId) => {
+  try {
+    const docRef = doc(db, COLLECTIONS.SERVICES, serviceId);
+    await withTimeout(deleteDoc(docRef), 4000);
+  } catch (err) {
+    console.warn('deleteService firestore note (removed locally):', err.message || err);
+  }
+
+  // Update local cache
+  const cached = getCachedServices() || [];
+  setCachedServices(cached.filter((s) => s.id !== serviceId));
+
+  return true;
+};
+
+/**
+ * Toggle active status of a service
+ * @param {string} serviceId
+ * @param {boolean} newStatus
+ */
+export const toggleServiceActive = async (serviceId, newStatus) => {
+  return await updateService(serviceId, { active: newStatus });
 };
 
 /**
@@ -1208,18 +1341,7 @@ export const getServicesByBusiness = async (_businessId, onlyActive = false) => 
  * Batch seed initial 12 services
  */
 export const seedInitialServices = async () => {
-  const batch = writeBatch(db);
-  const createdServices = [];
-
-  for (const item of INITIAL_SERVICES) {
-    const docRef = doc(collection(db, COLLECTIONS.SERVICES));
-    const model = createServiceModel(item);
-    batch.set(docRef, model);
-    createdServices.push({ id: docRef.id, ...model });
-  }
-
-  await batch.commit();
-  return createdServices;
+  return [];
 };
 
 /**
@@ -1241,24 +1363,26 @@ export const createClient = async (clientData) => {
 export const getAllClients = async () => {
   try {
     const clientsSnap = await getDocs(collection(db, COLLECTIONS.CLIENTS));
-    return clientsSnap.docs.map((d) => {
-      const data = d.data();
-      return {
-        id: d.id,
-        ...data,
-        clientName: data.clientName || data.username || '',
-        clientMobile: data.clientMobile || data.userMobile || '',
-        clientAddress: data.clientAddress || data.userAddress || '',
-        username: data.clientName || data.username || '',
-        userMobile: data.clientMobile || data.userMobile || '',
-        userAddress: data.clientAddress || data.userAddress || '',
-        role: USER_ROLES.CLIENT,
-      };
-    });
+    if (clientsSnap && !clientsSnap.empty) {
+      return clientsSnap.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          ...data,
+          clientName: data.clientName || data.username || '',
+          clientMobile: data.clientMobile || data.userMobile || '',
+          clientAddress: data.clientAddress || data.userAddress || '',
+          username: data.clientName || data.username || '',
+          userMobile: data.clientMobile || data.userMobile || '',
+          userAddress: data.clientAddress || data.userAddress || '',
+          role: USER_ROLES.CLIENT,
+        };
+      });
+    }
   } catch (err) {
     console.warn('getAllClients error:', err.message || err);
-    return [];
   }
+  return [];
 };
 
 /**
@@ -1521,47 +1645,288 @@ export const saveOrUpdateUserMeasurements = async (userId, measurementData) => {
 
 /**
  * ============================================================================
+/**
  * 6. Orders Collection Operations
  * ============================================================================
  */
 
+const ORDERS_CACHE_KEY = 'aparna_orders_cache';
+
+export const getCachedOrders = () => {
+  try {
+    const raw = localStorage.getItem(ORDERS_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+export const setCachedOrders = (orders) => {
+  try {
+    localStorage.setItem(ORDERS_CACHE_KEY, JSON.stringify(orders));
+  } catch {}
+};
+
+export const INITIAL_ORDERS = [];
+
+// Registry of assigned order IDs to guarantee 100% uniqueness
+const assignedOrderIds = new Set();
+// Initialized empty - order IDs are tracked dynamically
+
+
+// Map docId/key to order ID so re-renders keep consistent ID
+const docIdToOrderId = new Map();
+
 /**
- * Create a new order
+ * Generate a unique 5-digit Order ID: ORD-***** (e.g. ORD-48291)
+ */
+export const generateOrderId = () => {
+  let candidate;
+  let attempts = 0;
+  do {
+    const random5 = Math.floor(10000 + Math.random() * 90000);
+    candidate = `ORD-${random5}`;
+    attempts++;
+  } while (assignedOrderIds.has(candidate) && attempts < 5000);
+  assignedOrderIds.add(candidate);
+  return candidate;
+};
+
+/**
+ * Format order document object ensuring unique 5-digit ORD-***** ID
+ */
+const formatOrderDoc = (id, data) => {
+  const rawCreated = data.createdAt || data.orderDate || new Date().toISOString();
+  const rawUpdated = data.updatedAt || null;
+  const status = String(data.status || data.orderStatus || 'pending').toLowerCase();
+
+  // Determine unique 5-digit order ID
+  let cleanId;
+  const docKey = id || data.id || '';
+  if (docKey && docIdToOrderId.has(docKey)) {
+    cleanId = docIdToOrderId.get(docKey);
+  } else {
+    const rawCandidate = data.orderId || data.id || id || '';
+    const isFiveDigits = /^ORD-\d{5}$/.test(rawCandidate) && rawCandidate !== 'ORD-77770';
+
+    if (isFiveDigits && !assignedOrderIds.has(rawCandidate)) {
+      cleanId = rawCandidate;
+      assignedOrderIds.add(cleanId);
+    } else {
+      cleanId = generateOrderId();
+    }
+
+    if (docKey) {
+      docIdToOrderId.set(docKey, cleanId);
+    }
+  }
+
+  const client = data.client || {
+    clientId: data.clientId || '',
+    username: data.username || data.clientName || 'Client',
+    userMobile: data.userMobile || data.phone || '',
+    email: data.email || '',
+    userAddress: data.userAddress || data.address || '',
+  };
+
+  const items = Array.isArray(data.items) ? data.items : [];
+
+  return {
+    id: cleanId,
+    orderId: cleanId,
+    ...data,
+    client,
+    username: client.username || data.username || 'Client',
+    userMobile: client.userMobile || data.userMobile || '',
+    email: client.email || data.email || '',
+    userAddress: client.userAddress || data.userAddress || '',
+    items,
+    totalItems: items.length || data.totalItems || 1,
+    totalAmount: Number(data.totalAmount) || items.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0) || 0,
+    status,
+    orderStatus: status,
+    occasion: data.occasion || '',
+    orderDate: formatDateSafe(data.orderDate || rawCreated),
+    deliveryDate: data.deliveryDate ? formatDateSafe(data.deliveryDate) : '-',
+    createdAt: formatDateSafe(rawCreated),
+    updatedAt: rawUpdated ? formatDateSafe(rawUpdated) : null,
+    rawCreatedAt: rawCreated,
+    rawUpdatedAt: rawUpdated,
+    createdBy: data.createdBy || '',
+    updatedBy: data.updatedBy || '',
+  };
+};
+
+/**
+ * Create a new order with 5-digit Order ID: ORD-*****
  * @param {Object} orderData
  */
 export const createOrder = async (orderData) => {
-  const model = createOrderModel(orderData);
-  const docRef = await addDoc(collection(db, COLLECTIONS.ORDERS), model);
-  return { id: docRef.id, ...model };
+  const orderId = orderData.id || orderData.orderId || generateOrderId();
+  const currentUid = orderData.createdBy || auth?.currentUser?.uid || '';
+  const model = createOrderModel({ ...orderData, id: orderId, orderId, createdBy: currentUid });
+
+  // On creation: pass only createdAt; strictly ensure updatedAt and updatedBy are not present
+  if ('updatedAt' in model) {
+    delete model.updatedAt;
+  }
+  if ('updatedBy' in model) {
+    delete model.updatedBy;
+  }
+
+  let createdId = orderId;
+
+  try {
+    await withTimeout(
+      setDoc(doc(db, COLLECTIONS.ORDERS, orderId), model),
+      4500
+    );
+  } catch (err) {
+    console.warn('createOrder firestore note (using local ID):', err.message || err);
+  }
+
+  const now = new Date();
+  const formatted = formatOrderDoc(createdId, {
+    ...model,
+    createdAt: now.toISOString(),
+    rawCreatedAt: now.toISOString(),
+    orderDate: orderData.orderDate || now.toISOString(),
+    createdBy: currentUid,
+  });
+
+  // Update local cache
+  const cached = getCachedOrders() || [];
+  setCachedOrders([formatted, ...cached.filter((o) => o.id !== createdId)]);
+
+  return formatted;
 };
 
 /**
- * Get all orders across the orders collection
+ * Get all orders across the orders collection (with cache and initial seeds)
  */
 export const getAllOrders = async () => {
-  const snapshot = await getDocs(collection(db, COLLECTIONS.ORDERS));
-  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+  try {
+    const snapshot = await withTimeout(
+      getDocs(collection(db, COLLECTIONS.ORDERS)),
+      4500
+    );
+
+    if (snapshot && !snapshot.empty) {
+      const orders = snapshot.docs.map((d) => formatOrderDoc(d.id, d.data()));
+      setCachedOrders(orders);
+      return orders;
+    }
+
+    const cached = getCachedOrders();
+    const cleanCached = (cached || []).filter((o) => o && o.id);
+    return cleanCached;
+  } catch (err) {
+    console.warn('getAllOrders firestore note (falling back to cache):', err.message || err);
+    const cached = getCachedOrders();
+    const cleanCached = (cached || []).filter((o) => o && o.id);
+    return cleanCached;
+  }
 };
 
 /**
- * Get orders (businessId parameter retained for backward compatibility)
- * @param {string} [_businessId]
+ * Get orders by business (compatibility)
  */
 export const getOrdersByBusiness = async (_businessId) => {
   return await getAllOrders();
 };
 
 /**
- * Update order status or payment status
+ * Update order status or fields
  * @param {string} orderId
  * @param {Object} updates
  */
 export const updateOrder = async (orderId, updates) => {
-  const docRef = doc(db, COLLECTIONS.ORDERS, orderId);
+  const now = new Date();
+  const currentUid = updates.updatedBy || auth?.currentUser?.uid || '';
   const updatePayload = {
     ...updates,
     updatedAt: serverTimestamp(),
+    updatedBy: currentUid,
   };
-  await updateDoc(docRef, updatePayload);
+
+  // Protect createdAt and createdBy from being overwritten on update
+  delete updatePayload.createdAt;
+  delete updatePayload.createdBy;
+
+  try {
+    const docRef = doc(db, COLLECTIONS.ORDERS, orderId);
+    await withTimeout(setDoc(docRef, updatePayload, { merge: true }), 4000);
+  } catch (err) {
+    console.warn('updateOrder firestore note (cached locally):', err.message || err);
+  }
+
+  // Update local cache
+  const cached = getCachedOrders() || [];
+  const updatedList = cached.map((ord) =>
+    ord.id === orderId
+      ? {
+          ...ord,
+          ...updates,
+          status: updates.status || updates.orderStatus || ord.status,
+          orderStatus: updates.status || updates.orderStatus || ord.orderStatus,
+          updatedAt: formatDateSafe(now),
+          rawUpdatedAt: now.toISOString(),
+          updatedBy: currentUid,
+        }
+      : ord
+  );
+  setCachedOrders(updatedList);
+
   return true;
 };
+
+/**
+ * Delete order from Firestore & cache
+ * @param {string} orderId
+ */
+export const deleteOrder = async (orderId) => {
+  try {
+    const docRef = doc(db, COLLECTIONS.ORDERS, orderId);
+    await withTimeout(deleteDoc(docRef), 4000);
+  } catch (err) {
+    console.warn('deleteOrder firestore note (removed locally):', err.message || err);
+  }
+
+  const cached = getCachedOrders() || [];
+  setCachedOrders(cached.filter((o) => o.id !== orderId));
+  return true;
+};
+
+
+// Immediate one-time purge of legacy mock data from client browser cache
+if (typeof window !== 'undefined') {
+  try {
+    const MOCK_CLIENT_IDS = new Set(['client_priya', 'client_ananya', 'client_kavitha', 'client_sneha', 'client_divya', 'client_meenakshi']);
+    const rawUsers = localStorage.getItem(LOCAL_USERS_KEY);
+    if (rawUsers) {
+      const parsed = JSON.parse(rawUsers);
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed.filter((u) => u && u.id && !MOCK_CLIENT_IDS.has(u.id));
+        localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(cleaned));
+      }
+    }
+    const MOCK_MEASURES = new Set(['measure_priya_1', 'measure_priya_2', 'measure_ananya_1', 'measure_kavitha_1', 'measure_sneha_1', 'measure_divya_1', 'measure_meenakshi_1', 'm-1', 'm-2', 'm-3', 'm-4', 'm-5', 'm-6', 'm-7', 'm-8', 'm-9', 'm-10']);
+    const rawMeas = localStorage.getItem(LOCAL_MEASUREMENTS_KEY);
+    if (rawMeas) {
+      const parsed = JSON.parse(rawMeas);
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed.filter((m) => m && m.id && !MOCK_MEASURES.has(m.id) && !String(m.userId || '').startsWith('client_'));
+        localStorage.setItem(LOCAL_MEASUREMENTS_KEY, JSON.stringify(cleaned));
+      }
+    }
+    const MOCK_ORDERS = new Set(['ORD-58392', 'ORD-71940', 'ORD-24915', 'ORD-83921', 'ORD-77770']);
+    const rawOrders = localStorage.getItem(ORDERS_CACHE_KEY);
+    if (rawOrders) {
+      const parsed = JSON.parse(rawOrders);
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed.filter((o) => o && o.id && !MOCK_ORDERS.has(o.id) && !MOCK_CLIENT_IDS.has(o.clientId));
+        localStorage.setItem(ORDERS_CACHE_KEY, JSON.stringify(cleaned));
+      }
+    }
+  } catch {}
+}

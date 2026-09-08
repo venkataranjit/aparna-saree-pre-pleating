@@ -1,4 +1,4 @@
-@use '../../styles/variables' as *;
+@use "../../styles/variables" as *;
 
 .orders-table-card {
   background: linear-gradient(145deg, #0f0f0f 0%, #080808 100%) !important;
@@ -26,12 +26,6 @@
       gap: 12px;
     }
 
-    &.client-name {
-      color: $color-light-gold;
-      font-weight: 700;
-      letter-spacing: 0.2px;
-    }
-
     .title {
       color: $color-light-gold;
       font-weight: 700;
@@ -49,93 +43,82 @@
       font-size: 0.78rem;
       margin-top: 2px;
     }
+  }
 
-    .controls-row {
+  .orders-toolbar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: $spacing-md;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .search-field {
+      width: 280px;
+      position: relative;
       display: flex;
       align-items: center;
-      gap: $spacing-sm;
+      margin-left: auto;
 
-      @media (max-width: 768px) {
+      @media (max-width: 600px) {
         width: 100%;
+        margin-left: 0;
       }
 
-      .search-field {
-        width: 240px;
-        position: relative;
-        display: flex;
-        align-items: center;
+      .search-input {
+        background-color: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(212, 175, 55, 0.25);
+        border-radius: $border-radius-sm;
+        color: $color-light-gold;
+        font-size: 0.85rem;
+        min-height: 40px;
+        padding: 8px 14px 8px 36px;
+        width: 100%;
+        outline: none;
+        font-family: $font-family-base;
+        transition: $transition-fast;
 
-        @media (max-width: 768px) {
-          flex: 1;
-          width: auto;
+        @media (max-width: 600px) {
+          font-size: 0.78rem;
+          min-height: 36px;
+          padding: 6px 12px 6px 32px;
         }
 
-        .search-input {
-          background-color: rgba(0, 0, 0, 0.5);
-          border: 1px solid rgba(212, 175, 55, 0.25);
-          border-radius: $border-radius-sm;
-          color: $color-light-gold;
-          font-size: 0.85rem;
-          min-height: 40px;
-          padding: 8px 14px 8px 36px;
-          width: 100%;
-          outline: none;
-          font-family: $font-family-base;
-          transition: $transition-fast;
-
-          @media (max-width: 600px) {
-            font-size: 0.78rem;
-            min-height: 36px;
-            padding: 6px 12px 6px 32px;
-          }
-
-          &::placeholder {
-            color: rgba(230, 216, 163, 0.4);
-          }
-
-          &:focus {
-            border-color: $color-gold;
-            box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
-          }
+        &::placeholder {
+          color: rgba(230, 216, 163, 0.4);
         }
 
-        .search-icon {
-          position: absolute;
-          left: 10px;
-          color: $color-gold !important;
-          fill: $color-gold !important;
-          font-size: 1.15rem;
-          pointer-events: none;
-
-          @media (max-width: 600px) {
-            left: 8px;
-            font-size: 1rem;
-          }
-        }
-      }
-
-      .view-all-btn {
-        border-color: rgba(212, 175, 55, 0.4);
-        color: $color-gold;
-        padding: 6px 14px;
-        font-size: 0.82rem;
-        min-height: 42px;
-        white-space: nowrap;
-        touch-action: manipulation;
-        transition: $transition-base;
-
-        &:hover,
-        &:active {
+        &:focus {
           border-color: $color-gold;
-          background-color: rgba(212, 175, 55, 0.12);
-          color: $color-light-gold;
-          transform: translateY(-1px);
+          box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+        }
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 10px;
+        color: $color-gold !important;
+        fill: $color-gold !important;
+        font-size: 1.15rem;
+        pointer-events: none;
+
+        @media (max-width: 600px) {
+          left: 8px;
+          font-size: 1rem;
         }
       }
     }
   }
 
   .filter-chips-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin-bottom: $spacing-md;
 
     @media (max-width: 600px) {
@@ -156,23 +139,22 @@
       &::-webkit-scrollbar-thumb {
         background: linear-gradient(90deg, #d4af37 0%, #9a7b1c 100%);
         border-radius: 4px;
-        box-shadow: 0 0 4px rgba(212, 175, 55, 0.4);
-
-        &:hover {
-          background: #e6d8a3;
-        }
       }
     }
 
     .filter-chip {
       background-color: rgba(0, 0, 0, 0.5);
       border: 1px solid rgba(212, 175, 55, 0.22);
+      border-radius: $border-radius-full;
       color: rgba(230, 216, 163, 0.7);
+      font-size: 0.78rem;
+      padding: 6px 14px;
       font-weight: 500;
       min-height: 32px;
       touch-action: manipulation;
       transition: $transition-fast;
       flex-shrink: 0;
+      text-transform: capitalize;
 
       &:hover,
       &:active {
@@ -216,35 +198,35 @@
       border-radius: 6px;
       border: 1px solid rgba(0, 0, 0, 0.7);
       box-shadow: 0 0 6px rgba(212, 175, 55, 0.35);
-
-      &:hover {
-        background: linear-gradient(90deg, #e6d8a3 0%, #d4af37 100%);
-        box-shadow: 0 0 10px rgba(212, 175, 55, 0.7);
-      }
     }
 
     table {
-      min-width: 680px;
+      min-width: 960px;
     }
   }
 
   .table-head-cell {
     color: $color-gold !important;
     font-weight: 700 !important;
-    font-size: 0.78rem !important;
+    font-size: 0.76rem !important;
     text-transform: uppercase;
     letter-spacing: 0.8px;
     border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
     background-color: rgba(212, 175, 55, 0.06);
-    padding: 12px 16px;
+    padding: 12px 14px;
+    white-space: nowrap;
   }
 
   .table-row-item {
+    cursor: pointer;
     transition: background-color 0.2s ease;
 
-    // REFINED ROW HOVER EFFECT
     &:hover {
-      background: linear-gradient(90deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.02) 100%) !important;
+      background: linear-gradient(
+        90deg,
+        rgba(212, 175, 55, 0.08) 0%,
+        rgba(212, 175, 55, 0.02) 100%
+      ) !important;
 
       .details-btn {
         border-color: $color-gold;
@@ -256,33 +238,107 @@
   .table-body-cell {
     color: $color-light-gold !important;
     border-bottom: 1px solid rgba(212, 175, 55, 0.1) !important;
-    padding: 14px 16px;
-    font-size: 0.88rem;
+    padding: 12px 14px;
+    font-size: 0.86rem;
 
     &.order-id {
       font-weight: 700;
       color: $color-gold !important;
     }
 
-    &.client-name {
-      font-weight: 600;
-      color: $color-light-gold !important;
+    .order-id-badge-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+
+      span {
+        font-weight: 700;
+        color: $color-gold;
+      }
+
+      .order-occasion-chip {
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: rgba(230, 216, 163, 0.65);
+        background: rgba(212, 175, 55, 0.08);
+        border: 1px solid rgba(212, 175, 55, 0.18);
+        padding: 1px 6px;
+        border-radius: 4px;
+        width: fit-content;
+        max-width: 130px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .client-info-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .client-name {
+        font-weight: 600;
+        color: $color-light-gold;
+      }
+
+      .client-subtext {
+        font-size: 0.74rem;
+        color: rgba(230, 216, 163, 0.55);
+        display: flex;
+        align-items: center;
+      }
+    }
+
+    .services-list-compact {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+
+      .service-primary-name {
+        font-weight: 500;
+        color: rgba(230, 216, 163, 0.95);
+        font-size: 0.84rem;
+      }
+
+      .items-count-badge {
+        font-size: 0.7rem;
+        color: $color-gold;
+        background: rgba(212, 175, 55, 0.12);
+        border: 1px solid rgba(212, 175, 55, 0.25);
+        padding: 1px 6px;
+        border-radius: 4px;
+        width: fit-content;
+        font-weight: 600;
+      }
     }
 
     &.saree-fabric {
       color: rgba(230, 216, 163, 0.8) !important;
-      font-size: 0.83rem;
+      font-size: 0.82rem;
     }
 
     &.date-cell {
       color: rgba(230, 216, 163, 0.65) !important;
-      font-size: 0.83rem;
+      font-size: 0.82rem;
+
+      .delivery-date-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: $color-light-gold;
+        font-size: 0.8rem;
+        background: rgba(212, 175, 55, 0.08);
+        border: 1px solid rgba(212, 175, 55, 0.18);
+        padding: 2px 7px;
+        border-radius: 4px;
+      }
     }
 
     &.amount-cell {
       font-weight: 700;
       color: $color-gold !important;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
     }
   }
 
@@ -335,23 +391,34 @@
         box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
       }
     }
+
+    &.cancelled {
+      background-color: rgba(148, 163, 184, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      color: #94a3b8;
+
+      .dot {
+        background-color: #94a3b8;
+        box-shadow: 0 0 6px rgba(148, 163, 184, 0.7);
+      }
+    }
   }
 
   .details-btn {
     border: 1px solid rgba(212, 175, 55, 0.3);
     color: $color-gold;
     border-radius: $border-radius-sm;
-    padding: 6px 12px;
-    font-size: 0.78rem;
+    padding: 5px 10px;
+    font-size: 0.76rem;
     font-weight: 600;
-    min-height: 36px;
+    min-height: 32px;
     touch-action: manipulation;
     transition: $transition-fast;
 
     .action-icon {
       color: $color-gold !important;
       fill: $color-gold !important;
-      font-size: 1rem;
+      font-size: 0.95rem;
     }
 
     &:hover,
@@ -368,10 +435,379 @@
     }
   }
 
-  .empty-cell {
+  /* ============================================================== */
+  /* 2. GRID VIEW (Multi-Column Order Cards)                        */
+  /* ============================================================== */
+  .orders-grid-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 16px;
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .order-grid-card {
+    background: linear-gradient(145deg, #101010 0%, #070707 100%);
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      transform: translateY(-3px);
+      border-color: rgba(212, 175, 55, 0.55);
+      box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.8),
+        0 0 14px rgba(212, 175, 55, 0.15);
+
+      .card-top-accent {
+        opacity: 1;
+      }
+    }
+
+    .card-top-accent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, $color-gold, transparent);
+      opacity: 0.4;
+      transition: opacity 0.25s ease;
+    }
+
+    .card-header {
+      padding: 14px 16px 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .order-id-badge {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: $color-gold;
+        background-color: rgba(212, 175, 55, 0.12);
+        padding: 3px 8px;
+        border-radius: 6px;
+        border: 1px solid rgba(212, 175, 55, 0.25);
+      }
+    }
+
+    .card-body {
+      padding: 0 16px 12px 16px;
+      flex: 1;
+
+      .client-name {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: $color-light-gold;
+        margin: 0 0 2px 0;
+      }
+
+      .client-mobile-hint {
+        font-size: 0.74rem;
+        color: rgba(230, 216, 163, 0.55);
+        margin-bottom: 8px;
+      }
+
+      .services-grid-list {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 8px;
+
+        .service-tag {
+          font-size: 0.82rem;
+          color: $color-gold;
+          font-weight: 600;
+        }
+
+        .items-count-badge {
+          font-size: 0.7rem;
+          color: $color-light-gold;
+          background: rgba(212, 175, 55, 0.12);
+          border: 1px solid rgba(212, 175, 55, 0.25);
+          padding: 1px 6px;
+          border-radius: 4px;
+        }
+      }
+
+      .order-fabric-row,
+      .order-delivery-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        margin-top: 4px;
+
+        .fabric-label {
+          color: rgba(230, 216, 163, 0.6);
+        }
+
+        .fabric-value,
+        .delivery-val {
+          color: $color-light-gold;
+          font-weight: 500;
+        }
+      }
+    }
+
+    .card-pricing-row {
+      padding: 10px 16px;
+      background-color: rgba(0, 0, 0, 0.35);
+      border-top: 1px solid rgba(212, 175, 55, 0.1);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .amount-label {
+        font-size: 0.76rem;
+        color: rgba(230, 216, 163, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .amount-val {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: $color-gold;
+      }
+    }
+
+    .card-footer {
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .date-info {
+        font-size: 0.76rem;
+        color: rgba(230, 216, 163, 0.6);
+      }
+    }
+  }
+
+  /* ============================================================== */
+  /* 3. CARD VIEW (Detailed Full-Width Order Dossier Cards)         */
+  /* ============================================================== */
+  .orders-card-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .orders-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .order-detailed-card {
+    background: linear-gradient(145deg, #101010 0%, #080808 100%);
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    @media (max-width: 900px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 14px;
+      padding: 14px 16px;
+    }
+
+    &:hover {
+      border-color: rgba(212, 175, 55, 0.5);
+      box-shadow:
+        0 6px 24px rgba(0, 0, 0, 0.75),
+        0 0 12px rgba(212, 175, 55, 0.15);
+    }
+
+    .detailed-card-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      min-width: 110px;
+
+      @media (max-width: 900px) {
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .order-id-pill {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: $color-gold;
+        background: rgba(212, 175, 55, 0.12);
+        border: 1px solid rgba(212, 175, 55, 0.3);
+        padding: 4px 10px;
+        border-radius: 6px;
+      }
+    }
+
+    .detailed-card-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      .detailed-card-header {
+        .title-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+
+          .client-name {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: $color-light-gold;
+          }
+
+          .client-phone-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.78rem;
+            color: rgba(230, 216, 163, 0.7);
+            background: rgba(212, 175, 55, 0.08);
+            border: 1px solid rgba(212, 175, 55, 0.18);
+            padding: 2px 8px;
+            border-radius: 4px;
+          }
+
+          .service-name {
+            font-size: 0.82rem;
+            color: $color-gold;
+            background: rgba(212, 175, 55, 0.08);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+          }
+
+          .occasion-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.76rem;
+            color: #e6d8a3;
+            background: rgba(212, 175, 55, 0.12);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            padding: 2px 8px;
+            border-radius: 4px;
+          }
+        }
+
+        .items-mini-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 6px;
+
+          .item-mini-chip {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.74rem;
+            color: rgba(230, 216, 163, 0.85);
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 2px 8px;
+            border-radius: 4px;
+          }
+        }
+
+        .order-notes {
+          margin: 6px 0 0 0;
+          font-size: 0.82rem;
+          color: rgba(230, 216, 163, 0.65);
+          font-style: italic;
+        }
+      }
+
+      .detailed-card-meta {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        background-color: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(212, 175, 55, 0.12);
+        border-radius: 8px;
+        padding: 10px 14px;
+
+        @media (max-width: 768px) {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (max-width: 480px) {
+          grid-template-columns: 1fr;
+        }
+
+        .meta-tile {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+
+          &.highlight-gold {
+            .gold-amount {
+              color: $color-gold;
+              font-weight: 700;
+              font-size: 1rem;
+            }
+          }
+
+          .meta-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(230, 216, 163, 0.5);
+          }
+
+          .meta-value {
+            font-size: 0.86rem;
+            color: $color-light-gold;
+            font-weight: 600;
+          }
+        }
+      }
+    }
+
+    .detailed-card-actions {
+      flex-shrink: 0;
+
+      @media (max-width: 900px) {
+        display: flex;
+        justify-content: flex-end;
+      }
+    }
+  }
+
+  .orders-empty-state {
+    padding: 48px 16px;
     text-align: center;
-    padding: $spacing-xl !important;
-    color: rgba(230, 216, 163, 0.6);
-    border: none !important;
+    color: rgba(230, 216, 163, 0.7);
+    font-size: 0.92rem;
   }
 }

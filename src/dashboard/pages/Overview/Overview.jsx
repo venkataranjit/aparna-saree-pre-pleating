@@ -1,21 +1,70 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import DryCleaningOutlinedIcon from '@mui/icons-material/DryCleaningOutlined';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import StatCard from '../../components/StatCard/StatCard';
-import OrdersTable from '../../components/OrdersTable/OrdersTable';
-import { AppButton } from '../../../components/common';
+import { AppButton, AppSpinner } from '../../../components/common';
+import CreateOrderModal from '../../components/CreateOrderModal/CreateOrderModal';
 import { useAuth } from '../../../auth/context/AuthContext';
 import { USER_ROLES } from '../../../firebase/schema';
+import { getAllOrders, getAllServices, getAllClients, getAllUsers } from '../../../firebase/dbService';
 import './Overview.scss';
 
 const Overview = () => {
   const { role, isSuperAdmin } = useAuth();
   const userRole = (role || '').toLowerCase();
   const isClient = !isSuperAdmin && (userRole === USER_ROLES.CLIENT || userRole === 'client' || userRole === '');
+
+  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState([]);
+  const [services, setServices] = useState([]);
+  const [clientsCount, setClientsCount] = useState(0);
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+
+  const loadOverviewData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [ordersData, servicesData, clientsData, usersData] = await Promise.all([
+        getAllOrders().catch(() => []),
+        getAllServices(false).catch(() => []),
+        getAllClients().catch(() => []),
+        getAllUsers().catch(() => []),
+      ]);
+
+      setOrders(ordersData || []);
+      setServices(servicesData || []);
+
+      // Build unique clients count
+      const clientIds = new Set();
+      (clientsData || []).forEach((c) => {
+        if (c && c.id) clientIds.add(c.id);
+      });
+      (usersData || []).forEach((u) => {
+        if (u && (u.role === USER_ROLES.CLIENT || !u.role)) {
+          clientIds.add(u.id || u.email);
+        }
+      });
+      setClientsCount(clientIds.size);
+    } catch (err) {
+      console.error('Failed to load overview metrics:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadOverviewData();
+  }, [loadOverviewData]);
+
+  const totalOrders = orders.length;
+  const totalServices = services.length;
+  const totalRevenue = orders.reduce((sum, ord) => {
+    const val = Number(ord.totalAmount) || Number(String(ord.amount || 0).replace(/[^0-9]/g, '')) || 0;
+    return sum + val;
+  }, 0);
 
   return (
     <div className="overview-page">
@@ -33,43 +82,49 @@ const Overview = () => {
         </div>
 
         <div className="action-buttons">
-          {!isClient && (
-            <AppButton
-              variant="secondary"
-              startIcon={<FileDownloadIcon />}
-              className="export-btn"
-            >
-              Export Report
-            </AppButton>
-          )}
+          <AppButton
+            variant="secondary"
+            startIcon={<RefreshOutlinedIcon />}
+            className="refresh-btn"
+            onClick={loadOverviewData}
+            disabled={loading}
+          >
+            Refresh
+          </AppButton>
           <AppButton
             variant="primary"
             startIcon={<AddIcon />}
             className="new-booking-btn"
+            onClick={() => setOpenCreateModal(true)}
           >
             New Booking
           </AppButton>
         </div>
       </div>
 
+      {loading && (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
+          <AppSpinner size="lg" color="gold" />
+        </div>
+      )}
+
       {/* Key Metric Stat Cards - hidden for client role */}
-      {!isClient && (
+      {!loading && !isClient && (
         <div className="overview-page__stats-grid">
           {/* Card 1: Orders */}
           <StatCard
             title="Orders"
-            value="148"
-            prevValue="116"
-            change="+27.6% this month"
-            trendType="up"
+            value={String(totalOrders)}
+            change={totalOrders === 1 ? '1 Active Job' : `${totalOrders} Orders Total`}
+            trendType="completed"
             icon={<ReceiptLongOutlinedIcon />}
           />
 
           {/* Card 2: Services */}
           <StatCard
             title="Services"
-            value="8"
-            change="All Active Offerings"
+            value={String(totalServices)}
+            change={totalServices === 1 ? '1 Active Offering' : `${totalServices} Saree Offerings`}
             trendType="completed"
             icon={<DryCleaningOutlinedIcon />}
           />
@@ -77,26 +132,29 @@ const Overview = () => {
           {/* Card 3: Clients */}
           <StatCard
             title="Clients"
-            value="342"
-            change="+28 new this month"
-            trendType="up"
+            value={String(clientsCount)}
+            change={clientsCount === 1 ? '1 Registered Client' : `${clientsCount} Registered Clients`}
+            trendType="completed"
             icon={<PeopleOutlineIcon />}
           />
 
-          {/* Card 4: Monthly Revenue */}
+          {/* Card 4: Total Revenue */}
           <StatCard
-            title="Monthly Revenue"
-            value="₹84,500"
-            prevValue="₹69,200"
-            change="+22.1% this month"
-            trendType="up"
+            title="Total Revenue"
+            value={`₹${totalRevenue.toLocaleString('en-IN')}`}
+            change="All Billed Orders"
+            trendType="completed"
             icon={<CurrencyRupeeIcon />}
           />
         </div>
       )}
 
-      {/* Recent Orders Table */}
-      <OrdersTable />
+      {/* Create Order Modal */}
+      <CreateOrderModal
+        open={openCreateModal}
+        onClose={() => setOpenCreateModal(false)}
+        onOrderCreated={loadOverviewData}
+      />
     </div>
   );
 };

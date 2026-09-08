@@ -46,82 +46,9 @@ export const ORDER_STATUS = {
 };
 
 /**
- * Initial Services Catalog (12 Offerings)
+ * Initial Services Catalog (Default empty array, services are loaded from Firestore)
  */
-export const INITIAL_SERVICES = [
-  {
-    serviceName: "Flat Pleats",
-    servicePrice: 600,
-    serviceDiscountedPrice: 399,
-    active: true,
-  },
-  {
-    serviceName: "Semi-Fluffy Pleats",
-    servicePrice: 750,
-    serviceDiscountedPrice: 499,
-    active: true,
-  },
-  {
-    serviceName: "Fluffy Pleats",
-    servicePrice: 750,
-    serviceDiscountedPrice: 499,
-    active: true,
-  },
-  {
-    serviceName: "Box Folding",
-    servicePrice: 0,
-    serviceDiscountedPrice: 0,
-    active: true,
-  },
-  {
-    serviceName: "Hanger Folding",
-    servicePrice: 300,
-    serviceDiscountedPrice: 99,
-    active: true,
-  },
-  {
-    serviceName: "Single Pallu Pleating",
-    servicePrice: 600,
-    serviceDiscountedPrice: 399,
-    active: true,
-  },
-  {
-    serviceName: "Half Saree Pleating",
-    servicePrice: 500,
-    serviceDiscountedPrice: 249,
-    active: true,
-  },
-  {
-    serviceName: "Maharani Style Dupatta",
-    servicePrice: 700,
-    serviceDiscountedPrice: 399,
-    active: true,
-  },
-  {
-    serviceName: "Lehenga Pleating",
-    servicePrice: 600,
-    serviceDiscountedPrice: 399,
-    active: true,
-  },
-  {
-    serviceName: "Kids Saree Pre-Pleating",
-    servicePrice: 900,
-    serviceDiscountedPrice: 499,
-    active: true,
-  },
-  {
-    serviceName: "Saree Draping",
-    servicePrice: 1000,
-    serviceDiscountedPrice: 749,
-    active: true,
-  },
-  {
-    serviceName: "Hair Styling",
-    servicePrice: 1200,
-    serviceDiscountedPrice: 749,
-    active: true,
-  },
-];
+export const INITIAL_SERVICES = [];
 
 /**
  * Measurement Fields (Client-provided, no hardcoded defaults)
@@ -208,17 +135,20 @@ export const createUserModel = ({
  * @param {string} data.serviceName
  * @param {number} data.servicePrice
  * @param {number} data.serviceDiscountedPrice
+ * @param {string} [data.description]
  * @param {boolean} [data.active=true]
  */
 export const createServiceModel = ({
   serviceName = "",
   servicePrice = 0,
   serviceDiscountedPrice = 0,
+  description = "",
   active = true,
 } = {}) => ({
   serviceName: String(serviceName).trim(),
   servicePrice: Number(servicePrice) || 0,
   serviceDiscountedPrice: Number(serviceDiscountedPrice) || 0,
+  description: String(description || "").trim(),
   active: Boolean(active),
   createdAt: serverTimestamp(),
 });
@@ -304,47 +234,75 @@ export const createMeasurementModel = ({
 
 /**
  * 6. Order Model
+/**
+ * Create an Order Data Model for Firestore
  * @param {Object} data
- * @param {string} data.clientId
- * @param {Array} data.items
- * @param {number} data.shippingCharges
- * @param {number} data.totalAmount
- * @param {number} data.paidAmount
- * @param {string} data.paymentStatus
- * @param {string} data.paymentMethod
- * @param {string} data.orderStatus
- * @param {any} [data.orderDate]
- * @param {any} [data.deliveryDate]
- * @param {string} [data.notes]
- * @param {string} data.createdBy
  */
 export const createOrderModel = ({
   clientId = "",
+  username = "",
+  userMobile = "",
+  email = "",
+  userAddress = "",
+  client = null,
   items = [],
-  shippingCharges = 0,
   totalAmount = 0,
   paidAmount = 0,
   paymentStatus = PAYMENT_STATUS.PENDING,
   paymentMethod = "UPI",
   orderStatus = ORDER_STATUS.PENDING,
+  status = "",
+  occasion = "",
   orderDate = null,
   deliveryDate = null,
   notes = "",
   createdBy = "",
 } = {}) => {
-  return {
+  const cleanStatus = String(status || orderStatus || ORDER_STATUS.PENDING).toLowerCase();
+  const clientObj = client || {
     clientId: String(clientId || "").trim(),
-    items: Array.isArray(items) ? items : [],
-    shippingCharges: Number(shippingCharges) || 0,
-    totalAmount: Number(totalAmount) || 0,
+    username: String(username || "").trim(),
+    userMobile: String(userMobile || "").trim(),
+    email: String(email || "").trim(),
+    userAddress: String(userAddress || "").trim(),
+  };
+
+  const cleanItems = (Array.isArray(items) ? items : []).map((it, idx) => ({
+    itemId: it.itemId || `item_${idx + 1}_${Date.now()}`,
+    serviceId: it.serviceId || "",
+    serviceName: it.serviceName || "",
+    servicePrice: Number(it.servicePrice) || 0,
+    serviceDiscountedPrice: Number(it.serviceDiscountedPrice) || 0,
+    serviceDescription: it.serviceDescription || it.description || "",
+    finalPrice: Number(it.finalPrice !== undefined ? it.finalPrice : it.serviceDiscountedPrice || it.servicePrice) || 0,
+    sareeType: it.sareeType || "Kanjeevaram Silk",
+    measurementProfile: it.measurementProfile || null,
+    itemNotes: it.itemNotes || "",
+  }));
+
+  const calculatedTotal = cleanItems.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0);
+  const finalTotal = totalAmount > 0 ? totalAmount : calculatedTotal;
+
+  return {
+    clientId: String(clientObj.clientId || clientId || "").trim(),
+    username: String(clientObj.username || username || "").trim(),
+    userMobile: String(clientObj.userMobile || userMobile || "").trim(),
+    email: String(clientObj.email || email || "").trim(),
+    userAddress: String(clientObj.userAddress || userAddress || "").trim(),
+    client: clientObj,
+    items: cleanItems,
+    totalItems: cleanItems.length,
+    totalAmount: Number(finalTotal) || 0,
     paidAmount: Number(paidAmount) || 0,
-    paymentStatus: String(paymentStatus),
-    paymentMethod: String(paymentMethod),
-    orderStatus: String(orderStatus),
+    paymentStatus: String(paymentStatus || PAYMENT_STATUS.PENDING),
+    paymentMethod: String(paymentMethod || "UPI"),
+    orderStatus: cleanStatus,
+    status: cleanStatus,
+    occasion: String(occasion || "").trim(),
     orderDate: orderDate || serverTimestamp(),
     deliveryDate: deliveryDate || null,
-    notes: String(notes).trim(),
-    createdBy: String(createdBy).trim(),
+    notes: String(notes || "").trim(),
+    createdBy: String(createdBy || "").trim(),
     createdAt: serverTimestamp(),
   };
 };

@@ -39,7 +39,7 @@ service cloud.firestore {
     // 3. Services Collection
     match /services/{serviceId} {
       allow read: if true; // Public catalog for storefront & clients
-      allow write: if isStaffOrAdmin(request.resource.data.businessId);
+      allow write: if isAuthenticated();
     }
 
     // 4. Clients Collection

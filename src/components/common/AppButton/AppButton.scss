@@ -170,12 +170,20 @@
   }
 
   &--ghost {
-    background: transparent;
+    background: rgba(212, 175, 55, 0.05);
+    border: 1px solid rgba(212, 175, 55, 0.25);
     color: $color-light-gold;
 
     &:hover:not(:disabled) {
-      background: rgba(212, 175, 55, 0.08);
+      background: rgba(212, 175, 55, 0.14);
+      border-color: rgba(212, 175, 55, 0.55);
       color: $color-gold;
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.12);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
     }
   }
 

@@ -125,7 +125,7 @@ export default function AppInput({
     >
       {label && (
         <label htmlFor={name} className="app-input-label">
-          {label}
+          {typeof label === 'string' && required ? label.replace(/\s*\*\s*$/, '') : label}
           {required && <span className="app-input-required">*</span>}
         </label>
       )}

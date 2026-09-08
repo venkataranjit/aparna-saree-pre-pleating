@@ -1,24 +1,59 @@
 @use "../../styles/variables" as *;
 
 .services-page {
+  padding: 8px 4px;
+
+  /* Header Section matching Clients Page */
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: $spacing-md;
-    margin-bottom: $spacing-xl;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
 
     .page-title {
-      color: $color-light-gold;
+      font-size: 1.85rem;
       font-weight: 700;
-      letter-spacing: -0.3px;
+      color: $color-light-gold;
+      letter-spacing: -0.5px;
+      margin: 0;
+
+      @media (max-width: 600px) {
+        font-size: 1.4rem;
+      }
     }
 
     .page-subtitle {
-      color: rgba(212, 175, 55, 0.8);
-      font-size: 0.88rem;
-      margin-top: 2px;
+      color: rgba(230, 216, 163, 0.7);
+      margin-top: 4px;
+      font-size: 0.9rem;
+      margin-bottom: 0;
+
+      @media (max-width: 600px) {
+        font-size: 0.78rem;
+      }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+
+      @media (max-width: 600px) {
+        width: 100%;
+
+        .app-btn {
+          flex: 1;
+        }
+      }
     }
 
     .add-service-btn {
@@ -26,7 +61,6 @@
       color: $color-black;
       font-weight: 700;
       box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
-      touch-action: manipulation;
 
       &:hover,
       &:active {
@@ -36,117 +70,897 @@
       }
     }
 
+    .spin-icon {
+      animation: spin 0.8s linear infinite;
+    }
+  }
+
+  /* 4 StatCards Grid matching Clients Page */
+  &__stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+
+    @media (max-width: 1100px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+  }
+
+  /* Tabs Row */
+  &__tabs-row {
+    margin-bottom: 16px;
+  }
+
+  /* Controls Row: View Toggle on LEFT, Search Box on RIGHT */
+  &__toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+
     @media (max-width: 600px) {
       flex-direction: column;
       align-items: stretch;
       gap: 12px;
-      margin-bottom: $spacing-lg;
+    }
 
-      .page-title {
-        font-size: 1.4rem !important;
-      }
+    .services-search-field {
+      width: 300px;
+      margin-left: auto;
 
-      .page-subtitle {
-        font-size: 0.8rem;
-      }
-
-      .add-service-btn {
+      @media (max-width: 600px) {
         width: 100%;
-        min-height: 42px;
+        margin-left: 0;
       }
     }
+  }
+
+  /* Loading & Empty Wrappers */
+  .services-loading-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 12px;
+
+    .services-loading-text {
+      color: #e6d8a3;
+      font-size: 0.9rem;
+    }
+  }
+
+  .services-empty-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 20px;
+    gap: 8px;
+    background-color: $bg-card;
+    border: 1px dashed rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    text-align: center;
+
+    .empty-title {
+      color: #e6d8a3;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .empty-subtitle {
+      color: rgba(230, 216, 163, 0.6);
+      font-size: 0.82rem;
+      max-width: 420px;
+    }
+  }
+
+  /* Main Services Table Card */
+  .services-table-card {
+    background-color: $bg-card;
+    border: 1px solid $surface-border;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    .services-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th {
+        background-color: #080808;
+        color: $color-gold;
+        font-weight: 700;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        padding: 14px 18px;
+        text-align: left;
+        white-space: nowrap !important;
+
+        @media (max-width: 600px) {
+          padding: 12px 10px;
+          font-size: 0.72rem;
+        }
+
+        &.th-actions {
+          text-align: right;
+        }
+      }
+
+      tr.service-table-row {
+        cursor: pointer;
+        transition: background-color 0.18s ease;
+
+        &:hover {
+          background-color: rgba(212, 175, 55, 0.07);
+        }
+
+        &.is-row-inactive {
+          opacity: 0.65;
+        }
+      }
+
+      td {
+        color: $color-light-gold;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+        padding: 14px 18px;
+        font-size: 0.88rem;
+
+        @media (max-width: 600px) {
+          font-size: 0.78rem;
+          padding: 10px 12px;
+        }
+      }
+
+      .service-name-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .user-avatar-circle.service-icon-circle {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: linear-gradient(
+            135deg,
+            rgba(212, 175, 55, 0.25) 0%,
+            rgba(10, 10, 8, 0.95) 100%
+          );
+          border: 1px solid rgba(212, 175, 55, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: $color-gold;
+          flex-shrink: 0;
+
+          @media (max-width: 600px) {
+            width: 30px;
+            height: 30px;
+          }
+
+          .service-icon-svg {
+            font-size: 19px;
+            color: $color-gold;
+
+            @media (max-width: 600px) {
+              font-size: 16px;
+            }
+          }
+        }
+
+        .user-name-text {
+          font-weight: 700;
+          color: $color-light-gold;
+          font-size: 0.9rem;
+
+          @media (max-width: 600px) {
+            font-size: 0.8rem;
+          }
+        }
+
+        .user-email-text {
+          color: rgba(230, 216, 163, 0.6);
+          font-size: 0.78rem;
+
+          @media (max-width: 600px) {
+            font-size: 0.72rem;
+          }
+        }
+      }
+
+      .price-text {
+        font-weight: 700;
+        font-size: 0.9rem;
+
+        &.regular {
+          color: rgba(230, 216, 163, 0.8);
+        }
+
+        &.offer {
+          color: $color-gold;
+          font-size: 0.98rem;
+        }
+      }
+
+      .offer-price-cell {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+
+        .table-discount-pill {
+          font-size: 0.7rem;
+          font-weight: 700;
+          color: #34d399;
+          background-color: rgba(16, 185, 129, 0.14);
+          border: 1px solid rgba(16, 185, 129, 0.35);
+          padding: 2px 7px;
+          border-radius: 999px;
+          line-height: 1.2;
+        }
+      }
+
+      .action-btns {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: flex-end;
+
+        .app-btn,
+        button:not(.view-more-pill-btn) {
+          width: 32px;
+          height: 32px;
+          min-width: 32px;
+          max-width: 32px;
+          padding: 0 !important;
+          border-radius: 6px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          aspect-ratio: 1 / 1;
+          flex-shrink: 0;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+          span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+          }
+
+          svg {
+            font-size: 16px;
+          }
+
+          @media (max-width: 600px) {
+            width: 30px;
+            height: 30px;
+            min-width: 30px;
+            max-width: 30px;
+          }
+
+          // 1. Edit Service (Warm Amber Gold)
+          &.action-btn--edit {
+            background-color: rgba(245, 158, 11, 0.14) !important;
+            color: #fbbf24 !important;
+            border: 1px solid rgba(245, 158, 11, 0.38) !important;
+
+            &:hover {
+              background-color: rgba(245, 158, 11, 0.28) !important;
+              color: #fde68a !important;
+              border-color: #f59e0b !important;
+              box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35) !important;
+              transform: translateY(-1px);
+            }
+
+            &:active {
+              background-color: rgba(245, 158, 11, 0.4) !important;
+              transform: translateY(0);
+            }
+          }
+
+          // 2. Active Status Toggle (Emerald Green)
+          &.action-btn--measure {
+            background-color: rgba(16, 185, 129, 0.14) !important;
+            color: #34d399 !important;
+            border: 1px solid rgba(16, 185, 129, 0.38) !important;
+
+            &:hover {
+              background-color: rgba(16, 185, 129, 0.28) !important;
+              color: #6ee7b7 !important;
+              border-color: #10b981 !important;
+              box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35) !important;
+              transform: translateY(-1px);
+            }
+
+            &:active {
+              background-color: rgba(16, 185, 129, 0.4) !important;
+              transform: translateY(0);
+            }
+          }
+
+          // 3. Inactive Toggle / Delete Service (Rose / Crimson Red)
+          &.action-btn--delete {
+            background-color: rgba(239, 68, 68, 0.14) !important;
+            color: #f87171 !important;
+            border: 1px solid rgba(239, 68, 68, 0.38) !important;
+
+            &:hover {
+              background-color: rgba(239, 68, 68, 0.28) !important;
+              color: #fca5a5 !important;
+              border-color: #ef4444 !important;
+              box-shadow: 0 2px 10px rgba(239, 68, 68, 0.35) !important;
+              transform: translateY(-1px);
+            }
+
+            &:active {
+              background-color: rgba(239, 68, 68, 0.4) !important;
+              transform: translateY(0);
+            }
+          }
+        }
+      }
+
+      .empty-state-cell {
+        padding: 48px 16px;
+        text-align: center;
+        color: rgba(230, 216, 163, 0.7);
+
+        @media (max-width: 600px) {
+          padding: 32px 12px;
+          font-size: 0.82rem;
+        }
+      }
+    }
+  }
+
+  /* ============================================================== */
+  /* 2. GRID VIEW (Multi-Column Luxury Gold Cards)                  */
+  /* ============================================================== */
+  .services-grid-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
   .services-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: $spacing-lg;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
 
-    @include mobile {
+    @media (max-width: 600px) {
       grid-template-columns: 1fr;
-      gap: $spacing-md;
     }
   }
 
-  &__card {
-    height: 100%;
-    background: linear-gradient(145deg, #0f0f0f 0%, #080808 100%) !important;
-    border: 1px solid $surface-border !important;
-    border-radius: $border-radius-md !important;
+  .service-grid-card {
+    background: linear-gradient(145deg, #101010 0%, #070707 100%);
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    transition: $transition-base !important;
-    box-shadow: $box-shadow-gold !important;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover {
-      transform: translateY(-4px);
-      border-color: $color-gold !important;
-      box-shadow: $box-shadow-gold-hover !important;
-      background: linear-gradient(145deg, #141414 0%, #0b0b0b 100%) !important;
+      transform: translateY(-3px);
+      border-color: rgba(212, 175, 55, 0.55);
+      box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.8),
+        0 0 14px rgba(212, 175, 55, 0.15);
 
-      .icon-container {
-        transform: scale(1.1);
-        border-color: $color-gold;
+      .card-top-accent {
+        opacity: 1;
       }
     }
 
-    .icon-container {
-      width: 52px;
-      height: 52px;
-      border-radius: $border-radius-sm;
-      background-color: rgba(212, 175, 55, 0.1);
-      border: 1px solid rgba(212, 175, 55, 0.25);
+    &.is-inactive {
+      opacity: 0.68;
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .card-top-accent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, $color-gold, transparent);
+      opacity: 0.4;
+      transition: opacity 0.25s ease;
+    }
+
+    .card-header {
+      padding: 16px 16px 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .service-icon-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(212, 175, 55, 0.25) 0%,
+          rgba(10, 10, 8, 0.95) 100%
+        );
+        border: 1px solid rgba(212, 175, 55, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $color-gold;
+
+        .service-icon-svg {
+          font-size: 20px;
+        }
+      }
+    }
+
+    .card-body {
+      padding: 0 16px 12px 16px;
+      flex: 1;
+
+      .card-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: $color-light-gold;
+        margin: 0 0 6px 0;
+        line-height: 1.35;
+      }
+
+      .card-description {
+        font-size: 0.82rem;
+        color: rgba(230, 216, 163, 0.65);
+        line-height: 1.45;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    }
+
+    .card-pricing {
+      padding: 10px 16px;
+      background-color: rgba(0, 0, 0, 0.35);
+      border-top: 1px solid rgba(212, 175, 55, 0.1);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.1);
       display: flex;
       align-items: center;
-      justify-content: center;
-      margin-bottom: $spacing-md;
-      transition: $transition-base;
+      justify-content: space-between;
+      gap: 8px;
 
-      svg {
-        color: $color-gold !important;
-        fill: $color-gold !important;
+      .price-stack {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+
+        .price-offer {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: $color-gold;
+        }
+
+        .price-regular {
+          font-size: 0.85rem;
+          color: rgba(230, 216, 163, 0.45);
+          text-decoration: line-through;
+        }
+      }
+
+      .table-discount-pill {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #34d399;
+        background-color: rgba(16, 185, 129, 0.14);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        padding: 2px 7px;
+        border-radius: 999px;
       }
     }
 
-    .service-name {
-      color: $color-light-gold;
-      font-weight: 700;
-      font-size: 1.05rem;
+    .card-footer {
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .card-date {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: rgba(230, 216, 163, 0.5);
+        font-size: 0.78rem;
+
+        svg {
+          color: $color-gold;
+          opacity: 0.8;
+        }
+      }
+
+      .action-btns {
+        display: flex;
+        gap: 6px;
+      }
+    }
+  }
+
+  /* ============================================================== */
+  /* 3. CARD VIEW (Detailed Full-Width Dossier Cards)               */
+  /* ============================================================== */
+  .services-card-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .services-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .service-detailed-card {
+    background: linear-gradient(145deg, #101010 0%, #080808 100%);
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    @media (max-width: 900px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 14px;
+      padding: 14px 16px;
     }
 
-    .service-tag {
-      margin-bottom: $spacing-sm;
-      border-color: rgba(212, 175, 55, 0.4);
-      color: $color-gold;
-      background-color: rgba(212, 175, 55, 0.08);
-      font-weight: 600;
-      font-size: 0.72rem;
+    &:hover {
+      border-color: rgba(212, 175, 55, 0.5);
+      box-shadow:
+        0 6px 24px rgba(0, 0, 0, 0.75),
+        0 0 12px rgba(212, 175, 55, 0.15);
     }
 
-    .service-desc {
-      color: rgba(230, 216, 163, 0.75);
-      font-size: 0.84rem;
-      line-height: 1.5;
-      margin-bottom: $spacing-md;
+    &.is-inactive {
+      opacity: 0.68;
     }
 
-    .service-price {
-      color: $color-gold;
-      font-weight: 700;
-      font-size: 1.5rem;
-      letter-spacing: -0.5px;
+    .detailed-card-left {
+      flex-shrink: 0;
+
+      .service-icon-circle-lg {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+        background: radial-gradient(
+          circle,
+          rgba(212, 175, 55, 0.25) 0%,
+          rgba(10, 10, 8, 0.95) 100%
+        );
+        border: 1px solid rgba(212, 175, 55, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $color-gold;
+
+        .service-icon-svg {
+          font-size: 28px;
+        }
+      }
     }
 
-    .edit-btn {
-      border-color: rgba(212, 175, 55, 0.4);
-      color: $color-gold;
+    .detailed-card-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
 
-      &:hover {
-        border-color: $color-gold;
-        background-color: rgba(212, 175, 55, 0.1);
+      .detailed-card-title-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+
+        .service-heading {
+          margin: 0;
+          font-size: 1.15rem;
+          font-weight: 700;
+          color: $color-light-gold;
+        }
+      }
+
+      .service-notes {
+        margin: 4px 0 0 0;
+        font-size: 0.84rem;
+        color: rgba(230, 216, 163, 0.7);
+        line-height: 1.45;
+      }
+
+      .detailed-card-meta {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-top: 4px;
+
+        @media (max-width: 800px) {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (max-width: 480px) {
+          grid-template-columns: 1fr;
+        }
+
+        .meta-tile {
+          background-color: rgba(0, 0, 0, 0.45);
+          border: 1px solid rgba(212, 175, 55, 0.15);
+          border-radius: 8px;
+          padding: 8px 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+
+          &.highlight-gold {
+            border-color: rgba(212, 175, 55, 0.35);
+            background: rgba(212, 175, 55, 0.05);
+          }
+
+          .meta-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(230, 216, 163, 0.6);
+          }
+
+          .meta-value {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: $color-light-gold;
+
+            &.regular-strike {
+              color: rgba(230, 216, 163, 0.5);
+              text-decoration: line-through;
+            }
+
+            &.offer-gold {
+              color: $color-gold;
+              font-size: 1rem;
+              font-weight: 700;
+            }
+          }
+
+          .offer-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+          }
+        }
+      }
+    }
+
+    .detailed-card-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+
+      @media (max-width: 900px) {
+        flex-direction: row;
+        justify-content: flex-end;
+      }
+    }
+  }
+
+  .services-pagination-card {
+    background-color: $bg-card;
+    border: 1px solid $surface-border;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+}
+
+/* ============================================================== */
+/* Modals & Forms (Top-Level for AppModal Portals)               */
+/* ============================================================== */
+.service-form-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  padding: 4px 0;
+
+  .service-form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+
+    @media (max-width: 520px) {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+
+  .service-status-card {
+    background: linear-gradient(
+      135deg,
+      rgba(212, 175, 55, 0.08) 0%,
+      rgba(10, 10, 10, 0.95) 100%
+    );
+    border: 1px solid rgba(212, 175, 55, 0.28);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 4px;
+    transition: all 0.2s ease;
+
+    @media (max-width: 480px) {
+      padding: 10px 12px;
+      gap: 12px;
+    }
+
+    &:hover {
+      border-color: rgba(212, 175, 55, 0.5);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .status-text-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+
+      .status-title {
+        font-size: 0.9rem;
+        font-weight: 700;
         color: $color-light-gold;
+        letter-spacing: 0.2px;
+
+        @media (max-width: 480px) {
+          font-size: 0.84rem;
+        }
+      }
+
+      .status-hint {
+        font-size: 0.76rem;
+        color: rgba(230, 216, 163, 0.65);
+        line-height: 1.35;
+
+        @media (max-width: 480px) {
+          font-size: 0.72rem;
+        }
       }
     }
+
+    /* Luxury Golden iOS Switch */
+    .luxury-switch-toggle {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 26px;
+      flex-shrink: 0;
+      cursor: pointer;
+
+      input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+
+        &:checked + .luxury-switch-slider {
+          background-color: $color-gold;
+          border-color: $color-gold;
+          box-shadow: 0 0 12px rgba(212, 175, 55, 0.45);
+
+          &:before {
+            transform: translateX(20px);
+            background-color: #000000;
+          }
+        }
+
+        &:focus + .luxury-switch-slider {
+          box-shadow: 0 0 2px $color-gold;
+        }
+
+        &:disabled + .luxury-switch-slider {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+
+      .luxury-switch-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #1a1a1a;
+        border: 1px solid rgba(212, 175, 55, 0.35);
+        transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 26px;
+
+        &:before {
+          position: absolute;
+          content: "";
+          height: 18px;
+          width: 18px;
+          left: 3px;
+          bottom: 3px;
+          background-color: $color-light-gold;
+          transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          border-radius: 50%;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+      }
+    }
+  }
+}
+
+/* Delete Confirmation Modal */
+.delete-confirm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0;
+
+  p {
+    color: $color-light-gold;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
+
+    strong {
+      color: $color-gold;
+    }
+  }
+
+  .delete-warning-text {
+    font-size: 0.82rem;
+    color: rgba(239, 68, 68, 0.9);
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }

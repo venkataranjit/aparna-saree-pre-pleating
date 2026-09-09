@@ -18,3 +18,4 @@ export {
   AppTablePagination,
 } from './AppTable/AppTable';
 export { default as AppViewToggle } from './AppViewToggle/AppViewToggle';
+export { default as ThemeToggle } from './ThemeToggle/ThemeToggle';

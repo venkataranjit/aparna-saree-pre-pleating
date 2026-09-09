@@ -622,7 +622,7 @@ const Users = () => {
         </div>
       ) : filteredUsers.length === 0 ? (
         <div className="users-empty-wrapper">
-          <PersonOutlineIcon style={{ fontSize: 44, color: "rgba(212, 175, 55, 0.4)" }} />
+          <PersonOutlineIcon className="empty-state-icon" style={{ fontSize: 44 }} />
           <span className="empty-title">
             {users.length === 0
               ? "No users found in Firebase"

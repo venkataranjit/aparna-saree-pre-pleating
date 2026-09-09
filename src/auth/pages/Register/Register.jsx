@@ -1,3 +1,4 @@
+import { ThemeToggle } from '../../../components/common/ThemeToggle/ThemeToggle';
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
@@ -32,10 +33,11 @@ import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SecurityIcon from "@mui/icons-material/Security";
 import { AppButton, AppInput, AppSpinner } from "../../../components/common";
-import brandLogo from "../../../assets/logo.png";
+import brandLogo from '../../../assets/logo.png';
+import logoDark from '../../../assets/logo-dark.png';
+import logoLight from '../../../assets/logo-light.png';
 import AuthDesktopBrand from "../../components/AuthDesktopBrand/AuthDesktopBrand";
 import AuthFooter from "../../components/AuthFooter/AuthFooter";
-import CardStorefrontLink from "../../components/CardStorefrontLink/CardStorefrontLink";
 import AuthBackground from "../../components/AuthBackground/AuthBackground";
 import "./Register.scss";
 
@@ -466,10 +468,12 @@ const Register = () => {
       {/* Royal Silk Aurora Luxury Background */}
       <AuthBackground />
 
+      
       {/* Register Screen Container */}
       <div className="register-screen__container">
         <AuthDesktopBrand />
 
+        <div className="auth-card-wrapper">
         <div className="register-card">
           <div className="register-card__top-bar" />
 
@@ -480,7 +484,17 @@ const Register = () => {
                 <img
                   src={brandLogo}
                   alt="Aparna Saree Pre-Pleating"
-                  className="brand-logo-img"
+                  className="brand-logo-img brand-logo-img--default"
+                />
+                <img
+                  src={logoDark}
+                  alt="Aparna Saree Pre-Pleating"
+                  className="brand-logo-img brand-logo-img--dark"
+                />
+                <img
+                  src={logoLight}
+                  alt="Aparna Saree Pre-Pleating"
+                  className="brand-logo-img brand-logo-img--light"
                 />
               </div>
               <h1 className="register-title">Create Account</h1>
@@ -702,9 +716,6 @@ const Register = () => {
               </button>
             </div>
 
-            {/* Return to Storefront Link */}
-            <CardStorefrontLink />
-
             {/* Footer Security Badge */}
             <div className="register-card__footer">
               <SecurityIcon className="security-icon" />
@@ -713,6 +724,12 @@ const Register = () => {
                 Encryption
               </span>
             </div>
+          </div>
+        </div>
+
+          {/* Theme Selector directly below the card */}
+          <div className="auth-card-theme-bar">
+            <ThemeToggle variant="segmented" size="sm" showLabels={true} />
           </div>
         </div>
       </div>

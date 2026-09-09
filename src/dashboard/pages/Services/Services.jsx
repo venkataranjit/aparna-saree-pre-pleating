@@ -566,7 +566,8 @@ const Services = () => {
       ) : filteredServices.length === 0 ? (
         <div className="services-empty-wrapper">
           <DryCleaningOutlinedIcon
-            style={{ fontSize: 44, color: "#d4af37", opacity: 0.5 }}
+            className="empty-state-icon"
+            style={{ fontSize: 44 }}
           />
           <span className="empty-title">
             No services found matching your criteria.

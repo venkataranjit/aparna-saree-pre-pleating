@@ -64,31 +64,32 @@
 
   // Variants
   &--primary {
-    background: linear-gradient(135deg, $color-gold 0%, #b89324 100%);
-    color: $color-black;
-    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.25);
+    background: var(--btn-primary-bg, linear-gradient(135deg, #d4af37 0%, #b89324 100%)) !important;
+    color: var(--btn-primary-text, #000000) !important;
+    border: 1px solid transparent !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 
     &:hover:not(:disabled) {
-      background: linear-gradient(135deg, #e6d8a3 0%, $color-gold 100%);
-      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.4);
+      filter: brightness(1.08);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
       transform: translateY(-1px);
     }
 
     &:active:not(:disabled) {
       transform: translateY(0);
-      box-shadow: 0 1px 4px rgba(212, 175, 55, 0.3);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
     }
   }
 
   &--secondary {
-    background: rgba(212, 175, 55, 0.06);
-    color: $color-light-gold;
-    border-color: rgba(212, 175, 55, 0.3);
+    background: var(--surface-gold-tint, rgba(255, 255, 255, 0.05));
+    color: var(--color-gold, #ffffff);
+    border-color: $surface-border;
 
     &:hover:not(:disabled) {
-      background: rgba(212, 175, 55, 0.15);
-      border-color: $color-gold;
-      color: $color-light-gold;
+      background: var(--surface-border-hover, rgba(255, 255, 255, 0.12));
+      border-color: var(--color-gold, #ffffff);
+      color: var(--color-gold, #ffffff);
       transform: translateY(-1px);
     }
 
@@ -170,15 +171,15 @@
   }
 
   &--ghost {
-    background: rgba(212, 175, 55, 0.05);
-    border: 1px solid rgba(212, 175, 55, 0.25);
-    color: $color-light-gold;
+    background: var(--surface-gold-tint, rgba(255, 255, 255, 0.04));
+    border: 1px solid $surface-border;
+    color: $text-primary;
 
     &:hover:not(:disabled) {
-      background: rgba(212, 175, 55, 0.14);
-      border-color: rgba(212, 175, 55, 0.55);
-      color: $color-gold;
-      box-shadow: 0 0 12px rgba(212, 175, 55, 0.12);
+      background: var(--surface-border-hover, rgba(255, 255, 255, 0.1));
+      border-color: var(--surface-border-hover, rgba(255, 255, 255, 0.2));
+      color: $text-primary;
+      box-shadow: 0 0 12px var(--surface-gold-tint, rgba(0, 0, 0, 0.12));
       transform: translateY(-1px);
     }
 

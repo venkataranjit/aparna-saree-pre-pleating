@@ -8,12 +8,14 @@ import ForgotPassword from './auth/pages/ForgotPassword/ForgotPassword';
 import ResetPassword from './auth/pages/ResetPassword/ResetPassword';
 import NotFound from './dashboard/pages/NotFound/NotFound';
 import { AuthProvider } from './auth/context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import './App.scss';
 
 function App() {
   return (
     <AuthProvider>
-      <div className="app-root">
+      <ThemeProvider>
+        <div className="app-root">
 
       <Routes>
         {/* Default route points directly to dashboard since dashboard is active */}
@@ -50,6 +52,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
+    </ThemeProvider>
     </AuthProvider>
   );
 }

@@ -14,9 +14,9 @@
     gap: 7px;
     padding: 6px 14px;
     border-radius: 20px;
-    background: rgba(212, 175, 55, 0.08);
-    border: 1px solid rgba(212, 175, 55, 0.25);
-    color: rgba(230, 216, 163, 0.88);
+    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.08));
+    border: 1px solid var(--surface-border, rgba(212, 175, 55, 0.25));
+    color: var(--text-muted, rgba(230, 216, 163, 0.88));
     text-decoration: none;
     font-size: 0.8rem;
     font-weight: 600;
@@ -26,22 +26,22 @@
 
     .storefront-arrow {
       font-size: 0.95rem;
-      color: $color-gold;
+      color: var(--color-gold, #d4af37);
       transition: transform 0.2s ease;
     }
 
     .storefront-icon {
       font-size: 1.05rem;
-      color: rgba(212, 175, 55, 0.85);
+      color: var(--color-gold, rgba(212, 175, 55, 0.85));
       transition: color 0.2s ease;
     }
 
     &:hover,
     &:active {
-      background: rgba(212, 175, 55, 0.18);
-      border-color: rgba(212, 175, 55, 0.65);
-      color: $color-light-gold;
-      box-shadow: 0 0 14px rgba(212, 175, 55, 0.28);
+      background: var(--surface-border-hover, rgba(212, 175, 55, 0.18));
+      border-color: var(--color-gold, #d4af37);
+      color: var(--text-primary, #e6d8a3);
+      box-shadow: 0 0 14px var(--surface-gold-tint, rgba(212, 175, 55, 0.28));
       transform: translateX(-2px);
 
       .storefront-arrow {
@@ -49,7 +49,7 @@
       }
 
       .storefront-icon {
-        color: $color-light-gold;
+        color: var(--text-primary, #e6d8a3);
       }
     }
 

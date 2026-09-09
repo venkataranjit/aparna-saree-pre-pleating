@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 
-// Aparna Saree Pre-Pleating - Exclusive Luxury Palette: #000000, #d4af37, #e6d8a3
+// Aparna Saree Pre-Pleating - Dynamic 3-Theme Palette
 const theme = createTheme({
   palette: {
     mode: 'dark',
@@ -21,21 +21,21 @@ const theme = createTheme({
       paper: '#0f0f0f',
     },
     text: {
-      primary: '#e6d8a3',
-      secondary: '#d4af37',
+      primary: '#ffffff',
+      secondary: '#a1a1aa',
     },
-    divider: 'rgba(212, 175, 55, 0.22)',
+    divider: 'rgba(255, 255, 255, 0.12)',
   },
   typography: {
     fontFamily: '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    h1: { color: '#e6d8a3', fontWeight: 700 },
-    h2: { color: '#e6d8a3', fontWeight: 700 },
-    h3: { color: '#e6d8a3', fontWeight: 700 },
-    h4: { color: '#e6d8a3', fontWeight: 700 },
-    h5: { color: '#e6d8a3', fontWeight: 600 },
-    h6: { color: '#e6d8a3', fontWeight: 600 },
-    body1: { color: '#e6d8a3' },
-    body2: { color: 'rgba(230, 216, 163, 0.8)' },
+    h1: { color: 'var(--text-primary, #ffffff)', fontWeight: 700 },
+    h2: { color: 'var(--text-primary, #ffffff)', fontWeight: 700 },
+    h3: { color: 'var(--text-primary, #ffffff)', fontWeight: 700 },
+    h4: { color: 'var(--text-primary, #ffffff)', fontWeight: 700 },
+    h5: { color: 'var(--text-primary, #ffffff)', fontWeight: 600 },
+    h6: { color: 'var(--text-primary, #ffffff)', fontWeight: 600 },
+    body1: { color: 'var(--text-primary, #ffffff)' },
+    body2: { color: 'var(--text-muted, #a1a1aa)' },
     button: { textTransform: 'none', fontWeight: 600 },
   },
   shape: {
@@ -51,28 +51,27 @@ const theme = createTheme({
           transition: 'all 0.2s ease-in-out',
         },
         containedPrimary: {
-          backgroundColor: '#d4af37',
-          color: '#000000',
-          boxShadow: '0 2px 10px rgba(212, 175, 55, 0.25)',
+          backgroundColor: 'var(--btn-primary-bg, #d4af37)',
+          color: 'var(--btn-primary-text, #000000)',
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.25)',
           '&:hover': {
-            backgroundColor: '#e6d8a3',
-            color: '#000000',
-            boxShadow: '0 4px 16px rgba(212, 175, 55, 0.4)',
+            filter: 'brightness(1.1)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
           },
           '& .MuiSvgIcon-root': {
-            color: '#000000 !important',
+            color: 'var(--btn-primary-text, #000000) !important',
           },
         },
         outlinedPrimary: {
-          borderColor: 'rgba(212, 175, 55, 0.5)',
-          color: '#d4af37',
+          borderColor: 'var(--surface-border-hover, rgba(212, 175, 55, 0.5))',
+          color: 'var(--color-gold, #d4af37)',
           '&:hover': {
-            borderColor: '#d4af37',
-            color: '#e6d8a3',
-            backgroundColor: 'rgba(212, 175, 55, 0.08)',
+            borderColor: 'var(--color-gold, #d4af37)',
+            color: 'var(--text-primary, #e6d8a3)',
+            backgroundColor: 'var(--surface-gold-tint, rgba(212, 175, 55, 0.08))',
           },
           '& .MuiSvgIcon-root': {
-            color: '#d4af37 !important',
+            color: 'var(--color-gold, #d4af37) !important',
           },
         },
       },
@@ -80,8 +79,8 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          backgroundColor: '#0f0f0f',
-          borderColor: 'rgba(212, 175, 55, 0.22)',
+          backgroundColor: 'var(--bg-card, #0f0f0f)',
+          borderColor: 'var(--surface-border, rgba(212, 175, 55, 0.22))',
           backgroundImage: 'none',
         },
       },
@@ -89,8 +88,8 @@ const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundColor: '#0f0f0f',
-          borderColor: 'rgba(212, 175, 55, 0.22)',
+          backgroundColor: 'var(--bg-card, #0f0f0f)',
+          borderColor: 'var(--surface-border, rgba(212, 175, 55, 0.22))',
           backgroundImage: 'none',
         },
       },
@@ -98,45 +97,44 @@ const theme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          borderColor: 'rgba(212, 175, 55, 0.4)',
-          color: '#e6d8a3',
+          borderColor: 'var(--surface-border, rgba(212, 175, 55, 0.4))',
+          color: 'var(--text-primary, #e6d8a3)',
         },
       },
     },
     MuiIconButton: {
       styleOverrides: {
         root: {
-          color: '#d4af37',
+          color: 'var(--color-gold, #d4af37)',
           borderRadius: 6,
           '&:hover': {
-            backgroundColor: 'rgba(212, 175, 55, 0.1)',
+            backgroundColor: 'var(--surface-gold-tint, rgba(212, 175, 55, 0.1))',
           },
         },
       },
     },
-    MuiListItemButton: {
+    MuiTableCell: {
       styleOverrides: {
         root: {
-          borderRadius: 10,
-          '&:hover': {
-            backgroundColor: 'rgb(32 28 16)',
-            borderRadius: 10,
-          },
-          '&.Mui-selected': {
-            backgroundColor: 'rgb(32 28 16)',
-            borderRadius: 10,
-          },
+          borderColor: 'var(--surface-border, rgba(255, 255, 255, 0.12))',
+          color: 'var(--text-primary, #ffffff)',
+        },
+        head: {
+          color: 'var(--color-gold, #ffffff)',
+          fontWeight: 700,
+          borderColor: 'var(--surface-border, rgba(255, 255, 255, 0.12))',
+          backgroundColor: 'var(--table-head-bg, #0a0a0a)',
         },
       },
     },
     MuiCssBaseline: {
       styleOverrides: {
         html: {
-          scrollbarColor: 'rgba(212, 175, 55, 0.45) #050505',
+          scrollbarColor: 'var(--scrollbar-thumb-color, #d4af37) var(--scrollbar-track, #050505)',
           scrollbarWidth: 'thin',
         },
         body: {
-          scrollbarColor: 'rgba(212, 175, 55, 0.45) #050505',
+          scrollbarColor: 'var(--scrollbar-thumb-color, #d4af37) var(--scrollbar-track, #050505)',
           scrollbarWidth: 'thin',
         },
         '*::-webkit-scrollbar': {
@@ -144,26 +142,24 @@ const theme = createTheme({
           height: '7px',
         },
         '*::-webkit-scrollbar-track': {
-          background: '#050505',
+          background: 'var(--scrollbar-track, #050505)',
           borderRadius: '4px',
         },
         '*::-webkit-scrollbar-thumb': {
-          background: 'linear-gradient(180deg, #d4af37 0%, #9a7b1c 100%)',
+          background: 'var(--scrollbar-thumb-bg, var(--scrollbar-thumb-color, #d4af37))',
+          backgroundColor: 'var(--scrollbar-thumb-color, #d4af37)',
           borderRadius: '6px',
-          border: '1px solid rgba(0, 0, 0, 0.7)',
-          boxShadow: '0 0 6px rgba(212, 175, 55, 0.35)',
-        },
-        '*::-webkit-scrollbar-thumb:hover': {
-          background: 'linear-gradient(180deg, #e6d8a3 0%, #d4af37 100%)',
-          boxShadow: '0 0 10px rgba(212, 175, 55, 0.7)',
+          '&:hover': {
+            background: 'var(--scrollbar-thumb-hover, #e6d8a3)',
+            backgroundColor: 'var(--scrollbar-thumb-hover, #e6d8a3)',
+          },
         },
         '*::-webkit-scrollbar-corner': {
-          background: '#000000',
+          background: 'var(--scrollbar-track, #000000)',
         },
       },
     },
   },
 });
-
 
 export default theme;

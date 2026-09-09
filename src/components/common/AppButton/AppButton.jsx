@@ -42,7 +42,7 @@ export default function AppButton({
       {loading ? (
         <AppSpinner
           size={size === 'lg' ? 'md' : 'sm'}
-          color={variant === 'primary' ? 'black' : 'gold'}
+          color="inherit"
         />
       ) : (
         startIcon && <span className="app-btn-icon app-btn-icon--start">{startIcon}</span>

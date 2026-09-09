@@ -507,7 +507,7 @@ const OrdersTable = ({
                           <span>{formatDateSafe(order.deliveryDate)}</span>
                         </div>
                       ) : (
-                        <span style={{ color: "rgba(230,216,163,0.4)" }}>—</span>
+                        <span className="empty-cell-dash">—</span>
                       )}
                     </AppTableCell>
                     <AppTableCell className="table-body-cell date-cell">

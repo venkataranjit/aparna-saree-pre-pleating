@@ -1835,7 +1835,8 @@ export const getAllOrders = async () => {
   try {
     const snapshot = await withTimeout(
       getDocs(collection(db, COLLECTIONS.ORDERS)),
-      4500
+      4500,
+      null
     );
 
     if (snapshot && !snapshot.empty) {

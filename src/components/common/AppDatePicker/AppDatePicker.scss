@@ -9,7 +9,7 @@
   .app-datepicker-label {
     font-size: 13px;
     font-weight: 500;
-    color: rgba(230, 216, 163, 0.85);
+    color: $text-primary;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -33,8 +33,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #0d0d0d;
-  border: 1px solid rgba(212, 175, 55, 0.28);
+  background: var(--input-bg, #0d0d0d);
+  border: 1px solid $surface-border;
   border-radius: $border-radius-md;
   padding: 0 12px;
   min-height: 42px;
@@ -50,17 +50,17 @@
   }
 
   &:hover {
-    border-color: rgba(212, 175, 55, 0.6);
-    background: #111111;
+    border-color: $surface-border-hover;
+    background: var(--bg-card-hover, #111111);
   }
 
   &:focus,
   &.is-open {
     border-color: $color-gold !important;
     box-shadow:
-      0 0 0 2px rgba(212, 175, 55, 0.22),
-      0 0 10px rgba(212, 175, 55, 0.15) !important;
-    background: #121213 !important;
+      0 0 0 2px var(--surface-gold-tint, rgba(255, 255, 255, 0.2)),
+      0 0 10px var(--surface-gold-tint, rgba(255, 255, 255, 0.12)) !important;
+    background: var(--bg-card-hover, #121213) !important;
   }
 
   &.is-error {
@@ -85,7 +85,7 @@
     min-width: 0;
 
     .datepicker-value-text {
-      color: $color-light-gold;
+      color: $text-primary;
       font-size: 13.5px;
       font-weight: 600;
       letter-spacing: 0.2px;
@@ -96,7 +96,7 @@
     }
 
     .datepicker-placeholder {
-      color: rgba(230, 216, 163, 0.4);
+      color: $text-muted;
       font-size: 13.5px;
 
       @include mobile {
@@ -112,7 +112,7 @@
     .datepicker-clear-btn {
       background: transparent;
       border: none;
-      color: rgba(230, 216, 163, 0.5);
+      color: $text-muted;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -123,7 +123,7 @@
 
       &:hover {
         color: $color-gold;
-        background: rgba(212, 175, 55, 0.15);
+        background: $surface-gold-tint;
       }
     }
   }
@@ -131,7 +131,7 @@
 
 .app-datepicker-helper {
   font-size: 11.5px;
-  color: rgba(230, 216, 163, 0.6);
+  color: $text-muted;
   padding-left: 2px;
 
   &--error {
@@ -146,13 +146,13 @@
 
 .app-datepicker-popover-paper {
   z-index: 9999 !important;
-  background: linear-gradient(165deg, #141414 0%, #0a0a0b 100%) !important;
-  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  background: var(--popover-bg, linear-gradient(165deg, #141414 0%, #0a0a0b 100%)) !important;
+  border: 1px solid $surface-border !important;
   border-radius: 12px !important;
   box-shadow:
     0 16px 40px rgba(0, 0, 0, 0.95),
-    0 0 18px rgba(212, 175, 55, 0.15) !important;
-  color: $color-light-gold !important;
+    0 0 18px var(--surface-gold-tint, rgba(0, 0, 0, 0.15)) !important;
+  color: $text-primary !important;
   margin-top: 6px;
   overflow: hidden !important;
   width: 296px;
@@ -170,20 +170,24 @@
     gap: 5px;
     overflow-x: auto;
     padding-bottom: 6px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+    border-bottom: 1px solid $surface-border;
 
     &::-webkit-scrollbar {
       height: 3px;
     }
     &::-webkit-scrollbar-thumb {
-      background: rgba(212, 175, 55, 0.3);
+      background: var(--scrollbar-thumb);
       border-radius: 3px;
+
+      &:hover {
+        background: var(--scrollbar-thumb-hover, var(--color-light-gold, #e6d8a3));
+      }
     }
 
     .preset-chip {
-      background: rgba(212, 175, 55, 0.08);
-      border: 1px solid rgba(212, 175, 55, 0.22);
-      color: #e6d8a3;
+      background: $surface-gold-tint;
+      border: 1px solid $surface-border;
+      color: $text-primary;
       font-size: 11px;
       font-weight: 500;
       padding: 3px 8px;
@@ -193,7 +197,7 @@
       transition: $transition-fast;
 
       &:hover {
-        background: rgba(212, 175, 55, 0.22);
+        background: var(--surface-border-hover, rgba(255, 255, 255, 0.15));
         color: $color-gold;
         border-color: $color-gold;
       }
@@ -209,13 +213,13 @@
     .calendar-current-month {
       font-size: 14px;
       font-weight: 700;
-      color: $color-light-gold;
+      color: $text-primary;
       letter-spacing: 0.3px;
     }
 
     .calendar-nav-btn {
       background: transparent;
-      border: 1px solid rgba(212, 175, 55, 0.2);
+      border: 1px solid $surface-border;
       color: $color-gold;
       border-radius: 6px;
       width: 28px;
@@ -227,7 +231,7 @@
       transition: $transition-fast;
 
       &:hover {
-        background: rgba(212, 175, 55, 0.15);
+        background: $surface-gold-tint;
         border-color: $color-gold;
       }
     }
@@ -242,7 +246,7 @@
     .weekday-header-cell {
       font-size: 11px;
       font-weight: 700;
-      color: rgba(212, 175, 55, 0.7);
+      color: $text-muted;
       text-transform: uppercase;
       padding: 4px 0;
     }
@@ -256,7 +260,7 @@
     .calendar-day-cell {
       background: transparent;
       border: 1px solid transparent;
-      color: $color-light-gold;
+      color: $text-primary;
       font-size: 12.5px;
       font-weight: 500;
       height: 32px;
@@ -269,26 +273,26 @@
       user-select: none;
 
       &:hover:not(.is-disabled) {
-        background: rgba(212, 175, 55, 0.16);
-        border-color: rgba(212, 175, 55, 0.4);
+        background: $surface-gold-tint;
+        border-color: $surface-border;
       }
 
       &.is-other-month {
         opacity: 0.3;
-        color: rgba(230, 216, 163, 0.4);
+        color: $text-muted;
       }
 
       &.is-today {
-        border-color: rgba(212, 175, 55, 0.6);
+        border-color: $surface-border-hover;
         color: $color-gold;
         font-weight: 700;
       }
 
       &.is-selected {
-        background: $color-gold !important;
-        color: #000000 !important;
+        background: var(--btn-primary-bg, $color-gold) !important;
+        color: var(--btn-primary-text, #000000) !important;
         font-weight: 700 !important;
-        box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+        box-shadow: 0 0 10px var(--surface-gold-tint, rgba(0, 0, 0, 0.3));
       }
 
       &.is-disabled {
@@ -303,7 +307,7 @@
     align-items: center;
     justify-content: space-between;
     padding-top: 6px;
-    border-top: 1px solid rgba(212, 175, 55, 0.12);
+    border-top: 1px solid $surface-border;
 
     .calendar-footer-btn {
       background: transparent;
@@ -319,11 +323,11 @@
       transition: $transition-fast;
 
       &:hover {
-        background: rgba(212, 175, 55, 0.12);
+        background: $surface-gold-tint;
       }
 
       &--clear {
-        color: rgba(230, 216, 163, 0.5);
+        color: $text-muted;
 
         &:hover {
           color: #f87171;

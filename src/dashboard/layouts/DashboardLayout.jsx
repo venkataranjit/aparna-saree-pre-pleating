@@ -60,7 +60,7 @@ const DashboardLayout = () => {
       )}
 
       <div className="dashboard-layout__content-wrapper">
-        <main className={`dashboard-layout__main ${collapsed ? 'with-bottom-bar' : ''}`}>
+        <main className="dashboard-layout__main">
           <div className="dashboard-layout__page-content">
             <Outlet />
           </div>

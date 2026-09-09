@@ -207,7 +207,7 @@
 
     // Subtext
     &__subtext {
-      color: rgba(230, 216, 163, 0.72) !important;
+      color: $text-muted !important;
       font-size: 0.92rem !important;
       line-height: 1.6 !important;
       max-width: 520px;
@@ -224,17 +224,13 @@
       margin-bottom: 0;
 
       .primary-btn {
-        background: linear-gradient(
-          135deg,
-          #d4af37 0%,
-          #a88219 100%
-        ) !important;
-        color: #000000 !important;
+        background: var(--btn-primary-bg, #d4af37) !important;
+        color: var(--btn-primary-text, #000000) !important;
         font-weight: 700 !important;
         font-size: 0.88rem !important;
         padding: 10px 24px !important;
         border-radius: 10px !important;
-        box-shadow: 0 4px 18px rgba(212, 175, 55, 0.35) !important;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25) !important;
         transition: all 0.25s ease !important;
 
         &:hover {

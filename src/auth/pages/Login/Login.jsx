@@ -1,3 +1,4 @@
+import { ThemeToggle } from '../../../components/common/ThemeToggle/ThemeToggle';
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
@@ -28,10 +29,11 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SecurityIcon from "@mui/icons-material/Security";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { AppButton, AppInput, AppSpinner } from "../../../components/common";
-import brandLogo from "../../../assets/logo.png";
+import brandLogo from '../../../assets/logo.png';
+import logoDark from '../../../assets/logo-dark.png';
+import logoLight from '../../../assets/logo-light.png';
 import AuthDesktopBrand from "../../components/AuthDesktopBrand/AuthDesktopBrand";
 import AuthFooter from "../../components/AuthFooter/AuthFooter";
-import CardStorefrontLink from "../../components/CardStorefrontLink/CardStorefrontLink";
 import AuthBackground from "../../components/AuthBackground/AuthBackground";
 import "./Login.scss";
 
@@ -696,10 +698,12 @@ const Login = () => {
       {/* Royal Silk Aurora Luxury Background */}
       <AuthBackground />
 
+      
       {/* Login Screen Container */}
       <div className="login-screen__container">
         <AuthDesktopBrand />
 
+        <div className="auth-card-wrapper">
         <div className="login-card">
           <div className="login-card__top-bar" />
 
@@ -710,7 +714,17 @@ const Login = () => {
                 <img
                   src={brandLogo}
                   alt="Aparna Saree Pre-Pleating"
-                  className="brand-logo-img"
+                  className="brand-logo-img brand-logo-img--default"
+                />
+                <img
+                  src={logoDark}
+                  alt="Aparna Saree Pre-Pleating"
+                  className="brand-logo-img brand-logo-img--dark"
+                />
+                <img
+                  src={logoLight}
+                  alt="Aparna Saree Pre-Pleating"
+                  className="brand-logo-img brand-logo-img--light"
                 />
               </div>
               <h1 className="login-title">Login</h1>
@@ -990,9 +1004,6 @@ const Login = () => {
               </p>
             </div>
 
-            {/* Return to Storefront Link */}
-            <CardStorefrontLink />
-
             {/* Footer Security Badge */}
             <div className="login-card__footer">
               <SecurityIcon className="security-icon" />
@@ -1004,6 +1015,12 @@ const Login = () => {
 
             {/* Invisible reCAPTCHA container required for Firebase Phone Auth */}
             <div id="recaptcha-container"></div>
+          </div>
+        </div>
+
+          {/* Theme Selector directly below the card */}
+          <div className="auth-card-theme-bar">
+            <ThemeToggle variant="segmented" size="sm" showLabels={true} />
           </div>
         </div>
       </div>

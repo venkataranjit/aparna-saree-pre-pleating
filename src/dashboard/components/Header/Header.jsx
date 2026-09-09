@@ -3,6 +3,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../auth/context/AuthContext';
+import { ThemeToggle } from '../../../components/common';
 import './Header.scss';
 
 const Header = ({ onMobileMenuToggle }) => {
@@ -38,16 +39,19 @@ const Header = ({ onMobileMenuToggle }) => {
           </h2>
         </div>
 
-        {/* Mobile Logout Action */}
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="mobile-logout-btn"
-          aria-label="logout"
-          title="Log Out"
-        >
-          <LogoutOutlinedIcon />
-        </button>
+        {/* Header Right Actions: Theme Switcher & Logout */}
+        <div className="dashboard-header__actions">
+          <ThemeToggle variant="icon" size="sm" />
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="mobile-logout-btn"
+            aria-label="logout"
+            title="Log Out"
+          >
+            <LogoutOutlinedIcon />
+          </button>
+        </div>
       </div>
     </header>
   );

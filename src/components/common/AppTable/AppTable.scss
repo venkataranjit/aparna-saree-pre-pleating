@@ -7,20 +7,25 @@
   background-color: transparent;
   border-radius: inherit;
 
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-color, #d4af37) var(--scrollbar-track, #050505);
+
   &::-webkit-scrollbar {
     height: 6px;
   }
   &::-webkit-scrollbar-track {
-    background: #050505;
+    background: var(--scrollbar-track, #050505);
     border-radius: 4px;
   }
   &::-webkit-scrollbar-thumb {
-    background: linear-gradient(90deg, #d4af37 0%, #9a7b1c 100%);
+    background: var(--scrollbar-thumb-bg, var(--scrollbar-thumb-color, #d4af37)) !important;
+    background-color: var(--scrollbar-thumb-color, #d4af37) !important;
     border-radius: 6px;
-    border: 1px solid rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.2);
 
     &:hover {
-      background: linear-gradient(90deg, #e6d8a3 0%, #d4af37 100%);
+      background: var(--scrollbar-thumb-hover, #e6d8a3) !important;
+      background-color: var(--scrollbar-thumb-hover, #e6d8a3) !important;
     }
   }
 }
@@ -33,7 +38,7 @@
 }
 
 .app-table-head {
-  background-color: #080808;
+  background-color: var(--table-head-bg, #080808);
 }
 
 .app-table-body {
@@ -44,13 +49,13 @@
   transition: background-color 0.18s ease;
 
   &:hover {
-    background-color: rgba(212, 175, 55, 0.04);
+    background-color: var(--table-row-hover, rgba(212, 175, 55, 0.04));
   }
 }
 
 .app-table-cell {
-  color: $color-light-gold;
-  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  color: $text-primary;
+  border-bottom: 1px solid $surface-border;
   font-family: $font-family-base;
   font-size: 0.88rem;
   padding: 14px 18px;
@@ -61,13 +66,13 @@
   }
 
   &--head {
-    background-color: #080808;
+    background-color: var(--table-head-bg, #080808);
     color: $color-gold;
     font-weight: 700;
     font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    border-bottom: 1px solid $surface-border;
 
     white-space: nowrap !important;
 
@@ -77,6 +82,7 @@
     }
   }
 }
+
 
 .app-table-sort-label {
   color: inherit !important;
@@ -92,7 +98,7 @@
   transition: color 0.2s ease;
 
   &:hover {
-    color: $color-light-gold !important;
+    color: $color-gold !important;
 
     svg {
       opacity: 0.85 !important;
@@ -109,7 +115,7 @@
   }
 
   &--active {
-    color: $color-light-gold !important;
+    color: $color-gold !important;
 
     svg {
       opacity: 1 !important;
@@ -119,9 +125,9 @@
 }
 
 .app-table-pagination {
-  color: $color-light-gold !important;
-  border-top: 1px solid rgba(212, 175, 55, 0.15) !important;
-  background-color: #080808 !important;
+  color: $text-primary !important;
+  border-top: 1px solid $surface-border !important;
+  background-color: var(--table-head-bg, #080808) !important;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -134,7 +140,7 @@
   p {
     margin: 0;
     font-size: 0.82rem;
-    color: rgba(230, 216, 163, 0.7);
+    color: $text-muted;
 
     @include mobile {
       font-size: 0.72rem;
@@ -143,8 +149,8 @@
 
   select {
     color: $color-gold !important;
-    background-color: #121212 !important;
-    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    background-color: var(--input-bg, #121212) !important;
+    border: 1px solid $surface-border !important;
     border-radius: 6px;
     padding: 2px 6px;
     font-size: 0.82rem;
@@ -162,12 +168,12 @@
     transition: all 0.2s ease;
 
     &:hover:not(:disabled) {
-      background-color: rgba(212, 175, 55, 0.12);
-      color: $color-light-gold !important;
+      background-color: var(--surface-gold-tint, rgba(212, 175, 55, 0.12));
+      color: $color-gold !important;
     }
 
     &:disabled {
-      color: rgba(212, 175, 55, 0.25) !important;
+      color: $text-muted !important;
       opacity: 0.4;
     }
 
@@ -183,23 +189,23 @@
 
 // Revamped Expandable View More Row & Modern Pill Button
 .table-expanded-row {
-  background-color: #060606 !important;
+  background-color: var(--bg-secondary, #060606) !important;
 
   .table-expanded-cell {
     padding: 8px 18px 16px 18px !important;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.22) !important;
+    border-bottom: 1px solid $surface-border !important;
   }
 
   .table-expanded-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 12px;
-    background: linear-gradient(145deg, #101010 0%, #080808 100%);
-    border: 1px solid rgba(212, 175, 55, 0.2);
+    background: var(--card-bg-gradient, linear-gradient(145deg, #101010 0%, #080808 100%));
+    border: 1px solid $surface-border;
     border-top: 2px solid $color-gold;
     border-radius: 10px;
     padding: 14px 16px;
-    box-shadow: inset 0 1px 0 rgba(212, 175, 55, 0.12), 0 8px 24px rgba(0, 0, 0, 0.7);
+    box-shadow: inset 0 1px 0 var(--surface-gold-tint, rgba(212, 175, 55, 0.12)), 0 8px 24px rgba(0, 0, 0, 0.3);
     animation: drawerSlideDown 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
     @include mobile {
@@ -213,14 +219,14 @@
       flex-direction: column;
       gap: 6px;
       padding: 10px 14px;
-      background: rgba(0, 0, 0, 0.45);
-      border: 1px solid rgba(212, 175, 55, 0.12);
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid $surface-border;
       border-radius: 8px;
       transition: border-color 0.2s ease, background-color 0.2s ease;
 
       &:hover {
-        border-color: rgba(212, 175, 55, 0.32);
-        background: rgba(0, 0, 0, 0.65);
+        border-color: $surface-border-hover;
+        background: rgba(0, 0, 0, 0.45);
       }
 
       &--address {
@@ -246,22 +252,22 @@
           font-weight: 700;
           letter-spacing: 0.8px;
           text-transform: uppercase;
-          color: $color-gold;
+          color: $text-muted;
         }
       }
 
       .tile-content {
-        color: $color-light-gold;
+        color: $text-primary;
         font-size: 0.86rem;
         line-height: 1.4;
 
         .address-text {
           word-break: break-word;
-          color: rgba(230, 216, 163, 0.95);
+          color: $text-primary;
         }
 
         .empty-hint {
-          color: rgba(230, 216, 163, 0.45);
+          color: $text-muted;
           font-style: italic;
         }
       }
@@ -286,8 +292,8 @@
   justify-content: center !important;
   gap: 5px !important;
   white-space: nowrap !important;
-  background: rgba(18, 18, 18, 0.95) !important;
-  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  background: var(--bg-card, rgba(18, 18, 18, 0.95)) !important;
+  border: 1px solid $surface-border !important;
   color: $color-gold !important;
   font-size: 0.72rem !important;
   font-weight: 700 !important;
@@ -297,7 +303,7 @@
   outline: none !important;
   flex-shrink: 0 !important;
   user-select: none !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--pill-shadow, 0 1px 3px rgba(0, 0, 0, 0.2));
   transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
   .btn-text {
@@ -328,24 +334,24 @@
   }
 
   &:hover {
-    background: rgba(212, 175, 55, 0.16) !important;
+    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.16)) !important;
     border-color: $color-gold !important;
-    color: $color-light-gold !important;
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.35) !important;
+    color: $color-gold !important;
+    box-shadow: var(--card-shadow-hover, 0 2px 8px rgba(0, 0, 0, 0.2)) !important;
 
     .chevron-wrap svg {
-      color: $color-light-gold !important;
+      color: $color-gold !important;
     }
   }
 
   &.is-active {
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.22) 0%, rgba(212, 175, 55, 0.1) 100%) !important;
+    background: var(--sidebar-item-active-bg, rgba(212, 175, 55, 0.22)) !important;
     border-color: $color-gold !important;
-    color: $color-light-gold !important;
-    box-shadow: 0 0 8px rgba(212, 175, 55, 0.25) !important;
+    color: $color-gold !important;
+    box-shadow: var(--pill-shadow, 0 1px 3px rgba(0, 0, 0, 0.2)) !important;
 
     .chevron-wrap svg {
-      color: $color-light-gold !important;
+      color: $color-gold !important;
     }
   }
 }

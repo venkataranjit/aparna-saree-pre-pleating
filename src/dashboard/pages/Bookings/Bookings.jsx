@@ -177,7 +177,10 @@ const Bookings = () => {
         toast.success('Orders refreshed successfully!');
       }
     } catch (err) {
-      console.error('Failed to load orders:', err);
+      if (err?.name === 'AbortError' || err?.message?.includes('aborted')) {
+        return;
+      }
+      console.warn('Failed to load orders:', err);
       toast.error('Failed to load orders.');
     } finally {
       setLoading(false);
@@ -500,7 +503,7 @@ const Bookings = () => {
         </div>
       ) : filteredOrders.length === 0 ? (
         <div className="bookings-empty-wrapper">
-          <ReceiptLongOutlinedIcon style={{ fontSize: 44, color: 'rgba(212, 175, 55, 0.4)' }} />
+          <ReceiptLongOutlinedIcon className="empty-state-icon" style={{ fontSize: 44 }} />
           <span className="empty-title">
             {orders.length === 0
               ? 'No bookings or orders recorded yet'
@@ -651,7 +654,7 @@ const Bookings = () => {
                             <span>{formatDateSafe(order.deliveryDate)}</span>
                           </div>
                         ) : (
-                          <span style={{ color: 'rgba(230,216,163,0.4)' }}>—</span>
+                          <span className="empty-cell-dash">—</span>
                         )}
                       </AppTableCell>
 

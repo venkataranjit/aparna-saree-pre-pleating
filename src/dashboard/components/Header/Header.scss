@@ -2,13 +2,13 @@
 
 .dashboard-header {
   flex-shrink: 0;
-  background: linear-gradient(
+  background: var(--header-bg, linear-gradient(
     180deg,
     rgba(0, 0, 0, 0.96) 0%,
     rgba(8, 8, 8, 0.98) 100%
-  ) !important;
+  )) !important;
   border-bottom: 1px solid $surface-border !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
   backdrop-filter: blur(12px);
 
   // On desktop, the brand logo is located directly in the dashboard overview header
@@ -32,6 +32,17 @@
     }
   }
 
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+
+    @media (max-width: 480px) {
+      gap: 6px;
+    }
+  }
+
   .mobile-menu-trigger {
     display: none;
     width: 44px;
@@ -42,8 +53,8 @@
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    background-color: rgba(212, 175, 55, 0.08);
-    border: 1px solid rgba(212, 175, 55, 0.25);
+    background-color: var(--surface-gold-tint, rgba(212, 175, 55, 0.08));
+    border: 1px solid $surface-border;
     color: $color-gold;
     cursor: pointer;
     transition: $transition-fast;
@@ -57,9 +68,9 @@
 
     &:hover,
     &:active {
-      background-color: rgba(212, 175, 55, 0.22);
+      background-color: var(--surface-border-hover, rgba(212, 175, 55, 0.22));
       border-color: $color-gold;
-      box-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
+      box-shadow: 0 0 10px var(--surface-gold-tint, rgba(212, 175, 55, 0.35));
     }
 
     @media (max-width: 899px) {
@@ -85,8 +96,8 @@
     height: 44px;
     padding: 0;
     border-radius: 10px;
-    background-color: rgba(212, 175, 55, 0.08);
-    border: 1px solid rgba(212, 175, 55, 0.25);
+    background-color: var(--surface-gold-tint, rgba(212, 175, 55, 0.08));
+    border: 1px solid $surface-border;
     color: $color-gold;
     cursor: pointer;
     transition: $transition-fast;
@@ -128,12 +139,11 @@
   }
 
   &__title {
-    color: $color-light-gold !important;
+    color: $text-primary !important;
     font-family: $font-family-base !important;
     font-weight: 700 !important;
     font-size: 1.25rem !important;
     letter-spacing: 0.5px;
-    text-shadow: 0 0 14px rgba(212, 175, 55, 0.35);
     line-height: 1.2;
 
     @media (max-width: 480px) {

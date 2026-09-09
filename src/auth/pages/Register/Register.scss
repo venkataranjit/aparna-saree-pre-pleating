@@ -17,7 +17,7 @@
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  scrollbar-color: rgba(212, 175, 55, 0.45) #050505;
+  scrollbar-color: var(--scrollbar-thumb-color, #d4af37) var(--scrollbar-track, transparent);
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -26,8 +26,14 @@
     background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: rgba(212, 175, 55, 0.35);
+    background: var(--scrollbar-thumb-bg, var(--scrollbar-thumb-color, #d4af37)) !important;
+    background-color: var(--scrollbar-thumb-color, #d4af37) !important;
     border-radius: 4px;
+
+    &:hover {
+      background: var(--scrollbar-thumb-hover, #e6d8a3) !important;
+      background-color: var(--scrollbar-thumb-hover, #e6d8a3) !important;
+    }
   }
 
   // Center container
@@ -57,6 +63,31 @@
       padding: 16px 16px;
     }
   }
+  // Auth Card Wrapper & Theme Bar
+  .auth-card-wrapper {
+    width: 100%;
+    max-width: 680px;
+    margin: 0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    @media (max-width: 640px) {
+      max-width: 100%;
+    }
+
+    .auth-card-theme-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin-top: 14px;
+      margin-bottom: 4px;
+    }
+  }
+
+
 
   // Luxury Card
   .register-card {
@@ -64,20 +95,14 @@
     max-width: 680px;
     margin: 0;
     flex-shrink: 0;
-    background: linear-gradient(
-      160deg,
-      #100f0c 0%,
-      #070706 70%,
-      #040404 100%
-    ) !important;
-    border: 1px solid rgba(212, 175, 55, 0.28) !important;
+    background: var(--card-bg-gradient, linear-gradient(160deg, #100f0c 0%, #070706 70%, #040404 100%)) !important;
+    background-color: var(--bg-card, #0f0f0f) !important;
+    border: 1px solid var(--surface-border, rgba(212, 175, 55, 0.28)) !important;
     border-radius: 16px !important;
-    box-shadow:
-      0 20px 60px rgba(0, 0, 0, 0.95),
-      0 0 28px rgba(212, 175, 55, 0.14) !important;
+    box-shadow: var(--card-shadow, 0 20px 60px rgba(0, 0, 0, 0.95)) !important;
     position: relative;
     overflow: hidden;
-    color: $color-light-gold;
+    color: var(--text-primary, $color-light-gold);
     box-sizing: border-box;
 
     @media (max-width: 768px) {
@@ -143,26 +168,50 @@
         }
 
         .brand-logo-img {
-          max-width: 360px;
+          max-width: 320px;
+          width: 100%;
+          height: auto;
           object-fit: contain;
-          filter: drop-shadow(0 4px 20px rgba(212, 175, 55, 0.45));
+          display: none;
           transition: transform 0.25s ease;
 
           @media (max-width: 480px) {
-            max-width: 300px;
+            max-width: 260px;
+          }
+
+          &--default {
+            :root:not([data-theme="dark"]):not([data-theme="light"]) &,
+            [data-theme="default"] & {
+              display: block;
+              filter: drop-shadow(0 4px 18px rgba(212, 175, 55, 0.45));
+            }
+          }
+
+          &--dark {
+            [data-theme="dark"] & {
+              display: block;
+              filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.6));
+            }
+          }
+
+          &--light {
+            [data-theme="light"] & {
+              display: block;
+              filter: drop-shadow(0 2px 8px rgba(15, 23, 42, 0.1));
+            }
           }
         }
       }
 
       .register-title {
-        color: $color-light-gold !important;
+        color: var(--text-primary, $color-light-gold) !important;
         font-weight: 700 !important;
         font-size: 1.75rem !important;
         letter-spacing: -0.2px;
         line-height: 1.2;
         margin-top: 6px;
         margin-bottom: 0 !important;
-        text-shadow: 0 0 16px rgba(212, 175, 55, 0.35);
+        text-shadow: none;
         text-align: left !important;
 
         @media (max-width: 480px) {
@@ -280,32 +329,13 @@
       }
 
       .submit-btn {
-        background: linear-gradient(
-          135deg,
-          #d4af37 0%,
-          #aa851c 100%
-        ) !important;
-        color: #000000 !important;
         font-weight: 700 !important;
         font-size: 0.92rem !important;
         letter-spacing: 0.4px;
         min-height: 48px;
         border-radius: 10px;
-        box-shadow: 0 4px 18px rgba(212, 175, 55, 0.38) !important;
         touch-action: manipulation;
-        transition: all 0.22s ease;
         margin-top: 4px;
-
-        &:hover,
-        &:active {
-          background: linear-gradient(
-            135deg,
-            #e6d8a3 0%,
-            #d4af37 100%
-          ) !important;
-          box-shadow: 0 6px 24px rgba(212, 175, 55, 0.55) !important;
-          transform: translateY(-1px);
-        }
       }
 
       .auth-switch-row {
@@ -313,7 +343,7 @@
         margin-top: 8px;
 
         .switch-prompt {
-          color: rgba(230, 216, 163, 0.75);
+          color: var(--text-muted, rgba(230, 216, 163, 0.75));
           font-size: 0.84rem;
 
           .auth-highlight-link {
@@ -324,7 +354,7 @@
             transition: all 0.2s ease;
 
             &:hover {
-              color: $color-light-gold;
+              color: var(--text-primary, $color-light-gold);
               text-decoration: underline;
               text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
             }
@@ -344,12 +374,12 @@
       &::after {
         content: "";
         flex: 1;
-        border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+        border-bottom: 1px solid var(--surface-border, rgba(212, 175, 55, 0.18));
       }
 
       span {
         padding: 0 12px;
-        color: rgba(230, 216, 163, 0.5);
+        color: var(--text-muted, rgba(230, 216, 163, 0.5));
         font-size: 0.72rem;
         font-weight: 700;
         letter-spacing: 1px;
@@ -480,7 +510,7 @@
       gap: 6px;
       margin-top: 22px;
       padding-top: 14px;
-      border-top: 1px solid rgba(212, 175, 55, 0.12);
+      border-top: 1px solid var(--surface-border, rgba(212, 175, 55, 0.12));
       text-align: center;
 
       .security-icon {
@@ -556,5 +586,409 @@
   100% {
     stroke-dasharray: 75, 150;
     stroke-dashoffset: -115;
+  }
+}
+
+// ============================================================================
+// Auth Theming Overrides (Dark Mode & Light Mode)
+// ============================================================================
+
+[data-theme="dark"] {
+  .login-card,
+  .register-card,
+  .forgot-card,
+  .reset-card {
+    background: linear-gradient(145deg, #1c202c 0%, #151822 100%) !important;
+    background-color: #1a1e29 !important;
+    border: 1px solid rgba(226, 232, 240, 0.12) !important;
+    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.45) !important;
+    color: #f1f5f9 !important;
+
+    .login-title,
+    .register-title,
+    .forgot-title,
+    .reset-title {
+      color: #f1f5f9 !important;
+      text-shadow: none !important;
+    }
+
+    .forgot-subtitle,
+    .reset-subtitle {
+      color: #94a3b8 !important;
+    }
+
+    .login-card__top-bar,
+    .register-card__top-bar,
+    .forgot-card__top-bar,
+    .reset-card__top-bar {
+      background: linear-gradient(90deg, transparent 0%, rgba(241, 245, 249, 0.35) 50%, transparent 100%) !important;
+    }
+
+    .submit-btn {
+      background: #f1f5f9 !important;
+      color: #0f1117 !important;
+      border: 1px solid #f1f5f9 !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+
+      &:hover,
+      &:active {
+        background: #ffffff !important;
+        color: #000000 !important;
+        box-shadow: 0 6px 20px rgba(241, 245, 249, 0.25) !important;
+      }
+    }
+
+    .login-method-switch {
+      background: #141720 !important;
+      border: 1px solid rgba(226, 232, 240, 0.12) !important;
+
+      .method-tab-btn {
+        color: #94a3b8 !important;
+
+        &:hover:not(.active) {
+          color: #f1f5f9 !important;
+          background: rgba(241, 245, 249, 0.05) !important;
+        }
+
+        &.active {
+          background: #222736 !important;
+          color: #f1f5f9 !important;
+          border: 1px solid rgba(226, 232, 240, 0.25) !important;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+
+          svg {
+            color: #f1f5f9 !important;
+          }
+        }
+      }
+    }
+
+    .password-header-row {
+      .input-label-text {
+        color: #cbd5e1 !important;
+      }
+
+      .forgot-link-btn {
+        color: #94a3b8 !important;
+
+        &:hover {
+          color: #f1f5f9 !important;
+        }
+      }
+    }
+
+    .visibility-toggle-btn,
+    .toggle-pw-btn {
+      color: #94a3b8 !important;
+
+      &:hover {
+        color: #f1f5f9 !important;
+      }
+
+      svg {
+        color: inherit !important;
+      }
+    }
+
+    .options-row .checkbox-label {
+      color: #94a3b8 !important;
+
+      .gold-checkbox {
+        accent-color: #f1f5f9;
+      }
+    }
+
+    .otp-digit-box {
+      background-color: #161923 !important;
+      border-color: rgba(226, 232, 240, 0.18) !important;
+      color: #f1f5f9 !important;
+      caret-color: #f1f5f9 !important;
+
+      &:hover {
+        border-color: rgba(226, 232, 240, 0.4) !important;
+      }
+
+      &:focus {
+        border-color: #f1f5f9 !important;
+        box-shadow: 0 0 12px rgba(241, 245, 249, 0.25) !important;
+      }
+
+      &.filled {
+        border-color: #f1f5f9 !important;
+        background-color: rgba(241, 245, 249, 0.06) !important;
+        color: #f1f5f9 !important;
+      }
+    }
+
+    .back-to-login-link {
+      color: #cbd5e1 !important;
+
+      .inline-arrow {
+        color: #cbd5e1 !important;
+      }
+
+      &:hover {
+        color: #ffffff !important;
+        text-decoration: underline !important;
+
+        .inline-arrow {
+          color: #ffffff !important;
+        }
+      }
+    }
+
+    .auth-switch-row .switch-prompt {
+      color: #94a3b8 !important;
+
+      .auth-highlight-link {
+        color: #f1f5f9 !important;
+
+        &:hover {
+          color: #ffffff !important;
+          text-decoration: underline !important;
+          text-shadow: none !important;
+        }
+      }
+    }
+
+    .reset-state-box {
+      .state-text {
+        color: #94a3b8 !important;
+      }
+
+      .success-instruction {
+        color: #cbd5e1 !important;
+      }
+    }
+
+    .auth-divider {
+      &::before,
+      &::after {
+        border-bottom-color: rgba(226, 232, 240, 0.12) !important;
+      }
+
+      span {
+        color: #64748b !important;
+      }
+    }
+
+    .brand-logo-img {
+      filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.5)) !important;
+    }
+
+    .login-card__footer,
+    .register-card__footer,
+    .forgot-card__footer,
+    .reset-card__footer {
+      border-top-color: rgba(226, 232, 240, 0.1) !important;
+
+      .security-icon {
+        color: #64748b !important;
+      }
+
+      .security-text {
+        color: #64748b !important;
+      }
+    }
+  }
+}
+
+[data-theme="light"] {
+  .login-card,
+  .register-card,
+  .forgot-card,
+  .reset-card {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.09) !important;
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    color: #1e293b !important;
+
+    .login-title,
+    .register-title,
+    .forgot-title,
+    .reset-title {
+      color: #0f172a !important;
+      text-shadow: none !important;
+    }
+
+    .forgot-subtitle,
+    .reset-subtitle {
+      color: #64748b !important;
+    }
+
+    .login-card__top-bar,
+    .register-card__top-bar,
+    .forgot-card__top-bar,
+    .reset-card__top-bar {
+      display: none !important;
+    }
+
+    .submit-btn {
+      background: #1e293b !important;
+      color: #ffffff !important;
+      border: 1px solid #1e293b !important;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.14) !important;
+
+      &:hover,
+      &:active {
+        background: #0f172a !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.22) !important;
+      }
+    }
+
+    .login-method-switch {
+      background: #f1f5f9 !important;
+      border: 1px solid rgba(15, 23, 42, 0.08) !important;
+
+      .method-tab-btn {
+        color: #64748b !important;
+
+        &:hover:not(.active) {
+          color: #0f172a !important;
+          background: rgba(15, 23, 42, 0.04) !important;
+        }
+
+        &.active {
+          background: #ffffff !important;
+          color: #0f172a !important;
+          border: 1px solid rgba(15, 23, 42, 0.12) !important;
+          box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08) !important;
+
+          svg {
+            color: #0f172a !important;
+          }
+        }
+      }
+    }
+
+    .password-header-row {
+      .input-label-text {
+        color: #475569 !important;
+      }
+
+      .forgot-link-btn {
+        color: #475569 !important;
+
+        &:hover {
+          color: #0f172a !important;
+        }
+      }
+    }
+
+    .visibility-toggle-btn,
+    .toggle-pw-btn {
+      color: #64748b !important;
+
+      &:hover {
+        color: #0f172a !important;
+      }
+
+      svg {
+        color: inherit !important;
+      }
+    }
+
+    .options-row .checkbox-label {
+      color: #475569 !important;
+
+      .gold-checkbox {
+        accent-color: #1e293b;
+      }
+    }
+
+    .otp-digit-box {
+      background-color: #ffffff !important;
+      border-color: rgba(15, 23, 42, 0.15) !important;
+      color: #0f172a !important;
+      caret-color: #0f172a !important;
+
+      &:hover {
+        border-color: rgba(15, 23, 42, 0.35) !important;
+      }
+
+      &:focus {
+        border-color: #1e293b !important;
+        box-shadow: 0 0 10px rgba(15, 23, 42, 0.15) !important;
+      }
+
+      &.filled {
+        border-color: #1e293b !important;
+        background-color: rgba(15, 23, 42, 0.03) !important;
+        color: #0f172a !important;
+      }
+    }
+
+    .back-to-login-link {
+      color: #334155 !important;
+
+      .inline-arrow {
+        color: #334155 !important;
+      }
+
+      &:hover {
+        color: #0f172a !important;
+        text-decoration: underline !important;
+
+        .inline-arrow {
+          color: #0f172a !important;
+        }
+      }
+    }
+
+    .auth-switch-row .switch-prompt {
+      color: #64748b !important;
+
+      .auth-highlight-link {
+        color: #0f172a !important;
+
+        &:hover {
+          color: #000000 !important;
+          text-decoration: underline !important;
+          text-shadow: none !important;
+        }
+      }
+    }
+
+    .reset-state-box {
+      .state-text {
+        color: #64748b !important;
+      }
+
+      .success-instruction {
+        color: #475569 !important;
+      }
+    }
+
+    .auth-divider {
+      &::before,
+      &::after {
+        border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+      }
+
+      span {
+        color: #94a3b8 !important;
+      }
+    }
+
+    .brand-logo-img {
+      filter: none !important;
+    }
+
+    .login-card__footer,
+    .register-card__footer,
+    .forgot-card__footer,
+    .reset-card__footer {
+      border-top-color: rgba(15, 23, 42, 0.08) !important;
+
+      .security-icon {
+        color: #94a3b8 !important;
+      }
+
+      .security-text {
+        color: #94a3b8 !important;
+      }
+    }
   }
 }

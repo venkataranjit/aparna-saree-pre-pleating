@@ -1,8 +1,8 @@
 @use "../../styles/variables" as *;
 
 .stat-card {
-  background: linear-gradient(180deg, #100f0c 0%, #070706 100%);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  background: var(--card-bg-gradient, linear-gradient(180deg, #100f0c 0%, #070706 100%));
+  border: 1px solid $surface-border;
   border-radius: 12px;
   padding: 16px 18px;
   position: relative;
@@ -10,9 +10,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow:
-    0 4px 18px rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 rgba(212, 175, 55, 0.1);
+  box-shadow: var(--card-shadow, 0 4px 18px rgba(0, 0, 0, 0.25));
   transition:
     transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.22s ease,
@@ -36,7 +34,7 @@
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(212, 175, 55, 0.45) 50%,
+      var(--surface-border-hover, rgba(212, 175, 55, 0.45)) 50%,
       transparent 100%
     );
     opacity: 0.6;
@@ -45,12 +43,9 @@
 
   &:hover {
     transform: translateY(-3px);
-    border-color: rgba(212, 175, 55, 0.55);
-    background: linear-gradient(180deg, #15130e 0%, #0a0907 100%);
-    box-shadow:
-      0 8px 26px rgba(0, 0, 0, 0.9),
-      0 0 14px rgba(212, 175, 55, 0.16),
-      inset 0 1px 0 rgba(212, 175, 55, 0.25);
+    border-color: $surface-border-hover;
+    background: var(--bg-card-hover, #15130e);
+    box-shadow: var(--card-shadow-hover, 0 8px 26px rgba(0, 0, 0, 0.35));
 
     .stat-card__top-bar {
       opacity: 1;
@@ -64,26 +59,25 @@
     }
 
     .stat-card__icon-wrap {
-      border-color: rgba(212, 175, 55, 0.45);
-      background: rgba(212, 175, 55, 0.14);
+      border-color: $surface-border-hover;
+      background: var(--surface-gold-tint, rgba(212, 175, 55, 0.14));
       transform: scale(1.05);
 
       svg {
-        filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.6));
+        filter: drop-shadow(0 0 6px var(--surface-gold-tint, rgba(212, 175, 55, 0.6)));
       }
     }
 
     .stat-card__value {
       color: $color-gold !important;
-      text-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
     }
 
     .stat-card__prev-box {
-      border-color: rgba(212, 175, 55, 0.42);
-      background: rgba(212, 175, 55, 0.14);
+      border-color: $surface-border-hover;
+      background: var(--surface-gold-tint, rgba(212, 175, 55, 0.14));
 
       .stat-card__prev-value {
-        color: $color-light-gold !important;
+        color: $text-primary !important;
       }
     }
   }
@@ -97,7 +91,7 @@
   }
 
   &__title {
-    color: rgba(212, 175, 55, 0.8) !important;
+    color: $text-muted !important;
     font-size: 0.72rem !important;
     font-weight: 700 !important;
     text-transform: uppercase;
@@ -114,8 +108,8 @@
     width: 36px;
     height: 36px;
     border-radius: 9px;
-    background: rgba(212, 175, 55, 0.08);
-    border: 1px solid rgba(212, 175, 55, 0.22);
+    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.08));
+    border: 1px solid $surface-border;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -139,6 +133,7 @@
       }
     }
   }
+
 
   // Value Display Group
   &__value-group {
@@ -180,8 +175,8 @@
     align-items: baseline;
     gap: 4px;
     padding: 2px 7px;
-    background: rgba(212, 175, 55, 0.08);
-    border: 1px solid rgba(212, 175, 55, 0.2);
+    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.08));
+    border: 1px solid $surface-border;
     border-radius: 6px;
     margin-bottom: 2px;
 
@@ -190,7 +185,7 @@
     }
 
     .stat-card__prev-value {
-      color: rgba(230, 216, 163, 0.75) !important;
+      color: $text-primary !important;
       font-size: 0.95rem !important;
       font-weight: 700 !important;
       line-height: 1 !important;
@@ -202,7 +197,7 @@
     }
 
     .stat-card__prev-label {
-      color: rgba(212, 175, 55, 0.65) !important;
+      color: $text-muted !important;
       font-size: 0.65rem !important;
       font-weight: 600 !important;
       text-transform: uppercase;
@@ -251,9 +246,9 @@
     &.completed,
     &.progress,
     &.pending {
-      background: rgba(212, 175, 55, 0.1);
-      border: 1px solid rgba(212, 175, 55, 0.28);
-      color: $color-light-gold;
+      background: var(--surface-gold-tint, rgba(212, 175, 55, 0.1));
+      border: 1px solid $surface-border;
+      color: $text-primary;
 
       .trend-icon,
       .badge-icon {
@@ -268,7 +263,7 @@
         min-height: 6px;
         border-radius: 50%;
         background-color: $color-gold;
-        box-shadow: 0 0 6px rgba(212, 175, 55, 0.7);
+        box-shadow: 0 0 6px var(--surface-border, rgba(212, 175, 55, 0.7));
         flex-shrink: 0;
         display: inline-block;
         animation: pulseGlow 1.8s infinite ease-in-out;

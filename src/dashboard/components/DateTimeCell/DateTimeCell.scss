@@ -9,7 +9,7 @@
 
   .table-date-text {
     font-weight: 600;
-    color: rgba(230, 216, 163, 0.95);
+    color: $text-primary;
     font-size: 0.84rem;
     letter-spacing: 0.01em;
     white-space: nowrap;
@@ -20,7 +20,7 @@
   }
 
   .table-time-text {
-    color: rgba(230, 216, 163, 0.58);
+    color: $text-muted;
     font-size: 0.73rem;
     font-weight: 400;
     letter-spacing: 0.02em;
@@ -32,8 +32,9 @@
   }
 
   .table-dash-text {
-    color: rgba(230, 216, 163, 0.45);
+    color: $text-muted;
     font-size: 0.9rem;
     font-weight: 500;
+    opacity: 0.6;
   }
 }

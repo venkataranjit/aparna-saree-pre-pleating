@@ -1,9 +1,248 @@
 @use './variables' as *;
 
+// ============================================================================
+// 3-Mode Theme Palette Definitions
+// ============================================================================
+
+// 1. Default (Royal Obsidian Gold)
+:root,
+[data-theme="default"] {
+  --bg-primary: #000000;
+  --bg-secondary: #080808;
+  --bg-card: #0f0f0f;
+  --bg-card-hover: #141414;
+  --color-gold: #d4af37;
+  --color-light-gold: #e6d8a3;
+  --primary-color: #000000;
+  --surface-border: rgba(212, 175, 55, 0.22);
+  --surface-border-hover: rgba(212, 175, 55, 0.5);
+  --surface-gold-tint: rgba(212, 175, 55, 0.08);
+  --text-primary: #e6d8a3;
+  --text-muted: rgba(230, 216, 163, 0.7);
+  --text-dark: #000000;
+  --card-bg-gradient: linear-gradient(145deg, #100f0c 0%, #070706 70%, #040404 100%);
+  --header-bg: linear-gradient(180deg, rgba(0, 0, 0, 0.96) 0%, rgba(8, 8, 8, 0.98) 100%);
+  --sidebar-bg: linear-gradient(180deg, #090908 0%, #040404 100%);
+  --sidebar-item-active-bg: rgba(212, 175, 55, 0.12);
+  --sidebar-profile-bg: #060606;
+  --avatar-bg: linear-gradient(135deg, #d4af37 0%, #b89324 50%, #8c6e14 100%);
+  --avatar-text: #060606;
+  --table-head-bg: #080808;
+  --table-row-hover: rgba(212, 175, 55, 0.06);
+  --input-bg: #0d0d0d;
+  --modal-bg: #0d0d0d;
+  --popover-bg: linear-gradient(165deg, #141414 0%, #0a0a0b 100%);
+  --toast-bg: rgba(12, 12, 12, 0.98);
+  --btn-primary-bg: linear-gradient(135deg, #d4af37 0%, #b89324 100%);
+  --btn-primary-text: #000000;
+  --card-shadow: 0 4px 18px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(212, 175, 55, 0.15);
+  --card-shadow-hover: 0 8px 26px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(212, 175, 55, 0.35);
+  --table-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  --nav-active-shadow: 0 2px 10px rgba(0, 0, 0, 0.25), 0 0 8px rgba(212, 175, 55, 0.12);
+  --pill-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  --scrollbar-thumb-color: #d4af37;
+  --scrollbar-thumb-bg: linear-gradient(180deg, #e6d8a3 0%, #d4af37 50%, #9a7b1c 100%);
+  --scrollbar-thumb-hover: #f3e8c0;
+  --scrollbar-track: #050505;
+}
+
+// 2. Dark Mode (Pleasant Eye-Friendly Midnight Slate / Charcoal - Soothing Contrast)
+[data-theme="dark"] {
+  --bg-primary: #0f1117;
+  --bg-secondary: #161922;
+  --bg-card: #1a1e29;
+  --bg-card-hover: #222736;
+  --color-gold: #f1f5f9;
+  --color-light-gold: #e2e8f0;
+  --primary-color: #0f1117;
+  --surface-border: rgba(226, 232, 240, 0.12);
+  --surface-border-hover: rgba(226, 232, 240, 0.28);
+  --surface-gold-tint: rgba(226, 232, 240, 0.06);
+  --text-primary: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-dark: #0f1117;
+  --card-bg-gradient: linear-gradient(145deg, #1c202c 0%, #151822 100%);
+  --header-bg: linear-gradient(180deg, rgba(15, 17, 23, 0.98) 0%, rgba(22, 25, 34, 0.98) 100%);
+  --sidebar-bg: linear-gradient(180deg, #141720 0%, #0f1117 100%);
+  --sidebar-item-active-bg: rgba(241, 245, 249, 0.1);
+  --sidebar-profile-bg: #12151d;
+  --avatar-bg: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+  --avatar-text: #0f1117;
+  --table-head-bg: #141721;
+  --table-row-hover: rgba(241, 245, 249, 0.04);
+  --input-bg: #161923;
+  --modal-bg: #171a24;
+  --popover-bg: linear-gradient(165deg, #1c202d 0%, #141721 100%);
+  --toast-bg: rgba(22, 25, 35, 0.98);
+  --btn-primary-bg: #f1f5f9;
+  --btn-primary-text: #0f1117;
+  --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), 0 0 1px 1px rgba(226, 232, 240, 0.06);
+  --card-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.35), 0 0 1px 1px rgba(226, 232, 240, 0.15);
+  --table-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+  --nav-active-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --pill-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-color: rgba(241, 245, 249, 0.35);
+  --scrollbar-thumb-bg: rgba(241, 245, 249, 0.25);
+  --scrollbar-thumb-hover: rgba(241, 245, 249, 0.55);
+  --scrollbar-track: #11141c;
+}
+
+// 3. Light Mode (Pleasant Eye-Friendly Soft Slate Mist - No Heavy Drop Shadows)
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --color-gold: #1e293b;
+  --color-light-gold: #334155;
+  --primary-color: #f8fafc;
+  --surface-border: rgba(15, 23, 42, 0.08);
+  --surface-border-hover: rgba(15, 23, 42, 0.16);
+  --surface-gold-tint: rgba(15, 23, 42, 0.03);
+  --text-primary: #1e293b;
+  --text-muted: #64748b;
+  --text-dark: #0f172a;
+  --card-bg-gradient: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  --header-bg: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%);
+  --sidebar-bg: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  --sidebar-item-active-bg: rgba(15, 23, 42, 0.06);
+  --sidebar-profile-bg: #f1f5f9;
+  --avatar-bg: linear-gradient(135deg, #334155 0%, #0f172a 100%);
+  --avatar-text: #f8fafc;
+  --table-head-bg: #f1f5f9;
+  --table-row-hover: rgba(15, 23, 42, 0.02);
+  --input-bg: #ffffff;
+  --modal-bg: #ffffff;
+  --popover-bg: linear-gradient(165deg, #ffffff 0%, #f8fafc 100%);
+  --toast-bg: rgba(255, 255, 255, 0.98);
+  --btn-primary-bg: #1e293b;
+  --btn-primary-text: #ffffff;
+  --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+  --card-shadow-hover: 0 3px 8px rgba(15, 23, 42, 0.06);
+  --table-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  --nav-active-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --pill-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  --scrollbar-thumb-color: rgba(100, 116, 139, 0.35);
+  --scrollbar-thumb-bg: rgba(100, 116, 139, 0.25);
+  --scrollbar-thumb-hover: rgba(100, 116, 139, 0.6);
+  --scrollbar-track: #f1f5f9;
+}
+
+// ============================================================================
+// Smooth Theme Switching Transitions (prevents flash & jarring jumps)
+// ============================================================================
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    fill 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    stroke 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-delay: 0s !important;
+}
+
 .dashboard-root {
   background-color: $bg-primary;
   color: $text-primary;
   min-height: 100vh;
+}
+
+// Light Mode Shadow & Drop-Shadow Softening (Crisp, clean, no harsh black blobs)
+[data-theme="light"] {
+  .stat-card {
+    box-shadow: var(--card-shadow) !important;
+
+    &:hover {
+      box-shadow: var(--card-shadow-hover) !important;
+
+      .stat-card__icon-wrap svg {
+        filter: none !important;
+      }
+    }
+  }
+
+  .nav-item.active {
+    box-shadow: var(--nav-active-shadow) !important;
+
+    &::before {
+      box-shadow: none !important;
+    }
+
+    .nav-icon svg {
+      filter: none !important;
+    }
+  }
+
+  .view-more-pill-btn,
+  .action-btns .view-more-pill-btn {
+    box-shadow: var(--pill-shadow) !important;
+
+    &:hover {
+      box-shadow: var(--card-shadow-hover) !important;
+    }
+  }
+
+  .app-view-toggle {
+    box-shadow: var(--pill-shadow) !important;
+
+    &__btn.is-active {
+      box-shadow: var(--pill-shadow) !important;
+    }
+  }
+
+  .clients-table-card,
+  .bookings-table-card,
+  .services-table-card,
+  .users-table-card,
+  .orders-table-card {
+    box-shadow: var(--table-shadow) !important;
+  }
+
+  .measurement-card,
+  .profile-hero-card,
+  .profile-order-card,
+  .appearance-card,
+  .booking-order-card,
+  .service-card,
+  .user-card,
+  .quick-nav-card,
+  .client-hero-action-card,
+  .recent-order-item,
+  .login-card,
+  .register-card,
+  .forgot-card,
+  .reset-card,
+  .not-found-card,
+  .app-card {
+    box-shadow: var(--card-shadow) !important;
+
+    &:hover {
+      box-shadow: var(--card-shadow-hover) !important;
+    }
+  }
+
+  .new-booking-btn,
+  .create-client-btn,
+  .create-user-btn,
+  .add-service-btn,
+  .app-btn--primary {
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .dashboard-header {
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  img,
+  .sidebar-text-logo,
+  svg {
+    filter: none !important;
+  }
 }
 
 // Global SVG icon color safeguard - strictly NO white icons
@@ -12,45 +251,50 @@ svg {
   fill: currentColor;
 }
 
-// Global luxury scrollbar styling in theme colors: Black (#000000), Gold (#d4af37), Light Gold (#e6d8a3)
+// Global scrollbar styling in theme colors
+html,
+body,
+#root,
+.app-root,
+.dashboard-root,
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(212, 175, 55, 0.45) #050505;
+  scrollbar-color: var(--scrollbar-thumb-color, #d4af37) var(--scrollbar-track, #050505);
 }
 
-::-webkit-scrollbar {
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
   width: 7px;
   height: 7px;
 }
 
-::-webkit-scrollbar-track {
-  background: #050505;
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track, #050505);
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #d4af37 0%, #9a7b1c 100%);
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-bg, var(--scrollbar-thumb-color, #d4af37)) !important;
+  background-color: var(--scrollbar-thumb-color, #d4af37) !important;
   border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.7);
-  box-shadow: 0 0 6px rgba(212, 175, 55, 0.35);
+  border: 1px solid rgba(0, 0, 0, 0.2);
 
   &:hover {
-    background: linear-gradient(180deg, #e6d8a3 0%, #d4af37 100%);
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.7);
-  }
-
-  &:active {
-    background: #d4af37;
+    background: var(--scrollbar-thumb-hover, #e6d8a3) !important;
+    background-color: var(--scrollbar-thumb-hover, #e6d8a3) !important;
   }
 }
 
-::-webkit-scrollbar-corner {
-  background: #000000;
+::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track, #000000);
 }
 
 // ─────────────────────────────────────────────
 // ─────────────────────────────────────────────
-// React-Toastify — Luxury Black & Gold Theme (Mobile & Desktop)
+// React-Toastify — Luxury Theme (Mobile & Desktop)
 // ─────────────────────────────────────────────
 :root {
   --toastify-toast-width: max-content !important;
@@ -142,11 +386,11 @@ svg {
 }
 
 .Toastify__toast {
-  background: rgba(10, 10, 10, 0.97) !important;
-  border: 1px solid rgba(212, 175, 55, 0.28) !important;
+  background: var(--toast-bg, rgba(10, 10, 10, 0.97)) !important;
+  border: 1px solid $surface-border !important;
   border-radius: 12px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(212, 175, 55, 0.15) !important;
-  color: #e6d8a3 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85), 0 0 1px 1px var(--surface-gold-tint, rgba(212, 175, 55, 0.15)) !important;
+  color: $text-primary !important;
   font-family: inherit !important;
   font-size: 0.875rem !important;
   backdrop-filter: blur(16px) !important;
@@ -209,7 +453,7 @@ svg {
 }
 
 .Toastify__toast-body {
-  color: #e6d8a3 !important;
+  color: $text-primary !important;
   padding: 0 !important;
   margin: 0 !important;
   gap: 12px !important;
@@ -250,7 +494,7 @@ svg {
   position: relative !important;
   top: auto !important;
   right: auto !important;
-  color: rgba(230, 216, 163, 0.6) !important;
+  color: $text-muted !important;
   opacity: 1 !important;
   align-self: center !important;
   flex-shrink: 0 !important;
@@ -274,14 +518,14 @@ svg {
 
   &:hover,
   &:active {
-    color: #e6d8a3 !important;
+    color: $text-primary !important;
     transform: scale(1.1) !important;
   }
 }
 
 .Toastify__progress-bar {
   height: 2.5px !important;
-  background: rgba(212, 175, 55, 0.5) !important;
+  background: var(--surface-border-hover, rgba(212, 175, 55, 0.5)) !important;
   bottom: 0 !important;
 }
 

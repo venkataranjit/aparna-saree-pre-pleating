@@ -331,23 +331,16 @@ export default function AppDatePicker({
               <button
                 type="button"
                 className="preset-chip"
+                onClick={() => handlePresetSelect(2)}
+              >
+                2 Days
+              </button>
+              <button
+                type="button"
+                className="preset-chip"
                 onClick={() => handlePresetSelect(3)}
               >
-                +3 Days
-              </button>
-              <button
-                type="button"
-                className="preset-chip"
-                onClick={() => handlePresetSelect(7)}
-              >
-                +1 Week
-              </button>
-              <button
-                type="button"
-                className="preset-chip"
-                onClick={() => handlePresetSelect(14)}
-              >
-                +2 Weeks
+                3 Days
               </button>
             </div>
           )}

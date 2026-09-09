@@ -1,3 +1,4 @@
+import { ThemeToggle } from '../../../components/common/ThemeToggle/ThemeToggle';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
@@ -6,13 +7,13 @@ import { auth } from '../../../firebase/config';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SecurityIcon from '@mui/icons-material/Security';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import LockResetIcon from '@mui/icons-material/LockReset';
+
 import { AppButton, AppInput } from '../../../components/common';
 import brandLogo from '../../../assets/logo.png';
+import logoDark from '../../../assets/logo-dark.png';
+import logoLight from '../../../assets/logo-light.png';
 import AuthDesktopBrand from '../../components/AuthDesktopBrand/AuthDesktopBrand';
 import AuthFooter from '../../components/AuthFooter/AuthFooter';
-import CardStorefrontLink from '../../components/CardStorefrontLink/CardStorefrontLink';
 import AuthBackground from '../../components/AuthBackground/AuthBackground';
 import './ForgotPassword.scss';
 
@@ -71,10 +72,12 @@ const ForgotPassword = () => {
       {/* Royal Silk Aurora Luxury Background */}
       <AuthBackground />
 
+      
       {/* Forgot Password Screen Container */}
       <div className="forgot-screen__container">
         <AuthDesktopBrand />
 
+        <div className="auth-card-wrapper">
         <div className="forgot-card">
           <div className="forgot-card__top-bar" />
 
@@ -85,7 +88,17 @@ const ForgotPassword = () => {
                 <img
                   src={brandLogo}
                   alt="Aparna Saree Pre-Pleating"
-                  className="brand-logo-img"
+                  className="brand-logo-img brand-logo-img--default"
+                />
+                <img
+                  src={logoDark}
+                  alt="Aparna Saree Pre-Pleating"
+                  className="brand-logo-img brand-logo-img--dark"
+                />
+                <img
+                  src={logoLight}
+                  alt="Aparna Saree Pre-Pleating"
+                  className="brand-logo-img brand-logo-img--light"
                 />
               </div>
               <h1 className="forgot-title">
@@ -120,7 +133,6 @@ const ForgotPassword = () => {
                 variant="primary"
                 fullWidth
                 loading={loading}
-                icon={<LockResetIcon className="btn-icon" />}
                 className="submit-btn"
               >
                 Send Reset Link
@@ -144,9 +156,6 @@ const ForgotPassword = () => {
               </div>
             </form>
 
-            {/* Return to Storefront Link */}
-            <CardStorefrontLink />
-
             {/* Footer Security Badge */}
             <div className="forgot-card__footer">
               <SecurityIcon className="security-icon" />
@@ -154,6 +163,12 @@ const ForgotPassword = () => {
                 Protected by 256-bit Firebase Authentication & End-to-End Encryption
               </span>
             </div>
+          </div>
+        </div>
+
+          {/* Theme Selector directly below the card */}
+          <div className="auth-card-theme-bar">
+            <ThemeToggle variant="segmented" size="sm" showLabels={true} />
           </div>
         </div>
       </div>

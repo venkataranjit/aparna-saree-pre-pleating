@@ -22,10 +22,10 @@
 }
 
 .app-modal-container {
-  background: #0d0d0d;
-  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: var(--modal-bg, #0d0d0d);
+  border: 1px solid $surface-border;
   border-radius: $border-radius-lg;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(212, 175, 55, 0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 1px 1px $surface-border;
   width: 100%;
   max-height: calc(100dvh - 32px);
   display: flex;
@@ -61,14 +61,14 @@
 
 .app-modal-header {
   padding: 18px 24px;
-  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+  border-bottom: 1px solid $surface-border;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   background: linear-gradient(
     180deg,
-    rgba(212, 175, 55, 0.08) 0%,
+    var(--surface-gold-tint, rgba(212, 175, 55, 0.08)) 0%,
     transparent 100%
   );
 
@@ -87,7 +87,7 @@
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: $color-light-gold;
+  color: $text-primary;
   letter-spacing: 0.3px;
 
   @include mobile {
@@ -98,7 +98,7 @@
 .app-modal-subtitle {
   margin: 0;
   font-size: 12.5px;
-  color: rgba(230, 216, 163, 0.7);
+  color: $text-muted;
 
   @include mobile {
     font-size: 11px;
@@ -106,9 +106,9 @@
 }
 
 .app-modal-close {
-  background: rgba(212, 175, 55, 0.06);
-  border: 1px solid rgba(212, 175, 55, 0.2);
-  color: $color-light-gold;
+  background: var(--surface-gold-tint, rgba(212, 175, 55, 0.06));
+  border: 1px solid $surface-border;
+  color: $color-gold;
   border-radius: 6px;
   width: 32px;
   height: 32px;
@@ -120,8 +120,8 @@
   flex-shrink: 0;
 
   &:hover {
-    background: rgba(212, 175, 55, 0.2);
-    color: $color-light-gold;
+    background: var(--surface-border-hover, rgba(212, 175, 55, 0.2));
+    color: $color-gold;
     border-color: $color-gold;
   }
 
@@ -138,17 +138,23 @@
   min-height: 0;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  scrollbar-color: rgba(212, 175, 55, 0.35) #090909;
+  scrollbar-color: var(--scrollbar-thumb-color, #d4af37) var(--scrollbar-track, #090909);
 
   &::-webkit-scrollbar {
     width: 5px;
   }
   &::-webkit-scrollbar-track {
-    background: #090909;
+    background: var(--scrollbar-track, #090909);
   }
   &::-webkit-scrollbar-thumb {
-    background: rgba(212, 175, 55, 0.35);
+    background: var(--scrollbar-thumb-bg, var(--scrollbar-thumb-color, #d4af37)) !important;
+    background-color: var(--scrollbar-thumb-color, #d4af37) !important;
     border-radius: 4px;
+
+    &:hover {
+      background: var(--scrollbar-thumb-hover, #e6d8a3) !important;
+      background-color: var(--scrollbar-thumb-hover, #e6d8a3) !important;
+    }
   }
 
   @include mobile {
@@ -158,12 +164,12 @@
 
 .app-modal-footer {
   padding: 14px 24px;
-  border-top: 1px solid rgba(212, 175, 55, 0.15);
+  border-top: 1px solid $surface-border;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
-  background: #090909;
+  background: var(--bg-secondary, #090909);
 
   @include mobile {
     padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px;

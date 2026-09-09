@@ -922,7 +922,7 @@ const Clients = () => {
         </div>
       ) : filteredClients.length === 0 ? (
         <div className="clients-empty-wrapper">
-          <PeopleOutlineIcon style={{ fontSize: 44, color: "#d4af37", opacity: 0.5 }} />
+          <PeopleOutlineIcon className="empty-state-icon" style={{ fontSize: 44 }} />
           <span className="empty-title">No clients found matching your criteria.</span>
           <span className="empty-subtitle">
             {searchTerm || activeTab !== "ALL"
@@ -1771,9 +1771,7 @@ const Clients = () => {
             {/* Client Summary Card */}
             <div className="details-summary-card">
               <div className="summary-item">
-                <PhoneIphoneOutlinedIcon
-                  style={{ fontSize: 20, color: "#d4af37" }}
-                />
+                <PhoneIphoneOutlinedIcon className="summary-item-icon" />
                 <div>
                   <div className="item-label">Phone</div>
                   <div className="item-value">
@@ -1783,7 +1781,7 @@ const Clients = () => {
               </div>
 
               <div className="summary-item">
-                <EmailOutlinedIcon style={{ fontSize: 20, color: "#d4af37" }} />
+                <EmailOutlinedIcon className="summary-item-icon" />
                 <div>
                   <div className="item-label">Email</div>
                   <div className="item-value">
@@ -1793,9 +1791,7 @@ const Clients = () => {
               </div>
 
               <div className="summary-item">
-                <LocationOnOutlinedIcon
-                  style={{ fontSize: 20, color: "#d4af37" }}
-                />
+                <LocationOnOutlinedIcon className="summary-item-icon" />
                 <div>
                   <div className="item-label">Address</div>
                   <div className="item-value">
@@ -1805,9 +1801,7 @@ const Clients = () => {
               </div>
 
               <div className="summary-item">
-                <CalendarTodayOutlinedIcon
-                  style={{ fontSize: 20, color: "#d4af37" }}
-                />
+                <CalendarTodayOutlinedIcon className="summary-item-icon" />
                 <div>
                   <div className="item-label">Joined</div>
                   <div className="item-value">
@@ -1834,7 +1828,7 @@ const Clients = () => {
               <span
                 style={{
                   fontWeight: 700,
-                  color: "#e6d8a3",
+                  color: "var(--text-primary)",
                   fontSize: "0.95rem",
                 }}
               >
@@ -1848,16 +1842,15 @@ const Clients = () => {
             measurementsMap[clientForView.id].length === 0 ? (
               <div className="empty-measurements-box">
                 <StraightenOutlinedIcon
+                  className="empty-state-icon"
                   style={{
                     fontSize: 36,
-                    color: "#d4af37",
-                    opacity: 0.5,
                     marginBottom: 8,
                   }}
                 />
                 <div
                   style={{
-                    color: "#e6d8a3",
+                    color: "var(--text-primary)",
                     fontWeight: 600,
                     fontSize: "0.9rem",
                   }}
@@ -1866,7 +1859,7 @@ const Clients = () => {
                 </div>
                 <p
                   style={{
-                    color: "rgba(230, 216, 163, 0.6)",
+                    color: "var(--text-muted)",
                     fontSize: "0.8rem",
                     marginTop: 4,
                     marginBottom: 12,
@@ -2012,14 +2005,7 @@ const Clients = () => {
 
                     {measure.notes && (
                       <div className="measure-notes-row">
-                        <NotesOutlinedIcon
-                          style={{
-                            fontSize: 16,
-                            color: "#d4af37",
-                            flexShrink: 0,
-                            marginTop: 2,
-                          }}
-                        />
+                        <NotesOutlinedIcon className="measure-notes-icon" />
                         <span className="measure-notes-text">
                           <strong>Notes:</strong> {measure.notes}
                         </span>
@@ -2310,21 +2296,21 @@ const Clients = () => {
       >
         <p
           style={{
-            color: "#e6d8a3",
+            color: "var(--text-primary, #e6d8a3)",
             fontSize: "0.95rem",
             marginBottom: 10,
             marginTop: 0,
           }}
         >
           Are you sure you want to remove measurement profile{" "}
-          <strong style={{ color: "#d4af37" }}>
+          <strong style={{ color: "var(--color-gold)" }}>
             "{measureToDelete?.title || "this profile"}"
           </strong>
           ?
         </p>
         <p
           style={{
-            color: "rgba(230, 216, 163, 0.65)",
+            color: "var(--text-muted)",
             fontSize: "0.82rem",
             lineHeight: 1.5,
             margin: 0,

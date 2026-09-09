@@ -6,17 +6,17 @@
   flex-shrink: 0;
   width: fit-content;
   max-width: fit-content;
-  background-color: rgba(12, 12, 12, 0.95);
-  border: 1px solid rgba(212, 175, 55, 0.28);
+  background-color: var(--bg-card, rgba(12, 12, 12, 0.95));
+  border: 1px solid $surface-border;
   border-radius: 9px;
   padding: 3px;
   gap: 3px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--pill-shadow, 0 1px 3px rgba(0, 0, 0, 0.1));
 
   &__btn {
     background: transparent;
     border: none;
-    color: rgba(230, 216, 163, 0.55);
+    color: $text-muted;
     padding: 6px 10px;
     border-radius: 7px;
     cursor: pointer;
@@ -53,18 +53,18 @@
     }
 
     &:hover:not(.is-active) {
-      color: $color-light-gold;
-      background-color: rgba(212, 175, 55, 0.1);
+      color: $text-primary;
+      background-color: var(--surface-gold-tint, rgba(212, 175, 55, 0.1));
     }
 
     &.is-active {
-      background: linear-gradient(135deg, $color-gold 0%, #e6d8a3 100%);
-      color: #000000;
+      background: var(--btn-primary-bg, $color-gold);
+      color: var(--btn-primary-text, #000000);
       font-weight: 700;
-      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+      box-shadow: var(--pill-shadow, 0 1px 3px rgba(0, 0, 0, 0.1));
 
       .btn-icon svg {
-        color: #000000;
+        color: var(--btn-primary-text, #000000);
         transform: scale(1.05);
       }
     }
@@ -75,3 +75,4 @@
     }
   }
 }
+

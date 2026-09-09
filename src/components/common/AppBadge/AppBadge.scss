@@ -32,15 +32,30 @@
   &--in-progress,
   &--processing,
   &--active {
-    background: rgba(212, 175, 55, 0.15);
+    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.15));
     color: $color-gold;
-    border-color: rgba(212, 175, 55, 0.35);
+    border-color: $surface-border;
   }
 
-  &--pending {
+  &--pending,
+  &--warning {
     background: rgba(234, 179, 8, 0.12);
     color: #facc15;
     border-color: rgba(234, 179, 8, 0.3);
+  }
+
+  [data-theme="dark"] &--pending,
+  [data-theme="dark"] &--warning {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.22) !important;
+  }
+
+  [data-theme="light"] &--pending,
+  [data-theme="light"] &--warning {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #000000 !important;
+    border-color: rgba(0, 0, 0, 0.2) !important;
   }
 
   &--cancelled,
@@ -52,13 +67,9 @@
   }
 
   &--admin {
-    background: linear-gradient(
-      135deg,
-      rgba(212, 175, 55, 0.25) 0%,
-      rgba(184, 147, 36, 0.15) 100%
-    );
-    color: $color-light-gold;
-    border-color: $color-gold;
+    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.25));
+    color: $color-gold;
+    border-color: $surface-border;
   }
 
   &--staff {
@@ -74,14 +85,10 @@
   }
 
   &--superadmin {
-    background: linear-gradient(
-      135deg,
-      rgba(212, 175, 55, 0.25) 0%,
-      rgba(184, 147, 36, 0.15) 100%
-    );
-    color: #fffbeb;
-    border: 1px solid rgba(212, 175, 55, 0.7);
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.25),
+    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.25));
+    color: $color-gold;
+    border: 1px solid $surface-border-hover;
+    box-shadow: 0 0 10px var(--surface-gold-tint, rgba(212, 175, 55, 0.25)),
       inset 0 1px 1px rgba(255, 255, 255, 0.2);
     font-weight: 700;
     letter-spacing: 0.5px;
@@ -94,15 +101,15 @@
 
       svg {
         font-size: 13px;
-        filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.6));
+        filter: drop-shadow(0 0 4px var(--surface-gold-tint, rgba(212, 175, 55, 0.6)));
       }
     }
   }
 
   &--neutral {
-    background: rgba(230, 216, 163, 0.08);
-    color: $color-light-gold;
-    border-color: rgba(230, 216, 163, 0.2);
+    background: var(--surface-gold-tint, rgba(230, 216, 163, 0.08));
+    color: $text-primary;
+    border-color: $surface-border;
   }
 
   .app-badge-icon {

@@ -17,6 +17,20 @@
     <meta name="msapplication-tap-highlight" content="no" />
     <meta name="theme-color" content="#000000" />
     <title>Aparna Saree Pre-Pleating</title>
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('aparna_app_theme');
+          if (saved && (saved === 'dark' || saved === 'light' || saved === 'default')) {
+            document.documentElement.setAttribute('data-theme', saved);
+          } else {
+            document.documentElement.setAttribute('data-theme', 'default');
+          }
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'default');
+        }
+      })();
+    </script>
     <!-- Google Fonts for Material UI & Dashboard -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

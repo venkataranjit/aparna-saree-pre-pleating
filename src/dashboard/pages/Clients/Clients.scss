@@ -6,36 +6,49 @@
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: $spacing-md;
+    margin-top: 0;
+    padding-top: 4px;
+    margin-bottom: $spacing-xl;
 
     @media (max-width: 600px) {
       flex-direction: column;
       align-items: stretch;
-      gap: 12px;
-      margin-bottom: 18px;
+      gap: $spacing-md;
+      margin-bottom: $spacing-lg;
     }
 
-    .page-title {
-      font-size: 1.85rem;
-      font-weight: 700;
-      color: $color-light-gold;
-      letter-spacing: -0.5px;
-      margin: 0;
+    .header-title-wrap,
+    > div:first-child {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
 
-      @media (max-width: 600px) {
-        font-size: 1.4rem;
+      .page-title {
+        font-size: 1.85rem !important;
+        font-weight: 700 !important;
+        color: $text-primary !important;
+        letter-spacing: -0.3px;
+        line-height: 1.2;
+        margin: 0;
+
+        @media (max-width: 600px) {
+          font-size: 1.45rem !important;
+        }
       }
-    }
 
-    .page-subtitle {
-      color: rgba(230, 216, 163, 0.7);
-      margin-top: 4px;
-      font-size: 0.9rem;
-      margin-bottom: 0;
+      .page-subtitle {
+        color: $text-muted !important;
+        font-size: 0.82rem !important;
+        font-weight: 500 !important;
+        letter-spacing: 0.2px;
+        line-height: 1.35;
+        margin: 0;
 
-      @media (max-width: 600px) {
-        font-size: 0.78rem;
+        @media (max-width: 600px) {
+          font-size: 0.78rem !important;
+          line-height: 1.35;
+        }
       }
     }
 
@@ -55,9 +68,9 @@
   }
 
   .clients-feedback-alert {
-    background-color: rgba(10, 10, 10, 0.85);
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    color: $color-light-gold;
+    background-color: var(--bg-card, rgba(10, 10, 10, 0.85));
+    border: 1px solid $surface-border;
+    color: $text-primary;
     border-radius: 8px;
     padding: 10px 14px;
     margin-bottom: 16px;
@@ -149,7 +162,7 @@
     gap: 12px;
 
     .clients-loading-text {
-      color: #e6d8a3;
+      color: $text-primary;
       font-size: 0.9rem;
     }
   }
@@ -162,18 +175,24 @@
     padding: 50px 20px;
     gap: 8px;
     background-color: $bg-card;
-    border: 1px dashed rgba(212, 175, 55, 0.3);
+    border: 1px dashed $surface-border;
     border-radius: 12px;
     text-align: center;
 
+    .empty-state-icon,
+    svg {
+      color: $text-muted;
+      opacity: 0.65;
+    }
+
     .empty-title {
-      color: #e6d8a3;
+      color: $text-primary;
       font-weight: 600;
       font-size: 0.95rem;
     }
 
     .empty-subtitle {
-      color: rgba(230, 216, 163, 0.6);
+      color: $text-muted;
       font-size: 0.82rem;
       max-width: 420px;
     }
@@ -185,7 +204,7 @@
     border: 1px solid $surface-border;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--table-shadow, 0 6px 24px rgba(0, 0, 0, 0.5));
 
     .table-responsive {
       overflow-x: auto;
@@ -202,13 +221,13 @@
       border-collapse: collapse;
 
       th {
-        background-color: #080808;
+        background-color: var(--table-head-bg, #080808);
         color: $color-gold;
         font-weight: 700;
         font-size: 0.78rem;
         text-transform: uppercase;
         letter-spacing: 0.8px;
-        border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        border-bottom: 1px solid $surface-border;
         padding: 14px 18px;
         text-align: left;
         white-space: nowrap !important;
@@ -232,13 +251,13 @@
         transition: background-color 0.18s ease;
 
         &:hover {
-          background-color: rgba(212, 175, 55, 0.07);
+          background-color: var(--table-row-hover, rgba(212, 175, 55, 0.07));
         }
       }
 
       td {
-        color: $color-light-gold;
-        border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+        color: $text-primary;
+        border-bottom: 1px solid $surface-border;
         padding: 14px 18px;
         font-size: 0.88rem;
 
@@ -252,16 +271,16 @@
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: linear-gradient(
+        background: var(--avatar-bg, linear-gradient(
           135deg,
-          rgba(212, 175, 55, 0.3) 0%,
-          rgba(10, 10, 8, 0.9) 100%
-        );
-        border: 1px solid rgba(212, 175, 55, 0.4);
+          #d4af37 0%,
+          #8c6e14 100%
+        ));
+        border: 1px solid $surface-border;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: $color-light-gold;
+        color: var(--avatar-text, #000000);
         font-weight: 700;
         font-size: 0.88rem;
         flex-shrink: 0;
@@ -275,7 +294,7 @@
 
       .user-name-text {
         font-weight: 700;
-        color: $color-light-gold;
+        color: $text-primary;
         font-size: 0.9rem;
         text-transform: capitalize;
 
@@ -285,7 +304,7 @@
       }
 
       .user-email-text {
-        color: rgba(230, 216, 163, 0.6);
+        color: $text-muted;
         font-size: 0.78rem;
 
         @media (max-width: 600px) {
@@ -294,7 +313,7 @@
       }
 
       .mobile-cell {
-        color: rgba(230, 216, 163, 0.9);
+        color: $text-primary;
         font-size: 0.84rem;
 
         @media (max-width: 600px) {
@@ -303,7 +322,7 @@
       }
 
       .address-cell {
-        color: rgba(230, 216, 163, 0.75);
+        color: $text-muted;
         font-size: 0.84rem;
         max-width: 220px;
 
@@ -314,7 +333,7 @@
       }
 
       .date-cell {
-        color: rgba(230, 216, 163, 0.55);
+        color: $text-muted;
         font-size: 0.82rem;
 
         @media (max-width: 600px) {
@@ -339,7 +358,7 @@
           min-width: 32px;
           max-width: 32px;
           padding: 0 !important;
-          border-radius: 6px !important; // Crisp square shape
+          border-radius: 6px !important;
           display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
@@ -405,22 +424,22 @@
             }
           }
 
-          // 3. Edit Client Info (Warm Amber Gold)
+          // 3. Edit Client Info (Royal Gold in Default, Crisp Monochrome in Dark & Light)
           &.action-btn--edit {
-            background-color: rgba(245, 158, 11, 0.14) !important;
-            color: #fbbf24 !important;
-            border: 1px solid rgba(245, 158, 11, 0.38) !important;
+            background-color: var(--surface-gold-tint, rgba(212, 175, 55, 0.14)) !important;
+            color: var(--color-gold, #d4af37) !important;
+            border: 1px solid $surface-border !important;
 
             &:hover {
-              background-color: rgba(245, 158, 11, 0.28) !important;
-              color: #fde68a !important;
-              border-color: #f59e0b !important;
-              box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35) !important;
+              background-color: var(--surface-border-hover, rgba(212, 175, 55, 0.28)) !important;
+              color: var(--color-gold, #e6d8a3) !important;
+              border-color: $color-gold !important;
+              box-shadow: 0 2px 10px var(--surface-gold-tint, rgba(212, 175, 55, 0.35)) !important;
               transform: translateY(-1px);
             }
 
             &:active {
-              background-color: rgba(245, 158, 11, 0.4) !important;
+              background-color: var(--surface-border-hover, rgba(212, 175, 55, 0.4)) !important;
               transform: translateY(0);
             }
           }
@@ -430,13 +449,13 @@
       .table-loading-cell {
         text-align: center;
         padding: 50px 20px;
-        color: $color-light-gold;
+        color: $text-primary;
       }
 
       .table-empty-cell {
         text-align: center;
         padding: 48px 20px;
-        color: rgba(230, 216, 163, 0.6);
+        color: $text-muted;
 
         @media (max-width: 600px) {
           padding: 32px 12px;
@@ -466,8 +485,8 @@
   }
 
   .client-grid-card {
-    background: linear-gradient(145deg, #101010 0%, #070707 100%);
-    border: 1px solid rgba(212, 175, 55, 0.22);
+    background: $card-bg-gradient;
+    border: 1px solid $surface-border;
     border-radius: 12px;
     display: flex;
     flex-direction: column;
@@ -478,10 +497,10 @@
 
     &:hover {
       transform: translateY(-3px);
-      border-color: rgba(212, 175, 55, 0.55);
+      border-color: $surface-border-hover;
       box-shadow:
         0 8px 24px rgba(0, 0, 0, 0.8),
-        0 0 14px rgba(212, 175, 55, 0.15);
+        0 0 14px var(--surface-gold-tint, rgba(212, 175, 55, 0.15));
 
       .card-top-accent {
         opacity: 1;
@@ -509,16 +528,16 @@
         width: 38px;
         height: 38px;
         border-radius: 50%;
-        background: radial-gradient(
-          circle,
-          rgba(212, 175, 55, 0.25) 0%,
-          rgba(10, 10, 8, 0.95) 100%
-        );
-        border: 1px solid rgba(212, 175, 55, 0.4);
+        background: var(--avatar-bg, linear-gradient(
+          135deg,
+          #d4af37 0%,
+          #8c6e14 100%
+        ));
+        border: 1px solid $surface-border;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: $color-light-gold;
+        color: var(--avatar-text, #000000);
         font-weight: 700;
         font-size: 0.92rem;
       }
@@ -531,7 +550,7 @@
       .card-title {
         font-size: 1.05rem;
         font-weight: 700;
-        color: $color-light-gold;
+        color: $text-primary;
         margin: 0 0 10px 0;
         text-transform: capitalize;
       }
@@ -545,7 +564,7 @@
           display: flex;
           align-items: center;
           gap: 8px;
-          color: rgba(230, 216, 163, 0.75);
+          color: $text-muted;
           font-size: 0.82rem;
 
           svg {
@@ -565,8 +584,8 @@
 
     .card-footer {
       padding: 10px 16px;
-      background-color: rgba(0, 0, 0, 0.35);
-      border-top: 1px solid rgba(212, 175, 55, 0.1);
+      background-color: rgba(0, 0, 0, 0.25);
+      border-top: 1px solid $surface-border;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -575,7 +594,7 @@
         display: flex;
         align-items: center;
         gap: 5px;
-        color: rgba(230, 216, 163, 0.5);
+        color: $text-muted;
         font-size: 0.76rem;
 
         svg {
@@ -607,8 +626,8 @@
   }
 
   .client-detailed-card {
-    background: linear-gradient(145deg, #101010 0%, #080808 100%);
-    border: 1px solid rgba(212, 175, 55, 0.22);
+    background: $card-bg-gradient;
+    border: 1px solid $surface-border;
     border-radius: 12px;
     padding: 16px 20px;
     display: flex;
@@ -625,10 +644,10 @@
     }
 
     &:hover {
-      border-color: rgba(212, 175, 55, 0.5);
+      border-color: $surface-border-hover;
       box-shadow:
         0 6px 24px rgba(0, 0, 0, 0.75),
-        0 0 12px rgba(212, 175, 55, 0.15);
+        0 0 12px var(--surface-gold-tint, rgba(212, 175, 55, 0.15));
     }
 
     .detailed-card-left {
@@ -638,16 +657,16 @@
         width: 52px;
         height: 52px;
         border-radius: 50%;
-        background: radial-gradient(
-          circle,
-          rgba(212, 175, 55, 0.25) 0%,
-          rgba(10, 10, 8, 0.95) 100%
-        );
-        border: 1px solid rgba(212, 175, 55, 0.45);
+        background: var(--avatar-bg, linear-gradient(
+          135deg,
+          #d4af37 0%,
+          #8c6e14 100%
+        ));
+        border: 1px solid $surface-border;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: $color-light-gold;
+        color: var(--avatar-text, #000000);
         font-weight: 700;
         font-size: 1.3rem;
       }
@@ -669,7 +688,7 @@
           margin: 0;
           font-size: 1.15rem;
           font-weight: 700;
-          color: $color-light-gold;
+          color: $text-primary;
           text-transform: capitalize;
         }
       }
@@ -677,7 +696,7 @@
       .client-address-text {
         margin: 4px 0 0 0;
         font-size: 0.84rem;
-        color: rgba(230, 216, 163, 0.7);
+        color: $text-muted;
         display: flex;
         align-items: center;
         gap: 6px;
@@ -704,8 +723,8 @@
         }
 
         .meta-tile {
-          background-color: rgba(0, 0, 0, 0.45);
-          border: 1px solid rgba(212, 175, 55, 0.15);
+          background-color: rgba(0, 0, 0, 0.25);
+          border: 1px solid $surface-border;
           border-radius: 8px;
           padding: 8px 12px;
           display: flex;
@@ -717,13 +736,13 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: rgba(230, 216, 163, 0.6);
+            color: $text-muted;
           }
 
           .meta-value {
             font-size: 0.88rem;
             font-weight: 600;
-            color: $color-light-gold;
+            color: $text-primary;
 
             &.truncate-text {
               overflow: hidden;
@@ -761,8 +780,8 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 14px;
-  background-color: rgba(15, 15, 15, 0.7);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  background-color: var(--bg-card, rgba(15, 15, 15, 0.7));
+  border: 1px solid $surface-border;
   border-radius: 10px;
   padding: 14px 16px;
 
@@ -777,17 +796,24 @@
     align-items: flex-start;
     gap: 10px;
 
+    .summary-item-icon {
+      font-size: 20px;
+      color: $color-gold;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
     .item-label {
       font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      color: rgba(230, 216, 163, 0.6);
+      color: $text-muted;
     }
 
     .item-value {
       font-size: 0.88rem;
       font-weight: 600;
-      color: $color-light-gold;
+      color: $text-primary;
       word-break: break-word;
 
       @media (max-width: 600px) {
@@ -801,9 +827,15 @@
 .empty-measurements-box {
   text-align: center;
   padding: 32px 16px;
-  border: 1px dashed rgba(212, 175, 55, 0.3);
+  border: 1px dashed $surface-border;
   border-radius: 10px;
-  background-color: rgba(15, 15, 15, 0.5);
+  background-color: var(--bg-card, rgba(15, 15, 15, 0.5));
+  color: $text-muted;
+
+  .empty-state-icon {
+    color: $text-muted;
+    opacity: 0.65;
+  }
 
   @media (max-width: 600px) {
     padding: 24px 12px;
@@ -821,11 +853,11 @@
 }
 
 .measurement-card {
-  background-color: rgba(16, 15, 12, 0.9);
-  border: 1px solid rgba(212, 175, 55, 0.25);
+  background-color: var(--bg-card, rgba(16, 15, 12, 0.9));
+  border: 1px solid $surface-border;
   border-radius: 12px;
   padding: 16px 18px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--card-shadow, 0 4px 16px rgba(0, 0, 0, 0.4));
   transition: all 0.2s ease;
   flex-shrink: 0;
 
@@ -835,8 +867,8 @@
   }
 
   &:hover {
-    border-color: rgba(212, 175, 55, 0.5);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+    border-color: $surface-border-hover;
+    box-shadow: var(--card-shadow-hover, 0 6px 20px rgba(0, 0, 0, 0.6));
   }
 
   .measure-card-header {
@@ -845,7 +877,7 @@
     align-items: center;
     margin-bottom: 14px;
     padding-bottom: 10px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+    border-bottom: 1px solid $surface-border;
 
     @media (max-width: 600px) {
       margin-bottom: 10px;
@@ -865,7 +897,7 @@
 
     .measure-date {
       font-size: 0.75rem;
-      color: rgba(230, 216, 163, 0.6);
+      color: $text-muted;
 
       @media (max-width: 600px) {
         font-size: 0.68rem;
@@ -885,7 +917,7 @@
       max-width: 32px;
       padding: 0;
       aspect-ratio: 1 / 1;
-      border-radius: 6px; // Square shape
+      border-radius: 6px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -906,15 +938,15 @@
       }
 
       &--edit {
-        color: #fbbf24;
-        background-color: rgba(245, 158, 11, 0.14);
-        border: 1px solid rgba(245, 158, 11, 0.35);
+        color: $color-gold;
+        background-color: var(--surface-gold-tint, rgba(212, 175, 55, 0.14));
+        border: 1px solid $surface-border;
 
         &:hover {
-          background-color: rgba(245, 158, 11, 0.28);
-          border-color: #f59e0b;
-          color: #fde68a;
-          box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35);
+          background-color: var(--surface-border-hover, rgba(212, 175, 55, 0.28));
+          border-color: $color-gold;
+          color: $color-gold;
+          box-shadow: 0 2px 10px var(--surface-gold-tint, rgba(212, 175, 55, 0.35));
           transform: translateY(-1px);
         }
       }
@@ -946,8 +978,8 @@
     }
 
     .dim-item {
-      background-color: rgba(18, 16, 12, 0.85);
-      border: 1px solid rgba(212, 175, 55, 0.2);
+      background-color: var(--bg-secondary, rgba(18, 16, 12, 0.85));
+      border: 1px solid $surface-border;
       border-radius: 8px;
       padding: 9px 12px;
       min-height: 54px;
@@ -962,13 +994,13 @@
       }
 
       &:hover {
-        border-color: rgba(212, 175, 55, 0.4);
-        background-color: rgba(26, 22, 16, 0.95);
+        border-color: $surface-border-hover;
+        background-color: var(--bg-card-hover, rgba(26, 22, 16, 0.95));
       }
 
       .dim-label {
         font-size: 0.72rem;
-        color: rgba(230, 216, 163, 0.65);
+        color: $text-muted;
         text-transform: capitalize;
         letter-spacing: 0.4px;
         white-space: nowrap;
@@ -983,7 +1015,7 @@
       .dim-value {
         font-size: 0.92rem;
         font-weight: 700;
-        color: $color-light-gold;
+        color: $text-primary;
         margin-top: 3px;
         white-space: nowrap;
 
@@ -997,10 +1029,17 @@
   .measure-notes-row {
     margin-top: 12px;
     padding-top: 10px;
-    border-top: 1px dashed rgba(212, 175, 55, 0.15);
+    border-top: 1px dashed $surface-border;
     display: flex;
     align-items: flex-start;
     gap: 8px;
+
+    .measure-notes-icon {
+      font-size: 16px;
+      color: $color-gold;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
 
     @media (max-width: 600px) {
       margin-top: 8px;
@@ -1009,7 +1048,7 @@
 
     .measure-notes-text {
       font-size: 0.82rem;
-      color: rgba(230, 216, 163, 0.85);
+      color: $text-muted;
       line-height: 1.45;
 
       @media (max-width: 600px) {
@@ -1017,7 +1056,7 @@
       }
 
       strong {
-        color: $color-gold;
+        color: $text-primary;
       }
     }
   }

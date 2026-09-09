@@ -19,6 +19,7 @@ import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import CelebrationOutlinedIcon from "@mui/icons-material/CelebrationOutlined";
 import PaymentOutlinedIcon from "@mui/icons-material/PaymentOutlined";
+import PaletteOutlinedIcon from "@mui/icons-material/PaletteOutlined";
 import { updatePassword } from "firebase/auth";
 import { auth } from "../../../firebase/config";
 import {
@@ -29,6 +30,7 @@ import {
   AppSpinner,
   AppCard,
   AppTabs,
+  ThemeToggle,
 } from "../../../components/common";
 import { useAuth } from "../../../auth/context/AuthContext";
 import {
@@ -691,7 +693,7 @@ const MyProfile = () => {
         </div>
       </div>
 
-      {/* Tab Navigation: Orders vs Measurements */}
+      {/* Tab Navigation: Orders vs Measurements vs Appearance */}
       <div className="my-profile-page__tabs-bar">
         <AppTabs
           tabs={[
@@ -704,6 +706,11 @@ const MyProfile = () => {
               value: "measurements",
               label: `My Measurements (${measurements.length})`,
               icon: <StraightenOutlinedIcon style={{ fontSize: 18 }} />,
+            },
+            {
+              value: "appearance",
+              label: "Appearance & Theme",
+              icon: <PaletteOutlinedIcon style={{ fontSize: 18 }} />,
             },
           ]}
           value={activeTab}
@@ -1042,6 +1049,32 @@ const MyProfile = () => {
           ))}
         </div>
       )}
+        </div>
+      )}
+
+      {/* Appearance & Theme Preferences Tab Pane */}
+      {activeTab === "appearance" && (
+        <div className="profile-appearance-section">
+          <div className="section-title-bar">
+            <h3 className="section-title">
+              <PaletteOutlinedIcon />
+              Appearance & Theme Preferences
+            </h3>
+            <span className="count-chip">3 Modes Available</span>
+          </div>
+
+          <div className="appearance-card">
+            <div className="appearance-card__header">
+              <h4 className="appearance-title">Choose Application Theme</h4>
+              <p className="appearance-subtitle">
+                Select your preferred visual style across the entire application. Your choice is instantly applied across all dashboards, tables, dialogs, and controls, and saved to your device.
+              </p>
+            </div>
+
+            <div className="appearance-tiles-wrapper">
+              <ThemeToggle variant="tiles" />
+            </div>
+          </div>
         </div>
       )}
 
@@ -1420,9 +1453,9 @@ const MyProfile = () => {
           </>
         }
       >
-        <p style={{ color: "#e6d8a3", fontSize: "0.95rem", margin: "8px 0" }}>
+        <p style={{ color: "var(--text-primary)", fontSize: "0.95rem", margin: "8px 0" }}>
           Are you sure you want to delete the measurement profile{" "}
-          <strong style={{ color: "#d4af37" }}>
+          <strong style={{ color: "var(--color-gold)" }}>
             "{measureToDelete?.title}"
           </strong>
           ? This action cannot be undone.

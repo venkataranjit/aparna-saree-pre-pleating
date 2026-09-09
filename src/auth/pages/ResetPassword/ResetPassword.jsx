@@ -1,3 +1,4 @@
+import { ThemeToggle } from '../../../components/common/ThemeToggle/ThemeToggle';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
@@ -12,9 +13,10 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { AppButton, AppInput, AppSpinner } from '../../../components/common';
 import brandLogo from '../../../assets/logo.png';
+import logoDark from '../../../assets/logo-dark.png';
+import logoLight from '../../../assets/logo-light.png';
 import AuthDesktopBrand from '../../components/AuthDesktopBrand/AuthDesktopBrand';
 import AuthFooter from '../../components/AuthFooter/AuthFooter';
-import CardStorefrontLink from '../../components/CardStorefrontLink/CardStorefrontLink';
 import AuthBackground from '../../components/AuthBackground/AuthBackground';
 import './ResetPassword.scss';
 
@@ -113,10 +115,12 @@ const ResetPassword = () => {
       {/* Royal Silk Aurora Luxury Background */}
       <AuthBackground />
 
+      
       {/* Reset Password Screen Container */}
       <div className="reset-screen__container">
         <AuthDesktopBrand />
 
+        <div className="auth-card-wrapper">
         <div className="reset-card">
           <div className="reset-card__top-bar" />
 
@@ -127,7 +131,17 @@ const ResetPassword = () => {
                 <img
                   src={brandLogo}
                   alt="Aparna Saree Pre-Pleating"
-                  className="brand-logo-img"
+                  className="brand-logo-img brand-logo-img--default"
+                />
+                <img
+                  src={logoDark}
+                  alt="Aparna Saree Pre-Pleating"
+                  className="brand-logo-img brand-logo-img--dark"
+                />
+                <img
+                  src={logoLight}
+                  alt="Aparna Saree Pre-Pleating"
+                  className="brand-logo-img brand-logo-img--light"
                 />
               </div>
               <h1 className="reset-title">Set New Password</h1>
@@ -245,14 +259,11 @@ const ResetPassword = () => {
                 <div className="auth-links-group">
                   <Link to="/login" className="back-to-login-link">
                     <ArrowBackIcon className="inline-arrow" />
-                    <span>Return to Sign In</span>
+                    <span>Back to Sign In</span>
                   </Link>
                 </div>
               </form>
             )}
-
-            {/* Return to Storefront Link */}
-            <CardStorefrontLink />
 
             {/* Footer Security Badge */}
             <div className="reset-card__footer">
@@ -261,6 +272,12 @@ const ResetPassword = () => {
                 Protected by 256-bit Firebase Authentication & End-to-End Encryption
               </span>
             </div>
+          </div>
+        </div>
+
+          {/* Theme Selector directly below the card */}
+          <div className="auth-card-theme-bar">
+            <ThemeToggle variant="segmented" size="sm" showLabels={true} />
           </div>
         </div>
       </div>

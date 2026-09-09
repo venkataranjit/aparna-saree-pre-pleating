@@ -1,0 +1,79 @@
+@use "../../../dashboard/styles/variables" as *;
+
+.auth-top-nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto 12px auto;
+  padding: 8px 16px;
+  box-sizing: border-box;
+
+  @media (max-width: 640px) {
+    padding: 6px 4px;
+    margin-bottom: 8px;
+  }
+
+  &__storefront {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 9px;
+    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.08));
+    border: 1px solid var(--surface-border, rgba(212, 175, 55, 0.22));
+    color: var(--color-gold, #d4af37);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    touch-action: manipulation;
+
+    .storefront-icon {
+      font-size: 1.05rem;
+      color: inherit;
+    }
+
+    [data-theme="dark"] & {
+      background: #1a1e29;
+      border-color: rgba(226, 232, 240, 0.14);
+      color: #f1f5f9;
+
+      &:hover {
+        background: #222736;
+        border-color: rgba(226, 232, 240, 0.3);
+        color: #ffffff;
+      }
+    }
+
+    [data-theme="light"] & {
+      background: #ffffff;
+      border-color: rgba(15, 23, 42, 0.1);
+      color: #0f172a;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+
+      &:hover {
+        background: #f8fafc;
+        border-color: rgba(15, 23, 42, 0.2);
+        color: #000000;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+      }
+    }
+
+    &:hover {
+      background: var(--surface-border-hover, rgba(212, 175, 55, 0.18));
+      border-color: var(--color-gold, #d4af37);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  &__actions {
+    display: inline-flex;
+    align-items: center;
+  }
+}

@@ -28,7 +28,7 @@
     cursor: not-allowed;
 
     .app-input-wrapper {
-      background: #080808 !important;
+      background: var(--bg-secondary, #080808) !important;
       cursor: not-allowed;
     }
 
@@ -64,8 +64,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #0d0d0d;
-  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: var(--input-bg, #0d0d0d);
+  border: 1px solid $surface-border;
   border-radius: $border-radius-md;
   padding: 0 12px;
   transition: $transition-fast;
@@ -79,14 +79,18 @@
   }
 
   &:hover {
-    border-color: rgba(212, 175, 55, 0.5);
+    border-color: $surface-border-hover;
   }
 
   &:focus-within {
     border-color: $color-gold;
-    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2),
-      0 0 10px rgba(212, 175, 55, 0.15);
-    background: #111111;
+    box-shadow: 0 0 0 2px var(--surface-gold-tint, rgba(212, 175, 55, 0.2)),
+      0 0 10px var(--surface-gold-tint, rgba(212, 175, 55, 0.15));
+    background: var(--bg-card-hover, #111111);
+
+    .app-input-adornment {
+      color: $color-gold;
+    }
   }
 
   &--multiline {
@@ -97,16 +101,16 @@
 
   &--select {
     cursor: pointer;
-    background: linear-gradient(180deg, #101011 0%, #0c0c0d 100%);
-    border-color: rgba(212, 175, 55, 0.3);
+    background: var(--input-bg, #101011);
+    border-color: $surface-border;
 
     &:hover {
-      border-color: rgba(212, 175, 55, 0.65);
-      background: linear-gradient(180deg, #131315 0%, #0e0e10 100%);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), 0 0 8px rgba(212, 175, 55, 0.12);
+      border-color: $surface-border-hover;
+      background: var(--bg-card-hover, #131315);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2), 0 0 8px var(--surface-gold-tint, rgba(212, 175, 55, 0.12));
 
       .app-custom-select-arrow svg {
-        stroke: #f3e5ab;
+        stroke: $color-gold;
         transform: translateY(1px);
       }
     }
@@ -114,27 +118,31 @@
     &-open,
     &:focus-within {
       border-color: $color-gold !important;
-      box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.22),
-        0 0 14px rgba(212, 175, 55, 0.2) !important;
-      background: #121213 !important;
+      box-shadow: 0 0 0 2px var(--surface-gold-tint, rgba(212, 175, 55, 0.22)),
+        0 0 14px var(--surface-gold-tint, rgba(212, 175, 55, 0.2)) !important;
+      background: var(--bg-card-hover, #121213) !important;
 
       .app-custom-select-arrow svg {
         transform: rotate(180deg);
-        stroke: #ffd700;
+        stroke: $color-gold;
       }
     }
   }
 }
 
+
 .app-input-adornment {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $color-gold;
+  color: $text-muted;
   flex-shrink: 0;
+  transition: color 0.2s ease;
 
   svg {
     font-size: 19px;
+    color: inherit;
+    fill: currentColor;
 
     @include mobile {
       font-size: 17px;
@@ -147,7 +155,7 @@
     border: none;
     padding: 4px;
     outline: none;
-    color: rgba(230, 216, 163, 0.7);
+    color: $text-muted;
     transition: $transition-fast;
 
     &:hover {
@@ -163,7 +171,7 @@
   outline: none;
   font-family: $font-family-base;
   font-size: 14px;
-  color: $color-light-gold;
+  color: $text-primary;
   width: 100%;
 
   @include mobile {
@@ -171,7 +179,7 @@
   }
 
   &::placeholder {
-    color: rgba(230, 216, 163, 0.4);
+    color: $text-muted;
     font-size: 13.5px;
 
     @include mobile {
@@ -182,8 +190,8 @@
   &:-webkit-autofill,
   &:-webkit-autofill:hover,
   &:-webkit-autofill:focus {
-    -webkit-text-fill-color: $color-light-gold;
-    -webkit-box-shadow: 0 0 0px 1000px #0d0d0d inset;
+    -webkit-text-fill-color: $text-primary;
+    -webkit-box-shadow: 0 0 0px 1000px var(--input-bg, #0d0d0d) inset;
     transition: background-color 5000s ease-in-out 0s;
   }
 }
@@ -197,7 +205,7 @@
   &--open {
     .app-custom-select-arrow svg {
       transform: rotate(180deg) !important;
-      stroke: #ffd700 !important;
+      stroke: $color-gold !important;
     }
   }
 
@@ -235,7 +243,7 @@
   font-family: $font-family-base;
   font-size: 14px;
   font-weight: 500;
-  color: $color-light-gold;
+  color: $text-primary;
   letter-spacing: 0.2px;
   white-space: nowrap;
   overflow: hidden;
@@ -247,7 +255,7 @@
   }
 
   &.placeholder {
-    color: rgba(230, 216, 163, 0.4);
+    color: $text-muted;
     font-size: 13.5px;
 
     @include mobile {
@@ -262,10 +270,10 @@
   justify-content: center;
   margin-left: 8px;
   flex-shrink: 0;
-  color: $color-gold;
+  color: $text-muted;
 
   svg {
-    stroke: $color-gold;
+    stroke: currentColor;
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.2s ease;
 
     @include mobile {
@@ -281,10 +289,10 @@
   left: -1px;
   right: -1px;
   z-index: 1000;
-  background: linear-gradient(165deg, #151413 0%, #0a0a0b 100%);
-  border: 1px solid rgba(212, 175, 55, 0.38);
+  background: var(--popover-bg, linear-gradient(165deg, #151413 0%, #0a0a0b 100%));
+  border: 1px solid $surface-border;
   border-radius: 10px;
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.95), 0 0 20px rgba(212, 175, 55, 0.16);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45), 0 0 20px var(--surface-gold-tint, rgba(212, 175, 55, 0.12));
   padding: 6px;
   max-height: 220px;
   overflow-y: auto;
@@ -300,11 +308,11 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(212, 175, 55, 0.4);
+    background: var(--scrollbar-thumb);
     border-radius: 4px;
 
     &:hover {
-      background: $color-gold;
+      background: var(--scrollbar-thumb-hover, $color-gold);
     }
   }
 }
@@ -328,7 +336,7 @@
   padding: 10px 14px;
   border-radius: 7px;
   cursor: pointer;
-  color: #e6d8a3;
+  color: $text-primary;
   font-size: 13.5px;
   font-weight: 500;
   letter-spacing: 0.2px;
@@ -346,8 +354,8 @@
   }
 
   &:hover {
-    background: rgba(212, 175, 55, 0.14);
-    color: #ffffff;
+    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.14));
+    color: $color-gold;
     padding-left: 17px;
 
     @include mobile {
@@ -356,12 +364,8 @@
   }
 
   &.selected {
-    background: linear-gradient(
-      90deg,
-      rgba(212, 175, 55, 0.24) 0%,
-      rgba(212, 175, 55, 0.08) 100%
-    );
-    color: #ffd700;
+    background: var(--sidebar-item-active-bg, rgba(212, 175, 55, 0.24));
+    color: $color-gold;
     font-weight: 600;
     border-left: 3px solid $color-gold;
 
@@ -397,7 +401,7 @@ textarea.app-input-control {
 
 .app-input-helper {
   font-size: 12px;
-  color: rgba(230, 216, 163, 0.65);
+  color: $text-muted;
   margin-top: 2px;
   line-height: 1.3;
 

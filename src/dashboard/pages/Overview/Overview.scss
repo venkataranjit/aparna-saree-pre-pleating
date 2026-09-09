@@ -25,7 +25,7 @@
       gap: 3px;
 
       .overview-page-title {
-        color: $color-light-gold !important;
+        color: $text-primary !important;
         font-weight: 700 !important;
         font-size: 1.85rem !important;
         letter-spacing: -0.3px;
@@ -38,7 +38,7 @@
       }
 
       .overview-page-caption {
-        color: rgba(230, 216, 163, 0.65) !important;
+        color: $text-muted !important;
         font-size: 0.82rem !important;
         font-weight: 500 !important;
         letter-spacing: 0.2px;
@@ -79,7 +79,7 @@
       }
 
       .refresh-btn {
-        border-color: rgba(212, 175, 55, 0.4);
+        border-color: $surface-border;
         color: $color-gold;
         transition: $transition-base;
         touch-action: manipulation;
@@ -87,31 +87,31 @@
         &:hover,
         &:active {
           border-color: $color-gold;
-          background-color: rgba(212, 175, 55, 0.12);
-          color: $color-light-gold;
+          background-color: var(--surface-gold-tint, rgba(212, 175, 55, 0.12));
+          color: $color-gold;
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(212, 175, 55, 0.18);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
       }
 
       .new-booking-btn {
-        background-color: $color-gold;
-        color: $color-black;
+        background: var(--btn-primary-bg, #d4af37);
+        color: var(--btn-primary-text, #000000);
         font-weight: 700;
-        box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
         transition: $transition-base;
         touch-action: manipulation;
 
         &:hover,
         &:active {
-          background-color: $color-light-gold;
-          color: $color-black;
-          box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+          filter: brightness(1.1);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
           transform: translateY(-2px);
         }
       }
     }
   }
+
 
   &__stats-grid {
     display: grid !important;
@@ -154,8 +154,8 @@
     }
 
     .quick-nav-card {
-      background: linear-gradient(145deg, #121212 0%, #090909 100%);
-      border: 1px solid rgba(212, 175, 55, 0.22);
+      background: var(--card-bg-gradient, linear-gradient(145deg, #121212 0%, #090909 100%));
+      border: 1px solid $surface-border;
       border-radius: $border-radius-md;
       padding: 16px 18px;
       display: flex;
@@ -164,7 +164,7 @@
       cursor: pointer;
       transition: $transition-base;
       user-select: none;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      box-shadow: var(--card-shadow, 0 4px 16px rgba(0, 0, 0, 0.2));
       min-width: 0;
       width: 100%;
       box-sizing: border-box;
@@ -175,14 +175,14 @@
       }
 
       &:hover {
-        border-color: rgba(212, 175, 55, 0.55);
-        background: linear-gradient(145deg, #181610 0%, #0d0c08 100%);
+        border-color: $surface-border-hover;
+        background: var(--bg-card-hover, #141414);
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(212, 175, 55, 0.14);
+        box-shadow: var(--card-shadow-hover, 0 8px 24px rgba(0, 0, 0, 0.25));
 
         .quick-nav-card__arrow {
           transform: translateX(4px);
-          color: $color-light-gold;
+          color: $color-gold;
         }
       }
 
@@ -190,8 +190,8 @@
         width: 44px;
         height: 44px;
         border-radius: 10px;
-        background: rgba(212, 175, 55, 0.12);
-        border: 1px solid rgba(212, 175, 55, 0.3);
+        background: var(--surface-gold-tint, rgba(212, 175, 55, 0.12));
+        border: 1px solid $surface-border;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -217,7 +217,7 @@
         min-width: 0;
 
         h4 {
-          color: $color-light-gold;
+          color: $text-primary;
           font-size: 0.96rem;
           font-weight: 700;
           margin: 0 0 3px 0;
@@ -229,7 +229,7 @@
         }
 
         p {
-          color: rgba(230, 216, 163, 0.65);
+          color: $text-muted;
           font-size: 0.78rem;
           margin: 0;
           line-height: 1.35;
@@ -244,7 +244,7 @@
       }
 
       &__arrow {
-        color: rgba(212, 175, 55, 0.6);
+        color: var(--color-gold, rgba(212, 175, 55, 0.6));
         font-size: 20px;
         transition: transform 0.2s ease, color 0.2s ease;
         flex-shrink: 0;
@@ -264,11 +264,11 @@
   }
 
   .client-hero-action-card {
-    background: linear-gradient(135deg, #1c180e 0%, #0d0c07 60%, #060604 100%);
-    border: 1px solid rgba(212, 175, 55, 0.35);
+    background: var(--card-bg-gradient, linear-gradient(135deg, #1c180e 0%, #0d0c07 60%, #060604 100%));
+    border: 1px solid $surface-border;
     border-radius: $border-radius-lg;
     padding: 24px 28px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 
     @media (max-width: 600px) {
       padding: 18px 16px;
@@ -278,8 +278,8 @@
     .hero-badge {
       display: inline-block;
       color: $color-gold;
-      background: rgba(212, 175, 55, 0.12);
-      border: 1px solid rgba(212, 175, 55, 0.3);
+      background: var(--surface-gold-tint, rgba(212, 175, 55, 0.12));
+      border: 1px solid $surface-border;
       padding: 3px 10px;
       border-radius: 9999px;
       font-size: 0.74rem;
@@ -290,7 +290,7 @@
     }
 
     .hero-heading {
-      color: $color-light-gold;
+      color: $text-primary;
       font-size: 1.45rem;
       font-weight: 700;
       margin: 0 0 8px 0;
@@ -303,7 +303,7 @@
     }
 
     .hero-desc {
-      color: rgba(230, 216, 163, 0.78);
+      color: $text-muted;
       font-size: 0.88rem;
       line-height: 1.5;
       max-width: 640px;
@@ -331,11 +331,11 @@
   }
 
   .client-recent-orders-card {
-    background: rgba(14, 14, 14, 0.85);
-    border: 1px solid rgba(212, 175, 55, 0.22);
+    background: var(--bg-card, #0f0f0f);
+    border: 1px solid $surface-border;
     border-radius: $border-radius-lg;
     padding: 20px 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--card-shadow, 0 4px 20px rgba(0, 0, 0, 0.2));
 
     @media (max-width: 600px) {
       padding: 16px 14px;
@@ -346,23 +346,28 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 18px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+      margin-bottom: 16px;
 
-      .section-title {
-        color: $color-light-gold;
-        font-size: 1.12rem;
+      h3 {
+        color: $text-primary;
+        font-size: 1.15rem;
         font-weight: 700;
         margin: 0;
       }
 
-      .section-subtitle {
-        color: rgba(230, 216, 163, 0.6);
-        font-size: 0.78rem;
-        margin: 2px 0 0 0;
+      .view-all-link {
+        color: $color-gold;
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: $transition-fast;
+
+        &:hover {
+          text-decoration: underline;
+        }
       }
     }
 
@@ -377,18 +382,19 @@
 
       .empty-icon {
         font-size: 42px;
-        color: rgba(212, 175, 55, 0.4);
+        color: $text-muted;
+        opacity: 0.65;
       }
 
       h4 {
-        color: $color-light-gold;
+        color: $text-primary;
         font-size: 1.05rem;
         font-weight: 700;
         margin: 0;
       }
 
       p {
-        color: rgba(230, 216, 163, 0.65);
+        color: $text-muted;
         font-size: 0.84rem;
         max-width: 380px;
         margin: 0 0 6px 0;
@@ -406,9 +412,9 @@
       }
 
       .recent-order-item {
-        background: rgba(8, 8, 8, 0.95);
-        border: 1px solid rgba(212, 175, 55, 0.2);
-        border-radius: 10px;
+        background: var(--bg-secondary, #080808);
+        border: 1px solid $surface-border;
+        border-radius: $border-radius-md;
         padding: 14px 16px;
         display: flex;
         flex-direction: column;
@@ -416,8 +422,8 @@
         transition: $transition-fast;
 
         &:hover {
-          border-color: rgba(212, 175, 55, 0.45);
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+          border-color: $surface-border-hover;
+          box-shadow: var(--card-shadow-hover, 0 4px 16px rgba(0, 0, 0, 0.25));
         }
 
         .order-top {
@@ -437,7 +443,7 @@
           display: flex;
           align-items: center;
           gap: 8px;
-          color: $color-light-gold;
+          color: $text-primary;
           font-size: 0.88rem;
           font-weight: 600;
 
@@ -459,13 +465,13 @@
           justify-content: space-between;
           align-items: center;
           padding-top: 6px;
-          border-top: 1px dashed rgba(212, 175, 55, 0.15);
+          border-top: 1px dashed $surface-border;
 
           .meta-item {
             display: flex;
             align-items: center;
             gap: 6px;
-            color: rgba(230, 216, 163, 0.65);
+            color: $text-muted;
             font-size: 0.78rem;
 
             .meta-icon {
@@ -475,11 +481,12 @@
           }
 
           .order-price {
-            color: $color-light-gold;
+            color: $color-gold;
             font-size: 0.95rem;
             font-weight: 700;
           }
         }
+
 
         .order-actions {
           margin-top: 2px;

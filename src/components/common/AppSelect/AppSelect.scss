@@ -8,8 +8,8 @@
 
   .app-select-label {
     font-size: 13px;
-    font-weight: 500;
-    color: rgba(230, 216, 163, 0.85);
+    font-weight: 600;
+    color: $text-primary;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -41,8 +41,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #0d0d0d;
-  border: 1px solid rgba(212, 175, 55, 0.28);
+  background: var(--input-bg, #0d0d0d);
+  border: 1px solid $surface-border;
   border-radius: $border-radius-md;
   padding: 0 12px;
   min-height: 42px;
@@ -59,16 +59,24 @@
   }
 
   &:hover {
-    border-color: rgba(212, 175, 55, 0.6);
-    background: #111111;
+    border-color: $surface-border-hover;
+    background: var(--bg-card-hover, #111111);
   }
 
   &:focus,
   &--open {
     border-color: $color-gold !important;
-    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.22),
-      0 0 10px rgba(212, 175, 55, 0.15) !important;
-    background: #121213 !important;
+    box-shadow: 0 0 0 2px var(--surface-gold-tint, rgba(212, 175, 55, 0.22)),
+      0 0 10px var(--surface-gold-tint, rgba(212, 175, 55, 0.15)) !important;
+    background: var(--bg-card-hover, #121213) !important;
+
+    .app-select-adornment {
+      color: $color-gold;
+    }
+
+    .app-select-actions .app-select-arrow {
+      color: $color-gold;
+    }
   }
 
   &--error {
@@ -95,11 +103,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: $color-gold;
+    color: $text-muted;
     flex-shrink: 0;
+    transition: color 0.2s ease;
 
     svg {
       font-size: 19px;
+      color: inherit;
+      fill: currentColor;
 
       @include mobile {
         font-size: 17px;
@@ -113,7 +124,7 @@
     overflow: hidden;
 
     .app-select-value-text {
-      color: $color-light-gold;
+      color: $text-primary;
       font-size: 13.5px;
       font-weight: 500;
       white-space: nowrap;
@@ -135,7 +146,7 @@
     }
 
     .app-select-placeholder {
-      color: rgba(230, 216, 163, 0.4);
+      color: $text-muted;
       font-size: 13.5px;
       white-space: nowrap;
       overflow: hidden;
@@ -157,7 +168,7 @@
     .app-select-clear-btn {
       background: transparent;
       border: none;
-      color: rgba(230, 216, 163, 0.5);
+      color: $text-muted;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -167,17 +178,17 @@
       transition: $transition-fast;
 
       &:hover {
-        color: $color-gold;
-        background: rgba(212, 175, 55, 0.15);
+        color: $text-primary;
+        background: var(--surface-gold-tint, rgba(212, 175, 55, 0.15));
       }
     }
 
     .app-select-arrow {
-      color: $color-gold;
+      color: $text-muted;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
 
       &.is-rotated {
         transform: rotate(180deg);
@@ -188,7 +199,7 @@
 
 .app-select-helper {
   font-size: 11.5px;
-  color: rgba(230, 216, 163, 0.6);
+  color: $text-muted;
   padding-left: 2px;
 
   &--error {
@@ -203,11 +214,11 @@
 
 .app-select-popover-paper {
   z-index: 9999 !important;
-  background: linear-gradient(165deg, #141414 0%, #0a0a0b 100%) !important;
-  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  background: var(--popover-bg, linear-gradient(165deg, #141414 0%, #0a0a0b 100%)) !important;
+  border: 1px solid $surface-border !important;
   border-radius: 10px !important;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.95), 0 0 16px rgba(212, 175, 55, 0.12) !important;
-  color: $color-light-gold !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 16px var(--surface-gold-tint, rgba(212, 175, 55, 0.12)) !important;
+  color: $text-primary !important;
   margin-top: 5px;
   overflow: hidden !important;
 }
@@ -223,11 +234,11 @@
     align-items: center;
     gap: 6px;
     padding: 8px 10px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
-    background: rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid $surface-border;
+    background: var(--input-bg, rgba(0, 0, 0, 0.3));
 
     .search-icon {
-      color: $color-gold;
+      color: $text-muted;
       font-size: 17px;
       flex-shrink: 0;
     }
@@ -237,19 +248,19 @@
       background: transparent;
       border: none;
       outline: none;
-      color: $color-light-gold;
+      color: $text-primary;
       font-size: 12.5px;
       font-family: inherit;
 
       &::placeholder {
-        color: rgba(230, 216, 163, 0.35);
+        color: $text-muted;
       }
     }
 
     .clear-search-btn {
       background: transparent;
       border: none;
-      color: rgba(230, 216, 163, 0.5);
+      color: $text-muted;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -257,7 +268,7 @@
       padding: 2px;
 
       &:hover {
-        color: $color-gold;
+        color: $text-primary;
       }
     }
   }
@@ -278,11 +289,11 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background: rgba(212, 175, 55, 0.3);
+      background: var(--scrollbar-thumb-bg, var(--scrollbar-thumb-color, #d4af37));
       border-radius: 4px;
 
       &:hover {
-        background: $color-gold;
+        background: var(--scrollbar-thumb-hover, #e6d8a3);
       }
     }
   }
@@ -291,7 +302,7 @@
     padding: 18px 12px;
     text-align: center;
     font-size: 12.5px;
-    color: rgba(230, 216, 163, 0.5);
+    color: $text-muted;
   }
 
   .app-select-option {
@@ -310,7 +321,7 @@
     }
 
     &:hover {
-      background: rgba(212, 175, 55, 0.12);
+      background: var(--surface-gold-tint, rgba(212, 175, 55, 0.12));
 
       .option-title {
         color: $color-gold;
@@ -318,8 +329,8 @@
     }
 
     &.is-selected {
-      background: rgba(212, 175, 55, 0.2);
-      border: 1px solid rgba(212, 175, 55, 0.35);
+      background: var(--sidebar-item-active-bg, rgba(212, 175, 55, 0.2));
+      border: 1px solid $surface-border-hover;
 
       .option-title {
         color: $color-gold;
@@ -355,7 +366,7 @@
 
         .option-title {
           font-size: 13px;
-          color: $color-light-gold;
+          color: $text-primary;
           font-weight: 500;
           white-space: nowrap;
           overflow: hidden;
@@ -364,7 +375,7 @@
 
         .option-subtitle {
           font-size: 11px;
-          color: rgba(230, 216, 163, 0.55);
+          color: $text-muted;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;

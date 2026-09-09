@@ -1,30 +1,30 @@
 @use "../../../dashboard/styles/variables.scss" as *;
 
 .app-card {
-  background: #0d0d0d;
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  background: var(--bg-card, #0d0d0d);
+  border: 1px solid $surface-border;
   border-radius: $border-radius-lg;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+  box-shadow: var(--card-shadow, 0 4px 20px rgba(0, 0, 0, 0.25));
   color: $text-primary;
   overflow: hidden;
   position: relative;
   transition: $transition-fast;
 
   &:hover {
-    border-color: rgba(212, 175, 55, 0.35);
+    border-color: $surface-border-hover;
   }
 
   &--interactive {
     cursor: pointer;
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 25px rgba(212, 175, 55, 0.15);
+      box-shadow: var(--card-shadow-hover, 0 6px 25px var(--surface-gold-tint, rgba(212, 175, 55, 0.15)));
     }
   }
 
   &__header {
     padding: 16px 20px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+    border-bottom: 1px solid $surface-border;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -39,7 +39,7 @@
     margin: 0;
     font-size: 16px;
     font-weight: 700;
-    color: $color-light-gold;
+    color: $text-primary;
 
     @include mobile {
       font-size: 14px;

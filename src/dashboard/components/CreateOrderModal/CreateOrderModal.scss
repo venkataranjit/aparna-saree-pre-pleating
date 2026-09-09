@@ -14,13 +14,13 @@
   justify-content: center;
   padding: 48px 16px;
   gap: 14px;
-  color: rgba(230, 216, 163, 0.7);
+  color: $text-muted;
   font-size: 0.9rem;
 }
 
 .form-section-card {
-  background: rgba(22, 22, 22, 0.85);
-  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: var(--bg-card, rgba(22, 22, 22, 0.85));
+  border: 1px solid $surface-border;
   border-radius: 12px;
   padding: 16px 18px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
@@ -38,7 +38,7 @@
     gap: 12px;
     margin-bottom: 16px;
     padding-bottom: 10px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+    border-bottom: 1px solid $surface-border;
 
     @media (max-width: 768px) {
       flex-direction: column;
@@ -58,7 +58,7 @@
       }
 
       .section-title {
-        color: $color-light-gold;
+        color: $text-primary;
         font-size: 1.05rem;
         font-weight: 600;
         margin: 0;
@@ -70,7 +70,7 @@
       }
 
       .section-subtitle {
-        color: rgba(230, 216, 163, 0.6);
+        color: $text-muted;
         font-size: 0.78rem;
         margin: 2px 0 0 0;
 
@@ -127,8 +127,8 @@
 }
 
 .service-item-card {
-  background: rgba(14, 14, 14, 0.9);
-  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: var(--bg-secondary, rgba(14, 14, 14, 0.9));
+  border: 1px solid $surface-border;
   border-radius: 10px;
   padding: 14px 16px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
@@ -143,7 +143,7 @@
     align-items: center;
     margin-bottom: 12px;
     padding-bottom: 8px;
-    border-bottom: 1px dashed rgba(212, 175, 55, 0.2);
+    border-bottom: 1px dashed $surface-border;
     flex-wrap: wrap;
     gap: 8px;
 
@@ -154,9 +154,9 @@
       flex-wrap: wrap;
 
       .item-number-badge {
-        background: rgba(212, 175, 55, 0.15);
-        color: $color-light-gold;
-        border: 1px solid rgba(212, 175, 55, 0.4);
+        background: $surface-gold-tint;
+        color: $text-primary;
+        border: 1px solid $surface-border;
         font-size: 0.75rem;
         font-weight: 700;
         padding: 3px 8px;
@@ -166,7 +166,7 @@
       }
 
       .item-service-title {
-        color: $color-light-gold;
+        color: $text-primary;
         font-size: 0.92rem;
         font-weight: 600;
 
@@ -210,15 +210,15 @@
 
   .service-desc-box {
     margin-top: 10px;
-    background: rgba(212, 175, 55, 0.06);
-    border: 1px solid rgba(212, 175, 55, 0.18);
+    background: $surface-gold-tint;
+    border: 1px solid $surface-border;
     border-radius: 6px;
     padding: 8px 12px;
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 0.78rem;
-    color: rgba(230, 216, 163, 0.85);
+    color: $text-muted;
 
     svg {
       color: $color-gold;
@@ -228,8 +228,8 @@
 
   .item-measurement-section {
     margin-top: 14px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(212, 175, 55, 0.2);
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid $surface-border;
     border-radius: 8px;
     padding: 12px 14px;
 
@@ -254,7 +254,7 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        color: $color-light-gold;
+        color: $text-primary;
         font-size: 0.82rem;
         font-weight: 600;
 
@@ -279,9 +279,9 @@
       margin-top: 6px;
 
       .measure-chip {
-        background: rgba(212, 175, 55, 0.12);
-        border: 1px solid rgba(212, 175, 55, 0.25);
-        color: $color-light-gold;
+        background: $surface-gold-tint;
+        border: 1px solid $surface-border;
+        color: $text-primary;
         padding: 3px 8px;
         border-radius: 4px;
         font-size: 0.76rem;
@@ -292,9 +292,9 @@
 
         &--note {
           width: 100%;
-          background: rgba(212, 175, 55, 0.05);
-          border-color: rgba(212, 175, 55, 0.2);
-          color: rgba(230, 216, 163, 0.9);
+          background: $surface-gold-tint;
+          border-color: $surface-border;
+          color: $text-muted;
         }
       }
     }
@@ -335,8 +335,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(212, 175, 55, 0.12);
-    border: 1px solid rgba(212, 175, 55, 0.35);
+    background: $surface-gold-tint;
+    border: 1px solid $surface-border;
     padding: 6px 14px;
     border-radius: 20px;
 
@@ -348,19 +348,19 @@
     }
 
     .summary-label {
-      color: rgba(230, 216, 163, 0.85);
+      color: $text-muted;
       font-size: 0.84rem;
       font-weight: 500;
     }
 
     .summary-val {
-      color: $color-light-gold;
+      color: $text-primary;
       font-size: 1.15rem;
       font-weight: 700;
     }
 
     .summary-count {
-      color: rgba(230, 216, 163, 0.65);
+      color: $text-muted;
       font-size: 0.78rem;
     }
   }
@@ -397,19 +397,19 @@
     }
 
     .order-modal-cancel-btn {
-      background: rgba(212, 175, 55, 0.06) !important;
-      border: 1px solid rgba(212, 175, 55, 0.32) !important;
-      color: $color-light-gold !important;
+      background: var(--surface-gold-tint, rgba(212, 175, 55, 0.06)) !important;
+      border: 1px solid $surface-border !important;
+      color: $text-primary !important;
       font-weight: 600 !important;
       padding: 9px 20px !important;
       border-radius: $border-radius-md !important;
       transition: all 0.2s ease !important;
 
       &:hover:not(:disabled) {
-        background: rgba(212, 175, 55, 0.16) !important;
-        border-color: rgba(212, 175, 55, 0.6) !important;
+        background: var(--surface-border-hover, rgba(212, 175, 55, 0.16)) !important;
+        border-color: $color-gold !important;
         color: $color-gold !important;
-        box-shadow: 0 0 14px rgba(212, 175, 55, 0.18) !important;
+        box-shadow: 0 0 14px var(--surface-gold-tint, rgba(212, 175, 55, 0.18)) !important;
         transform: translateY(-1px);
       }
 

@@ -19,8 +19,8 @@ body,
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background-color: #000000;
-  color: #e6d8a3;
+  background-color: var(--bg-primary, #000000);
+  color: var(--text-primary, #e6d8a3);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
@@ -35,8 +35,8 @@ body,
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background-color: #000000;
-  color: #e6d8a3;
+  background-color: var(--bg-primary, #000000);
+  color: var(--text-primary, #e6d8a3);
   -webkit-tap-highlight-color: transparent;
 }
 

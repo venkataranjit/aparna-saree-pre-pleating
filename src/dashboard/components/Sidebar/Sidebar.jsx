@@ -13,7 +13,11 @@ import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlin
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../auth/context/AuthContext";
+import { useTheme } from "../../../context/ThemeContext";
+import { ThemeToggle } from "../../../components/common";
 import textLogo from "../../../assets/text-logo.png";
+import textLogoDark from "../../../assets/text-logo-dark.png";
+import textLogoLight from "../../../assets/text-logo-light.png";
 import "./Sidebar.scss";
 
 const navSections = [
@@ -88,7 +92,15 @@ const Sidebar = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, userProfile, isSuperAdmin, role, canManageUsers, logout } = useAuth();
+  const {
+    currentUser,
+    userProfile,
+    isSuperAdmin,
+    role,
+    canManageUsers,
+    logout,
+  } = useAuth();
+  const { theme } = useTheme();
 
   const displayName =
     userProfile?.username ||
@@ -96,21 +108,21 @@ const Sidebar = ({
     (isSuperAdmin
       ? "Victory Ranjit"
       : currentUser?.email
-      ? currentUser.email.split("@")[0]
-      : currentUser
-      ? "Client"
-      : "");
+        ? currentUser.email.split("@")[0]
+        : currentUser
+          ? "Client"
+          : "");
 
   const roleLabel =
     isSuperAdmin || role === "superadmin"
       ? "Super Admin"
       : role === "admin"
-      ? "Admin"
-      : role === "staff"
-      ? "Staff"
-      : currentUser || userProfile
-      ? "Client"
-      : "";
+        ? "Admin"
+        : role === "staff"
+          ? "Staff"
+          : currentUser || userProfile
+            ? "Client"
+            : "";
 
   const avatarChar = displayName ? displayName.charAt(0).toUpperCase() : "";
 
@@ -150,9 +162,7 @@ const Sidebar = ({
       !isSuperAdmin && (userRole === "client" || userRole === "");
     const canAccessUsers =
       canManageUsers ??
-      (isSuperAdmin ||
-        userRole === "superadmin" ||
-        userRole === "admin");
+      (isSuperAdmin || userRole === "superadmin" || userRole === "admin");
 
     return navSections
       .map((section) => ({
@@ -185,7 +195,17 @@ const Sidebar = ({
           <img
             src={textLogo}
             alt="Aparna Saree Pre-Pleating"
-            className="sidebar-text-logo"
+            className="sidebar-text-logo sidebar-text-logo--default"
+          />
+          <img
+            src={textLogoDark}
+            alt="Aparna Saree Pre-Pleating"
+            className="sidebar-text-logo sidebar-text-logo--dark"
+          />
+          <img
+            src={textLogoLight}
+            alt="Aparna Saree Pre-Pleating"
+            className="sidebar-text-logo sidebar-text-logo--light"
           />
         </div>
 
@@ -278,6 +298,19 @@ const Sidebar = ({
             </nav>
           </div>
         ))}
+      </div>
+
+      {/* Theme Switcher Bar */}
+      <div
+        className={`dashboard-sidebar__theme-row ${collapsed ? "is-collapsed" : ""}`}
+      >
+        {!collapsed ? (
+          <div className="theme-row-content">
+            <ThemeToggle variant="segmented" size="sm" showLabels={true} />
+          </div>
+        ) : (
+          <ThemeToggle variant="icon" size="sm" />
+        )}
       </div>
 
       {/* Bottom User Profile Section (Pinned to Bottom of Screen) */}

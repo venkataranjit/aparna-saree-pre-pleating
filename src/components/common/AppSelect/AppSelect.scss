@@ -391,3 +391,71 @@
     }
   }
 }
+
+// Light Mode Select Overrides (Soft Slate Mist)
+[data-theme="light"] {
+  .app-select-popover-paper {
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.09) !important;
+    box-shadow: 0 16px 36px -8px rgba(15, 23, 42, 0.14), 0 0 1px 1px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .app-select-dropdown-container {
+    .app-select-search-box {
+      border-bottom-color: rgba(15, 23, 42, 0.08);
+      background: #f8fafc;
+
+      .search-icon {
+        color: #64748b;
+      }
+
+      input {
+        color: #0f172a;
+
+        &::placeholder {
+          color: #94a3b8;
+        }
+      }
+    }
+
+    .app-select-option {
+      &:hover {
+        background: #f1f5f9;
+
+        .option-title {
+          color: #0f172a;
+        }
+      }
+
+      &.is-selected {
+        background: #e2e8f0;
+        border: 1px solid rgba(15, 23, 42, 0.15);
+
+        .option-title {
+          color: #0f172a;
+        }
+
+        .option-check-icon {
+          color: #0f172a;
+        }
+      }
+
+      .option-content {
+        .option-icon {
+          color: #334155;
+        }
+
+        .option-text-stack {
+          .option-title {
+            color: #0f172a;
+          }
+
+          .option-subtitle {
+            color: #64748b;
+          }
+        }
+      }
+    }
+  }
+}
+

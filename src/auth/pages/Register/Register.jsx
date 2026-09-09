@@ -63,12 +63,12 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// Meta Official Brand Icon
-const MetaIcon = () => (
+// Facebook Official Brand Icon
+const FacebookIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" style={{ display: "block" }}>
     <path
       fill="#FFFFFF"
-      d="M6.915 4.03c-1.968 0-3.683 1.28-4.871 3.113C.704 9.208 0 11.883 0 14.449c0 .706.07 1.369.21 1.973a6.624 6.624 0 0 0 .265.86 5.297 5.297 0 0 0 .371.761c.696 1.159 1.818 1.927 3.593 1.927 1.497 0 2.633-.671 3.965-2.444.76-1.012 1.144-1.626 2.663-4.32l.756-1.339.186-.325c.061.1.121.196.183.3l2.152 3.595c.724 1.21 1.665 2.556 2.47 3.314 1.046.987 1.992 1.22 3.06 1.22 1.075 0 1.876-.355 2.455-.843a3.743 3.743 0 0 0 .81-.973c.542-.939.861-2.127.861-3.745 0-2.72-.681-5.357-2.084-7.45-1.282-1.912-2.957-2.93-4.716-2.93-1.047 0-2.088.467-3.053 1.308-.652.57-1.257 1.29-1.82 2.05-.69-.875-1.335-1.547-1.958-2.056-1.182-.966-2.315-1.303-3.454-1.303zm10.16 2.053c1.147 0 2.188.758 2.992 1.999 1.132 1.748 1.647 4.195 1.647 6.4 0 1.548-.368 2.9-1.839 2.9-.58 0-1.027-.23-1.664-1.004-.496-.601-1.343-1.878-2.832-4.358l-.617-1.028a44.908 44.908 0 0 0-1.255-1.98c.07-.109.141-.224.211-.327 1.12-1.667 2.118-2.602 3.358-2.602zm-10.201.553c1.265 0 2.058.791 2.675 1.446.307.327.737.871 1.234 1.579l-1.02 1.566c-.757 1.163-1.882 3.017-2.837 4.338-1.191 1.649-1.81 1.817-2.486 1.817-.524 0-1.038-.237-1.383-.794-.263-.426-.464-1.13-.464-2.046 0-2.221.63-4.535 1.66-6.088.454-.687.964-1.226 1.533-1.533a2.264 2.264 0 0 1 1.088-.285z"
+      d="M13.397 20.997v-8.196h2.765l.411-3.209h-3.176V7.548c0-.926.258-1.56 1.587-1.56h1.684V3.127A22.336 22.336 0 0 0 14.201 3c-2.444 0-4.122 1.492-4.122 4.231v2.355H7.332v3.209h2.753v8.202h3.312z"
     />
   </svg>
 );
@@ -87,9 +87,9 @@ const GoogleLoader = () => (
   </svg>
 );
 
-// Meta Official White Animated Loader
-const MetaLoader = () => (
-  <div className="meta-loader">
+// Facebook Official White Animated Loader
+const FacebookLoader = () => (
+  <div className="facebook-loader">
     <svg viewBox="0 0 50 50">
       <circle
         cx="25"
@@ -100,7 +100,7 @@ const MetaLoader = () => (
         strokeWidth="4.5"
       />
       <circle
-        className="meta-loader-path"
+        className="facebook-loader-path"
         cx="25"
         cy="25"
         r="20"
@@ -220,7 +220,7 @@ const Register = () => {
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [metaLoading, setMetaLoading] = useState(false);
+  const [facebookLoading, setFacebookLoading] = useState(false);
 
   const handleGoogleSignUp = async () => {
     setError("");
@@ -238,6 +238,11 @@ const Register = () => {
       if (!user) return;
 
       try {
+        sessionStorage.setItem("aparna_login_provider", "google");
+        localStorage.setItem("aparna_auth_provider", "google");
+      } catch {}
+
+      try {
         const userEmail = (user.email || "").trim().toLowerCase();
         const isSuper = userEmail === SUPERADMIN_EMAIL.toLowerCase();
         await createUserProfile(user.uid, {
@@ -246,6 +251,7 @@ const Register = () => {
           email: userEmail,
           userMobile: user.phoneNumber || "",
           userAddress: "",
+          authProvider: "google",
         });
       } catch (dbErr) {
         console.warn("Firestore Google user sync note:", dbErr);
@@ -279,6 +285,12 @@ const Register = () => {
         msg = "Google sign-in was cancelled.";
       } else if (err.code === "auth/cancelled-popup-request") {
         return;
+      } else if (
+        err.code === "auth/configuration-not-found" ||
+        err.message?.includes("CONFIGURATION_NOT_FOUND")
+      ) {
+        msg =
+          "Google Sign-in is not enabled in Firebase Console. Please enable Google provider.";
       } else if (err.message) {
         msg = err.message;
       }
@@ -289,10 +301,10 @@ const Register = () => {
     }
   };
 
-  const handleMetaSignUp = async () => {
+  const handleFacebookSignUp = async () => {
     setError("");
     setSuccessMsg("");
-    setMetaLoading(true);
+    setFacebookLoading(true);
 
     try {
       if (auth) {
@@ -307,17 +319,23 @@ const Register = () => {
       const user = result.user;
 
       try {
+        sessionStorage.setItem("aparna_login_provider", "facebook");
+        localStorage.setItem("aparna_auth_provider", "facebook");
+      } catch {}
+
+      try {
         const userEmail = (user.email || "").trim().toLowerCase();
         const isSuper = userEmail === SUPERADMIN_EMAIL.toLowerCase();
         await createUserProfile(user.uid, {
           username:
-            user.displayName || (isSuper ? "Victory Ranjit" : "Meta User"),
+            user.displayName || (isSuper ? "Victory Ranjit" : "Facebook User"),
           email: userEmail,
           userMobile: user.phoneNumber || "",
           userAddress: "",
+          authProvider: "facebook",
         });
       } catch (dbErr) {
-        console.warn("Firestore Meta user sync note:", dbErr);
+        console.warn("Firestore Facebook user sync note:", dbErr);
       }
 
       if (refreshProfile) {
@@ -329,18 +347,24 @@ const Register = () => {
       const welcomeMsg = `Welcome, ${user.displayName || "User"}! Redirecting to Dashboard...`;
       setSuccessMsg(welcomeMsg);
       toast.success(
-        `Welcome, ${user.displayName || "User"}! Account created with Meta.`,
+        `Welcome, ${user.displayName || "User"}! Account created with Facebook.`,
       );
       setTimeout(() => {
         navigate("/dashboard");
       }, 300);
     } catch (err) {
-      console.warn("Meta signup error:", err);
-      let msg = "Unable to sign in with Meta. Please try again.";
+      console.warn("Facebook signup error:", err);
+      let msg = "Unable to sign in with Facebook. Please try again.";
       if (err.code === "auth/popup-closed-by-user") {
-        msg = "Meta sign-in was cancelled.";
+        msg = "Facebook sign-in was cancelled.";
       } else if (err.code === "auth/cancelled-popup-request") {
         return;
+      } else if (
+        err.code === "auth/configuration-not-found" ||
+        err.message?.includes("CONFIGURATION_NOT_FOUND")
+      ) {
+        msg =
+          "Facebook Sign-in is not enabled in Firebase Console. Please enable Facebook provider in Firebase Console > Authentication > Sign-in method.";
       } else if (err.code === "auth/account-exists-with-different-credential") {
         msg =
           "An account already exists with the same email. Please sign in with Google or Email/Password.";
@@ -350,7 +374,7 @@ const Register = () => {
       setError(msg);
       toast.error(msg);
     } finally {
-      setMetaLoading(false);
+      setFacebookLoading(false);
     }
   };
 
@@ -407,6 +431,11 @@ const Register = () => {
         );
         const user = userCredential.user;
 
+        try {
+          sessionStorage.setItem("aparna_login_provider", "password");
+          localStorage.setItem("aparna_auth_provider", "password");
+        } catch {}
+
         await updateProfile(user, {
           displayName: values.username.trim(),
         });
@@ -424,6 +453,7 @@ const Register = () => {
           role: assignedRole,
           isActive: true,
           photoURL: user.photoURL || null,
+          authProvider: "password",
         });
 
         const successText = "Account registered successfully! Redirecting...";
@@ -697,7 +727,7 @@ const Register = () => {
                 type="button"
                 className="social-icon-btn social-icon-btn--google"
                 onClick={handleGoogleSignUp}
-                disabled={formik.isSubmitting || googleLoading || metaLoading}
+                disabled={formik.isSubmitting || googleLoading || facebookLoading}
                 title="Sign up with Google"
                 aria-label="Sign up with Google"
               >
@@ -706,13 +736,13 @@ const Register = () => {
 
               <button
                 type="button"
-                className="social-icon-btn social-icon-btn--meta"
-                onClick={handleMetaSignUp}
-                disabled={formik.isSubmitting || googleLoading || metaLoading}
-                title="Sign up with Meta"
-                aria-label="Sign up with Meta"
+                className="social-icon-btn social-icon-btn--facebook"
+                onClick={handleFacebookSignUp}
+                disabled={formik.isSubmitting || googleLoading || facebookLoading}
+                title="Sign up with Facebook"
+                aria-label="Sign up with Facebook"
               >
-                {metaLoading ? <MetaLoader /> : <MetaIcon />}
+                {facebookLoading ? <FacebookLoader /> : <FacebookIcon />}
               </button>
             </div>
 

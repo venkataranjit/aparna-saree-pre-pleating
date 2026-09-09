@@ -202,3 +202,51 @@
     transform: scale(1) translateY(0);
   }
 }
+
+// Light Mode Dialog Overrides (Soft Slate Mist)
+[data-theme="light"] {
+  .app-modal-backdrop {
+    background: rgba(15, 23, 42, 0.45);
+  }
+
+  .app-modal-container {
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 20px 45px -12px rgba(15, 23, 42, 0.18), 0 0 1px 1px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .app-modal-header {
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.95) 0%, #ffffff 100%) !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+
+    .app-modal-title {
+      color: #0f172a !important;
+    }
+
+    .app-modal-subtitle {
+      color: #64748b !important;
+    }
+
+    .app-modal-close {
+      background: #f1f5f9 !important;
+      border: 1px solid rgba(15, 23, 42, 0.1) !important;
+      color: #334155 !important;
+
+      &:hover {
+        background: #e2e8f0 !important;
+        border-color: #0f172a !important;
+        color: #0f172a !important;
+      }
+    }
+  }
+
+  .app-modal-body {
+    background: #f8fafc;
+  }
+
+  .app-modal-footer {
+    background: #ffffff !important;
+    border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+  }
+}
+

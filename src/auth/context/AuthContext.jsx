@@ -48,12 +48,21 @@ const saveCachedSession = (user, profile) => {
       localStorage.removeItem(AUTH_SESSION_KEY);
       return;
     }
+    const providerData = (user.providerData || []).map((p) => ({
+      providerId: p?.providerId || '',
+      email: p?.email || '',
+      phoneNumber: p?.phoneNumber || '',
+    }));
+    const providerIds = providerData.map((p) => p.providerId);
     const safeUser = {
       uid: user.uid,
       email: user.email || '',
       displayName: user.displayName || profile?.username || '',
       phoneNumber: user.phoneNumber || profile?.userMobile || '',
       photoURL: user.photoURL || profile?.photoURL || '',
+      providerData,
+      providerIds,
+      authProvider: profile?.authProvider || user.authProvider || null,
     };
     localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({ user: safeUser, profile }));
   } catch (err) {
@@ -65,6 +74,8 @@ const clearCachedSession = () => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.removeItem(AUTH_SESSION_KEY);
+    sessionStorage.removeItem('aparna_login_provider');
+    localStorage.removeItem('aparna_auth_provider');
   } catch {}
 };
 
@@ -177,6 +188,15 @@ export const AuthProvider = ({ children }) => {
           finalRole = existingLocal.role;
         }
 
+        const pIds = (user.providerData || []).map((p) => (p?.providerId || '').toLowerCase());
+        let detectedAuthMethod = null;
+        if (pIds.some((p) => p.includes('google'))) detectedAuthMethod = 'google';
+        else if (pIds.some((p) => p.includes('facebook'))) detectedAuthMethod = 'facebook';
+        else if (pIds.some((p) => p.includes('phone')) || (user.phoneNumber && !user.email)) detectedAuthMethod = 'phone_otp';
+        else if (pIds.some((p) => p.includes('password'))) detectedAuthMethod = 'password';
+
+        const finalAuthProvider = data.authProvider || existingLocal?.authProvider || detectedAuthMethod || null;
+
         const resolvedProfile = {
           id: user.uid,
           ...data,
@@ -184,13 +204,14 @@ export const AuthProvider = ({ children }) => {
           userMobile: data.userMobile || existingLocal?.userMobile || currentMobile,
           userAddress: data.userAddress || existingLocal?.userAddress || currentAddress,
           role: finalRole,
+          authProvider: finalAuthProvider,
         };
 
         if (isSuper && data.role !== USER_ROLES.SUPERADMIN) {
           setDoc(userDocRef, { role: USER_ROLES.SUPERADMIN, updatedAt: serverTimestamp() }, { merge: true }).catch(() => {});
-        } else if (finalRole !== data.role) {
-          // Sync corrected role back to Firestore
-          setDoc(userDocRef, { role: finalRole, updatedAt: serverTimestamp() }, { merge: true }).catch(() => {});
+        } else if (finalRole !== data.role || (finalAuthProvider && !data.authProvider)) {
+          // Sync corrected role and provider back to Firestore
+          setDoc(userDocRef, { role: finalRole, authProvider: finalAuthProvider, updatedAt: serverTimestamp() }, { merge: true }).catch(() => {});
         }
 
         // Keep local cache synchronized with authoritative profile
@@ -218,13 +239,20 @@ export const AuthProvider = ({ children }) => {
           role: determinedRole,
         });
 
+        const pIds = (user.providerData || []).map((p) => (p?.providerId || '').toLowerCase());
+        let detectedAuthMethod = null;
+        if (pIds.some((p) => p.includes('google'))) detectedAuthMethod = 'google';
+        else if (pIds.some((p) => p.includes('facebook'))) detectedAuthMethod = 'facebook';
+        else if (pIds.some((p) => p.includes('phone')) || (user.phoneNumber && !user.email)) detectedAuthMethod = 'phone_otp';
+        else if (pIds.some((p) => p.includes('password'))) detectedAuthMethod = 'password';
+
         try {
-          await withTimeout(setDoc(userDocRef, newModel, { merge: true }), 4000);
+          await withTimeout(setDoc(userDocRef, { ...newModel, authProvider: detectedAuthMethod }, { merge: true }), 4000);
         } catch (writeErr) {
           console.warn('Initial profile create in Firestore note:', writeErr);
         }
 
-        const created = { id: user.uid, ...newModel };
+        const created = { id: user.uid, ...newModel, authProvider: detectedAuthMethod };
         setUserProfile(created);
         saveCachedSession(user, created);
         return created;
@@ -252,13 +280,30 @@ export const AuthProvider = ({ children }) => {
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setLoading(true);
+        if (!currentUser && !cached?.user) {
+          setLoading(true);
+        }
+        const providerData = (user.providerData || []).map((p) => ({
+          providerId: p?.providerId || '',
+          email: p?.email || '',
+          phoneNumber: p?.phoneNumber || '',
+        }));
+        const pIds = providerData.map((p) => (p.providerId || '').toLowerCase());
+        let detectedAuthMethod = null;
+        if (pIds.some((p) => p.includes('google'))) detectedAuthMethod = 'google';
+        else if (pIds.some((p) => p.includes('facebook'))) detectedAuthMethod = 'facebook';
+        else if (pIds.some((p) => p.includes('phone')) || (user.phoneNumber && !user.email)) detectedAuthMethod = 'phone_otp';
+        else if (pIds.some((p) => p.includes('password'))) detectedAuthMethod = 'password';
+
         const safeUser = {
           uid: user.uid,
           email: user.email || '',
           displayName: user.displayName || '',
           phoneNumber: user.phoneNumber || '',
           photoURL: user.photoURL || '',
+          providerData,
+          providerIds: pIds,
+          authProvider: detectedAuthMethod || cached?.profile?.authProvider || null,
         };
 
         // Optimistically set cached profile if available to prevent UI flicker
@@ -314,6 +359,10 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       clearCachedSession();
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('aparna_login_provider');
+        localStorage.removeItem('aparna_auth_provider');
+      }
       if (auth) {
         await signOut(auth);
       }

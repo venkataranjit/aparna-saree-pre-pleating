@@ -7,16 +7,40 @@ import Register from './auth/pages/Register/Register';
 import ForgotPassword from './auth/pages/ForgotPassword/ForgotPassword';
 import ResetPassword from './auth/pages/ResetPassword/ResetPassword';
 import NotFound from './dashboard/pages/NotFound/NotFound';
-import { AuthProvider } from './auth/context/AuthContext';
+import { AuthProvider, useAuth } from './auth/context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { PageLoader } from './components/common';
 import './App.scss';
 
-function App() {
-  return (
-    <AuthProvider>
-      <ThemeProvider>
-        <div className="app-root">
+function AppContent() {
+  const { loading } = useAuth();
+  const [animationDone, setAnimationDone] = React.useState(false);
+  const [pageLoaded, setPageLoaded] = React.useState(false);
 
+  React.useEffect(() => {
+    // Page load is complete once the 0-100 animation finishes AND initial auth has resolved
+    if (animationDone && !loading) {
+      setPageLoaded(true);
+    }
+  }, [animationDone, loading]);
+
+  // Safety fallback: Never keep user waiting more than 500ms after 0-100 animation finishes even if offline or network slow
+  React.useEffect(() => {
+    if (animationDone && !pageLoaded) {
+      const timer = setTimeout(() => {
+        setPageLoaded(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [animationDone, pageLoaded]);
+
+  // PageLoader runs strictly ONCE on page load/refresh
+  if (!pageLoaded) {
+    return <PageLoader onComplete={() => setAnimationDone(true)} />;
+  }
+
+  return (
+    <div className="app-root">
       <Routes>
         {/* Default route points directly to dashboard since dashboard is active */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -52,9 +76,18 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
-    </ThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </AuthProvider>
   );
 }
 
 export default App;
+

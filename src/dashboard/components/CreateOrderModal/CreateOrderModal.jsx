@@ -1619,14 +1619,7 @@ export default function CreateOrderModal({
                               )}
                             </div>
                             {missingAny && (
-                              <p
-                                style={{
-                                  fontSize: "0.76rem",
-                                  color: "#e6b042",
-                                  marginTop: 6,
-                                  marginBottom: 0,
-                                }}
-                              >
+                              <p className="measure-missing-warning">
                                 ⚠️ Some required measurements are not set in
                                 this profile. Switch to &quot;Custom
                                 Sizing&quot; to provide them.

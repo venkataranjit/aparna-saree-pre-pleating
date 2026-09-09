@@ -3,7 +3,6 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar/Sidebar';
 import CurvedBottomBar from '../components/CurvedBottomBar/CurvedBottomBar';
 import { useAuth } from '../../auth/context/AuthContext';
-import { AppSpinner } from '../../components/common';
 import DashboardFooter from '../components/Footer/DashboardFooter';
 import './DashboardLayout.scss';
 
@@ -34,15 +33,6 @@ const DashboardLayout = () => {
   const closeMobileSidebar = () => {
     setMobileOpen(false);
   };
-
-  // If loading authentication or resolving user profile, render minimal loader to prevent role flicker
-  if (loading || (currentUser && !userProfile)) {
-    return (
-      <div className="dashboard-loading-screen">
-        <AppSpinner size="lg" color="gold" />
-      </div>
-    );
-  }
 
   return (
     <div className={`dashboard-layout ${collapsed ? 'is-collapsed' : ''}`}>

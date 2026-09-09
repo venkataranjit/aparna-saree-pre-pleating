@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { toast } from 'react-toastify';
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -325,6 +325,70 @@ const MyProfile = () => {
     fetchMyOrders();
   }, [currentUid, displayEmail, displayMobile, userProfile]);
 
+  // Determine if logged in user is coming from Gmail/Google, Facebook, or Mobile OTP:
+  // If so, do not show the Change Password option in the Edit My Profile Details popup
+  const canChangePassword = useMemo(() => {
+    // 1. Check direct session / local storage login provider flag
+    try {
+      const sessionProvider = (sessionStorage.getItem("aparna_login_provider") || "").toLowerCase();
+      const localProvider = (localStorage.getItem("aparna_auth_provider") || "").toLowerCase();
+      const directProvider = sessionProvider || localProvider;
+      if (
+        directProvider === "google" ||
+        directProvider === "gmail" ||
+        directProvider === "facebook" ||
+        directProvider === "phone_otp" ||
+        directProvider === "phone"
+      ) {
+        return false;
+      }
+    } catch {}
+
+    // 2. Check profile metadata in Firestore / Local Storage
+    const profileProvider = (
+      userProfile?.authProvider ||
+      userProfile?.loginMethod ||
+      userProfile?.provider ||
+      ""
+    ).toLowerCase();
+    if (
+      profileProvider.includes("google") ||
+      profileProvider.includes("gmail") ||
+      profileProvider.includes("facebook") ||
+      profileProvider.includes("phone") ||
+      profileProvider.includes("otp")
+    ) {
+      return false;
+    }
+
+    // 3. Check Firebase Auth user provider data
+    const liveUser = auth?.currentUser;
+    const allProviders = [
+      ...(liveUser?.providerData || []).map((p) => p?.providerId || ""),
+      ...(currentUser?.providerData || []).map((p) => p?.providerId || ""),
+      ...(currentUser?.providerIds || []),
+      liveUser?.providerId || "",
+      currentUser?.providerId || "",
+    ].map((p) => String(p).toLowerCase());
+
+    const isGoogle = allProviders.some((p) => p.includes("google"));
+    const isFacebook = allProviders.some((p) => p.includes("facebook"));
+    const isPhone =
+      allProviders.some((p) => p.includes("phone")) ||
+      Boolean(currentUser?.phoneNumber && !currentUser?.email);
+
+    if (isGoogle || isFacebook || isPhone) {
+      return false;
+    }
+
+    // 4. Check if phone-only login (no email registered, only phone)
+    if (!currentUser?.email && (currentUser?.phoneNumber || userProfile?.userMobile)) {
+      return false;
+    }
+
+    return true;
+  }, [currentUser, userProfile]);
+
   // Edit Profile Formik
   const editProfileFormik = useFormik({
     enableReinitialize: true,
@@ -381,9 +445,9 @@ const MyProfile = () => {
           await updateUser(currentUid, updatePayload);
         }
 
-        // Update password if provided
+        // Update password if eligible and provided
         let pwFeedbackNote = "";
-        if (values.newPassword && values.newPassword.trim()) {
+        if (canChangePassword && values.newPassword && values.newPassword.trim()) {
           const pass = values.newPassword.trim();
           let passwordUpdated = false;
 
@@ -1178,23 +1242,25 @@ const MyProfile = () => {
             disabled={editProfileFormik.isSubmitting}
           />
 
-          <AppInput
-            label="Change Password (Optional)"
-            id="profile-newPassword"
-            name="newPassword"
-            type="password"
-            placeholder="Leave blank to keep current password"
-            value={editProfileFormik.values.newPassword}
-            onChange={editProfileFormik.handleChange}
-            onBlur={editProfileFormik.handleBlur}
-            error={
-              editProfileFormik.touched.newPassword &&
-              editProfileFormik.errors.newPassword
-            }
-            disabled={editProfileFormik.isSubmitting}
-            helperText="Enter a new password (min 6 characters) to update. Leave blank to keep existing password."
-            startAdornment={<LockOutlinedIcon />}
-          />
+          {canChangePassword && (
+            <AppInput
+              label="Change Password (Optional)"
+              id="profile-newPassword"
+              name="newPassword"
+              type="password"
+              placeholder="Leave blank to keep current password"
+              value={editProfileFormik.values.newPassword}
+              onChange={editProfileFormik.handleChange}
+              onBlur={editProfileFormik.handleBlur}
+              error={
+                editProfileFormik.touched.newPassword &&
+                editProfileFormik.errors.newPassword
+              }
+              disabled={editProfileFormik.isSubmitting}
+              helperText="Enter a new password (min 6 characters) to update. Leave blank to keep existing password."
+              startAdornment={<LockOutlinedIcon />}
+            />
+          )}
         </form>
       </AppModal>
 

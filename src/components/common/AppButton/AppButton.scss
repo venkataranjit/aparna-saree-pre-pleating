@@ -259,3 +259,85 @@
     }
   }
 }
+
+// Light Mode Button Overrides (Soft Slate Mist)
+[data-theme="light"] {
+  .app-btn {
+    &--secondary {
+      background: #f1f5f9 !important;
+      border-color: rgba(15, 23, 42, 0.12) !important;
+      color: #0f172a !important;
+
+      &:hover:not(:disabled) {
+        background: #e2e8f0 !important;
+        border-color: #334155 !important;
+        color: #0f172a !important;
+      }
+    }
+
+    &--ghost {
+      background: transparent !important;
+      border-color: rgba(15, 23, 42, 0.12) !important;
+      color: #334155 !important;
+
+      &:hover:not(:disabled) {
+        background: #f1f5f9 !important;
+        border-color: #64748b !important;
+        color: #0f172a !important;
+      }
+    }
+
+    &--danger {
+      color: #dc2626 !important;
+      background: #fef2f2 !important;
+      border-color: #fecaca !important;
+
+      &:hover:not(:disabled) {
+        background: #fee2e2 !important;
+        border-color: #ef4444 !important;
+        color: #b91c1c !important;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15) !important;
+      }
+    }
+
+    &--warning {
+      color: #b45309 !important;
+      background: #fffbeb !important;
+      border-color: #fde68a !important;
+
+      &:hover:not(:disabled) {
+        background: #fef3c7 !important;
+        border-color: #f59e0b !important;
+        color: #92400e !important;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15) !important;
+      }
+    }
+
+    &--success {
+      color: #15803d !important;
+      background: #f0fdf4 !important;
+      border-color: #bbf7d0 !important;
+
+      &:hover:not(:disabled) {
+        background: #dcfce7 !important;
+        border-color: #22c55e !important;
+        color: #166534 !important;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15) !important;
+      }
+    }
+
+    &--info {
+      color: #1d4ed8 !important;
+      background: #eff6ff !important;
+      border-color: #bfdbfe !important;
+
+      &:hover:not(:disabled) {
+        background: #dbeafe !important;
+        border-color: #3b82f6 !important;
+        color: #1e40af !important;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15) !important;
+      }
+    }
+  }
+}
+

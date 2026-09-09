@@ -590,3 +590,82 @@
   }
 }
 
+// Final Price Read-only Input Styling (Default Obsidian Gold Theme)
+.final-price-readonly-input {
+  .app-input-wrapper {
+    background: var(--input-bg, #0d0d0d) !important;
+    border: 1px solid var(--surface-border, rgba(212, 175, 55, 0.22)) !important;
+    box-shadow: none !important;
+  }
+
+  .app-input-control {
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    color: var(--text-primary, #e6d8a3) !important;
+    background: transparent !important;
+    cursor: default !important;
+  }
+
+  .app-input-adornment {
+    color: var(--text-muted, rgba(230, 216, 163, 0.7)) !important;
+  }
+
+  .app-input-helper {
+    color: var(--text-muted, rgba(230, 216, 163, 0.7)) !important;
+  }
+}
+
+// Dark Mode Explicit Overrides for Final Price Field (Midnight Slate)
+[data-theme="dark"] {
+  .final-price-readonly-input {
+    .app-input-wrapper {
+      background: #161923 !important;
+      border: 1px solid rgba(226, 232, 240, 0.14) !important;
+      box-shadow: none !important;
+    }
+
+    .app-input-control {
+      color: #f1f5f9 !important;
+      background: transparent !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+      cursor: default !important;
+    }
+
+    .app-input-adornment {
+      color: #94a3b8 !important;
+    }
+
+    .app-input-helper {
+      color: #94a3b8 !important;
+    }
+  }
+}
+
+// Light Mode Overrides for Final Price Field (Soft Slate Mist)
+[data-theme="light"] {
+  .final-price-readonly-input {
+    .app-input-wrapper {
+      background: #f8fafc !important;
+      border: 1px solid rgba(15, 23, 42, 0.15) !important;
+      box-shadow: none !important;
+    }
+
+    .app-input-control {
+      color: #0f172a !important;
+      background: transparent !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+      cursor: default !important;
+    }
+
+    .app-input-adornment {
+      color: #64748b !important;
+    }
+
+    .app-input-helper {
+      color: #64748b !important;
+    }
+  }
+}
+

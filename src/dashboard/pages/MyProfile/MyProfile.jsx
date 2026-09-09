@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -182,7 +182,9 @@ const getOrderItems = (order) => {
       id: "item_legacy",
       serviceName: order.service || "Saree Pre-Pleating",
       finalPrice:
-        Number(String(order.amount || order.totalAmount || 0).replace(/[^0-9]/g, "")) || 0,
+        Number(
+          String(order.amount || order.totalAmount || 0).replace(/[^0-9]/g, ""),
+        ) || 0,
       sareeType: order.sareeType || "Silk Saree",
       itemNotes: order.notes || "",
     },
@@ -304,7 +306,7 @@ const MyProfile = () => {
       const myOrders = await getOrdersByUserId(
         currentUid,
         displayEmail,
-        displayMobile
+        displayMobile,
       );
       setOrders(myOrders || []);
     } catch (err) {
@@ -330,8 +332,12 @@ const MyProfile = () => {
   const canChangePassword = useMemo(() => {
     // 1. Check direct session / local storage login provider flag
     try {
-      const sessionProvider = (sessionStorage.getItem("aparna_login_provider") || "").toLowerCase();
-      const localProvider = (localStorage.getItem("aparna_auth_provider") || "").toLowerCase();
+      const sessionProvider = (
+        sessionStorage.getItem("aparna_login_provider") || ""
+      ).toLowerCase();
+      const localProvider = (
+        localStorage.getItem("aparna_auth_provider") || ""
+      ).toLowerCase();
       const directProvider = sessionProvider || localProvider;
       if (
         directProvider === "google" ||
@@ -382,7 +388,10 @@ const MyProfile = () => {
     }
 
     // 4. Check if phone-only login (no email registered, only phone)
-    if (!currentUser?.email && (currentUser?.phoneNumber || userProfile?.userMobile)) {
+    if (
+      !currentUser?.email &&
+      (currentUser?.phoneNumber || userProfile?.userMobile)
+    ) {
       return false;
     }
 
@@ -402,7 +411,8 @@ const MyProfile = () => {
       newPassword: "",
     },
     validationSchema: profileValidationSchema,
-    onSubmit: async (values, { setSubmitting, resetForm }) => {      try {
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
+      try {
         const cleanEmail = values.email.trim().toLowerCase();
         const cleanMobile = String(values.userMobile).trim();
 
@@ -447,7 +457,11 @@ const MyProfile = () => {
 
         // Update password if eligible and provided
         let pwFeedbackNote = "";
-        if (canChangePassword && values.newPassword && values.newPassword.trim()) {
+        if (
+          canChangePassword &&
+          values.newPassword &&
+          values.newPassword.trim()
+        ) {
           const pass = values.newPassword.trim();
           let passwordUpdated = false;
 
@@ -478,7 +492,9 @@ const MyProfile = () => {
               }
             } catch (pwErr) {
               console.warn("Password reset fallback failed:", pwErr);
-              toast.error(`Profile saved, but password update failed: ${pwErr.message}`);
+              toast.error(
+                `Profile saved, but password update failed: ${pwErr.message}`,
+              );
               setSubmitting(false);
               return;
             }
@@ -491,7 +507,9 @@ const MyProfile = () => {
           } catch {}
         }
 
-        toast.success(`Your profile details have been updated successfully!${pwFeedbackNote}`);
+        toast.success(
+          `Your profile details have been updated successfully!${pwFeedbackNote}`,
+        );
         resetForm();
         setOpenEditProfileModal(false);
       } catch (err) {
@@ -542,7 +560,8 @@ const MyProfile = () => {
       notes: selectedMeasureForEdit?.notes || "",
     },
     validationSchema: measurementValidationSchema,
-    onSubmit: async (values, { setSubmitting }) => {      try {
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
         if (!selectedMeasureForEdit?.id)
           throw new Error("Measurement ID is required to update.");
 
@@ -578,7 +597,9 @@ const MyProfile = () => {
           ),
         );
 
-        toast.success(`Measurement profile "${values.title.trim()}" updated successfully!`);
+        toast.success(
+          `Measurement profile "${values.title.trim()}" updated successfully!`,
+        );
         setOpenEditMeasureModal(false);
         setSelectedMeasureForEdit(null);
       } catch (err) {
@@ -598,9 +619,9 @@ const MyProfile = () => {
     try {
       await deleteClientMeasurement(measurementId);
       setMeasurements((prev) => prev.filter((m) => m.id !== measurementId));
-      toast.success(`Measurement profile "${
-          title || "Profile"
-        }" deleted successfully.`);
+      toast.success(
+        `Measurement profile "${title || "Profile"}" deleted successfully.`,
+      );
       setMeasureToDelete(null);
     } catch (err) {
       console.error("Delete measurement error:", err);
@@ -771,11 +792,11 @@ const MyProfile = () => {
               label: `My Measurements (${measurements.length})`,
               icon: <StraightenOutlinedIcon style={{ fontSize: 18 }} />,
             },
-            {
-              value: "appearance",
-              label: "Appearance & Theme",
-              icon: <PaletteOutlinedIcon style={{ fontSize: 18 }} />,
-            },
+            // {
+            //   value: "appearance",
+            //   label: "Appearance & Theme",
+            //   icon: <PaletteOutlinedIcon style={{ fontSize: 18 }} />,
+            // },
           ]}
           value={activeTab}
           onChange={(val) => setActiveTab(val)}
@@ -805,8 +826,9 @@ const MyProfile = () => {
               <ReceiptLongOutlinedIcon className="empty-icon" />
               <h4 className="empty-title">No Orders Placed Yet</h4>
               <p className="empty-desc">
-                You haven't placed any saree pre-pleating, draping, or box folding
-                orders yet. Book your first order with your tailored measurements!
+                You haven't placed any saree pre-pleating, draping, or box
+                folding orders yet. Book your first order with your tailored
+                measurements!
               </p>
               <AppButton
                 variant="primary"
@@ -821,7 +843,8 @@ const MyProfile = () => {
             <div className="profile-orders-grid">
               {orders.map((order) => {
                 const items = getOrderItems(order);
-                const statusVal = order.status || order.orderStatus || "in-progress";
+                const statusVal =
+                  order.status || order.orderStatus || "in-progress";
                 const paymentVal = order.paymentStatus || "paid";
                 const fabricSummary = getOrderFabricSummary(order);
                 const totalAmountStr = getOrderTotalAmount(order);
@@ -897,7 +920,7 @@ const MyProfile = () => {
                               style={{ fontSize: 13, marginRight: 4 }}
                             />
                             {formatDateSafe(
-                              order.createdAt || order.orderDate || order.date
+                              order.createdAt || order.orderDate || order.date,
                             )}
                           </span>
                         </div>
@@ -945,179 +968,183 @@ const MyProfile = () => {
       {activeTab === "measurements" && (
         <div className="profile-measurements-section">
           <div className="section-title-bar">
-        <h3 className="section-title">
-          <StraightenOutlinedIcon />
-          My Saree Pleating Measurements
-        </h3>
-        <span className="count-chip">
-          {measurements.length}{" "}
-          {measurements.length === 1 ? "Measurement" : "Measurements"}
-        </span>
-      </div>
+            <h3 className="section-title">
+              <StraightenOutlinedIcon />
+              My Saree Pleating Measurements
+            </h3>
+            <span className="count-chip">
+              {measurements.length}{" "}
+              {measurements.length === 1 ? "Measurement" : "Measurements"}
+            </span>
+          </div>
 
-      {loading ? (
-        <div className="my-profile-page__loading">
-          <AppSpinner size="lg" color="gold" />
-          <span className="loading-text">Loading measurement profiles...</span>
-        </div>
-      ) : measurements.length === 0 ? (
-        <div className="empty-measurements-card">
-          <StraightenOutlinedIcon className="empty-icon" />
-          <h4 className="empty-title">No Measurements Recorded Yet</h4>
-          <p className="empty-desc">
-            Save custom saree pleating profiles with your preferred pallu
-            length, chest size, pleat count, and draping notes.
-          </p>
-          <AppButton
-            variant="primary"
-            className="primary-action-btn"
-            startIcon={<SquareFootOutlinedIcon />}
-            onClick={() => setOpenAddMeasureModal(true)}
-          >
-            Add Your First Measurement
-          </AppButton>
-        </div>
-      ) : (
-        <div className="measurements-grid">
-          {measurements.map((measure, idx) => (
-            <div key={measure.id || idx} className="measurement-card">
-              <div className="measure-card-header">
-                <div className="measure-card-header-left">
-                  <div className="measure-title-wrap">
-                    <SquareFootOutlinedIcon />
-                    <h4 className="profile-title-text">
-                      {measure.title || `Measurement Profile #${idx + 1}`}
-                    </h4>
-                  </div>
-                  {measure.dressSize && (
-                    <span className="dress-size-pill">
-                      Dress Size: {measure.dressSize}
-                    </span>
-                  )}
-                </div>
-
-                <div className="card-actions">
-                  <AppButton
-                    size="sm"
-                    variant="secondary"
-                    className="action-edit-btn"
-                    startIcon={<EditOutlinedIcon />}
-                    onClick={() => {
-                      setSelectedMeasureForEdit(measure);
-                      setOpenEditMeasureModal(true);
-                    }}
-                  >
-                    Edit
-                  </AppButton>
-
-                  <AppButton
-                    size="sm"
-                    variant="danger"
-                    square
-                    className="action-delete-btn"
-                    onClick={() => setMeasureToDelete(measure)}
-                    title="Delete Measurement Profile"
-                  >
-                    <DeleteOutlineIcon style={{ fontSize: 16 }} />
-                  </AppButton>
-                </div>
-              </div>
-
-              <div className="measure-card-body">
-                <div className="dimensions-grid">
-                  <div className="dim-cell">
-                    <span className="dim-name">Pallu Length</span>
-                    <span className="dim-val">
-                      {measure.pallu != null && measure.pallu !== ""
-                        ? `${measure.pallu}"`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className="dim-cell">
-                    <span className="dim-name">Shoulder to Tight</span>
-                    <span className="dim-val">
-                      {measure.shoulderToRightTight != null &&
-                      measure.shoulderToRightTight !== ""
-                        ? `${measure.shoulderToRightTight}"`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className="dim-cell">
-                    <span className="dim-name">Chest Size</span>
-                    <span className="dim-val">
-                      {measure.chest != null && measure.chest !== ""
-                        ? `${measure.chest}"`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className="dim-cell">
-                    <span className="dim-name">Hip Size</span>
-                    <span className="dim-val">
-                      {measure.hip != null && measure.hip !== ""
-                        ? `${measure.hip}"`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className="dim-cell">
-                    <span className="dim-name">1st Pleat Size</span>
-                    <span className="dim-val">
-                      {measure.firstPleatSize != null &&
-                      measure.firstPleatSize !== ""
-                        ? `${measure.firstPleatSize}"`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className="dim-cell">
-                    <span className="dim-name">Chest Pleats</span>
-                    <span className="dim-val">
-                      {measure.noOfChestPleats != null &&
-                      measure.noOfChestPleats !== ""
-                        ? `${measure.noOfChestPleats} Pleats`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className="dim-cell">
-                    <span className="dim-name">Height</span>
-                    <span className="dim-val">
-                      {measure.height != null && measure.height !== ""
-                        ? `${measure.height}`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className="dim-cell">
-                    <span className="dim-name">Dress Size</span>
-                    <span className="dim-val">{measure.dressSize || "—"}</span>
-                  </div>
-                </div>
-
-                {measure.notes && (
-                  <div className="measure-notes-box">
-                    <span className="notes-label">
-                      Tailoring & Draping Notes
-                    </span>
-                    <p className="notes-content">{measure.notes}</p>
-                  </div>
-                )}
-
-                <div className="measure-card-footer">
-                  <span className="measure-footer-date">
-                    <CalendarTodayOutlinedIcon />
-                    Recorded {formatDateSafe(measure.createdAt)}
-                    {formatTimeSafe(measure.createdAt)
-                      ? ` ${formatTimeSafe(measure.createdAt)}`
-                      : ""}
-                  </span>
-                </div>
-              </div>
+          {loading ? (
+            <div className="my-profile-page__loading">
+              <AppSpinner size="lg" color="gold" />
+              <span className="loading-text">
+                Loading measurement profiles...
+              </span>
             </div>
-          ))}
-        </div>
-      )}
+          ) : measurements.length === 0 ? (
+            <div className="empty-measurements-card">
+              <StraightenOutlinedIcon className="empty-icon" />
+              <h4 className="empty-title">No Measurements Recorded Yet</h4>
+              <p className="empty-desc">
+                Save custom saree pleating profiles with your preferred pallu
+                length, chest size, pleat count, and draping notes.
+              </p>
+              <AppButton
+                variant="primary"
+                className="primary-action-btn"
+                startIcon={<SquareFootOutlinedIcon />}
+                onClick={() => setOpenAddMeasureModal(true)}
+              >
+                Add Your First Measurement
+              </AppButton>
+            </div>
+          ) : (
+            <div className="measurements-grid">
+              {measurements.map((measure, idx) => (
+                <div key={measure.id || idx} className="measurement-card">
+                  <div className="measure-card-header">
+                    <div className="measure-card-header-left">
+                      <div className="measure-title-wrap">
+                        <SquareFootOutlinedIcon />
+                        <h4 className="profile-title-text">
+                          {measure.title || `Measurement Profile #${idx + 1}`}
+                        </h4>
+                      </div>
+                      {measure.dressSize && (
+                        <span className="dress-size-pill">
+                          Dress Size: {measure.dressSize}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="card-actions">
+                      <AppButton
+                        size="sm"
+                        variant="secondary"
+                        className="action-edit-btn"
+                        startIcon={<EditOutlinedIcon />}
+                        onClick={() => {
+                          setSelectedMeasureForEdit(measure);
+                          setOpenEditMeasureModal(true);
+                        }}
+                      >
+                        Edit
+                      </AppButton>
+
+                      <AppButton
+                        size="sm"
+                        variant="danger"
+                        square
+                        className="action-delete-btn"
+                        onClick={() => setMeasureToDelete(measure)}
+                        title="Delete Measurement Profile"
+                      >
+                        <DeleteOutlineIcon style={{ fontSize: 16 }} />
+                      </AppButton>
+                    </div>
+                  </div>
+
+                  <div className="measure-card-body">
+                    <div className="dimensions-grid">
+                      <div className="dim-cell">
+                        <span className="dim-name">Pallu Length</span>
+                        <span className="dim-val">
+                          {measure.pallu != null && measure.pallu !== ""
+                            ? `${measure.pallu}"`
+                            : "—"}
+                        </span>
+                      </div>
+                      <div className="dim-cell">
+                        <span className="dim-name">Shoulder to Tight</span>
+                        <span className="dim-val">
+                          {measure.shoulderToRightTight != null &&
+                          measure.shoulderToRightTight !== ""
+                            ? `${measure.shoulderToRightTight}"`
+                            : "—"}
+                        </span>
+                      </div>
+                      <div className="dim-cell">
+                        <span className="dim-name">Chest Size</span>
+                        <span className="dim-val">
+                          {measure.chest != null && measure.chest !== ""
+                            ? `${measure.chest}"`
+                            : "—"}
+                        </span>
+                      </div>
+                      <div className="dim-cell">
+                        <span className="dim-name">Hip Size</span>
+                        <span className="dim-val">
+                          {measure.hip != null && measure.hip !== ""
+                            ? `${measure.hip}"`
+                            : "—"}
+                        </span>
+                      </div>
+                      <div className="dim-cell">
+                        <span className="dim-name">1st Pleat Size</span>
+                        <span className="dim-val">
+                          {measure.firstPleatSize != null &&
+                          measure.firstPleatSize !== ""
+                            ? `${measure.firstPleatSize}"`
+                            : "—"}
+                        </span>
+                      </div>
+                      <div className="dim-cell">
+                        <span className="dim-name">Chest Pleats</span>
+                        <span className="dim-val">
+                          {measure.noOfChestPleats != null &&
+                          measure.noOfChestPleats !== ""
+                            ? `${measure.noOfChestPleats} Pleats`
+                            : "—"}
+                        </span>
+                      </div>
+                      <div className="dim-cell">
+                        <span className="dim-name">Height</span>
+                        <span className="dim-val">
+                          {measure.height != null && measure.height !== ""
+                            ? `${measure.height}`
+                            : "—"}
+                        </span>
+                      </div>
+                      <div className="dim-cell">
+                        <span className="dim-name">Dress Size</span>
+                        <span className="dim-val">
+                          {measure.dressSize || "—"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {measure.notes && (
+                      <div className="measure-notes-box">
+                        <span className="notes-label">
+                          Tailoring & Draping Notes
+                        </span>
+                        <p className="notes-content">{measure.notes}</p>
+                      </div>
+                    )}
+
+                    <div className="measure-card-footer">
+                      <span className="measure-footer-date">
+                        <CalendarTodayOutlinedIcon />
+                        Recorded {formatDateSafe(measure.createdAt)}
+                        {formatTimeSafe(measure.createdAt)
+                          ? ` ${formatTimeSafe(measure.createdAt)}`
+                          : ""}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {/* Appearance & Theme Preferences Tab Pane */}
-      {activeTab === "appearance" && (
+      {/* {activeTab === "appearance" && (
         <div className="profile-appearance-section">
           <div className="section-title-bar">
             <h3 className="section-title">
@@ -1131,7 +1158,10 @@ const MyProfile = () => {
             <div className="appearance-card__header">
               <h4 className="appearance-title">Choose Application Theme</h4>
               <p className="appearance-subtitle">
-                Select your preferred visual style across the entire application. Your choice is instantly applied across all dashboards, tables, dialogs, and controls, and saved to your device.
+                Select your preferred visual style across the entire
+                application. Your choice is instantly applied across all
+                dashboards, tables, dialogs, and controls, and saved to your
+                device.
               </p>
             </div>
 
@@ -1140,7 +1170,7 @@ const MyProfile = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* ========================================================================= */}
       {/* 1. Modal: Edit Profile Dialog                                             */}
@@ -1289,7 +1319,9 @@ const MyProfile = () => {
           };
           const saved = await createClientMeasurement(measurementPayload);
           setMeasurements((prev) => [saved, ...prev]);
-          toast.success(`Measurement profile "${values.title.trim()}" added successfully!`);
+          toast.success(
+            `Measurement profile "${values.title.trim()}" added successfully!`,
+          );
         }}
       />
 
@@ -1519,7 +1551,13 @@ const MyProfile = () => {
           </>
         }
       >
-        <p style={{ color: "var(--text-primary)", fontSize: "0.95rem", margin: "8px 0" }}>
+        <p
+          style={{
+            color: "var(--text-primary)",
+            fontSize: "0.95rem",
+            margin: "8px 0",
+          }}
+        >
           Are you sure you want to delete the measurement profile{" "}
           <strong style={{ color: "var(--color-gold)" }}>
             "{measureToDelete?.title}"

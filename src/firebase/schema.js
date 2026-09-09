@@ -264,6 +264,9 @@ export const createOrderModel = ({
   userAddress = "",
   client = null,
   items = [],
+  subtotal = 0,
+  pickupDeliveryCharges = 0,
+  discount = 0,
   totalAmount = 0,
   paidAmount = 0,
   paymentStatus = PAYMENT_STATUS.PENDING,
@@ -298,8 +301,12 @@ export const createOrderModel = ({
     itemNotes: it.itemNotes || "",
   }));
 
-  const calculatedTotal = cleanItems.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0);
-  const finalTotal = totalAmount > 0 ? totalAmount : calculatedTotal;
+  const calculatedSubtotal = cleanItems.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0);
+  const resolvedSubtotal = subtotal > 0 ? Number(subtotal) : calculatedSubtotal;
+  const resolvedDeliveryCharges = Number(pickupDeliveryCharges) || 0;
+  const resolvedDiscount = Number(discount) || 0;
+  const calculatedTotal = Math.max(0, resolvedSubtotal + resolvedDeliveryCharges - resolvedDiscount);
+  const finalTotal = totalAmount > 0 ? Number(totalAmount) : calculatedTotal;
 
   return {
     clientId: String(clientObj.clientId || clientId || "").trim(),
@@ -310,7 +317,10 @@ export const createOrderModel = ({
     client: clientObj,
     items: cleanItems,
     totalItems: cleanItems.length,
-    totalAmount: Number(finalTotal) || 0,
+    subtotal: resolvedSubtotal,
+    pickupDeliveryCharges: resolvedDeliveryCharges,
+    discount: resolvedDiscount,
+    totalAmount: finalTotal,
     paidAmount: Number(paidAmount) || 0,
     paymentStatus: String(paymentStatus || PAYMENT_STATUS.PENDING),
     paymentMethod: String(paymentMethod || "UPI"),

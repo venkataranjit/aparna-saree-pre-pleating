@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
 
@@ -94,10 +100,7 @@ export const customMeasurementValidationSchema = Yup.object({
   chest: numericMeasurementValidator("Chest size"),
   hip: numericMeasurementValidator("Hip size"),
   firstPleatSize: numericMeasurementValidator("First pleat width"),
-  noOfChestPleats: numericMeasurementValidator(
-    "Number of chest pleats",
-    true,
-  ),
+  noOfChestPleats: numericMeasurementValidator("Number of chest pleats", true),
   height: numericMeasurementValidator("Client height"),
   dressSize: Yup.string()
     .trim()
@@ -136,11 +139,11 @@ const orderValidationSchema = Yup.object({
           .trim()
           .required("Service selection is required"),
         serviceName: Yup.string().trim().required("Service name is required"),
-        sareeType: Yup.string().trim().required("Saree fabric is required"),
-        finalPrice: Yup.number()
-          .typeError("Final price must be a valid number")
-          .required("Final price is required")
-          .min(1, "Final price must be greater than ₹0"),
+        sareeType: Yup.string().trim(),
+        servicePrice: Yup.number()
+          .typeError("Service price must be a valid number")
+          .required("Service price is required")
+          .min(1, "Service price must be greater than ₹0"),
         measurementProfile: customMeasurementValidationSchema.required(
           "Measurement profile is required",
         ),
@@ -226,6 +229,8 @@ export default function CreateOrderModal({
   const [orderStatus, setOrderStatus] = useState("in-progress");
   const [paymentStatus, setPaymentStatus] = useState("paid");
   const [paymentMethod, setPaymentMethod] = useState("UPI");
+  const [pickupDeliveryCharges, setPickupDeliveryCharges] = useState(0);
+  const [discount, setDiscount] = useState(0);
   const [orderNotes, setOrderNotes] = useState("");
 
   // Yup validation errors map
@@ -246,8 +251,10 @@ export default function CreateOrderModal({
 
           const currentClientObj = initialClient || {
             id: currentUser?.uid || userProfile?.id || "client_me",
-            username: userProfile?.username || currentUser?.displayName || "Client",
-            userMobile: userProfile?.userMobile || currentUser?.phoneNumber || "",
+            username:
+              userProfile?.username || currentUser?.displayName || "Client",
+            userMobile:
+              userProfile?.userMobile || currentUser?.phoneNumber || "",
             email: userProfile?.email || currentUser?.email || "",
             userAddress: userProfile?.userAddress || "",
             role: USER_ROLES.CLIENT,
@@ -257,7 +264,9 @@ export default function CreateOrderModal({
           setSelectedClientId(currentClientObj.id);
           setClientForm({
             username: currentClientObj.username || "",
-            userMobile: (currentClientObj.userMobile || "").replace(/\D/g, "").slice(-10),
+            userMobile: (currentClientObj.userMobile || "")
+              .replace(/\D/g, "")
+              .slice(-10),
             email: currentClientObj.email || "",
             userAddress: currentClientObj.userAddress || "",
           });
@@ -266,7 +275,9 @@ export default function CreateOrderModal({
           let myMeasures = initialMeasurements;
           if (!myMeasures || myMeasures.length === 0) {
             if (currentClientObj.id) {
-              myMeasures = await getMeasurementsByUserId(currentClientObj.id).catch(() => []);
+              myMeasures = await getMeasurementsByUserId(
+                currentClientObj.id,
+              ).catch(() => []);
             }
           }
           const safeMeasures = Array.isArray(myMeasures) ? myMeasures : [];
@@ -292,7 +303,8 @@ export default function CreateOrderModal({
             [String(currentClientObj.id).toLowerCase()]: uniqueMeasures,
           };
           if (currentClientObj.email) {
-            clientMap[currentClientObj.email.toLowerCase().trim()] = uniqueMeasures;
+            clientMap[currentClientObj.email.toLowerCase().trim()] =
+              uniqueMeasures;
           }
           setMeasurementsMap(clientMap);
 
@@ -310,7 +322,8 @@ export default function CreateOrderModal({
                   chest: first.chest || "",
                   hip: first.hip || "",
                   firstPleatSize: first.firstPleatSize || "",
-                  noOfChestPleats: first.noOfChestPleats || first.chestPleats || "",
+                  noOfChestPleats:
+                    first.noOfChestPleats || first.chestPleats || "",
                   height: first.height || "",
                   dressSize: first.dressSize || "",
                   notes: first.notes || "",
@@ -516,7 +529,8 @@ export default function CreateOrderModal({
     // Build client lookup keys (id, email, username)
     const clientKeys = new Set();
     if (found.id) clientKeys.add(String(found.id).toLowerCase().trim());
-    if (found.email && found.email.includes("@")) clientKeys.add(found.email.toLowerCase().trim());
+    if (found.email && found.email.includes("@"))
+      clientKeys.add(found.email.toLowerCase().trim());
     if (found.username && found.username.trim().toLowerCase() !== "client") {
       clientKeys.add(found.username.toLowerCase().trim());
     }
@@ -528,7 +542,7 @@ export default function CreateOrderModal({
 
     const addUnique = (m) => {
       if (!m || !m.id || String(m.id).startsWith("ord_")) return;
-      const sig = `${(m.title||"").trim().toLowerCase()}|${m.pallu||""}|${m.shoulderToRightTight||""}|${m.chest||""}|${m.hip||""}|${m.firstPleatSize||""}|${m.noOfChestPleats||""}|${m.height||""}|${m.dressSize||""}`;
+      const sig = `${(m.title || "").trim().toLowerCase()}|${m.pallu || ""}|${m.shoulderToRightTight || ""}|${m.chest || ""}|${m.hip || ""}|${m.firstPleatSize || ""}|${m.noOfChestPleats || ""}|${m.height || ""}|${m.dressSize || ""}`;
       if (!seenIds.has(m.id) && !seenSigs.has(sig)) {
         seenIds.add(m.id);
         seenSigs.add(sig);
@@ -537,30 +551,51 @@ export default function CreateOrderModal({
     };
 
     Object.entries(measurementsMap || {}).forEach(([k, list]) => {
-      if (clientKeys.has(String(k).toLowerCase().trim()) && Array.isArray(list)) {
+      if (
+        clientKeys.has(String(k).toLowerCase().trim()) &&
+        Array.isArray(list)
+      ) {
         list.forEach(addUnique);
       }
     });
     // Also scan all values for any measurement carrying this client's ids
-    Object.values(measurementsMap || {}).flat().forEach((m) => {
-      if (!m) return;
-      const mUserId = (m.userId || m.clientId || "").toString().toLowerCase().trim();
-      const mEmail = (m.userEmail || m.email || "").toString().toLowerCase().trim();
-      const mUsername = (m.username || "").toString().toLowerCase().trim();
-      if (
-        (mUserId && clientKeys.has(mUserId)) ||
-        (found.email && mEmail && mEmail.includes("@") && mEmail === found.email.toLowerCase().trim()) ||
-        (found.username && found.username.trim().toLowerCase() !== "client" && mUsername && mUsername === found.username.toLowerCase().trim())
-      ) {
-        addUnique(m);
-      }
-    });
+    Object.values(measurementsMap || {})
+      .flat()
+      .forEach((m) => {
+        if (!m) return;
+        const mUserId = (m.userId || m.clientId || "")
+          .toString()
+          .toLowerCase()
+          .trim();
+        const mEmail = (m.userEmail || m.email || "")
+          .toString()
+          .toLowerCase()
+          .trim();
+        const mUsername = (m.username || "").toString().toLowerCase().trim();
+        if (
+          (mUserId && clientKeys.has(mUserId)) ||
+          (found.email &&
+            mEmail &&
+            mEmail.includes("@") &&
+            mEmail === found.email.toLowerCase().trim()) ||
+          (found.username &&
+            found.username.trim().toLowerCase() !== "client" &&
+            mUsername &&
+            mUsername === found.username.toLowerCase().trim())
+        ) {
+          addUnique(m);
+        }
+      });
 
     const validMeasureIds = new Set(clientMeasures.map((m) => m.id));
 
     setItems((prev) =>
       prev.map((it) => {
-        if (it.selectedMeasurementId && it.selectedMeasurementId !== "custom" && validMeasureIds.has(it.selectedMeasurementId)) {
+        if (
+          it.selectedMeasurementId &&
+          it.selectedMeasurementId !== "custom" &&
+          validMeasureIds.has(it.selectedMeasurementId)
+        ) {
           return it; // keep existing valid selection
         }
         if (clientMeasures.length > 0) {
@@ -571,7 +606,8 @@ export default function CreateOrderModal({
             customMeasurement: {
               title: first.title || "Custom Sizing",
               pallu: first.pallu || first.palluLength || "",
-              shoulderToRightTight: first.shoulderToRightTight || first.shoulder || "",
+              shoulderToRightTight:
+                first.shoulderToRightTight || first.shoulder || "",
               chest: first.chest || first.chestSize || "",
               hip: first.hip || first.hipSize || "",
               firstPleatSize: first.firstPleatSize || first.firstPleat || "",
@@ -587,8 +623,15 @@ export default function CreateOrderModal({
           selectedMeasurementId: "custom",
           customMeasurement: {
             title: "Custom Sizing",
-            pallu: "", shoulderToRightTight: "", chest: "", hip: "",
-            firstPleatSize: "", noOfChestPleats: "", height: "", dressSize: "", notes: "",
+            pallu: "",
+            shoulderToRightTight: "",
+            chest: "",
+            hip: "",
+            firstPleatSize: "",
+            noOfChestPleats: "",
+            height: "",
+            dressSize: "",
+            notes: "",
           },
         };
       }),
@@ -807,32 +850,27 @@ export default function CreateOrderModal({
     setItems((prev) => {
       const next = [...prev];
       if (foundSvc) {
+        const p = Number(foundSvc.servicePrice) || 0;
+        const dp = Number(foundSvc.serviceDiscountedPrice) || p;
+        const selectedPrice = dp || p;
         next[index] = {
           ...next[index],
           serviceId: foundSvc.id,
           serviceName: foundSvc.serviceName || "",
-          servicePrice: Number(foundSvc.servicePrice) || 0,
-          serviceDiscountedPrice:
-            Number(foundSvc.serviceDiscountedPrice) ||
-            Number(foundSvc.servicePrice) ||
-            0,
+          servicePrice: selectedPrice,
+          serviceDiscountedPrice: dp,
           serviceDescription: foundSvc.description || "",
-          finalPrice: String(
-            foundSvc.serviceDiscountedPrice !== undefined &&
-              foundSvc.serviceDiscountedPrice !== null
-              ? foundSvc.serviceDiscountedPrice
-              : foundSvc.servicePrice || 0,
-          ),
+          finalPrice: selectedPrice,
         };
       } else {
         next[index] = {
           ...next[index],
           serviceId: "",
           serviceName: "",
-          servicePrice: 0,
-          serviceDiscountedPrice: 0,
+          servicePrice: "",
+          serviceDiscountedPrice: "",
           serviceDescription: "",
-          finalPrice: "",
+          finalPrice: 0,
         };
       }
       return next;
@@ -841,6 +879,7 @@ export default function CreateOrderModal({
     setValidationErrors((prev) => ({
       ...prev,
       [`items[${index}].serviceId`]: undefined,
+      [`items[${index}].servicePrice`]: undefined,
       [`items[${index}].finalPrice`]: undefined,
     }));
   };
@@ -920,11 +959,7 @@ export default function CreateOrderModal({
       "Home",
       "End",
     ];
-    if (
-      allowedControlKeys.includes(e.key) ||
-      e.ctrlKey ||
-      e.metaKey
-    ) {
+    if (allowedControlKeys.includes(e.key) || e.ctrlKey || e.metaKey) {
       return;
     }
     if (allowDecimal && e.key === "." && !e.currentTarget.value.includes(".")) {
@@ -944,7 +979,9 @@ export default function CreateOrderModal({
         const cleanVal = value.replace(/[^0-9.]/g, "");
         const parts = cleanVal.split(".");
         sanitizedValue =
-          parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : cleanVal;
+          parts.length > 2
+            ? parts[0] + "." + parts.slice(1).join("")
+            : cleanVal;
       }
     }
 
@@ -998,13 +1035,24 @@ export default function CreateOrderModal({
     });
   };
 
-  // Real-time calculated total
-  const calculatedTotal = useMemo(() => {
+  // Real-time calculated subtotal and final total
+  const subtotalAmount = useMemo(() => {
     return items.reduce((acc, it) => {
-      const price = Number(it.finalPrice) || 0;
-      return acc + price;
+      const price =
+        it.servicePrice !== "" &&
+        it.servicePrice !== undefined &&
+        it.servicePrice !== null
+          ? Number(it.servicePrice)
+          : Number(it.finalPrice) || 0;
+      return acc + (Number.isNaN(price) ? 0 : price);
     }, 0);
   }, [items]);
+
+  const calculatedTotal = useMemo(() => {
+    const pickupDelivery = Number(pickupDeliveryCharges) || 0;
+    const disc = Number(discount) || 0;
+    return Math.max(0, subtotalAmount + pickupDelivery - disc);
+  }, [subtotalAmount, pickupDeliveryCharges, discount]);
 
   const handleResetForm = () => {
     isSubmittingRef.current = false;
@@ -1036,6 +1084,8 @@ export default function CreateOrderModal({
     setOrderStatus(isClientMode ? "pending" : "in-progress");
     setPaymentStatus(isClientMode ? "pending" : "paid");
     setPaymentMethod("UPI");
+    setPickupDeliveryCharges(0);
+    setDiscount(0);
     setOrderNotes("");
     setValidationErrors({});
   };
@@ -1198,6 +1248,9 @@ export default function CreateOrderModal({
         },
         items: processedItems,
         totalItems: processedItems.length,
+        subtotal: subtotalAmount,
+        pickupDeliveryCharges: Number(pickupDeliveryCharges) || 0,
+        discount: Number(discount) || 0,
         totalAmount: calculatedTotal,
         paidAmount:
           paymentStatus === "paid"
@@ -1213,7 +1266,8 @@ export default function CreateOrderModal({
         orderDate,
         deliveryDate,
         notes: orderNotes.trim(),
-        createdBy: currentUser?.uid || userProfile?.id || auth?.currentUser?.uid || "",
+        createdBy:
+          currentUser?.uid || userProfile?.id || auth?.currentUser?.uid || "",
       };
 
       const created = await createOrder(orderPayload);
@@ -1303,7 +1357,11 @@ export default function CreateOrderModal({
               ₹{calculatedTotal.toLocaleString("en-IN")}
             </span>
             <span className="summary-count">
-              ({items.length} {items.length === 1 ? "Service" : "Services"})
+              ({items.length} {items.length === 1 ? "Service" : "Services"}
+              {Number(pickupDeliveryCharges) > 0
+                ? ` • +₹${Number(pickupDeliveryCharges)} Delivery`
+                : ""}
+              {Number(discount) > 0 ? ` • -₹${Number(discount)} Disc` : ""})
             </span>
           </div>
 
@@ -1336,7 +1394,11 @@ export default function CreateOrderModal({
       {loadingInitial ? (
         <div className="modal-loading-state">
           <AppSpinner size="lg" color="gold" />
-          <p>{isClientMode ? "Loading services catalog..." : "Loading clients & services catalog..."}</p>
+          <p>
+            {isClientMode
+              ? "Loading services catalog..."
+              : "Loading clients & services catalog..."}
+          </p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="create-order-form">
@@ -1353,8 +1415,8 @@ export default function CreateOrderModal({
                     {isClientMode
                       ? "Your contact details and delivery location"
                       : initialClient
-                      ? "Client pre-selected — contact details loaded automatically"
-                      : "Select an existing registered client or enter details for a new client"}
+                        ? "Client pre-selected — contact details loaded automatically"
+                        : "Select an existing registered client or enter new client details"}
                   </p>
                 </div>
               </div>
@@ -1409,7 +1471,13 @@ export default function CreateOrderModal({
                   if (initialClient) return;
                   if (
                     !/^\d$/.test(e.key) &&
-                    !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key) &&
+                    ![
+                      "Backspace",
+                      "Delete",
+                      "ArrowLeft",
+                      "ArrowRight",
+                      "Tab",
+                    ].includes(e.key) &&
                     !(e.ctrlKey || e.metaKey)
                   ) {
                     e.preventDefault();
@@ -1418,7 +1486,9 @@ export default function CreateOrderModal({
                 value={clientForm.userMobile}
                 onChange={(e) => {
                   if (initialClient) return;
-                  const sanitized = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  const sanitized = e.target.value
+                    .replace(/\D/g, "")
+                    .slice(0, 10);
                   setClientForm((prev) => ({
                     ...prev,
                     userMobile: sanitized,
@@ -1457,8 +1527,16 @@ export default function CreateOrderModal({
               />
 
               <AppInput
-                label={isClientMode ? "Delivery / Pickup Address" : "Address / Location (optional)"}
-                placeholder={isClientMode ? "e.g. Flat 301, Sri Sai Heights, Madhapur, Hyderabad" : "e.g. Flat 302, Green Meadows, Jubilee Hills"}
+                label={
+                  isClientMode
+                    ? "Delivery / Pickup Address"
+                    : "Address / Location (optional)"
+                }
+                placeholder={
+                  isClientMode
+                    ? "e.g. Flat 301, Sri Sai Heights, Madhapur, Hyderabad"
+                    : "e.g. Flat 302, Green Meadows, Jubilee Hills"
+                }
                 value={clientForm.userAddress}
                 onChange={(e) => {
                   if (initialClient) return;
@@ -1576,7 +1654,6 @@ export default function CreateOrderModal({
                         }))}
                         startAdornment={<LayersOutlinedIcon />}
                         disabled={submitting}
-                        required
                         error={Boolean(
                           validationErrors[`items[${idx}].sareeType`],
                         )}
@@ -1586,28 +1663,44 @@ export default function CreateOrderModal({
 
                     <div className="form-field-wrap">
                       <AppInput
-                        label="Final Price Paying (₹)"
+                        label="Service Price (₹)"
                         type="number"
                         placeholder="e.g. 1000"
-                        value={item.finalPrice}
-                        onChange={(e) =>
+                        value={
+                          item.servicePrice === "" ||
+                          item.servicePrice === undefined
+                            ? ""
+                            : item.servicePrice
+                        }
+                        onChange={(e) => {
+                          const cleanVal = e.target.value.replace(
+                            /[^0-9]/g,
+                            "",
+                          );
+                          const numVal =
+                            cleanVal === "" ? "" : Number(cleanVal);
+                          handleItemFieldChange(idx, "servicePrice", numVal);
                           handleItemFieldChange(
                             idx,
                             "finalPrice",
-                            e.target.value,
-                          )
-                        }
+                            numVal === "" ? 0 : numVal,
+                          );
+                          setValidationErrors((prev) => ({
+                            ...prev,
+                            [`items[${idx}].servicePrice`]: undefined,
+                            [`items[${idx}].finalPrice`]: undefined,
+                          }));
+                        }}
                         disabled={submitting}
                         startAdornment={<CurrencyRupeeIcon />}
                         required
                         error={Boolean(
+                          validationErrors[`items[${idx}].servicePrice`] ||
                           validationErrors[`items[${idx}].finalPrice`],
                         )}
                         helperText={
-                          validationErrors[`items[${idx}].finalPrice`] ||
-                          (item.serviceDiscountedPrice > 0
-                            ? `Catalog Offer: ₹${item.serviceDiscountedPrice}`
-                            : "")
+                          validationErrors[`items[${idx}].servicePrice`] ||
+                          validationErrors[`items[${idx}].finalPrice`]
                         }
                       />
                     </div>
@@ -2109,7 +2202,10 @@ export default function CreateOrderModal({
                   options={
                     isClientMode
                       ? [
-                          { value: "pending", label: "Pay on Delivery / Pickup" },
+                          {
+                            value: "pending",
+                            label: "Pay on Delivery / Pickup",
+                          },
                           { value: "paid", label: "Prepaid / Paid Online" },
                         ]
                       : [
@@ -2136,6 +2232,44 @@ export default function CreateOrderModal({
                   ]}
                   startAdornment={<PaymentOutlinedIcon />}
                   disabled={submitting}
+                />
+              </div>
+            </div>
+
+            <div
+              className="form-grid form-grid--2col"
+              style={{ marginTop: 14 }}
+            >
+              <div className="form-field-wrap">
+                <AppInput
+                  label="Pickup & Delivery Charges (₹)"
+                  placeholder="0"
+                  value={
+                    pickupDeliveryCharges === 0 ? "" : pickupDeliveryCharges
+                  }
+                  onChange={(e) => {
+                    const cleanVal = e.target.value.replace(/[^0-9]/g, "");
+                    setPickupDeliveryCharges(
+                      cleanVal === "" ? 0 : Number(cleanVal),
+                    );
+                  }}
+                  onKeyDown={(e) => handleNumericKeyDown(e, false)}
+                  startAdornment={<CurrencyRupeeIcon />}
+                  disabled={submitting}
+                  helperText="Optional pickup/delivery fee added to total"
+                />
+              </div>
+
+              <div className="form-field-wrap">
+                <AppInput
+                  label="Final Price (₹)"
+                  value={calculatedTotal.toLocaleString("en-IN")}
+                  readOnly={true}
+                  disabled={false}
+                  inputProps={{ readOnly: true }}
+                  startAdornment={<CurrencyRupeeIcon />}
+                  helperText="Auto-calculated (Service Price + Pickup & Delivery Charges)"
+                  className="final-price-readonly-input"
                 />
               </div>
             </div>

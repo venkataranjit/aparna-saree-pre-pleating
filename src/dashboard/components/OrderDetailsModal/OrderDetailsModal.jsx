@@ -1,25 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
-import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
-import DryCleaningOutlinedIcon from '@mui/icons-material/DryCleaningOutlined';
-import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
-import StraightenOutlinedIcon from '@mui/icons-material/StraightenOutlined';
-import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
-import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
-import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined';
-import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
-import CelebrationOutlinedIcon from '@mui/icons-material/CelebrationOutlined';
-import NotesOutlinedIcon from '@mui/icons-material/NotesOutlined';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import DryCleaningOutlinedIcon from "@mui/icons-material/DryCleaningOutlined";
+import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
+import StraightenOutlinedIcon from "@mui/icons-material/StraightenOutlined";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
+import PaymentOutlinedIcon from "@mui/icons-material/PaymentOutlined";
+import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import CelebrationOutlinedIcon from "@mui/icons-material/CelebrationOutlined";
+import NotesOutlinedIcon from "@mui/icons-material/NotesOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
-import { AppModal, AppButton } from '../../../components/common';
-import { formatDateSafe, formatTimeSafe, updateOrder } from '../../../firebase/dbService';
-import { USER_ROLES } from '../../../firebase/schema';
-import { useAuth } from '../../../auth/context/AuthContext';
-import './OrderDetailsModal.scss';
+import { AppModal, AppButton } from "../../../components/common";
+import CustomInvoiceModal, {
+  mapOrderToInvoiceData,
+  downloadInvoicePdfDirectly,
+} from "../CustomInvoiceModal/CustomInvoiceModal";
+import {
+  formatDateSafe,
+  formatTimeSafe,
+  updateOrder,
+} from "../../../firebase/dbService";
+import { USER_ROLES } from "../../../firebase/schema";
+import { useAuth } from "../../../auth/context/AuthContext";
+import "./OrderDetailsModal.scss";
 
 const OrderDetailsModal = ({
   open,
@@ -29,33 +38,42 @@ const OrderDetailsModal = ({
   onStatusUpdated,
   onOrderUpdated,
 }) => {
-  const { currentUser, userProfile, isSuperAdmin, isAdmin, isStaff, canEdit, role } = useAuth();
-  const [currentStatus, setCurrentStatus] = useState('in-progress');
-  const [currentPaymentStatus, setCurrentPaymentStatus] = useState('paid');
+  const {
+    currentUser,
+    userProfile,
+    isSuperAdmin,
+    isAdmin,
+    isStaff,
+    canEdit,
+    role,
+  } = useAuth();
+  const [currentStatus, setCurrentStatus] = useState("in-progress");
+  const [currentPaymentStatus, setCurrentPaymentStatus] = useState("paid");
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showCustomInvoice, setShowCustomInvoice] = useState(false);
 
   useEffect(() => {
     if (order) {
-      setCurrentStatus(order.status || order.orderStatus || 'in-progress');
-      setCurrentPaymentStatus(order.paymentStatus || 'paid');
+      setCurrentStatus(order.status || order.orderStatus || "in-progress");
+      setCurrentPaymentStatus(order.paymentStatus || "paid");
     }
   }, [order]);
 
   if (!open || !order) return null;
 
   // Check if active user has admin/staff permissions to update workflow & payment statuses
-  const canUpdate = !readOnly && (
-    isSuperAdmin ||
-    isAdmin ||
-    isStaff ||
-    canEdit ||
-    role === USER_ROLES.SUPERADMIN ||
-    role === USER_ROLES.ADMIN ||
-    role === USER_ROLES.STAFF ||
-    role === 'superadmin' ||
-    role === 'admin' ||
-    role === 'staff'
-  );
+  const canUpdate =
+    !readOnly &&
+    (isSuperAdmin ||
+      isAdmin ||
+      isStaff ||
+      canEdit ||
+      role === USER_ROLES.SUPERADMIN ||
+      role === USER_ROLES.ADMIN ||
+      role === USER_ROLES.STAFF ||
+      role === "superadmin" ||
+      role === "admin" ||
+      role === "staff");
 
   const handlePrint = () => {
     window.print();
@@ -65,7 +83,7 @@ const OrderDetailsModal = ({
     if (newStatus === currentStatus) return;
     setUpdatingStatus(true);
     try {
-      const activeUid = currentUser?.uid || userProfile?.id || '';
+      const activeUid = currentUser?.uid || userProfile?.id || "";
       await updateOrder(order.id, {
         status: newStatus,
         orderStatus: newStatus,
@@ -86,8 +104,8 @@ const OrderDetailsModal = ({
         });
       }
     } catch (err) {
-      console.error('Status update failed:', err);
-      toast.error('Failed to update status.');
+      console.error("Status update failed:", err);
+      toast.error("Failed to update status.");
     } finally {
       setUpdatingStatus(false);
     }
@@ -97,7 +115,7 @@ const OrderDetailsModal = ({
     if (newPayStatus === currentPaymentStatus) return;
     setUpdatingStatus(true);
     try {
-      const activeUid = currentUser?.uid || userProfile?.id || '';
+      const activeUid = currentUser?.uid || userProfile?.id || "";
       await updateOrder(order.id, {
         paymentStatus: newPayStatus,
         updatedBy: activeUid,
@@ -105,11 +123,11 @@ const OrderDetailsModal = ({
       });
       setCurrentPaymentStatus(newPayStatus);
       const label =
-        newPayStatus === 'paid'
-          ? 'Paid in Full'
-          : newPayStatus === 'partial'
-          ? 'Advance / Partial'
-          : 'Pending Payment';
+        newPayStatus === "paid"
+          ? "Paid in Full"
+          : newPayStatus === "partial"
+            ? "Advance / Partial"
+            : "Pending Payment";
       toast.success(`Order ${order.id} payment updated to "${label}"!`);
       if (onOrderUpdated) {
         onOrderUpdated(order.id, {
@@ -119,38 +137,85 @@ const OrderDetailsModal = ({
         });
       }
     } catch (err) {
-      console.error('Payment status update failed:', err);
-      toast.error('Failed to update payment status.');
+      console.error("Payment status update failed:", err);
+      toast.error("Failed to update payment status.");
     } finally {
       setUpdatingStatus(false);
     }
   };
 
-  const clientName = order.username || order.client?.username || (typeof order.client === 'string' ? order.client : 'Client');
-  const clientMobile = order.userMobile || order.client?.userMobile || order.phone || '—';
-  const clientEmail = order.email || order.client?.email || '—';
-  const clientAddress = order.userAddress || order.client?.userAddress || order.address || '—';
+  const clientName =
+    order.username ||
+    order.client?.username ||
+    (typeof order.client === "string" ? order.client : "Client");
+  const clientMobile =
+    order.userMobile || order.client?.userMobile || order.phone || "—";
+  const clientEmail = order.email || order.client?.email || "—";
+  const clientAddress =
+    order.userAddress || order.client?.userAddress || order.address || "—";
 
   // Normalize items array
-  const rawItems = Array.isArray(order.items) && order.items.length > 0 ? order.items : [
-    {
-      itemId: 'default_1',
-      serviceName: order.service || 'Saree Pre-Pleating & Fold',
-      servicePrice: Number(String(order.amount || order.baseAmount || '0').replace(/[^0-9]/g, '')) || 1000,
-      serviceDiscountedPrice: Number(String(order.amount || '0').replace(/[^0-9]/g, '')) || 1000,
-      finalPrice: Number(String(order.amount || '0').replace(/[^0-9]/g, '')) || 1000,
-      sareeType: order.sareeType || 'Silk Saree',
-      measurementProfile: {
-        title: 'Saved Profile',
-        pallu: order.palluStyle || 'Standard Pin Fold',
-        firstPleatSize: order.pleatCount || '6 Pleats (5.5" width)',
-        notes: order.packaging || '',
-      },
-      itemNotes: order.notes || '',
-    }
-  ];
+  const rawItems =
+    Array.isArray(order.items) && order.items.length > 0
+      ? order.items
+      : [
+          {
+            itemId: "default_1",
+            serviceName: order.service || "Saree Pre-Pleating & Fold",
+            servicePrice:
+              Number(
+                String(order.amount || order.baseAmount || "0").replace(
+                  /[^0-9]/g,
+                  "",
+                ),
+              ) || 1000,
+            serviceDiscountedPrice:
+              Number(String(order.amount || "0").replace(/[^0-9]/g, "")) ||
+              1000,
+            finalPrice:
+              Number(String(order.amount || "0").replace(/[^0-9]/g, "")) ||
+              1000,
+            sareeType: order.sareeType || "Silk Saree",
+            measurementProfile: {
+              title: "Saved Profile",
+              pallu: order.palluStyle || "Standard Pin Fold",
+              firstPleatSize: order.pleatCount || '6 Pleats (5.5" width)',
+              notes: order.packaging || "",
+            },
+            itemNotes: order.notes || "",
+          },
+        ];
 
-  const totalCalculatedAmount = order.totalAmount || rawItems.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0);
+  const subtotalAmount =
+    order.subtotal !== undefined &&
+    order.subtotal !== null &&
+    !isNaN(Number(order.subtotal))
+      ? Number(order.subtotal)
+      : rawItems.reduce((acc, it) => {
+          const p =
+            it.servicePrice !== undefined && it.servicePrice !== null && it.servicePrice !== ""
+              ? it.servicePrice
+              : it.finalPrice ?? it.serviceDiscountedPrice ?? 0;
+          return acc + (Number(p) || 0);
+        }, 0) ||
+        Math.max(
+          0,
+          Number(order.amount || order.baseAmount || order.totalAmount || 0) -
+            Number(order.pickupDeliveryCharges || 0) +
+            Number(order.discount || 0)
+        );
+
+  const totalCalculatedAmount =
+    order.totalAmount !== undefined &&
+    order.totalAmount !== null &&
+    !isNaN(Number(order.totalAmount))
+      ? Number(order.totalAmount)
+      : Math.max(
+          0,
+          subtotalAmount +
+            Number(order.pickupDeliveryCharges || 0) -
+            Number(order.discount || 0)
+        );
 
   return (
     <AppModal
@@ -161,7 +226,7 @@ const OrderDetailsModal = ({
           <span className="order-id-label">{order.id}</span>
           <span className={`status-pill ${currentStatus}`}>
             <span className="dot" />
-            {currentStatus.replace('-', ' ')}
+            {currentStatus.replace("-", " ")}
           </span>
         </div>
       }
@@ -173,17 +238,23 @@ const OrderDetailsModal = ({
         <div className="order-details-actions-bar">
           <div className="order-summary-pill">
             <span className="summary-label">Total Amount:</span>
-            <span className="summary-val">₹{Number(totalCalculatedAmount).toLocaleString('en-IN')}</span>
-            <span className="summary-count">({rawItems.length} {rawItems.length === 1 ? 'Service' : 'Services'})</span>
+            <span className="summary-val">
+              ₹{Number(totalCalculatedAmount).toLocaleString("en-IN")}
+            </span>
+            <span className="summary-count">
+              ({rawItems.length}{" "}
+              {rawItems.length === 1 ? "Service" : "Services"})
+            </span>
           </div>
           <div className="actions-right">
             <AppButton
               variant="secondary"
-              startIcon={<PrintOutlinedIcon />}
-              onClick={handlePrint}
-              className="print-btn"
+              startIcon={<ReceiptLongOutlinedIcon />}
+              onClick={() => downloadInvoicePdfDirectly(order)}
+              className="custom-invoice-btn"
+              title="Direct Download Tax Invoice (PDF)"
             >
-              Print Job Sheet / Invoice
+              Tax Invoice
             </AppButton>
             <AppButton
               variant="primary"
@@ -197,7 +268,15 @@ const OrderDetailsModal = ({
       }
     >
       <div className="order-details-content">
-        <div className="modal-grid-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+        <div
+          className="modal-grid-row"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "16px",
+            marginBottom: "16px",
+          }}
+        >
           {/* 1. Client Profile */}
           <div className="details-card">
             <div className="details-card__head">
@@ -243,8 +322,14 @@ const OrderDetailsModal = ({
               <div className="info-row">
                 <span className="info-label">Booking Date</span>
                 <span className="info-val">
-                  {formatDateSafe(order.orderDate || order.date || order.createdAt)}
-                  {formatTimeSafe(order.orderDate || order.date || order.createdAt) ? ` (${formatTimeSafe(order.orderDate || order.date || order.createdAt)})` : ''}
+                  {formatDateSafe(
+                    order.orderDate || order.date || order.createdAt,
+                  )}
+                  {formatTimeSafe(
+                    order.orderDate || order.date || order.createdAt,
+                  )
+                    ? ` (${formatTimeSafe(order.orderDate || order.date || order.createdAt)})`
+                    : ""}
                 </span>
               </div>
               <div className="info-row">
@@ -266,7 +351,8 @@ const OrderDetailsModal = ({
               <div className="info-row">
                 <span className="info-label">Total Sarees</span>
                 <span className="info-val highlight">
-                  {rawItems.length} {rawItems.length === 1 ? 'Saree Service' : 'Saree Services'}
+                  {rawItems.length}{" "}
+                  {rawItems.length === 1 ? "Saree Service" : "Saree Services"}
                 </span>
               </div>
             </div>
@@ -274,10 +360,12 @@ const OrderDetailsModal = ({
         </div>
 
         {/* 3. Ordered Services & Detailed Measurement Breakdown */}
-        <div className="details-card" style={{ marginBottom: '16px' }}>
+        <div className="details-card" style={{ marginBottom: "16px" }}>
           <div className="details-card__head">
             <DryCleaningOutlinedIcon className="card-head-icon" />
-            <span className="card-head-title">Ordered Saree Services ({rawItems.length})</span>
+            <span className="card-head-title">
+              Ordered Saree Services ({rawItems.length})
+            </span>
           </div>
           <div className="details-card__body">
             <div className="dossier-items-list">
@@ -288,10 +376,12 @@ const OrderDetailsModal = ({
                     <div className="dossier-item-header">
                       <div className="item-title-wrap">
                         <span className="item-idx-tag">Service #{idx + 1}</span>
-                        <span className="item-name-text">{item.serviceName}</span>
+                        <span className="item-name-text">
+                          {item.serviceName}
+                        </span>
                       </div>
                       <div className="item-price-tag">
-                        ₹{Number(item.finalPrice || 0).toLocaleString('en-IN')}
+                        ₹{Number(item.finalPrice || 0).toLocaleString("en-IN")}
                       </div>
                     </div>
 
@@ -299,13 +389,17 @@ const OrderDetailsModal = ({
                       <div className="spec-tile">
                         <DryCleaningOutlinedIcon className="spec-icon" />
                         <span className="spec-label">Saree Fabric</span>
-                        <span className="spec-val highlight">{item.sareeType || 'Silk'}</span>
+                        <span className="spec-val highlight">
+                          {item.sareeType || "Silk"}
+                        </span>
                       </div>
 
                       {m?.title && (
                         <div className="spec-tile">
                           <StraightenOutlinedIcon className="spec-icon" />
-                          <span className="spec-label">Measurement Profile</span>
+                          <span className="spec-label">
+                            Measurement Profile
+                          </span>
                           <span className="spec-val">{m.title}</span>
                         </div>
                       )}
@@ -322,7 +416,9 @@ const OrderDetailsModal = ({
                         <div className="spec-tile">
                           <StraightenOutlinedIcon className="spec-icon" />
                           <span className="spec-label">Shoulder to Tight</span>
-                          <span className="spec-val">{m.shoulderToRightTight}&quot;</span>
+                          <span className="spec-val">
+                            {m.shoulderToRightTight}&quot;
+                          </span>
                         </div>
                       )}
 
@@ -346,7 +442,9 @@ const OrderDetailsModal = ({
                         <div className="spec-tile">
                           <StraightenOutlinedIcon className="spec-icon" />
                           <span className="spec-label">First Pleat</span>
-                          <span className="spec-val">{m.firstPleatSize}&quot;</span>
+                          <span className="spec-val">
+                            {m.firstPleatSize}&quot;
+                          </span>
                         </div>
                       )}
 
@@ -378,7 +476,9 @@ const OrderDetailsModal = ({
                     {item.itemNotes && (
                       <div className="item-note-callout">
                         <InfoOutlinedIcon style={{ fontSize: 14 }} />
-                        <span><strong>Special Care:</strong> {item.itemNotes}</span>
+                        <span>
+                          <strong>Special Care:</strong> {item.itemNotes}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -390,10 +490,15 @@ const OrderDetailsModal = ({
 
         {/* 4. Special Instructions Callout */}
         {order.notes && (
-          <div className="instructions-callout" style={{ marginBottom: '16px' }}>
+          <div
+            className="instructions-callout"
+            style={{ marginBottom: "16px" }}
+          >
             <NotesOutlinedIcon className="callout-icon" />
             <div>
-              <span className="callout-title">Order Notes & Booking Instructions</span>
+              <span className="callout-title">
+                Order Notes & Booking Instructions
+              </span>
               <p className="callout-text">{order.notes}</p>
             </div>
           </div>
@@ -405,7 +510,9 @@ const OrderDetailsModal = ({
             <div className="payment-head">
               <PaymentOutlinedIcon className="pay-icon" />
               <span className="pay-title">
-                {canUpdate ? 'Billing & Workflow Controls' : 'Billing & Status Overview'}
+                {canUpdate
+                  ? "Billing & Workflow Controls"
+                  : "Billing & Status Overview"}
               </span>
             </div>
 
@@ -416,32 +523,32 @@ const OrderDetailsModal = ({
                   <div className="status-buttons">
                     <button
                       type="button"
-                      className={`btn-status btn-status--in-progress ${currentStatus === 'in-progress' ? 'active' : ''}`}
-                      onClick={() => handleStatusChange('in-progress')}
+                      className={`btn-status btn-status--in-progress ${currentStatus === "in-progress" ? "active" : ""}`}
+                      onClick={() => handleStatusChange("in-progress")}
                       disabled={updatingStatus}
                     >
                       In-Progress
                     </button>
                     <button
                       type="button"
-                      className={`btn-status btn-status--completed ${currentStatus === 'completed' ? 'active' : ''}`}
-                      onClick={() => handleStatusChange('completed')}
+                      className={`btn-status btn-status--completed ${currentStatus === "completed" ? "active" : ""}`}
+                      onClick={() => handleStatusChange("completed")}
                       disabled={updatingStatus}
                     >
                       Completed
                     </button>
                     <button
                       type="button"
-                      className={`btn-status btn-status--pending ${currentStatus === 'pending' ? 'active' : ''}`}
-                      onClick={() => handleStatusChange('pending')}
+                      className={`btn-status btn-status--pending ${currentStatus === "pending" ? "active" : ""}`}
+                      onClick={() => handleStatusChange("pending")}
                       disabled={updatingStatus}
                     >
                       Pending
                     </button>
                     <button
                       type="button"
-                      className={`btn-status btn-status--cancelled ${currentStatus === 'cancelled' ? 'active' : ''}`}
-                      onClick={() => handleStatusChange('cancelled')}
+                      className={`btn-status btn-status--cancelled ${currentStatus === "cancelled" ? "active" : ""}`}
+                      onClick={() => handleStatusChange("cancelled")}
                       disabled={updatingStatus}
                     >
                       Cancelled
@@ -454,24 +561,24 @@ const OrderDetailsModal = ({
                   <div className="status-buttons">
                     <button
                       type="button"
-                      className={`btn-status btn-pay--paid ${currentPaymentStatus === 'paid' ? 'active' : ''}`}
-                      onClick={() => handlePaymentStatusChange('paid')}
+                      className={`btn-status btn-pay--paid ${currentPaymentStatus === "paid" ? "active" : ""}`}
+                      onClick={() => handlePaymentStatusChange("paid")}
                       disabled={updatingStatus}
                     >
                       Paid in Full
                     </button>
                     <button
                       type="button"
-                      className={`btn-status btn-pay--partial ${currentPaymentStatus === 'partial' ? 'active' : ''}`}
-                      onClick={() => handlePaymentStatusChange('partial')}
+                      className={`btn-status btn-pay--partial ${currentPaymentStatus === "partial" ? "active" : ""}`}
+                      onClick={() => handlePaymentStatusChange("partial")}
                       disabled={updatingStatus}
                     >
                       Partial / Advance
                     </button>
                     <button
                       type="button"
-                      className={`btn-status btn-pay--pending ${currentPaymentStatus === 'pending' ? 'active' : ''}`}
-                      onClick={() => handlePaymentStatusChange('pending')}
+                      className={`btn-status btn-pay--pending ${currentPaymentStatus === "pending" ? "active" : ""}`}
+                      onClick={() => handlePaymentStatusChange("pending")}
                       disabled={updatingStatus}
                     >
                       Pending Payment
@@ -481,22 +588,24 @@ const OrderDetailsModal = ({
               </>
             ) : (
               <>
-                <div className="info-row" style={{ padding: '6px 0' }}>
+                <div className="info-row" style={{ padding: "6px 0" }}>
                   <span className="info-label">Workflow Status</span>
                   <span className={`status-pill ${currentStatus}`}>
                     <span className="dot" />
-                    {currentStatus.replace('-', ' ')}
+                    {currentStatus.replace("-", " ")}
                   </span>
                 </div>
-                <div className="info-row" style={{ padding: '6px 0' }}>
+                <div className="info-row" style={{ padding: "6px 0" }}>
                   <span className="info-label">Payment Status</span>
-                  <span className={`status-pill ${currentPaymentStatus === 'paid' ? 'completed' : currentPaymentStatus === 'partial' ? 'in-progress' : 'pending'}`}>
+                  <span
+                    className={`status-pill ${currentPaymentStatus === "paid" ? "completed" : currentPaymentStatus === "partial" ? "in-progress" : "pending"}`}
+                  >
                     <span className="dot" />
-                    {currentPaymentStatus === 'paid'
-                      ? 'Paid in Full'
-                      : currentPaymentStatus === 'partial'
-                      ? 'Advance / Partial'
-                      : 'Pending Payment'}
+                    {currentPaymentStatus === "paid"
+                      ? "Paid in Full"
+                      : currentPaymentStatus === "partial"
+                        ? "Advance / Partial"
+                        : "Pending Payment"}
                   </span>
                 </div>
               </>
@@ -506,26 +615,68 @@ const OrderDetailsModal = ({
           <div className="payment-card__breakdown">
             <div className="pay-row">
               <span className="pay-label">Payment Method:</span>
-              <span className="pay-val">{order.paymentMethod || 'UPI / Cash'}</span>
+              <span className="pay-val">
+                {order.paymentMethod || "UPI / Cash"}
+              </span>
             </div>
             <div className="pay-row">
               <span className="pay-label">Payment Status:</span>
-              <span className="pay-val highlight" style={{ textTransform: 'capitalize' }}>
-                {currentPaymentStatus === 'paid'
-                  ? 'Paid in Full'
-                  : currentPaymentStatus === 'partial'
-                  ? 'Advance / Partial'
-                  : 'Pending Payment'}
+              <span
+                className="pay-val highlight"
+                style={{ textTransform: "capitalize" }}
+              >
+                {currentPaymentStatus === "paid"
+                  ? "Paid in Full"
+                  : currentPaymentStatus === "partial"
+                    ? "Advance / Partial"
+                    : "Pending Payment"}
               </span>
             </div>
+            <div className="pay-row">
+              <span className="pay-label">Subtotal:</span>
+              <span className="pay-val">
+                ₹{Number(subtotalAmount).toLocaleString("en-IN")}
+              </span>
+            </div>
+            {order.pickupDeliveryCharges !== undefined &&
+              Number(order.pickupDeliveryCharges) > 0 && (
+                <div className="pay-row">
+                  <span className="pay-label">Pickup & Delivery:</span>
+                  <span className="pay-val">
+                    ₹
+                    {Number(order.pickupDeliveryCharges).toLocaleString(
+                      "en-IN",
+                    )}
+                  </span>
+                </div>
+              )}
+            {order.discount !== undefined && Number(order.discount) > 0 && (
+              <div className="pay-row" style={{ color: "#10b981" }}>
+                <span className="pay-label" style={{ color: "#10b981" }}>
+                  Discount:
+                </span>
+                <span className="pay-val">
+                  -₹{Number(order.discount).toLocaleString("en-IN")}
+                </span>
+              </div>
+            )}
             <div className="pay-divider" />
             <div className="pay-row total">
               <span className="pay-total-label">Total Billed Amount:</span>
-              <span className="pay-total-val">₹{Number(totalCalculatedAmount).toLocaleString('en-IN')}</span>
+              <span className="pay-total-val">
+                ₹{Number(totalCalculatedAmount).toLocaleString("en-IN")}
+              </span>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Custom Tax Invoice Modal (Dynamic Order Data & Printable PDF) */}
+      <CustomInvoiceModal
+        open={showCustomInvoice}
+        onClose={() => setShowCustomInvoice(false)}
+        invoiceData={mapOrderToInvoiceData(order)}
+      />
     </AppModal>
   );
 };

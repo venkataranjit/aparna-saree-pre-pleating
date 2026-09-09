@@ -5,6 +5,7 @@ import Bookings from '../pages/Bookings/Bookings';
 import Services from '../pages/Services/Services';
 import Users from '../pages/Users/Users';
 import Clients from '../pages/Clients/Clients';
+import Expenses from '../pages/Expenses/Expenses';
 import MyProfile from '../pages/MyProfile/MyProfile';
 
 export const dashboardRoutes = [
@@ -27,6 +28,10 @@ export const dashboardRoutes = [
       {
         path: 'clients',
         element: <Clients />,
+      },
+      {
+        path: 'expenses',
+        element: <Expenses />,
       },
       {
         path: 'profile',

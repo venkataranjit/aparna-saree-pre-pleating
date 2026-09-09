@@ -6,6 +6,7 @@ import DryCleaningOutlinedIcon from '@mui/icons-material/DryCleaningOutlined';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import { useAuth } from '../../../auth/context/AuthContext';
 import './CurvedBottomBar.scss';
@@ -14,7 +15,7 @@ import './CurvedBottomBar.scss';
  * CurvedBottomBar
  * Fixed 100% width bottom navigation bar with luxury obsidian & gold styling.
  * Smoothly scales up icon size on hover with spring animation.
- * Features Home, Orders, Services, Clients/Store/Profile, and Menu (opens sidebar).
+ * Features Home, Orders, Services, Clients, Expenses, Profile/Store, and Menu (opens sidebar).
  */
 export const CurvedBottomBar = ({
   collapsed = false,
@@ -23,11 +24,14 @@ export const CurvedBottomBar = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isSuperAdmin, role } = useAuth();
+  const { isSuperAdmin, role, canManageUsers } = useAuth();
   const [ripplingId, setRipplingId] = useState(null);
 
   const userRole = (role || '').toLowerCase();
   const isClient = !isSuperAdmin && (userRole === 'client' || userRole === '');
+  const canAccessExpenses =
+    canManageUsers ??
+    (isSuperAdmin || userRole === 'superadmin' || userRole === 'admin');
 
   // Configure navigation items matching the luxury dashboard layout
   const navItems = [
@@ -64,6 +68,16 @@ export const CurvedBottomBar = ({
         <PeopleOutlineIcon className="nav-bar-icon" />
       ),
     },
+    ...(canAccessExpenses
+      ? [
+          {
+            id: 'expenses',
+            label: 'Expenses',
+            path: '/dashboard/expenses',
+            icon: <AccountBalanceWalletOutlinedIcon className="nav-bar-icon" />,
+          },
+        ]
+      : []),
     ...(isClient
       ? [
           {
@@ -87,6 +101,9 @@ export const CurvedBottomBar = ({
     }
     if (item.id === 'clients') {
       return location.pathname.startsWith('/dashboard/clients');
+    }
+    if (item.id === 'expenses') {
+      return location.pathname.startsWith('/dashboard/expenses');
     }
     if (item.id === 'profile') {
       return location.pathname.startsWith('/dashboard/profile');

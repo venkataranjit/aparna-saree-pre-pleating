@@ -126,7 +126,9 @@
     border: 1px solid $surface-border !important;
     border-radius: 14px !important;
     box-shadow: var(--card-shadow) !important;
-    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+    transition:
+      box-shadow 0.25s ease,
+      border-color 0.25s ease;
     padding: 24px 28px;
     margin-bottom: 28px;
 
@@ -167,11 +169,10 @@
         width: 72px !important;
         height: 72px !important;
         border-radius: 18px !important;
-        background: var(--avatar-bg, linear-gradient(
-          135deg,
-          #d4af37 0%,
-          #a28220 100%
-        )) !important;
+        background: var(
+          --avatar-bg,
+          linear-gradient(135deg, #d4af37 0%, #a28220 100%)
+        ) !important;
         color: var(--avatar-text, #050505) !important;
         font-weight: 700 !important;
         font-size: 2rem !important;
@@ -860,7 +861,7 @@
           .amount-val {
             display: block;
             font-size: 1.25rem;
-            font-weight: 800;
+            font-weight: 700;
             color: $color-gold;
             margin-top: 2px;
           }
@@ -886,7 +887,9 @@
       border-radius: 16px;
       padding: 28px;
       box-shadow: var(--card-shadow);
-      transition: box-shadow 0.25s ease, border-color 0.25s ease;
+      transition:
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
 
       &:hover {
         box-shadow: var(--card-shadow-hover);

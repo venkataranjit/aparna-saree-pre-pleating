@@ -10,6 +10,7 @@ export const COLLECTIONS = {
   CLIENTS: "clients",
   ORDERS: "orders",
   MEASUREMENTS: "measurements",
+  EXPENSES: "expenses",
 };
 
 /**
@@ -43,6 +44,23 @@ export const ORDER_STATUS = {
   IN_PROGRESS: "In Progress",
   COMPLETED: "Completed",
   CANCELLED: "Cancelled",
+};
+
+/**
+ * Expense Categories & Payment Methods
+ */
+export const EXPENSE_CATEGORIES = {
+  STORE_ITEMS: "Store Items",
+  TRAVELLING: "Travelling",
+  PAID_REVIEWS: "Paid Reviews",
+  OTHERS: "Others",
+};
+
+export const EXPENSE_PAYMENT_METHODS = {
+  CASH: "Cash",
+  UPI: "UPI",
+  BANK_TRANSFER: "Bank Transfer",
+  CARD: "Card",
 };
 
 /**
@@ -306,3 +324,37 @@ export const createOrderModel = ({
     createdAt: serverTimestamp(),
   };
 };
+
+/**
+ * 7. Expense Model
+ * @param {Object} data
+ * @param {('Store Items'|'Travelling'|'Paid Reviews'|'Others')} data.categoryType
+ * @param {string} data.name - Expense Name / Vendor / Person
+ * @param {string} [data.description] - Description / Notes / Itemization
+ * @param {number} data.amount - Amount in INR
+ * @param {('Cash'|'UPI'|'Bank Transfer'|'Card')} data.paymentMethod
+ * @param {string} [data.createdBy] - Name/email of user who recorded the expense
+ * @param {string} [data.updatedBy] - Name/email of user who last modified the expense
+ */
+export const createExpenseModel = ({
+  categoryType = EXPENSE_CATEGORIES.STORE_ITEMS,
+  name = "",
+  description = "",
+  amount = 0,
+  paymentMethod = EXPENSE_PAYMENT_METHODS.UPI,
+  createdBy = "",
+  updatedBy = null,
+  expenseDate = null,
+} = {}) => ({
+  categoryType: String(categoryType || EXPENSE_CATEGORIES.STORE_ITEMS).trim(),
+  name: String(name || "").trim(),
+  description: String(description || "").trim(),
+  amount: Number(amount) || 0,
+  paymentMethod: String(paymentMethod || EXPENSE_PAYMENT_METHODS.UPI).trim(),
+  expenseDate: expenseDate || serverTimestamp(),
+  createdBy: String(createdBy || "").trim(),
+  createdAt: serverTimestamp(),
+  updatedBy: updatedBy ? String(updatedBy).trim() : null,
+  updatedAt: null,
+});
+

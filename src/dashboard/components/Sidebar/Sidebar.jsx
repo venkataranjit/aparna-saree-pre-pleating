@@ -10,6 +10,7 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import CloseIcon from "@mui/icons-material/Close";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../auth/context/AuthContext";
@@ -49,6 +50,11 @@ const navSections = [
         label: "Clients",
         path: "/dashboard/clients",
         icon: <PeopleOutlineIcon />,
+      },
+      {
+        label: "Expenses",
+        path: "/dashboard/expenses",
+        icon: <AccountBalanceWalletOutlinedIcon />,
       },
     ],
   },
@@ -169,6 +175,9 @@ const Sidebar = ({
         ...section,
         items: section.items.filter((item) => {
           if (item.path === "/dashboard/users" && !canAccessUsers) {
+            return false;
+          }
+          if (item.path === "/dashboard/expenses" && !canAccessUsers) {
             return false;
           }
           if (item.path === "/dashboard/clients" && isClient) {

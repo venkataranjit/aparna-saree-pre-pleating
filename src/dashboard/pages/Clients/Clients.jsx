@@ -1365,17 +1365,34 @@ const Clients = () => {
         /* ========================================================== */
         <div className="clients-grid-wrapper">
           <div className="clients-grid">
-            {paginatedClients.map((user) => {
-              const initial = (
-                user.username?.charAt(0) ||
-                user.email?.charAt(0) ||
-                "C"
-              ).toUpperCase();
-              const userMeasures = measurementsMap[user.id] || [];
-              const measureCount = userMeasures.length;
+            {paginatedClients.length === 0 ? (
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  textAlign: "center",
+                  padding: "48px 16px",
+                  color: "var(--text-muted)",
+                  background: "var(--bg-card)",
+                  borderRadius: "12px",
+                  border: "1px solid var(--surface-border)",
+                }}
+              >
+                {searchTerm || activeTab !== "ALL"
+                  ? "No clients match your search criteria."
+                  : "No clients registered yet. Click 'Add Client' to create the first profile."}
+              </div>
+            ) : (
+              paginatedClients.map((user) => {
+                const initial = (
+                  user.username?.charAt(0) ||
+                  user.email?.charAt(0) ||
+                  "C"
+                ).toUpperCase();
+                const userMeasures = measurementsMap[user.id] || [];
+                const measureCount = userMeasures.length;
 
-              return (
-                <div key={user.id} className={`user-grid-card ${user.disabled ? "user-grid-card--disabled" : ""}`}>
+                return (
+                  <div key={user.id} className={`client-grid-card ${user.disabled ? "client-grid-card--disabled" : ""}`}>
                   <div className="card-top-accent" />
                   <div className="card-header">
                     <div className="user-avatar-circle">{initial}</div>
@@ -1511,7 +1528,7 @@ const Clients = () => {
                   </div>
                 </div>
               );
-            })}
+            }))}
           </div>
 
           <div className="clients-pagination-card">

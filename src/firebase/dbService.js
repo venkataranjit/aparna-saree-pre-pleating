@@ -35,6 +35,9 @@ import {
   createClientModel,
   createMeasurementModel,
   createOrderModel,
+  createExpenseModel,
+  EXPENSE_CATEGORIES,
+  EXPENSE_PAYMENT_METHODS,
 } from './schema';
 
 /**
@@ -2052,6 +2055,150 @@ export const deleteOrder = async (orderId) => {
   setCachedOrders(cached.filter((o) => o.id !== orderId));
   return true;
 };
+
+/**
+ * ============================================================================
+ * 7. Expenses Collection Operations (expenses/{expenseId})
+ * ============================================================================
+ */
+export const LOCAL_EXPENSES_KEY = 'aparna_local_expenses_v1';
+
+export const getLocalExpenses = () => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(LOCAL_EXPENSES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    console.warn('Failed to parse local expenses cache:', err);
+    return [];
+  }
+};
+
+export const saveLocalExpenses = (expenses) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(LOCAL_EXPENSES_KEY, JSON.stringify(expenses));
+  } catch (err) {
+    console.warn('Failed to save local expenses cache:', err);
+  }
+};
+
+export const getAllExpenses = async () => {
+  const localList = getLocalExpenses();
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.EXPENSES),
+      orderBy('createdAt', 'desc')
+    );
+    const snapshot = await withTimeout(getDocs(q), 5000, null);
+
+    if (snapshot && !snapshot.empty) {
+      const expenses = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      }));
+      saveLocalExpenses(expenses);
+      return expenses;
+    }
+
+    if (snapshot && snapshot.empty) {
+      saveLocalExpenses([]);
+      return [];
+    }
+  } catch (err) {
+    console.warn('getAllExpenses firestore note (using local cache):', err.message || err);
+  }
+
+  return localList;
+};
+
+export const getExpenseById = async (expenseId) => {
+  if (!expenseId) return null;
+  const localList = getLocalExpenses();
+  const foundLocal = localList.find((e) => e.id === expenseId);
+
+  try {
+    const docRef = doc(db, COLLECTIONS.EXPENSES, expenseId);
+    const snapshot = await withTimeout(getDoc(docRef), 4000, null);
+    if (snapshot && snapshot.exists()) {
+      return { id: snapshot.id, ...snapshot.data() };
+    }
+  } catch (err) {
+    console.warn('getExpenseById firestore note:', err.message || err);
+  }
+
+  return foundLocal || null;
+};
+
+export const createExpense = async (expenseData) => {
+  const model = createExpenseModel(expenseData);
+  let newId = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+
+  try {
+    const collRef = collection(db, COLLECTIONS.EXPENSES);
+    const docRef = await withTimeout(addDoc(collRef, model), 4000);
+    newId = docRef.id;
+  } catch (err) {
+    console.warn('createExpense firestore note (saved locally):', err.message || err);
+    try {
+      const customDocRef = doc(db, COLLECTIONS.EXPENSES, newId);
+      await withTimeout(setDoc(customDocRef, model), 4000);
+    } catch {}
+  }
+
+  const newExpense = {
+    id: newId,
+    ...model,
+    createdAt: new Date().toISOString(),
+    updatedAt: null,
+    updatedBy: null,
+  };
+
+  const localList = getLocalExpenses();
+  saveLocalExpenses([newExpense, ...localList.filter((e) => e.id !== newId)]);
+  return newExpense;
+};
+
+export const updateExpense = async (expenseId, updateData) => {
+  const sanitizeUpdate = {
+    ...updateData,
+    updatedAt: serverTimestamp(),
+  };
+
+  try {
+    const docRef = doc(db, COLLECTIONS.EXPENSES, expenseId);
+    await withTimeout(updateDoc(docRef, sanitizeUpdate), 4000);
+  } catch (err) {
+    console.warn('updateExpense firestore note (updated locally):', err.message || err);
+  }
+
+  const localList = getLocalExpenses();
+  const updatedList = localList.map((e) =>
+    e.id === expenseId
+      ? {
+          ...e,
+          ...updateData,
+          updatedAt: new Date().toISOString(),
+        }
+      : e
+  );
+  saveLocalExpenses(updatedList);
+  return { id: expenseId, ...updateData };
+};
+
+export const deleteExpense = async (expenseId) => {
+  try {
+    const docRef = doc(db, COLLECTIONS.EXPENSES, expenseId);
+    await withTimeout(deleteDoc(docRef), 4000);
+  } catch (err) {
+    console.warn('deleteExpense firestore note (removed locally):', err.message || err);
+  }
+
+  const localList = getLocalExpenses();
+  saveLocalExpenses(localList.filter((e) => e.id !== expenseId));
+  return true;
+};
+
 
 
 // Immediate one-time purge of legacy mock data from client browser cache

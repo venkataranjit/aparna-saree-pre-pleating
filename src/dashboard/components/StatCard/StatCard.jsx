@@ -73,4 +73,5 @@ const StatCard = ({
   );
 };
 
+export { StatCard };
 export default StatCard;

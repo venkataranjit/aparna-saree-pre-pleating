@@ -199,7 +199,8 @@ html.theme-transition *::after {
   .bookings-table-card,
   .services-table-card,
   .users-table-card,
-  .orders-table-card {
+  .orders-table-card,
+  .expenses-table-card {
     box-shadow: var(--table-shadow) !important;
   }
 
@@ -218,6 +219,9 @@ html.theme-transition *::after {
   .forgot-card,
   .reset-card,
   .not-found-card,
+  .expense-grid-card,
+  .client-grid-card,
+  .expenses-filter-accordion,
   .app-card {
     box-shadow: var(--card-shadow) !important;
 
@@ -230,6 +234,7 @@ html.theme-transition *::after {
   .create-client-btn,
   .create-user-btn,
   .add-service-btn,
+  .create-expense-btn,
   .app-btn--primary {
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
   }

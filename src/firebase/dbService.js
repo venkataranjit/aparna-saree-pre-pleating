@@ -1134,14 +1134,18 @@ export const updateUser = async (userId, updatedData) => {
         : doc(collection(db, COLLECTIONS.USERS));
     }
 
+    const disabledState = updatedData.disabled !== undefined ? Boolean(updatedData.disabled) : Boolean(existingUser.disabled);
     const firestorePayload = {
       username: payload.username,
       email: payload.email,
       userMobile: payload.userMobile,
       userAddress: payload.userAddress,
       role: payload.role,
+      disabled: disabledState,
       updatedAt: serverTimestamp(),
     };
+
+    payload.disabled = disabledState;
 
     await withTimeout(setDoc(targetDocRef, firestorePayload, { merge: true }), 3000);
     payload.id = targetDocRef.id;
@@ -1150,6 +1154,54 @@ export const updateUser = async (userId, updatedData) => {
   }
 
   return payload;
+};
+
+/**
+ * Toggle user enabled/disabled status in Firestore and local cache
+ * @param {string} userId - Firestore User Document ID
+ * @param {boolean} disabled - True to disable, false to enable
+ */
+export const toggleUserStatus = async (userId, disabled) => {
+  const localList = getLocalUsers();
+  const existingIdx = localList.findIndex((u) => userId && u.id === userId);
+  if (existingIdx < 0) {
+    throw new Error('User not found');
+  }
+
+  const user = localList[existingIdx];
+  if (user.email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()) {
+    throw new Error('Super Admin account cannot be disabled.');
+  }
+
+  const now = new Date();
+  const updatedUser = {
+    ...user,
+    disabled: Boolean(disabled),
+    updatedAt: now.toISOString(),
+    rawUpdatedAt: now,
+  };
+
+  localList[existingIdx] = updatedUser;
+  saveLocalUsers(localList);
+
+  try {
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId);
+    await withTimeout(
+      setDoc(
+        userDocRef,
+        {
+          disabled: Boolean(disabled),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      ),
+      3000
+    );
+  } catch (fsErr) {
+    console.warn('Firestore toggleUserStatus note (saved locally):', fsErr.message || fsErr);
+  }
+
+  return updatedUser;
 };
 
 

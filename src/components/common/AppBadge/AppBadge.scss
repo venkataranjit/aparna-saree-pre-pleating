@@ -58,12 +58,26 @@
     border-color: rgba(0, 0, 0, 0.2) !important;
   }
 
+  &--danger,
+  &--disabled,
+  &--inactive,
   &--cancelled,
   &--error,
   &--failed {
-    background: rgba(239, 68, 68, 0.12);
+    background: rgba(239, 68, 68, 0.14);
     color: #f87171;
-    border-color: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.35);
+  }
+
+  [data-theme="light"] &--danger,
+  [data-theme="light"] &--disabled,
+  [data-theme="light"] &--inactive,
+  [data-theme="light"] &--cancelled,
+  [data-theme="light"] &--error,
+  [data-theme="light"] &--failed {
+    background: rgba(239, 68, 68, 0.12) !important;
+    color: #dc2626 !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
   }
 
   &--admin {

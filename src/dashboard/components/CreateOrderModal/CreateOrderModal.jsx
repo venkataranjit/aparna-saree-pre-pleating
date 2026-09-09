@@ -489,6 +489,112 @@ export default function CreateOrderModal({
     loadData();
   }, [open, isClientMode, initialClient, initialMeasurements]);
 
+  // Auto-select initialClient once BOTH clients list AND measurementsMap have loaded (admin/staff mode)
+  useEffect(() => {
+    if (!open || isClientMode || !initialClient || clients.length === 0) return;
+    const clientId = initialClient.id;
+    if (!clientId) return;
+    const found = clients.find((c) => c.id === clientId);
+    if (!found) return;
+
+    // 1. Set selected client id & populate contact form
+    setSelectedClientId(clientId);
+    setClientForm({
+      username: found.username || "",
+      userMobile: (found.userMobile || "").replace(/\D/g, "").slice(-10),
+      email: found.email || "",
+      userAddress: found.userAddress || "",
+    });
+    setValidationErrors((prev) => ({
+      ...prev,
+      "client.username": undefined,
+      "client.userMobile": undefined,
+      "client.email": undefined,
+    }));
+
+    // 2. Auto-populate measurement profiles for this client in every item
+    // Build client lookup keys (id, email, username)
+    const clientKeys = new Set();
+    if (found.id) clientKeys.add(String(found.id).toLowerCase().trim());
+    if (found.email && found.email.includes("@")) clientKeys.add(found.email.toLowerCase().trim());
+    if (found.username && found.username.trim().toLowerCase() !== "client") {
+      clientKeys.add(found.username.toLowerCase().trim());
+    }
+
+    // Collect all measurements that belong to this client from measurementsMap
+    const seenIds = new Set();
+    const seenSigs = new Set();
+    const clientMeasures = [];
+
+    const addUnique = (m) => {
+      if (!m || !m.id || String(m.id).startsWith("ord_")) return;
+      const sig = `${(m.title||"").trim().toLowerCase()}|${m.pallu||""}|${m.shoulderToRightTight||""}|${m.chest||""}|${m.hip||""}|${m.firstPleatSize||""}|${m.noOfChestPleats||""}|${m.height||""}|${m.dressSize||""}`;
+      if (!seenIds.has(m.id) && !seenSigs.has(sig)) {
+        seenIds.add(m.id);
+        seenSigs.add(sig);
+        clientMeasures.push(m);
+      }
+    };
+
+    Object.entries(measurementsMap || {}).forEach(([k, list]) => {
+      if (clientKeys.has(String(k).toLowerCase().trim()) && Array.isArray(list)) {
+        list.forEach(addUnique);
+      }
+    });
+    // Also scan all values for any measurement carrying this client's ids
+    Object.values(measurementsMap || {}).flat().forEach((m) => {
+      if (!m) return;
+      const mUserId = (m.userId || m.clientId || "").toString().toLowerCase().trim();
+      const mEmail = (m.userEmail || m.email || "").toString().toLowerCase().trim();
+      const mUsername = (m.username || "").toString().toLowerCase().trim();
+      if (
+        (mUserId && clientKeys.has(mUserId)) ||
+        (found.email && mEmail && mEmail.includes("@") && mEmail === found.email.toLowerCase().trim()) ||
+        (found.username && found.username.trim().toLowerCase() !== "client" && mUsername && mUsername === found.username.toLowerCase().trim())
+      ) {
+        addUnique(m);
+      }
+    });
+
+    const validMeasureIds = new Set(clientMeasures.map((m) => m.id));
+
+    setItems((prev) =>
+      prev.map((it) => {
+        if (it.selectedMeasurementId && it.selectedMeasurementId !== "custom" && validMeasureIds.has(it.selectedMeasurementId)) {
+          return it; // keep existing valid selection
+        }
+        if (clientMeasures.length > 0) {
+          const first = clientMeasures[0];
+          return {
+            ...it,
+            selectedMeasurementId: first.id,
+            customMeasurement: {
+              title: first.title || "Custom Sizing",
+              pallu: first.pallu || first.palluLength || "",
+              shoulderToRightTight: first.shoulderToRightTight || first.shoulder || "",
+              chest: first.chest || first.chestSize || "",
+              hip: first.hip || first.hipSize || "",
+              firstPleatSize: first.firstPleatSize || first.firstPleat || "",
+              noOfChestPleats: first.noOfChestPleats || first.chestPleats || "",
+              height: first.height || "",
+              dressSize: first.dressSize || "",
+              notes: first.notes || "",
+            },
+          };
+        }
+        return {
+          ...it,
+          selectedMeasurementId: "custom",
+          customMeasurement: {
+            title: "Custom Sizing",
+            pallu: "", shoulderToRightTight: "", chest: "", hip: "",
+            firstPleatSize: "", noOfChestPleats: "", height: "", dressSize: "", notes: "",
+          },
+        };
+      }),
+    );
+  }, [clients, measurementsMap, open, isClientMode, initialClient]);
+
   // Dedicated helper to retrieve ONLY the measurement profiles belonging to the specified client
   const getMeasuresForClient = useCallback(
     (targetClientId, targetClient, mMap = measurementsMap) => {
@@ -1246,6 +1352,8 @@ export default function CreateOrderModal({
                   <p className="section-subtitle">
                     {isClientMode
                       ? "Your contact details and delivery location"
+                      : initialClient
+                      ? "Client pre-selected — contact details loaded automatically"
                       : "Select an existing registered client or enter details for a new client"}
                   </p>
                 </div>
@@ -1259,9 +1367,9 @@ export default function CreateOrderModal({
                     onChange={(e) => handleClientSelect(e.target.value)}
                     options={clientSelectOptions}
                     startAdornment={<PersonOutlineIcon />}
-                    disabled={submitting}
+                    disabled={submitting || Boolean(initialClient)}
                     searchable
-                    allowClear
+                    allowClear={!initialClient}
                     className="client-select-box"
                   />
                 </div>
@@ -1274,6 +1382,7 @@ export default function CreateOrderModal({
                 placeholder="e.g. Priya Sharma"
                 value={clientForm.username}
                 onChange={(e) => {
+                  if (initialClient) return;
                   setClientForm((prev) => ({
                     ...prev,
                     username: e.target.value,
@@ -1284,6 +1393,7 @@ export default function CreateOrderModal({
                   }));
                 }}
                 disabled={submitting}
+                readOnly={Boolean(initialClient)}
                 startAdornment={<PersonOutlineIcon />}
                 required
                 error={Boolean(validationErrors["client.username"])}
@@ -1296,6 +1406,7 @@ export default function CreateOrderModal({
                 inputMode="numeric"
                 maxLength={10}
                 onKeyDown={(e) => {
+                  if (initialClient) return;
                   if (
                     !/^\d$/.test(e.key) &&
                     !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key) &&
@@ -1306,6 +1417,7 @@ export default function CreateOrderModal({
                 }}
                 value={clientForm.userMobile}
                 onChange={(e) => {
+                  if (initialClient) return;
                   const sanitized = e.target.value.replace(/\D/g, "").slice(0, 10);
                   setClientForm((prev) => ({
                     ...prev,
@@ -1317,6 +1429,7 @@ export default function CreateOrderModal({
                   }));
                 }}
                 disabled={submitting}
+                readOnly={Boolean(initialClient)}
                 startAdornment={<PhoneIphoneOutlinedIcon />}
                 required
                 error={Boolean(validationErrors["client.userMobile"])}
@@ -1329,6 +1442,7 @@ export default function CreateOrderModal({
                 type="email"
                 value={clientForm.email}
                 onChange={(e) => {
+                  if (initialClient) return;
                   setClientForm((prev) => ({ ...prev, email: e.target.value }));
                   setValidationErrors((prev) => ({
                     ...prev,
@@ -1336,6 +1450,7 @@ export default function CreateOrderModal({
                   }));
                 }}
                 disabled={submitting}
+                readOnly={Boolean(initialClient)}
                 startAdornment={<EmailOutlinedIcon />}
                 error={Boolean(validationErrors["client.email"])}
                 helperText={validationErrors["client.email"]}
@@ -1346,6 +1461,7 @@ export default function CreateOrderModal({
                 placeholder={isClientMode ? "e.g. Flat 301, Sri Sai Heights, Madhapur, Hyderabad" : "e.g. Flat 302, Green Meadows, Jubilee Hills"}
                 value={clientForm.userAddress}
                 onChange={(e) => {
+                  if (initialClient) return;
                   setClientForm((prev) => ({
                     ...prev,
                     userAddress: e.target.value,
@@ -1356,6 +1472,7 @@ export default function CreateOrderModal({
                   }));
                 }}
                 disabled={submitting}
+                readOnly={Boolean(initialClient)}
                 startAdornment={<LocationOnOutlinedIcon />}
               />
             </div>

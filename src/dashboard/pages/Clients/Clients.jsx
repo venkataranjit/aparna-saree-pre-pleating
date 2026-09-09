@@ -16,6 +16,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import NotesOutlinedIcon from "@mui/icons-material/NotesOutlined";
 import SquareFootOutlinedIcon from "@mui/icons-material/SquareFootOutlined";
@@ -26,12 +27,15 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import StatCard from "../../components/StatCard/StatCard";
+import CreateOrderModal from "../../components/CreateOrderModal/CreateOrderModal";
 import { useAuth } from "../../../auth/context/AuthContext";
 import {
   getAllUsers,
   createUser,
   updateUser,
+  toggleUserStatus,
   getLocalUsers,
   getAllMeasurements,
   createClientMeasurement,
@@ -81,9 +85,7 @@ const clientValidationSchema = Yup.object({
       "Please enter a valid 10-digit Indian mobile number",
     )
     .required("Mobile Number is required"),
-  email: Yup.string()
-    .trim()
-    .email("Please enter a valid email address"),
+  email: Yup.string().trim().email("Please enter a valid email address"),
   userAddress: Yup.string()
     .trim()
     .max(150, "Address cannot exceed 150 characters"),
@@ -222,7 +224,6 @@ const Clients = () => {
   const [activeTab, setActiveTab] = useState("ALL");
   const [viewMode, setViewMode] = useState("table");
 
-
   // Sorting and Pagination states
   const [sortField, setSortField] = useState("createdAt");
   const [sortDirection, setSortDirection] = useState("desc");
@@ -271,6 +272,48 @@ const Clients = () => {
   const [selectedMeasureForEdit, setSelectedMeasureForEdit] = useState(null);
   const [deletingMeasureId, setDeletingMeasureId] = useState(null);
   const [measureToDelete, setMeasureToDelete] = useState(null);
+  const [orderForClient, setOrderForClient] = useState(null); // Create Order per client
+
+  // Client Enable / Disable status modal state
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [clientForStatusChange, setClientForStatusChange] = useState(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  const handleOpenStatusModal = (client) => {
+    setClientForStatusChange(client);
+    setStatusModalOpen(true);
+  };
+
+  const handleConfirmStatusToggle = async () => {
+    if (!clientForStatusChange) return;
+    const isCurrentlyDisabled = Boolean(clientForStatusChange.disabled);
+    const targetDisabledState = !isCurrentlyDisabled;
+    setUpdatingStatus(true);
+    try {
+      await toggleUserStatus(clientForStatusChange.id, targetDisabledState);
+      setClients((prev) =>
+        prev.map((c) =>
+          c.id === clientForStatusChange.id
+            ? { ...c, disabled: targetDisabledState }
+            : c
+        )
+      );
+      toast.success(
+        `Client "${clientForStatusChange.username || 'Client'}" has been ${
+          targetDisabledState ? "disabled" : "enabled"
+        } successfully!`
+      );
+      setStatusModalOpen(false);
+      setClientForStatusChange(null);
+    } catch (err) {
+      console.error("Error updating client status:", err);
+      toast.error(
+        "Failed to update client status: " + (err.message || "Please try again.")
+      );
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   // Fetch only Client details and their measurements
   const fetchClients = async () => {
@@ -309,6 +352,7 @@ const Clients = () => {
           .map((u) => ({
             ...u,
             role: USER_ROLES.CLIENT,
+            disabled: Boolean(u.disabled),
             createdAt: u.createdAt,
             updatedAt: u.updatedAt,
             rawCreatedAt: u.rawCreatedAt || u.createdAt,
@@ -334,6 +378,7 @@ const Clients = () => {
         .map((u) => ({
           ...u,
           role: USER_ROLES.CLIENT,
+          disabled: Boolean(u.disabled),
           createdAt: u.createdAt,
           updatedAt: u.updatedAt,
           rawCreatedAt: u.rawCreatedAt || u.createdAt,
@@ -351,13 +396,14 @@ const Clients = () => {
 
   // Handle opening Edit Modal
   const handleOpenEdit = (client) => {
-    if (!userCanEdit) return;
+    if (!userCanEdit || client?.disabled) return;
     setSelectedClient(client);
     setOpenEditModal(true);
   };
 
   // Handle opening Add Measurement Modal
   const handleOpenAddMeasure = (client) => {
+    if (client?.disabled) return;
     setClientForMeasure(client);
     setOpenAddMeasureModal(true);
   };
@@ -410,7 +456,7 @@ const Clients = () => {
             );
             editFormik.setFieldTouched("userMobile", true, false);
           }
-          toast.error(uniqueness.message,);
+          toast.error(uniqueness.message);
           setSubmitting(false);
           return;
         }
@@ -442,7 +488,9 @@ const Clients = () => {
             }
           } catch (pwErr) {
             console.warn("Password update note:", pwErr);
-            toast.error(`Profile saved, but password update failed: ${pwErr.message}`,);
+            toast.error(
+              `Profile saved, but password update failed: ${pwErr.message}`,
+            );
             setSubmitting(false);
             return;
           }
@@ -474,11 +522,13 @@ const Clients = () => {
           } catch {}
         }
 
-        toast.success(`Client "${values.username.trim()}" updated successfully!${pwFeedbackNote}`,);
+        toast.success(
+          `Client "${values.username.trim()}" updated successfully!${pwFeedbackNote}`,
+        );
         setOpenEditModal(false);
       } catch (err) {
         console.error("Update client error:", err);
-        toast.error(err.message || "Failed to update client.",);
+        toast.error(err.message || "Failed to update client.");
       } finally {
         setSubmitting(false);
       }
@@ -520,7 +570,7 @@ const Clients = () => {
             );
             createFormik.setFieldTouched("userMobile", true, false);
           }
-          toast.error(uniqueness.message,);
+          toast.error(uniqueness.message);
           setSubmitting(false);
           return;
         }
@@ -541,7 +591,9 @@ const Clients = () => {
               "This email address is already registered in Authentication.",
             );
             createFormik.setFieldTouched("email", true, false);
-            toast.error(`The email "${cleanEmail}" is already registered in Firebase Authentication.`,);
+            toast.error(
+              `The email "${cleanEmail}" is already registered in Firebase Authentication.`,
+            );
             setSubmitting(false);
             return;
           }
@@ -571,12 +623,14 @@ const Clients = () => {
           ...prev,
         ]);
 
-        toast.success(`Client "${values.username.trim()}" registered successfully!`,);
+        toast.success(
+          `Client "${values.username.trim()}" registered successfully!`,
+        );
         resetForm();
         setDialogOpen(false);
       } catch (err) {
         console.error("Client registration error:", err);
-        toast.error(err.message || "Failed to create client record.",);
+        toast.error(err.message || "Failed to create client record.");
       } finally {
         setSubmitting(false);
       }
@@ -685,12 +739,14 @@ const Clients = () => {
           ),
         );
 
-        toast.success(`Measurement profile "${values.title.trim()}" updated successfully!`,);
+        toast.success(
+          `Measurement profile "${values.title.trim()}" updated successfully!`,
+        );
         setOpenEditMeasureModal(false);
         setSelectedMeasureForEdit(null);
       } catch (err) {
         console.error("Update measurement error:", err);
-        toast.error(err.message || "Failed to update measurement profile.",);
+        toast.error(err.message || "Failed to update measurement profile.");
       } finally {
         setSubmitting(false);
       }
@@ -713,13 +769,13 @@ const Clients = () => {
           [clientId]: userList,
         };
       });
-      toast.success(`Measurement profile "${
-          title || "Profile"
-        }" removed successfully.`,);
+      toast.success(
+        `Measurement profile "${title || "Profile"}" removed successfully.`,
+      );
       setMeasureToDelete(null);
     } catch (err) {
       console.error("Delete measurement error:", err);
-      toast.error("Failed to delete measurement profile.",);
+      toast.error("Failed to delete measurement profile.");
     } finally {
       setDeletingMeasureId(null);
     }
@@ -739,8 +795,9 @@ const Clients = () => {
       const hasMeasurements = (measurementsMap[item.id] || []).length > 0;
       const matchesTab =
         activeTab === "ALL" ||
-        (activeTab === "MEASURED" && hasMeasurements) ||
-        (activeTab === "PENDING" && !hasMeasurements);
+        (activeTab === "MEASURED" && hasMeasurements && !item.disabled) ||
+        (activeTab === "PENDING" && !hasMeasurements && !item.disabled) ||
+        (activeTab === "DISABLED" && Boolean(item.disabled));
 
       return matchesSearch && matchesTab;
     });
@@ -752,6 +809,11 @@ const Clients = () => {
         const aCount = (measurementsMap[a.id] || []).length;
         const bCount = (measurementsMap[b.id] || []).length;
         return sortDirection === "asc" ? aCount - bCount : bCount - aCount;
+      }
+      if (sortField === "disabled") {
+        const aVal = a.disabled ? 1 : 0;
+        const bVal = b.disabled ? 1 : 0;
+        return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
       }
       if (
         sortField === "createdAt" ||
@@ -783,14 +845,15 @@ const Clients = () => {
     return clients.filter((c) => (measurementsMap[c.id] || []).length > 0)
       .length;
   }, [clients, measurementsMap]);
-  const pendingMeasurementsCount =
-    totalClientsCount - clientsWithMeasurements;
+  const pendingMeasurementsCount = totalClientsCount - clientsWithMeasurements;
   const totalMeasurementsCount = useMemo(() => {
     return Object.values(measurementsMap).reduce(
       (acc, list) => acc + (list?.length || 0),
       0,
     );
   }, [measurementsMap]);
+
+  const disabledClientsCount = clients.filter((c) => Boolean(c.disabled)).length;
 
   const clientTabs = [
     { label: `All Clients (${clients.length})`, value: "ALL" },
@@ -799,9 +862,12 @@ const Clients = () => {
       value: "MEASURED",
     },
     {
-      label: `Pending Measurements(${pendingMeasurementsCount})`,
+      label: `Pending Measurements (${pendingMeasurementsCount})`,
       value: "PENDING",
     },
+    ...(disabledClientsCount > 0
+      ? [{ label: `Disabled (${disabledClientsCount})`, value: "DISABLED" }]
+      : []),
   ];
 
   return (
@@ -918,12 +984,19 @@ const Clients = () => {
       {loading ? (
         <div className="clients-loading-wrapper">
           <AppSpinner size="lg" color="gold" />
-          <span className="clients-loading-text">Loading client directory...</span>
+          <span className="clients-loading-text">
+            Loading client directory...
+          </span>
         </div>
       ) : filteredClients.length === 0 ? (
         <div className="clients-empty-wrapper">
-          <PeopleOutlineIcon className="empty-state-icon" style={{ fontSize: 44 }} />
-          <span className="empty-title">No clients found matching your criteria.</span>
+          <PeopleOutlineIcon
+            className="empty-state-icon"
+            style={{ fontSize: 44 }}
+          />
+          <span className="empty-title">
+            No clients found matching your criteria.
+          </span>
           <span className="empty-subtitle">
             {searchTerm || activeTab !== "ALL"
               ? "Try changing your search term or active tab filter."
@@ -942,7 +1015,9 @@ const Clients = () => {
                   <AppTableCell head>
                     <AppTableSortLabel
                       active={sortField === "username"}
-                      direction={sortField === "username" ? sortDirection : "asc"}
+                      direction={
+                        sortField === "username" ? sortDirection : "asc"
+                      }
                       onClick={() => handleRequestSort("username")}
                     >
                       CLIENT NAME
@@ -970,6 +1045,17 @@ const Clients = () => {
                       MEASUREMENTS
                     </AppTableSortLabel>
                   </AppTableCell>
+                  <AppTableCell head style={{ textAlign: "center" }}>
+                    <AppTableSortLabel
+                      active={sortField === "disabled"}
+                      direction={
+                        sortField === "disabled" ? sortDirection : "asc"
+                      }
+                      onClick={() => handleRequestSort("disabled")}
+                    >
+                      STATUS
+                    </AppTableSortLabel>
+                  </AppTableCell>
                   <AppTableCell
                     head
                     style={{ textAlign: "right", minWidth: 160 }}
@@ -993,7 +1079,7 @@ const Clients = () => {
                   return (
                     <React.Fragment key={user.id}>
                       <AppTableRow
-                        className="client-table-row"
+                        className={`client-table-row ${user.disabled ? "client-table-row--disabled" : ""}`}
                         onClick={() => toggleClientExpand(user.id)}
                         style={{ cursor: "pointer" }}
                       >
@@ -1041,6 +1127,10 @@ const Clients = () => {
                                 {measureCount > 1 ? "s" : ""}
                               </AppBadge>
                             </span>
+                          ) : user.disabled ? (
+                            <AppBadge variant="neutral">
+                              No Profiles
+                            </AppBadge>
                           ) : (
                             <span
                               onClick={(e) => {
@@ -1057,12 +1147,19 @@ const Clients = () => {
                           )}
                         </AppTableCell>
 
+                        {/* Status Badge */}
+                        <AppTableCell style={{ textAlign: "center" }}>
+                          <AppBadge variant={user.disabled ? "danger" : "completed"}>
+                            {user.disabled ? "Disabled" : "Active"}
+                          </AppBadge>
+                        </AppTableCell>
+
                         {/* Row Action Buttons */}
                         <AppTableCell
                           style={{ textAlign: "right", whiteSpace: "nowrap" }}
                         >
                           <div className="action-btns">
-                            {/* 1. View Details Button (Crystal Blue) */}
+                            {/* 1. View Details Button (Always Available) */}
                             <AppButton
                               variant="info"
                               size="sm"
@@ -1079,25 +1176,27 @@ const Clients = () => {
                               />
                             </AppButton>
 
-                            {/* 2. Add Measurement Shortcut (Emerald Green) */}
-                            <AppButton
-                              variant="success"
-                              size="sm"
-                              square
-                              className="action-btn--measure"
-                              title="Add Measurement Profile"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenAddMeasure(user);
-                              }}
-                            >
-                              <StraightenOutlinedIcon
-                                style={{ fontSize: 16 }}
-                              />
-                            </AppButton>
+                            {/* 2. Add Measurement Shortcut (Only when active) */}
+                            {userCanEdit && !user.disabled && (
+                              <AppButton
+                                variant="success"
+                                size="sm"
+                                square
+                                className="action-btn--measure"
+                                title="Add Measurement Profile"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenAddMeasure(user);
+                                }}
+                              >
+                                <StraightenOutlinedIcon
+                                  style={{ fontSize: 16 }}
+                                />
+                              </AppButton>
+                            )}
 
-                            {/* 3. Edit Client Info (Warm Amber Gold) */}
-                            {userCanEdit && (
+                            {/* 3. Edit Client Info (Only when active) */}
+                            {userCanEdit && !user.disabled && (
                               <AppButton
                                 variant="warning"
                                 size="sm"
@@ -1113,24 +1212,47 @@ const Clients = () => {
                               </AppButton>
                             )}
 
-                            {/* 4. Delete Client Button (Rose Red) */}
-                            {userCanDelete && (
+                            {/* 4. Enable / Disable Client Button */}
+                            {userCanEdit && (
                               <AppButton
-                                variant="danger"
+                                variant={user.disabled ? "success" : "danger"}
                                 size="sm"
                                 square
-                                className="action-btn--delete"
-                                title="Delete Client"
+                                className={`action-btn--status ${user.disabled ? "action-btn--enable" : "action-btn--disable"}`}
+                                title={user.disabled ? "Enable Client Account" : "Disable Client Account"}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleOpenDelete(user);
+                                  handleOpenStatusModal(user);
                                 }}
                               >
-                                <DeleteOutlineIcon style={{ fontSize: 16 }} />
+                                {user.disabled ? (
+                                  <CheckCircleOutlineIcon style={{ fontSize: 16 }} />
+                                ) : (
+                                  <BlockOutlinedIcon style={{ fontSize: 16 }} />
+                                )}
                               </AppButton>
                             )}
 
-                            {/* 5. Revamped View More Pill Button */}
+                            {/* 5. Create Order Button (Only when active) */}
+                            {!user.disabled && (
+                              <AppButton
+                                variant="secondary"
+                                size="sm"
+                                square
+                                className="action-btn--order"
+                                title="Create Order"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOrderForClient(user);
+                                }}
+                              >
+                                <ShoppingCartOutlinedIcon
+                                  style={{ fontSize: 16 }}
+                                />
+                              </AppButton>
+                            )}
+
+                            {/* 6. Revamped View More Pill Button */}
                             <button
                               type="button"
                               className={`view-more-pill-btn ${isExpanded ? "is-active" : ""}`}
@@ -1162,7 +1284,7 @@ const Clients = () => {
                       {isExpanded && (
                         <AppTableRow className="table-expanded-row">
                           <AppTableCell
-                            colSpan={4}
+                            colSpan={5}
                             className="table-expanded-cell"
                           >
                             <div className="table-expanded-container">
@@ -1195,9 +1317,7 @@ const Clients = () => {
                                 </div>
                                 <div className="tile-content">
                                   <DateTimeCell
-                                    value={
-                                      user.rawCreatedAt || user.createdAt
-                                    }
+                                    value={user.rawCreatedAt || user.createdAt}
                                   />
                                 </div>
                               </div>
@@ -1255,31 +1375,42 @@ const Clients = () => {
               const measureCount = userMeasures.length;
 
               return (
-                <div key={user.id} className="client-grid-card">
+                <div key={user.id} className={`user-grid-card ${user.disabled ? "user-grid-card--disabled" : ""}`}>
                   <div className="card-top-accent" />
                   <div className="card-header">
                     <div className="user-avatar-circle">{initial}</div>
-                    <span
-                      onClick={() =>
-                        measureCount > 0
-                          ? handleOpenViewDetails(user)
-                          : handleOpenAddMeasure(user)
-                      }
-                      style={{ cursor: "pointer" }}
-                      title={
-                        measureCount > 0
-                          ? "View Measurement Profiles"
-                          : "Add Measurement Profile"
-                      }
-                    >
-                      <AppBadge
-                        variant={measureCount > 0 ? "completed" : "pending"}
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                      <span
+                        onClick={() =>
+                          measureCount > 0
+                            ? handleOpenViewDetails(user)
+                            : !user.disabled
+                            ? handleOpenAddMeasure(user)
+                            : null
+                        }
+                        style={{ cursor: measureCount > 0 || !user.disabled ? "pointer" : "default" }}
+                        title={
+                          measureCount > 0
+                            ? "View Measurement Profiles"
+                            : !user.disabled
+                            ? "Add Measurement Profile"
+                            : "Disabled"
+                        }
                       >
-                        {measureCount > 0
-                          ? `${measureCount} Profile${measureCount > 1 ? "s" : ""}`
-                          : "+ Add Measure"}
+                        <AppBadge
+                          variant={measureCount > 0 ? "completed" : user.disabled ? "neutral" : "pending"}
+                        >
+                          {measureCount > 0
+                            ? `${measureCount} Profile${measureCount > 1 ? "s" : ""}`
+                            : user.disabled
+                            ? "No Profiles"
+                            : "+ Add Measure"}
+                        </AppBadge>
+                      </span>
+                      <AppBadge variant={user.disabled ? "danger" : "completed"}>
+                        {user.disabled ? "Disabled" : "Active"}
                       </AppBadge>
-                    </span>
+                    </div>
                   </div>
 
                   <div className="card-body">
@@ -1291,12 +1422,16 @@ const Clients = () => {
                       </div>
                       <div className="info-item">
                         <EmailOutlinedIcon style={{ fontSize: 14 }} />
-                        <span className="truncate-text">{user.email || "No email"}</span>
+                        <span className="truncate-text">
+                          {user.email || "No email"}
+                        </span>
                       </div>
                       {user.userAddress && (
                         <div className="info-item">
                           <LocationOnOutlinedIcon style={{ fontSize: 14 }} />
-                          <span className="truncate-text">{user.userAddress}</span>
+                          <span className="truncate-text">
+                            {user.userAddress}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -1320,17 +1455,19 @@ const Clients = () => {
                       >
                         <VisibilityOutlinedIcon style={{ fontSize: 16 }} />
                       </AppButton>
-                      <AppButton
-                        variant="success"
-                        size="sm"
-                        square
-                        className="action-btn--measure"
-                        title="Add Measurement"
-                        onClick={() => handleOpenAddMeasure(user)}
-                      >
-                        <StraightenOutlinedIcon style={{ fontSize: 16 }} />
-                      </AppButton>
-                      {userCanEdit && (
+                      {userCanEdit && !user.disabled && (
+                        <AppButton
+                          variant="success"
+                          size="sm"
+                          square
+                          className="action-btn--measure"
+                          title="Add Measurement"
+                          onClick={() => handleOpenAddMeasure(user)}
+                        >
+                          <StraightenOutlinedIcon style={{ fontSize: 16 }} />
+                        </AppButton>
+                      )}
+                      {userCanEdit && !user.disabled && (
                         <AppButton
                           variant="warning"
                           size="sm"
@@ -1342,16 +1479,32 @@ const Clients = () => {
                           <EditOutlinedIcon style={{ fontSize: 16 }} />
                         </AppButton>
                       )}
-                      {userCanDelete && (
+                      {userCanEdit && (
                         <AppButton
-                          variant="danger"
+                          variant={user.disabled ? "success" : "danger"}
                           size="sm"
                           square
-                          className="action-btn--delete"
-                          title="Delete Client"
-                          onClick={() => handleOpenDelete(user)}
+                          className={`action-btn--status ${user.disabled ? "action-btn--enable" : "action-btn--disable"}`}
+                          title={user.disabled ? "Enable Client Account" : "Disable Client Account"}
+                          onClick={() => handleOpenStatusModal(user)}
                         >
-                          <DeleteOutlineIcon style={{ fontSize: 16 }} />
+                          {user.disabled ? (
+                            <CheckCircleOutlineIcon style={{ fontSize: 16 }} />
+                          ) : (
+                            <BlockOutlinedIcon style={{ fontSize: 16 }} />
+                          )}
+                        </AppButton>
+                      )}
+                      {!user.disabled && (
+                        <AppButton
+                          variant="secondary"
+                          size="sm"
+                          square
+                          className="action-btn--order"
+                          title="Create Order"
+                          onClick={() => setOrderForClient(user)}
+                        >
+                          <ShoppingCartOutlinedIcon style={{ fontSize: 16 }} />
                         </AppButton>
                       )}
                     </div>
@@ -1391,7 +1544,7 @@ const Clients = () => {
               const measureCount = userMeasures.length;
 
               return (
-                <div key={user.id} className="client-detailed-card">
+                <div key={user.id} className={`client-detailed-card ${user.disabled ? "client-detailed-card--disabled" : ""}`}>
                   <div className="detailed-card-left">
                     <div className="user-avatar-circle user-avatar-circle-lg">
                       {initial}
@@ -1401,23 +1554,34 @@ const Clients = () => {
                   <div className="detailed-card-main">
                     <div className="detailed-card-header">
                       <div className="detailed-card-title-row">
-                        <h3 className="client-heading">{user.username || "Client"}</h3>
-                        <span
-                          onClick={() =>
-                            measureCount > 0
-                              ? handleOpenViewDetails(user)
-                              : handleOpenAddMeasure(user)
-                          }
-                          style={{ cursor: "pointer" }}
-                        >
-                          <AppBadge
-                            variant={measureCount > 0 ? "completed" : "pending"}
+                        <h3 className="client-heading">
+                          {user.username || "Client"}
+                        </h3>
+                        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                          <span
+                            onClick={() =>
+                              measureCount > 0
+                                ? handleOpenViewDetails(user)
+                                : !user.disabled
+                                ? handleOpenAddMeasure(user)
+                                : null
+                            }
+                            style={{ cursor: measureCount > 0 || !user.disabled ? "pointer" : "default" }}
                           >
-                            {measureCount > 0
-                              ? `${measureCount} Measurement Profile${measureCount > 1 ? "s" : ""}`
-                              : "No Measurements Saved"}
+                            <AppBadge
+                              variant={measureCount > 0 ? "completed" : user.disabled ? "neutral" : "pending"}
+                            >
+                              {measureCount > 0
+                                ? `${measureCount} Measurement Profile${measureCount > 1 ? "s" : ""}`
+                                : user.disabled
+                                ? "No Profiles"
+                                : "No Measurements Saved"}
+                            </AppBadge>
+                          </span>
+                          <AppBadge variant={user.disabled ? "danger" : "completed"}>
+                            {user.disabled ? "Disabled" : "Active"}
                           </AppBadge>
-                        </span>
+                        </div>
                       </div>
                       <p className="client-address-text">
                         <LocationOnOutlinedIcon style={{ fontSize: 15 }} />
@@ -1451,9 +1615,7 @@ const Clients = () => {
                         <span className="meta-value">
                           <DateTimeCell
                             value={user.rawUpdatedAt || user.updatedAt}
-                            modifiedFrom={
-                              user.rawCreatedAt || user.createdAt
-                            }
+                            modifiedFrom={user.rawCreatedAt || user.createdAt}
                           />
                         </span>
                       </div>
@@ -1469,15 +1631,17 @@ const Clients = () => {
                     >
                       View Details
                     </AppButton>
-                    <AppButton
-                      variant="success"
-                      size="sm"
-                      startIcon={<StraightenOutlinedIcon />}
-                      onClick={() => handleOpenAddMeasure(user)}
-                    >
-                      Add Measure
-                    </AppButton>
-                    {userCanEdit && (
+                    {userCanEdit && !user.disabled && (
+                      <AppButton
+                        variant="success"
+                        size="sm"
+                        startIcon={<StraightenOutlinedIcon />}
+                        onClick={() => handleOpenAddMeasure(user)}
+                      >
+                        Add Measure
+                      </AppButton>
+                    )}
+                    {userCanEdit && !user.disabled && (
                       <AppButton
                         variant="warning"
                         size="sm"
@@ -1487,14 +1651,24 @@ const Clients = () => {
                         Edit
                       </AppButton>
                     )}
-                    {userCanDelete && (
+                    {userCanEdit && (
                       <AppButton
-                        variant="danger"
+                        variant={user.disabled ? "success" : "danger"}
                         size="sm"
-                        startIcon={<DeleteOutlineIcon />}
-                        onClick={() => handleOpenDelete(user)}
+                        startIcon={user.disabled ? <CheckCircleOutlineIcon /> : <BlockOutlinedIcon />}
+                        onClick={() => handleOpenStatusModal(user)}
                       >
-                        Delete
+                        {user.disabled ? "Enable Client" : "Disable Client"}
+                      </AppButton>
+                    )}
+                    {!user.disabled && (
+                      <AppButton
+                        variant="primary"
+                        size="sm"
+                        startIcon={<ShoppingCartOutlinedIcon />}
+                        onClick={() => setOrderForClient(user)}
+                      >
+                        Order Now
                       </AppButton>
                     )}
                   </div>
@@ -1519,6 +1693,15 @@ const Clients = () => {
         </div>
       )}
 
+      {/* ========================================================================= */}
+      {/* 0. Create Order Modal (per client)                                       */}
+      {/* ========================================================================= */}
+      <CreateOrderModal
+        open={!!orderForClient}
+        onClose={() => setOrderForClient(null)}
+        initialClient={orderForClient}
+        onOrderCreated={() => setOrderForClient(null)}
+      />
 
       {/* ========================================================================= */}
       {/* 1. Modal: Add New Client Dialog                                         */}
@@ -1784,9 +1967,7 @@ const Clients = () => {
                 <EmailOutlinedIcon className="summary-item-icon" />
                 <div>
                   <div className="item-label">Email</div>
-                  <div className="item-value">
-                    {clientForView.email || "—"}
-                  </div>
+                  <div className="item-value">{clientForView.email || "—"}</div>
                 </div>
               </div>
 
@@ -1807,8 +1988,7 @@ const Clients = () => {
                   <div className="item-value">
                     <DateTimeCell
                       value={
-                        clientForView.rawCreatedAt ||
-                        clientForView.createdAt
+                        clientForView.rawCreatedAt || clientForView.createdAt
                       }
                     />
                   </div>
@@ -2026,11 +2206,11 @@ const Clients = () => {
         open={openAddMeasureModal}
         onClose={() => setOpenAddMeasureModal(false)}
         subtitle={`Recording measurements for ${clientForMeasure?.username || "Client"}`}
-        initialValues={{
-          title: clientForMeasure?.username
-            ? `${clientForMeasure.username} Measurements`
-            : "Standard Saree Pleats",
-        }}
+        // initialValues={{
+        //   title: clientForMeasure?.username
+        //     ? `${clientForMeasure.username} Measurements`
+        //     : "Standard Saree Pleats",
+        // }}
         onSave={async (values) => {
           const clientId = clientForMeasure?.id;
           if (!clientId)
@@ -2070,7 +2250,9 @@ const Clients = () => {
             ),
           );
 
-          toast.success(`Measurement profile "${values.title.trim()}" added successfully for ${clientForMeasure.username}!`,);
+          toast.success(
+            `Measurement profile "${values.title.trim()}" added successfully for ${clientForMeasure.username}!`,
+          );
         }}
       />
 
@@ -2318,6 +2500,72 @@ const Clients = () => {
         >
           This will permanently delete this tailoring specification.
         </p>
+      </AppModal>
+
+      {/* ========================================================================= */}
+      {/* 7. Modal: Enable / Disable Client Confirmation Dialog                     */}
+      {/* ========================================================================= */}
+      <AppModal
+        open={statusModalOpen}
+        onClose={() => !updatingStatus && setStatusModalOpen(false)}
+        title={
+          clientForStatusChange?.disabled
+            ? "Enable Client Account"
+            : "Disable Client Account"
+        }
+        subtitle={
+          clientForStatusChange?.disabled
+            ? `Restore access for ${clientForStatusChange?.username || "this client"}`
+            : `Temporarily suspend access for ${clientForStatusChange?.username || "this client"}`
+        }
+        maxWidth="xs"
+        actions={
+          <>
+            <AppButton
+              variant="secondary"
+              onClick={() => setStatusModalOpen(false)}
+              disabled={updatingStatus}
+            >
+              Cancel
+            </AppButton>
+            <AppButton
+              variant={clientForStatusChange?.disabled ? "success" : "danger"}
+              onClick={handleConfirmStatusToggle}
+              loading={updatingStatus}
+              startIcon={
+                clientForStatusChange?.disabled ? (
+                  <CheckCircleOutlineIcon />
+                ) : (
+                  <BlockOutlinedIcon />
+                )
+              }
+            >
+              {clientForStatusChange?.disabled ? "Enable Client" : "Disable Client"}
+            </AppButton>
+          </>
+        }
+      >
+        <div className="status-modal-content">
+          <p>
+            {clientForStatusChange?.disabled ? (
+              <>
+                Are you sure you want to <strong>enable</strong> access for{" "}
+                <strong>{clientForStatusChange?.username}</strong>
+                {clientForStatusChange?.email ? ` (${clientForStatusChange.email})` : ""}?
+                <br /><br />
+                The client will be active and orders/measurements can be created.
+              </>
+            ) : (
+              <>
+                Are you sure you want to <strong>disable</strong> access for{" "}
+                <strong>{clientForStatusChange?.username}</strong>
+                {clientForStatusChange?.email ? ` (${clientForStatusChange.email})` : ""}?
+                <br /><br />
+                This will prevent new orders, measurements, and profile edits for this client until re-enabled.
+              </>
+            )}
+          </p>
+        </div>
       </AppModal>
     </div>
   );

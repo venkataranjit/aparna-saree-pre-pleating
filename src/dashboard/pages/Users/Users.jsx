@@ -13,6 +13,7 @@ import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -24,6 +25,7 @@ import {
   getAllUsers,
   createUser,
   updateUser,
+  toggleUserStatus,
   getLocalUsers,
   createAuthUser,
   checkUserUniqueness,
@@ -154,6 +156,59 @@ const Users = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("ALL");
   const [viewMode, setViewMode] = useState("table");
+
+  // User Enable / Disable state
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [userForStatusChange, setUserForStatusChange] = useState(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  const isSuperAdminUser = (u) => {
+    if (!u) return false;
+    const email = (u.email || "").toLowerCase().trim();
+    const r = (u.role || "").toLowerCase().trim();
+    return email === SUPERADMIN_EMAIL.toLowerCase() || r === USER_ROLES.SUPERADMIN || r === "superadmin";
+  };
+
+  const isSelf = (u) => {
+    if (!u || !currentUser) return false;
+    return currentUser.uid === u.id || (u.email && currentUser.email && u.email.toLowerCase().trim() === currentUser.email.toLowerCase().trim());
+  };
+
+  const handleOpenStatusModal = (user) => {
+    setUserForStatusChange(user);
+    setStatusModalOpen(true);
+  };
+
+  const handleConfirmStatusToggle = async () => {
+    if (!userForStatusChange) return;
+    const isCurrentlyDisabled = Boolean(userForStatusChange.disabled);
+    const targetDisabledState = !isCurrentlyDisabled;
+    setUpdatingStatus(true);
+    try {
+      await toggleUserStatus(userForStatusChange.id, targetDisabledState);
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userForStatusChange.id
+            ? { ...u, disabled: targetDisabledState }
+            : u
+        )
+      );
+      toast.success(
+        `User "${userForStatusChange.username || 'User'}" has been ${
+          targetDisabledState ? "disabled" : "enabled"
+        } successfully!`
+      );
+      setStatusModalOpen(false);
+      setUserForStatusChange(null);
+    } catch (err) {
+      console.error("Error updating user status:", err);
+      toast.error(
+        "Failed to update user status: " + (err.message || "Please try again.")
+      );
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   // Sorting and Pagination states
   const [sortField, setSortField] = useState("createdAt");
@@ -448,7 +503,12 @@ const Users = () => {
     return users.filter((u) => {
       const uRole = (u.role || "").toLowerCase();
       const tabLower = activeTab.toLowerCase();
-      const matchesTab = activeTab === "ALL" || uRole === tabLower;
+      const matchesTab =
+        activeTab === "ALL"
+          ? true
+          : activeTab === "DISABLED"
+          ? Boolean(u.disabled)
+          : uRole === tabLower;
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         !query ||
@@ -471,6 +531,12 @@ const Users = () => {
         return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
       }
 
+      if (sortField === "disabled") {
+        const aVal = a.disabled ? 1 : 0;
+        const bVal = b.disabled ? 1 : 0;
+        return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+      }
+
       const aVal = a[sortField] ?? "";
       const bVal = b[sortField] ?? "";
       return sortDirection === "asc"
@@ -491,6 +557,8 @@ const Users = () => {
   if (!hasAccessToUsers) {
     return <Navigate to="/dashboard" replace />;
   }
+
+  const disabledUsersCount = users.filter((u) => Boolean(u.disabled)).length;
 
   const roleTabs = [
     { label: `All (${users.length})`, value: "ALL" },
@@ -523,6 +591,9 @@ const Users = () => {
       })`,
       value: USER_ROLES.CLIENT,
     },
+    ...(disabledUsersCount > 0
+      ? [{ label: `Disabled (${disabledUsersCount})`, value: "DISABLED" }]
+      : []),
   ];
 
   const renderRoleBadge = (u) => {
@@ -672,9 +743,18 @@ const Users = () => {
                       Assigned Role
                     </AppTableSortLabel>
                   </AppTableCell>
+                  <AppTableCell head>
+                    <AppTableSortLabel
+                      active={sortField === "disabled"}
+                      direction={sortField === "disabled" ? sortDirection : "asc"}
+                      onClick={() => handleRequestSort("disabled")}
+                    >
+                      Status
+                    </AppTableSortLabel>
+                  </AppTableCell>
                   <AppTableCell
                     head
-                    style={{ textAlign: "right", minWidth: 140 }}
+                    style={{ textAlign: "right", minWidth: 160 }}
                   >
                     Actions
                   </AppTableCell>
@@ -687,7 +767,7 @@ const Users = () => {
                   return (
                     <React.Fragment key={u.id}>
                       <AppTableRow
-                        className="user-table-row"
+                        className={`user-table-row ${u.disabled ? "user-table-row--disabled" : ""}`}
                         onClick={() => toggleUserExpand(u.id)}
                         style={{ cursor: "pointer" }}
                       >
@@ -720,6 +800,11 @@ const Users = () => {
                             {u.role ? u.role.toUpperCase() : "STAFF"}
                           </AppBadge>
                         </AppTableCell>
+                        <AppTableCell>
+                          <AppBadge variant={u.disabled ? "danger" : "completed"}>
+                            {u.disabled ? "Disabled" : "Active"}
+                          </AppBadge>
+                        </AppTableCell>
                         <AppTableCell
                           style={{ textAlign: "right", whiteSpace: "nowrap" }}
                         >
@@ -737,6 +822,34 @@ const Users = () => {
                                 }}
                               >
                                 <EditOutlinedIcon style={{ fontSize: 16 }} />
+                              </AppButton>
+                            )}
+                            {userCanEdit && (
+                              <AppButton
+                                variant={u.disabled ? "success" : "danger"}
+                                size="sm"
+                                square
+                                className={`action-btn--status ${u.disabled ? "action-btn--enable" : "action-btn--disable"}`}
+                                title={
+                                  isSuperAdminUser(u)
+                                    ? "Super Admin cannot be disabled"
+                                    : isSelf(u)
+                                    ? "Cannot disable your own account"
+                                    : u.disabled
+                                    ? "Enable User Account"
+                                    : "Disable User Account"
+                                }
+                                disabled={isSuperAdminUser(u) || isSelf(u)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenStatusModal(u);
+                                }}
+                              >
+                                {u.disabled ? (
+                                  <CheckCircleOutlineIcon style={{ fontSize: 16 }} />
+                                ) : (
+                                  <BlockOutlinedIcon style={{ fontSize: 16 }} />
+                                )}
                               </AppButton>
                             )}
                             {/* Revamped View More Pill Button */}
@@ -771,7 +884,7 @@ const Users = () => {
                       {isExpanded && (
                         <AppTableRow className="table-expanded-row">
                           <AppTableCell
-                            colSpan={4}
+                            colSpan={5}
                             className="table-expanded-cell"
                           >
                             <div className="table-expanded-container">
@@ -862,13 +975,16 @@ const Users = () => {
               ).toUpperCase();
 
               return (
-                <div key={u.id} className="user-grid-card">
+                <div key={u.id} className={`user-grid-card ${u.disabled ? "user-grid-card--disabled" : ""}`}>
                   <div className="card-top-accent" />
                   <div className="card-header">
                     <div className="user-avatar-circle">{initial}</div>
-                    <AppBadge variant={getRoleBadgeVariant(u.role)}>
-                      {u.role ? u.role.toUpperCase() : "STAFF"}
-                    </AppBadge>
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                      {renderRoleBadge(u)}
+                      <AppBadge variant={u.disabled ? "danger" : "completed"}>
+                        {u.disabled ? "Disabled" : "Active"}
+                      </AppBadge>
+                    </div>
                   </div>
 
                   <div className="card-body">
@@ -909,6 +1025,31 @@ const Users = () => {
                           <EditOutlinedIcon style={{ fontSize: 16 }} />
                         </AppButton>
                       )}
+                      {userCanEdit && (
+                        <AppButton
+                          variant={u.disabled ? "success" : "danger"}
+                          size="sm"
+                          square
+                          className={`action-btn--status ${u.disabled ? "action-btn--enable" : "action-btn--disable"}`}
+                          title={
+                            isSuperAdminUser(u)
+                              ? "Super Admin cannot be disabled"
+                              : isSelf(u)
+                              ? "Cannot disable your own account"
+                              : u.disabled
+                              ? "Enable User Account"
+                              : "Disable User Account"
+                          }
+                          disabled={isSuperAdminUser(u) || isSelf(u)}
+                          onClick={() => handleOpenStatusModal(u)}
+                        >
+                          {u.disabled ? (
+                            <CheckCircleOutlineIcon style={{ fontSize: 16 }} />
+                          ) : (
+                            <BlockOutlinedIcon style={{ fontSize: 16 }} />
+                          )}
+                        </AppButton>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -944,7 +1085,7 @@ const Users = () => {
               ).toUpperCase();
 
               return (
-                <div key={u.id} className="user-detailed-card">
+                <div key={u.id} className={`user-detailed-card ${u.disabled ? "user-detailed-card--disabled" : ""}`}>
                   <div className="detailed-card-left">
                     <div className="user-avatar-circle user-avatar-circle-lg">
                       {initial}
@@ -955,9 +1096,12 @@ const Users = () => {
                     <div className="detailed-card-header">
                       <div className="detailed-card-title-row">
                         <h3 className="user-heading">{u.username || "Team Member"}</h3>
-                        <AppBadge variant={getRoleBadgeVariant(u.role)}>
-                          {u.role ? u.role.toUpperCase() : "STAFF"}
-                        </AppBadge>
+                        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                          {renderRoleBadge(u)}
+                          <AppBadge variant={u.disabled ? "danger" : "completed"}>
+                            {u.disabled ? "Disabled" : "Active"}
+                          </AppBadge>
+                        </div>
                       </div>
                       <p className="user-address-text">
                         <LocationOnOutlinedIcon style={{ fontSize: 15 }} />
@@ -1003,6 +1147,17 @@ const Users = () => {
                         onClick={() => handleOpenEditModal(u)}
                       >
                         Edit User
+                      </AppButton>
+                    )}
+                    {userCanEdit && (
+                      <AppButton
+                        variant={u.disabled ? "success" : "danger"}
+                        size="sm"
+                        startIcon={u.disabled ? <CheckCircleOutlineIcon /> : <BlockOutlinedIcon />}
+                        disabled={isSuperAdminUser(u) || isSelf(u)}
+                        onClick={() => handleOpenStatusModal(u)}
+                      >
+                        {u.disabled ? "Enable User" : "Disable User"}
                       </AppButton>
                     )}
                   </div>
@@ -1283,6 +1438,72 @@ const Users = () => {
             startAdornment={<LocationOnOutlinedIcon />}
           />
         </form>
+      </AppModal>
+
+      {/* ========================================================================= */}
+      {/* 3. Enable / Disable User Confirmation Modal Dialog                       */}
+      {/* ========================================================================= */}
+      <AppModal
+        open={statusModalOpen}
+        onClose={() => !updatingStatus && setStatusModalOpen(false)}
+        title={
+          userForStatusChange?.disabled
+            ? "Enable User Account"
+            : "Disable User Account"
+        }
+        subtitle={
+          userForStatusChange?.disabled
+            ? `Restore login and system access for ${userForStatusChange?.username || "this user"}`
+            : `Temporarily suspend login and system access for ${userForStatusChange?.username || "this user"}`
+        }
+        maxWidth="xs"
+        actions={
+          <>
+            <AppButton
+              variant="secondary"
+              onClick={() => setStatusModalOpen(false)}
+              disabled={updatingStatus}
+            >
+              Cancel
+            </AppButton>
+            <AppButton
+              variant={userForStatusChange?.disabled ? "success" : "danger"}
+              onClick={handleConfirmStatusToggle}
+              loading={updatingStatus}
+              startIcon={
+                userForStatusChange?.disabled ? (
+                  <CheckCircleOutlineIcon />
+                ) : (
+                  <BlockOutlinedIcon />
+                )
+              }
+            >
+              {userForStatusChange?.disabled ? "Enable User" : "Disable User"}
+            </AppButton>
+          </>
+        }
+      >
+        <div className="status-modal-content">
+          <p>
+            {userForStatusChange?.disabled ? (
+              <>
+                Are you sure you want to <strong>enable</strong> access for{" "}
+                <strong>{userForStatusChange?.username}</strong>
+                {userForStatusChange?.email ? ` (${userForStatusChange.email})` : ""}?
+                <br /><br />
+                The user will be able to log in and access system features again.
+              </>
+            ) : (
+              <>
+                Are you sure you want to <strong>disable</strong> access for{" "}
+                <strong>{userForStatusChange?.username}</strong>
+                {userForStatusChange?.email ? ` (${userForStatusChange.email})` : ""}?
+                <br /><br />
+                The user will be prevented from logging in until re-enabled by an administrator.
+              </>
+            )}
+          </p>
+        </div>
       </AppModal>
     </div>
   );

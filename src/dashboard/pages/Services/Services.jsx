@@ -465,12 +465,14 @@ const Services = () => {
             variant="secondary"
             size="md"
             startIcon={
-              <RefreshOutlinedIcon className={refreshing ? "spin-icon" : ""} />
+              <RefreshOutlinedIcon
+                className={loading || refreshing ? "spin-icon" : ""}
+              />
             }
             onClick={() => fetchServices(true)}
             disabled={loading || refreshing}
           >
-            {refreshing ? "Refreshing..." : "Refresh"}
+            {loading || refreshing ? "Refreshing..." : "Refresh"}
           </AppButton>
           {userCanEdit && (
             <AppButton

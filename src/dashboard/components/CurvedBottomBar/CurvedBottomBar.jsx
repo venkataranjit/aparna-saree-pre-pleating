@@ -4,6 +4,7 @@ import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import BookOnlineOutlinedIcon from '@mui/icons-material/BookOnlineOutlined';
 import DryCleaningOutlinedIcon from '@mui/icons-material/DryCleaningOutlined';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import { useAuth } from '../../../auth/context/AuthContext';
@@ -13,7 +14,7 @@ import './CurvedBottomBar.scss';
  * CurvedBottomBar
  * Fixed 100% width bottom navigation bar with luxury obsidian & gold styling.
  * Smoothly scales up icon size on hover with spring animation.
- * Features Home, Orders, Services, Clients/Store, and Menu (opens sidebar).
+ * Features Home, Orders, Services, Clients/Store/Profile, and Menu (opens sidebar).
  */
 export const CurvedBottomBar = ({
   collapsed = false,
@@ -54,15 +55,25 @@ export const CurvedBottomBar = ({
       icon: <DryCleaningOutlinedIcon className="nav-bar-icon" />,
     },
     {
-      id: isClient ? 'storefront' : 'clients',
-      label: isClient ? 'Store' : 'Clients',
-      path: isClient ? '/landing' : '/dashboard/clients',
+      id: isClient ? 'profile' : 'clients',
+      label: isClient ? 'Profile' : 'Clients',
+      path: isClient ? '/dashboard/profile' : '/dashboard/clients',
       icon: isClient ? (
-        <StorefrontOutlinedIcon className="nav-bar-icon" />
+        <PersonOutlineIcon className="nav-bar-icon" />
       ) : (
         <PeopleOutlineIcon className="nav-bar-icon" />
       ),
     },
+    ...(isClient
+      ? [
+          {
+            id: 'storefront',
+            label: 'Store',
+            path: '/landing',
+            icon: <StorefrontOutlinedIcon className="nav-bar-icon" />,
+          },
+        ]
+      : []),
     {
       id: 'more',
       label: 'Menu',
@@ -76,6 +87,9 @@ export const CurvedBottomBar = ({
     }
     if (item.id === 'clients') {
       return location.pathname.startsWith('/dashboard/clients');
+    }
+    if (item.id === 'profile') {
+      return location.pathname.startsWith('/dashboard/profile');
     }
     if (item.exact) {
       return location.pathname === item.path;

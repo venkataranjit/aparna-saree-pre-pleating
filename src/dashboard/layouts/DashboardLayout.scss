@@ -40,7 +40,7 @@
   &__main {
     flex: 1;
     min-height: 0; // Ensures child content scrolls within container instead of expanding parent
-    padding: 20px $spacing-xl $spacing-xl $spacing-xl;
+    padding: $spacing-xl $spacing-xl $spacing-xl $spacing-xl;
     background-color: $bg-secondary;
     overflow-y: auto;
     overflow-x: hidden;

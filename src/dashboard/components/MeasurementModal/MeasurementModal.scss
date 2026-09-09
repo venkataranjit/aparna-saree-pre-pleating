@@ -1,11 +1,24 @@
+@use "../../styles/variables" as *;
+
 .measurement-modal-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
+  padding-top: 4px;
 }
 
 .measurement-modal-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
+
+  @media (max-width: 800px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  @media (max-width: 440px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
 }

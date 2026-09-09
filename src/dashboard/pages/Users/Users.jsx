@@ -564,7 +564,9 @@ const Users = () => {
           <AppButton
             variant="secondary"
             size="md"
-            startIcon={<RefreshOutlinedIcon />}
+            startIcon={
+              <RefreshOutlinedIcon className={loading ? "spin-icon" : ""} />
+            }
             onClick={fetchUsers}
             disabled={loading}
           >

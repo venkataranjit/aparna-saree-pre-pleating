@@ -1,8 +1,6 @@
 @use "../../styles/variables" as *;
 
 .users-page {
-  padding: 8px 4px;
-
   &__header {
     display: flex;
     justify-content: space-between;
@@ -94,21 +92,29 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     margin-bottom: 20px;
+    width: 100%;
 
     @media (max-width: 600px) {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 12px;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .app-view-toggle {
+      flex-shrink: 0;
+      width: fit-content;
     }
 
     .users-search-field {
       width: 300px;
       margin-left: auto;
+      min-width: 0;
 
       @media (max-width: 600px) {
-        width: 100%;
+        width: auto;
+        flex: 1;
         margin-left: 0;
       }
     }

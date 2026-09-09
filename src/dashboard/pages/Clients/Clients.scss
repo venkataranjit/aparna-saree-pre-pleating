@@ -1,8 +1,6 @@
 @use "../../styles/variables" as *;
 
 .clients-page {
-  padding: 8px 4px;
-
   &__header {
     display: flex;
     justify-content: space-between;
@@ -87,12 +85,13 @@
   /* 4 StatCards Grid matching Dashboard Overview */
   &__stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
     margin-bottom: 24px;
+    width: 100%;
 
     @media (max-width: 1100px) {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     @media (max-width: 600px) {
@@ -112,21 +111,29 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     margin-bottom: 20px;
+    width: 100%;
 
     @media (max-width: 600px) {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 12px;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .app-view-toggle {
+      flex-shrink: 0;
+      width: fit-content;
     }
 
     .clients-search-field {
-      width: 300px;
+      width: 320px;
       margin-left: auto;
+      min-width: 0;
 
       @media (max-width: 600px) {
-        width: 100%;
+        width: auto;
+        flex: 1;
         margin-left: 0;
       }
     }

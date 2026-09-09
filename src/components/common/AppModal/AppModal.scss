@@ -27,7 +27,7 @@
   border-radius: $border-radius-lg;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(212, 175, 55, 0.15);
   width: 100%;
-  max-height: 90vh;
+  max-height: calc(100dvh - 32px);
   display: flex;
   flex-direction: column;
   color: $text-primary;
@@ -38,7 +38,7 @@
   @include mobile {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    max-height: 92vh;
+    max-height: calc(100dvh - 16px);
   }
 
   // Width limits
@@ -135,7 +135,21 @@
   padding: 22px 24px;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.35) #090909;
+
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #090909;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.35);
+    border-radius: 4px;
+  }
 
   @include mobile {
     padding: 16px 14px;
@@ -152,12 +166,13 @@
   background: #090909;
 
   @include mobile {
-    padding: 12px 14px;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px;
     gap: 8px;
     flex-wrap: wrap;
 
     .app-btn {
       flex: 1;
+      min-height: 42px;
     }
   }
 }

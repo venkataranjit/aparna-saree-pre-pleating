@@ -820,7 +820,9 @@ const Clients = () => {
           <AppButton
             variant="secondary"
             size="md"
-            startIcon={<RefreshOutlinedIcon />}
+            startIcon={
+              <RefreshOutlinedIcon className={loading ? "spin-icon" : ""} />
+            }
             onClick={fetchClients}
             disabled={loading}
             className="refresh-btn"

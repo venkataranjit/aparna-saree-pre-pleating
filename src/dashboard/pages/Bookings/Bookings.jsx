@@ -410,13 +410,15 @@ const Bookings = () => {
             variant="secondary"
             size="md"
             startIcon={
-              <RefreshOutlinedIcon className={refreshing ? 'spin-icon' : ''} />
+              <RefreshOutlinedIcon
+                className={loading || refreshing ? 'spin-icon' : ''}
+              />
             }
             onClick={() => fetchOrders(true)}
             disabled={loading || refreshing}
             className="refresh-btn"
           >
-            {refreshing ? 'Refreshing...' : 'Refresh'}
+            {loading || refreshing ? 'Refreshing...' : 'Refresh'}
           </AppButton>
           <AppButton
             variant="primary"

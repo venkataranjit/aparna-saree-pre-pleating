@@ -569,7 +569,11 @@ const MyProfile = () => {
           <AppButton
             variant="secondary"
             className="refresh-btn"
-            startIcon={<RefreshOutlinedIcon />}
+            startIcon={
+              <RefreshOutlinedIcon
+                className={loading || loadingOrders ? "spin-icon" : ""}
+              />
+            }
             onClick={handleRefreshAll}
             disabled={loading || loadingOrders}
           >

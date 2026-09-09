@@ -1,7 +1,6 @@
 @use "../../styles/variables" as *;
 
 .my-profile-page {
-  padding: 8px 4px 32px 4px;
   width: 100%;
   box-sizing: border-box;
 
@@ -589,7 +588,11 @@
     }
 
     .profile-order-card {
-      background: linear-gradient(145deg, rgba(22, 22, 22, 0.9) 0%, rgba(12, 12, 12, 0.95) 100%);
+      background: linear-gradient(
+        145deg,
+        rgba(22, 22, 22, 0.9) 0%,
+        rgba(12, 12, 12, 0.95) 100%
+      );
       border: 1px solid rgba(212, 175, 55, 0.22);
       border-radius: 14px;
       padding: 18px 20px;
@@ -874,5 +877,4 @@
   .profile-measurements-section {
     width: 100%;
   }
-
 }

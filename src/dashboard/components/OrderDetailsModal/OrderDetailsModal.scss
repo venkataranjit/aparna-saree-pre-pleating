@@ -380,6 +380,87 @@
       }
     }
 
+    .dossier-item-primary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+
+      &.has-dress-size {
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(95px, 120px);
+
+        @media (max-width: 600px) {
+          grid-template-columns: 1fr 1fr;
+
+          .spec-tile--compact {
+            grid-column: span 2;
+          }
+        }
+
+        @media (max-width: 480px) {
+          grid-template-columns: 1fr;
+
+          .spec-tile--compact {
+            grid-column: span 1;
+          }
+        }
+      }
+
+      .spec-tile--compact {
+        text-align: center;
+        align-items: center;
+
+        .spec-val {
+          font-size: 1.05rem;
+          color: var(--color-gold);
+        }
+      }
+
+      @media (max-width: 480px) {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+    }
+
+    .dossier-item-measurements-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+
+      .spec-tile {
+        padding: 10px 8px;
+        min-width: 0;
+
+        .spec-icon {
+          font-size: 1.1rem;
+          margin-bottom: 4px;
+        }
+
+        .spec-label {
+          font-size: 0.65rem;
+          letter-spacing: 0.3px;
+          line-height: 1.2;
+          margin-bottom: 3px;
+          white-space: normal;
+          word-break: break-word;
+        }
+
+        .spec-val {
+          font-size: 0.84rem;
+        }
+      }
+
+      @media (max-width: 1024px) {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      @media (max-width: 480px) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+      }
+    }
+
     .dossier-item-specs-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));

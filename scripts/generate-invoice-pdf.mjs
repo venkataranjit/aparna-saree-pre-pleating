@@ -164,7 +164,7 @@ export function buildInvoiceHtml(data = SAMPLE_INVOICE) {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Tax Invoice - ${data.invoiceNumber}</title>
+  <title>Order Details - ${data.invoiceNumber}</title>
   <style>
     @page {
       size: A4 portrait;
@@ -274,7 +274,7 @@ export function buildInvoiceHtml(data = SAMPLE_INVOICE) {
       flex: 1;
     }
 
-    /* Left Tax Invoice Meta Table */
+    /* Left Invoice Details Meta Table */
     .meta-line {
       display: flex;
       justify-content: space-between;
@@ -643,11 +643,11 @@ export function buildInvoiceHtml(data = SAMPLE_INVOICE) {
 
       <!-- 2. Meta Dossier Grid -->
       <div class="dossier-grid">
-        <!-- Left: Tax Invoice Meta Table -->
+        <!-- Left: Invoice Details Meta Table -->
         <div class="dossier-card">
           <div class="dossier-card-head">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle;"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" fill="none"/><path d="M16 8H8" fill="none"/><path d="M16 12H8" fill="none"/><path d="M13 16H8" fill="none"/></svg>
-            <span>TAX INVOICE</span>
+            <span>INVOICE DETAILS</span>
           </div>
           <div class="dossier-card-body">
             <div class="meta-line">
@@ -771,7 +771,7 @@ export function buildInvoiceHtml(data = SAMPLE_INVOICE) {
           <span>Please review if you like our service:</span>
         </div>
         <div class="review-link-line">
-          <a href="https://g.page/r/CfQ3Ljt5NC9EBM/review" class="review-link" target="_blank">https://g.page/r/CfQ3Ljt5NC9EBM/review</a>
+          <a href="https://g.page/r/CfQ3Ljt5NC91EBM/review" class="review-link" target="_blank" rel="noopener noreferrer">https://g.page/r/CfQ3Ljt5NC91EBM/review</a>
         </div>
       </div>
 

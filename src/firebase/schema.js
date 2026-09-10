@@ -266,6 +266,10 @@ export const createOrderModel = ({
   items = [],
   subtotal = 0,
   pickupDeliveryCharges = 0,
+  otherCharges = 0,
+  advancePayment = 0,
+  balanceDue = undefined,
+  balancePaid = 0,
   discount = 0,
   totalAmount = 0,
   paidAmount = 0,
@@ -297,6 +301,7 @@ export const createOrderModel = ({
     serviceDescription: it.serviceDescription || it.description || "",
     finalPrice: Number(it.finalPrice !== undefined ? it.finalPrice : it.serviceDiscountedPrice || it.servicePrice) || 0,
     sareeType: it.sareeType || "Kanjeevaram Silk",
+    includeMeasurements: it.includeMeasurements !== false,
     measurementProfile: it.measurementProfile || null,
     itemNotes: it.itemNotes || "",
   }));
@@ -304,9 +309,19 @@ export const createOrderModel = ({
   const calculatedSubtotal = cleanItems.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0);
   const resolvedSubtotal = subtotal > 0 ? Number(subtotal) : calculatedSubtotal;
   const resolvedDeliveryCharges = Number(pickupDeliveryCharges) || 0;
+  const resolvedOtherCharges = Number(otherCharges) || 0;
   const resolvedDiscount = Number(discount) || 0;
-  const calculatedTotal = Math.max(0, resolvedSubtotal + resolvedDeliveryCharges - resolvedDiscount);
+  const calculatedTotal = Math.max(0, resolvedSubtotal + resolvedDeliveryCharges + resolvedOtherCharges - resolvedDiscount);
   const finalTotal = totalAmount > 0 ? Number(totalAmount) : calculatedTotal;
+  const resolvedAdvance = Number(advancePayment) || 0;
+  const resolvedPaymentStatus = String(paymentStatus || PAYMENT_STATUS.PENDING);
+  const resolvedPaid = Number(paidAmount) || (resolvedAdvance > 0 ? resolvedAdvance : (resolvedPaymentStatus === "paid" ? finalTotal : 0));
+  const resolvedBalanceDue = balanceDue !== undefined && balanceDue !== null && !isNaN(Number(balanceDue))
+    ? Number(balanceDue)
+    : (resolvedPaymentStatus === "paid" ? 0 : Math.max(0, finalTotal - resolvedPaid));
+  const resolvedBalancePaid = balancePaid !== undefined && balancePaid !== null && !isNaN(Number(balancePaid)) && Number(balancePaid) > 0
+    ? Number(balancePaid)
+    : (resolvedPaymentStatus === "paid" ? (resolvedAdvance > 0 ? Math.max(0, finalTotal - resolvedAdvance) : finalTotal) : 0);
 
   return {
     clientId: String(clientObj.clientId || clientId || "").trim(),
@@ -319,10 +334,14 @@ export const createOrderModel = ({
     totalItems: cleanItems.length,
     subtotal: resolvedSubtotal,
     pickupDeliveryCharges: resolvedDeliveryCharges,
+    otherCharges: resolvedOtherCharges,
     discount: resolvedDiscount,
+    advancePayment: resolvedAdvance,
+    balanceDue: resolvedBalanceDue,
+    balancePaid: resolvedBalancePaid,
     totalAmount: finalTotal,
-    paidAmount: Number(paidAmount) || 0,
-    paymentStatus: String(paymentStatus || PAYMENT_STATUS.PENDING),
+    paidAmount: resolvedPaid,
+    paymentStatus: resolvedPaymentStatus,
     paymentMethod: String(paymentMethod || "UPI"),
     orderStatus: cleanStatus,
     status: cleanStatus,

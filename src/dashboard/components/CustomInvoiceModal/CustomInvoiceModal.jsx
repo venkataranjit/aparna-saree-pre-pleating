@@ -2,6 +2,9 @@ import React from "react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { toast } from "react-toastify";
+import { Capacitor } from "@capacitor/core";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import { AppModal, AppButton } from "../../../components/common";
 import { formatDateSafe } from "../../../firebase/dbService";
@@ -9,9 +12,12 @@ import logoLight from "../../../assets/logo-light.png";
 import signatureImg from "../../../assets/signature.png";
 import "./CustomInvoiceModal.scss";
 
-// Convert any Firestore order record into the standard Tax Invoice dataset
+// Convert any Firestore order record into the standard Invoice Details dataset
 export const mapOrderToInvoiceData = (order) => {
   if (!order) return null;
+  if (order.financials && order.services && order.client) {
+    return order;
+  }
 
   const rawItems =
     Array.isArray(order.items) && order.items.length > 0
@@ -84,16 +90,30 @@ export const mapOrderToInvoiceData = (order) => {
     };
   });
 
-  const subtotal =
-    order.subtotal !== undefined
-      ? Number(order.subtotal)
-      : services.reduce((sum, s) => sum + (Number(s.price) || 0), 0);
+  const subtotal = Number(
+    order.subtotal !== undefined && order.subtotal !== null
+      ? order.subtotal
+      : services.reduce((sum, s) => sum + (Number(s.price) || 0), 0),
+  );
   const pickupDeliveryCharges = Number(order.pickupDeliveryCharges || 0);
+  const otherCharges = Number(order.otherCharges || 0);
   const discount = Number(order.discount || 0);
-  const totalAmount =
-    order.totalAmount !== undefined
-      ? Number(order.totalAmount)
-      : Math.max(0, subtotal + pickupDeliveryCharges - discount);
+  const totalAmount = Number(
+    order.totalAmount !== undefined && order.totalAmount !== null
+      ? order.totalAmount
+      : order.amount || 0,
+  );
+  const advancePaid = Number(order.advancePayment || order.paidAmount || 0);
+  const rawBalanceDue = Number(order.balanceDue);
+  const balanceDue =
+    order.balanceDue !== undefined && order.balanceDue !== null && !isNaN(rawBalanceDue)
+      ? rawBalanceDue
+      : (order.paymentStatus === "paid" ? 0 : Math.max(0, totalAmount - advancePaid));
+  const rawBalancePaid = Number(order.balancePaid);
+  const balancePaid =
+    order.balancePaid !== undefined && order.balancePaid !== null && !isNaN(rawBalancePaid) && rawBalancePaid > 0
+      ? rawBalancePaid
+      : (order.paymentStatus === "paid" ? (advancePaid > 0 ? Math.max(0, totalAmount - advancePaid) : totalAmount) : 0);
 
   const clientName =
     order.username ||
@@ -119,13 +139,23 @@ export const mapOrderToInvoiceData = (order) => {
     ? formatDateSafe(order.deliveryDate)
     : "Standard Delivery";
 
+  const orderStatus = order.status || order.orderStatus || "in-progress";
+  const paymentStatus =
+    order.paymentStatus ||
+    (advancePaid >= totalAmount && totalAmount > 0
+      ? "paid"
+      : advancePaid > 0
+        ? "partial"
+        : "pending");
+
   return {
     invoiceNumber: invNumber,
     orderId: orderId,
     bookingDate: bookingDateStr,
     deliveryDate: deliveryDateStr,
     occasion: order.occasion || "",
-    paymentStatus: order.paymentStatus || "paid",
+    orderStatus,
+    paymentStatus,
     paymentMethod: order.paymentMethod || "UPI / Cash",
     client: {
       name: clientName,
@@ -138,9 +168,59 @@ export const mapOrderToInvoiceData = (order) => {
     financials: {
       subtotal,
       pickupDeliveryCharges,
+      otherCharges,
       discount,
       totalAmount,
+      advancePaid,
+      balanceDue,
+      balancePaid,
     },
+  };
+};
+
+export const getOrderStatusMeta = (status) => {
+  const s = String(status || "").toLowerCase();
+  if (s === "completed") {
+    return {
+      label: "Completed",
+      style: "background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;",
+    };
+  }
+  if (s === "in-progress") {
+    return {
+      label: "In-Progress",
+      style: "background: #ffedd5; color: #ea580c; border: 1px solid #fed7aa;",
+    };
+  }
+  if (s === "cancelled") {
+    return {
+      label: "Cancelled",
+      style: "background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;",
+    };
+  }
+  return {
+    label: "Pending",
+    style: "background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;",
+  };
+};
+
+export const getPaymentStatusMeta = (status) => {
+  const s = String(status || "").toLowerCase();
+  if (s === "paid") {
+    return {
+      label: "Paid in Full",
+      style: "background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;",
+    };
+  }
+  if (s === "partial") {
+    return {
+      label: "Advance / Partial",
+      style: "background: #fef9c3; color: #ca8a04; border: 1px solid #fef08a;",
+    };
+  }
+  return {
+    label: "Pending Payment",
+    style: "background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;",
   };
 };
 
@@ -222,8 +302,11 @@ export const SAMPLE_INVOICE_DATA = {
   financials: {
     subtotal: 2700,
     pickupDeliveryCharges: 150,
+    otherCharges: 0,
     discount: 0,
     totalAmount: 2850,
+    advancePaid: 2850,
+    balanceDue: 0,
   },
 };
 
@@ -231,6 +314,9 @@ export const SAMPLE_INVOICE_DATA = {
  * Generates an HTML string snippet for PDF export
  */
 export const buildInvoiceHtmlSnippet = (data = SAMPLE_INVOICE_DATA) => {
+  const orderStatusMeta = getOrderStatusMeta(data.orderStatus);
+  const paymentStatusMeta = getPaymentStatusMeta(data.paymentStatus);
+
   const servicesRowsHtml = (data.services || [])
     .map((s) => {
       const m = s.measurementProfile || {};
@@ -307,23 +393,23 @@ export const buildInvoiceHtmlSnippet = (data = SAMPLE_INVOICE_DATA) => {
         <!-- 2. Meta Dossier Grid (Left: Tax Invoice, Right: Client Details) -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
           
-          <!-- Left: Tax Invoice Meta Card -->
+          <!-- Left: Order Details Meta Card -->
           <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
             <div style="background: #0f172a; color: #ffffff; padding: 5px 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; flex-shrink: 0;"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" fill="none"/><path d="M16 8H8" fill="none"/><path d="M16 12H8" fill="none"/><path d="M13 16H8" fill="none"/></svg>
-              <span>TAX INVOICE</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; flex-shrink: 0;"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" fill="none"/><path d="M16 8H8" fill="none"/><path d="M16 12H8" fill="none"/><path d="M13 16H8" fill="none"/></svg>
+              <span>ORDER DETAILS</span>
             </div>
             <div style="padding: 7px 10px; display: flex; flex-direction: column; gap: 3.5px; flex: 1; font-size: 12px;">
               <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <span style="color: #64748b; font-weight: 500; font-size: 12px;">Invoice No:</span>
-                <span style="color: #0f172a; font-weight: 600; font-size: 12.5px;">${data.invoiceNumber}</span>
+                <span style="color: #64748b; font-weight: 500; font-size: 12px;">Order No:</span>
+                <span style="color: #0f172a; font-weight: 600; font-size: 12.5px;">${data.invoiceNumber || data.orderId}</span>
               </div>
               <div style="display: flex; justify-content: space-between; align-items: baseline;">
                 <span style="color: #64748b; font-weight: 500; font-size: 12px;">Order ID:</span>
                 <span style="color: #0f172a; font-weight: 600; font-size: 12.5px;">${data.orderId}</span>
               </div>
               <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <span style="color: #64748b; font-weight: 500; font-size: 12px;">Invoice Date:</span>
+                <span style="color: #64748b; font-weight: 500; font-size: 12px;">Order Date:</span>
                 <span style="color: #0f172a; font-weight: 600; font-size: 12.5px;">${data.bookingDate}</span>
               </div>
               <div style="display: flex; justify-content: space-between; align-items: baseline;">
@@ -340,6 +426,12 @@ export const buildInvoiceHtmlSnippet = (data = SAMPLE_INVOICE_DATA) => {
               `
                   : ""
               }
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px; padding-top: 2px; border-top: 1px dashed #cbd5e1;">
+                <span style="color: #64748b; font-weight: 500; font-size: 12px;">Order Status:</span>
+                <span style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; ${orderStatusMeta.style}">
+                  ${orderStatusMeta.label}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -367,16 +459,10 @@ export const buildInvoiceHtmlSnippet = (data = SAMPLE_INVOICE_DATA) => {
                 <span>${data.client?.address || "—"}</span>
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 3px; padding-top: 3px; border-top: 1px dashed #cbd5e1;">
-                <span style="font-size: 11.5px; color: #475569; font-weight: 500;">Mode: ${data.paymentMethod || "UPI"}</span>
-                ${
-                  data.paymentStatus === "paid"
-                    ? `
-                  <span style="font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;">
-                    PAID IN FULL
-                  </span>
-                `
-                    : ""
-                }
+                <span style="font-size: 11.5px; color: #475569; font-weight: 500;">Payment Mode: ${data.paymentMethod || "UPI"}</span>
+                <span style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; ${paymentStatusMeta.style}">
+                  ${paymentStatusMeta.label}
+                </span>
               </div>
             </div>
           </div>
@@ -420,7 +506,7 @@ export const buildInvoiceHtmlSnippet = (data = SAMPLE_INVOICE_DATA) => {
             </ul>
           </div>
 
-          <!-- Right: Totals Card -->
+          <!-- Right: Totals Card (Always shows all financial lines including zero values) -->
           <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; padding: 7px 11px; display: flex; flex-direction: column; gap: 3.5px; font-size: 12px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span style="color: #475569; font-weight: 500; font-size: 11.5px;">Services Subtotal:</span>
@@ -430,19 +516,33 @@ export const buildInvoiceHtmlSnippet = (data = SAMPLE_INVOICE_DATA) => {
               <span style="color: #475569; font-weight: 500; font-size: 11.5px;">Pickup & Delivery Charges:</span>
               <span style="color: #0f172a; font-weight: 600; font-size: 12px;">₹${Number(data.financials?.pickupDeliveryCharges || 0).toLocaleString("en-IN")}</span>
             </div>
-            ${
-              Number(data.financials?.discount || 0) > 0
-                ? `
-              <div style="display: flex; justify-content: space-between; align-items: center; color: #15803d;">
-                <span style="font-weight: 500; font-size: 11.5px;">Special Discount:</span>
-                <span style="font-weight: 600; font-size: 12px;">-₹${Number(data.financials?.discount).toLocaleString("en-IN")}</span>
-              </div>
-            `
-                : ""
-            }
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #475569; font-weight: 500; font-size: 11.5px;">Other Charges:</span>
+              <span style="color: #0f172a; font-weight: 600; font-size: 12px;">₹${Number(data.financials?.otherCharges || 0).toLocaleString("en-IN")}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; color: ${Number(data.financials?.discount || 0) > 0 ? "#15803d" : "#475569"};">
+              <span style="font-weight: 500; font-size: 11.5px;">Discount:</span>
+              <span style="font-weight: 600; font-size: 12px;">${Number(data.financials?.discount || 0) > 0 ? "-₹" + Number(data.financials?.discount).toLocaleString("en-IN") : "₹0"}</span>
+            </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; border-top: 1.5px solid #0f172a; margin-top: 1px;">
-              <span style="font-weight: 600; color: #0f172a; font-size: 13px;">Total Amount:</span>
-              <span style="font-weight: 600; color: #0f172a; font-size: 15px;">₹${Number(data.financials?.totalAmount || 0).toLocaleString("en-IN")}</span>
+              <span style="font-weight: 700; color: #0f172a; font-size: 13px;">TOTAL BILLED AMOUNT:</span>
+              <span style="font-weight: 700; color: #0f172a; font-size: 15px;">₹${Number(data.financials?.totalAmount || 0).toLocaleString("en-IN")}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; color: #15803d; padding-top: 2px;">
+              <span style="font-weight: 500; font-size: 11.5px;">Paid Amount:</span>
+              <span style="font-weight: 600; font-size: 12px;">₹${Number(data.financials?.advancePaid || 0).toLocaleString("en-IN")}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; color: ${String(data.paymentStatus || "").toLowerCase() === "paid" ? "#15803d" : "#b45309"}; padding-top: 2px;">
+              <span style="font-weight: 700; font-size: 11.5px;">${String(data.paymentStatus || "").toLowerCase() === "paid" ? "Balance Paid:" : "Balance Due:"}</span>
+              <span style="font-weight: 700; font-size: 12.5px;">₹${Number(
+                String(data.paymentStatus || "").toLowerCase() === "paid"
+                  ? (data.financials?.balancePaid !== undefined && Number(data.financials?.balancePaid) > 0
+                      ? data.financials?.balancePaid
+                      : Math.max(0, Number(data.financials?.totalAmount || 0) - Number(data.financials?.advancePaid || 0)))
+                  : (data.financials?.balanceDue !== undefined && Number(data.financials?.balanceDue) > 0
+                      ? data.financials?.balanceDue
+                      : Math.max(0, Number(data.financials?.totalAmount || 0) - Number(data.financials?.advancePaid || 0)))
+              ).toLocaleString("en-IN")}</span>
             </div>
           </div>
         </div>
@@ -457,8 +557,8 @@ export const buildInvoiceHtmlSnippet = (data = SAMPLE_INVOICE_DATA) => {
             <span>Please review if you like our service:</span>
           </div>
           <div style="text-align: center; margin-top: 1px;">
-            <a href="https://g.page/r/CfQ3Ljt5NC9EBM/review" target="_blank" rel="noopener noreferrer" style="font-size: 12.5px; color: #1d4ed8; font-weight: 600; text-decoration: underline; word-break: break-all; display: inline-block;">
-              https://g.page/r/CfQ3Ljt5NC9EBM/review
+            <a href="https://g.page/r/CfQ3Ljt5NC91EBM/review" target="_blank" rel="noopener noreferrer" style="font-size: 12.5px; color: #1d4ed8; font-weight: 600; text-decoration: underline; word-break: break-all; display: inline-block;">
+              https://g.page/r/CfQ3Ljt5NC91EBM/review
             </a>
           </div>
         </div>
@@ -682,10 +782,52 @@ export const downloadInvoicePdfDirectly = async (order) => {
       }
     }
 
-    pdf.save(`Tax-Invoice-${orderId}.pdf`);
+    const fileName = `Order-Details-${orderId}.pdf`;
 
-    toast.dismiss(toastId);
-    toast.success(`Downloaded Tax-Invoice-${orderId}.pdf`);
+    if (Capacitor.isNativePlatform()) {
+      // Extract clean base64 string from generated jsPDF
+      const pdfBase64 = pdf.output("datauristring").split(",")[1];
+
+      // Save to Cache directory (has native FileProvider authority for sharing/opening)
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: pdfBase64,
+        directory: Directory.Cache,
+      });
+
+      // Also save a copy to Documents directory for permanent device storage
+      try {
+        await Filesystem.writeFile({
+          path: fileName,
+          data: pdfBase64,
+          directory: Directory.Documents,
+        });
+      } catch (docErr) {
+        console.warn("Could not save secondary copy in Documents:", docErr);
+      }
+
+      toast.dismiss(toastId);
+
+      // Trigger native Android Share/Open Sheet so user can save to Drive, view PDF, or send via WhatsApp
+      try {
+        await Share.share({
+          title: `Order Details - ${orderId}`,
+          text: `Aparna Saree Pre-Pleating Order Details for Order #${orderId}`,
+          url: savedFile.uri,
+          dialogTitle: `Save or Open Order Details #${orderId}`,
+        });
+        toast.success(`Order details ready for Order #${orderId}`);
+      } catch (shareErr) {
+        // User closed the share sheet or dismissed it
+        console.log("Share sheet action dismissed or finished:", shareErr);
+        toast.success(`Order details saved to device for Order #${orderId}`);
+      }
+    } else {
+      // Browser download (Desktop / Web)
+      pdf.save(fileName);
+      toast.dismiss(toastId);
+      toast.success(`Downloaded ${fileName}`);
+    }
   } catch (err) {
     console.error("Direct PDF export failed:", err);
     toast.dismiss(toastId);
@@ -709,7 +851,13 @@ export const CustomInvoiceModal = ({
 }) => {
   if (!open) return null;
 
-  const data = invoiceData || SAMPLE_INVOICE_DATA;
+  const data =
+    invoiceData?.financials && invoiceData?.services
+      ? invoiceData
+      : mapOrderToInvoiceData(invoiceData) || SAMPLE_INVOICE_DATA;
+
+  const orderStatusMeta = getOrderStatusMeta(data.orderStatus);
+  const paymentStatusMeta = getPaymentStatusMeta(data.paymentStatus);
 
   const handleDownload = () => {
     downloadInvoicePdfDirectly(data);
@@ -721,11 +869,11 @@ export const CustomInvoiceModal = ({
       onClose={onClose}
       title={
         <div className="custom-invoice-modal-title">
-          <span>Tax Invoice</span>
-          <span className="invoice-badge-tag">{data.orderId || "INVOICE"}</span>
+          <span>Order Details</span>
+          <span className="invoice-badge-tag">{data.orderId || "ORDER"}</span>
         </div>
       }
-      subtitle="Pixel-perfect printable tax invoice & saree pre-pleating specifications"
+      subtitle="Printable order details & saree pre-pleating specifications"
       maxWidth="lg"
       className="custom-invoice-app-modal"
       bodyClassName="custom-invoice-modal-body"
@@ -771,9 +919,9 @@ export const CustomInvoiceModal = ({
 
         <div className="invoice-divider-line" />
 
-        {/* 2. Tax Invoice Meta (LEFT) & Billed To Client Details (RIGHT) */}
+        {/* 2. Order Details Meta (LEFT) & Billed To Client Details (RIGHT) */}
         <div className="invoice-meta-dossier-grid">
-          {/* LEFT: Tax Invoice Details */}
+          {/* LEFT: Order Details */}
           <div className="meta-col tax-invoice-col">
             <div className="col-head">
               <svg
@@ -792,20 +940,20 @@ export const CustomInvoiceModal = ({
                 }}
               >
                 <path
-                  d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"
+                  d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"
                   fill="none"
                 />
                 <path d="M16 8H8" fill="none" />
                 <path d="M16 12H8" fill="none" />
                 <path d="M13 16H8" fill="none" />
               </svg>
-              <span>TAX INVOICE</span>
+              <span>ORDER DETAILS</span>
             </div>
             <div className="col-body">
               <div className="meta-line">
-                <span className="meta-label">Invoice No:</span>
+                <span className="meta-label">Order No:</span>
                 <span className="meta-val inv-num-highlight">
-                  {data.invoiceNumber}
+                  {data.invoiceNumber || data.orderId}
                 </span>
               </div>
               <div className="meta-line">
@@ -813,7 +961,7 @@ export const CustomInvoiceModal = ({
                 <span className="meta-val">{data.orderId}</span>
               </div>
               <div className="meta-line">
-                <span className="meta-label">Invoice Date:</span>
+                <span className="meta-label">Order Date:</span>
                 <span className="meta-val">{data.bookingDate}</span>
               </div>
               <div className="meta-line">
@@ -828,6 +976,32 @@ export const CustomInvoiceModal = ({
                   <span className="meta-val">{data.occasion}</span>
                 </div>
               )}
+              <div
+                className="meta-line"
+                style={{
+                  marginTop: "2px",
+                  paddingTop: "2px",
+                  borderTop: "1px dashed #cbd5e1",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span className="meta-label">Order Status:</span>
+                <span
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    padding: "2px 7px",
+                    borderRadius: "3px",
+                    textTransform: "uppercase",
+                    display: "inline-block",
+                  }}
+                  className={`status-pill status-${String(data.orderStatus || "").toLowerCase()}`}
+                >
+                  {orderStatusMeta.label}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -956,13 +1130,33 @@ export const CustomInvoiceModal = ({
                 </svg>
                 <span>{data.client?.address}</span>
               </div>
-              <div className="payment-spec-row">
+              <div
+                className="payment-spec-row"
+                style={{
+                  marginTop: "3px",
+                  paddingTop: "3px",
+                  borderTop: "1px dashed #cbd5e1",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <span className="pay-method-badge">
-                  Mode: {data.paymentMethod}
+                  Mode: {data.paymentMethod || "UPI"}
                 </span>
-                {data.paymentStatus === "paid" && (
-                  <span className="pay-status-pill pay-paid">PAID IN FULL</span>
-                )}
+                <span
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    padding: "2px 7px",
+                    borderRadius: "3px",
+                    textTransform: "uppercase",
+                    display: "inline-block",
+                  }}
+                  className={`pay-status-pill pay-${String(data.paymentStatus || "").toLowerCase()}`}
+                >
+                  {paymentStatusMeta.label}
+                </span>
               </div>
             </div>
           </div>
@@ -996,114 +1190,106 @@ export const CustomInvoiceModal = ({
                         {service.serviceName}
                       </div>
 
-                      {/* Measurement & Fabric Specifications */}
-                      <div className="service-specs-pills">
-                        {service.fabric && (
-                          <div className="spec-tag fabric-tag">
-                            <span className="lbl">Fabric:</span>
-                            <span className="val">{service.fabric}</span>
-                          </div>
-                        )}
-                        {m?.title && (
-                          <div className="spec-tag">
-                            <span className="lbl">Profile:</span>
-                            <span className="val">{m.title}</span>
-                          </div>
-                        )}
-                        {m?.pallu && (
-                          <div className="spec-tag">
-                            <span className="lbl">Pallu:</span>
-                            <span className="val">{m.pallu}</span>
-                          </div>
-                        )}
-                        {m?.firstPleatSize && (
-                          <div className="spec-tag">
-                            <span className="lbl">First Pleat:</span>
-                            <span className="val">{m.firstPleatSize}</span>
-                          </div>
-                        )}
-                        {m?.shoulderToRightTight && (
-                          <div className="spec-tag">
-                            <span className="lbl">Shoulder-Tight:</span>
-                            <span className="val">
-                              {m.shoulderToRightTight}
+                      {service.fabric && (
+                        <div className="service-item-fabric">
+                          <span className="fabric-label">
+                            Fabric / Material:
+                          </span>{" "}
+                          <span className="fabric-value">{service.fabric}</span>
+                        </div>
+                      )}
+
+                      {/* Tailoring Specs Matrix */}
+                      <div className="tailoring-spec-dossier">
+                        <div className="spec-dossier-header">
+                          Tailoring Measurements & Styling Specs:
+                        </div>
+                        <div className="spec-matrix-grid">
+                          <div className="spec-chip">
+                            <span className="chip-key">Profile:</span>
+                            <span className="chip-val highlight">
+                              {m?.title || "Standard"}
                             </span>
                           </div>
-                        )}
-                        {m?.shoulderToTight && (
-                          <div className="spec-tag">
-                            <span className="lbl">Shoulder-Tight:</span>
-                            <span className="val">{m.shoulderToTight}</span>
-                          </div>
-                        )}
-                        {m?.chest && (
-                          <div className="spec-tag">
-                            <span className="lbl">Chest:</span>
-                            <span className="val">{m.chest}</span>
-                          </div>
-                        )}
-                        {m?.noOfChestPleats && (
-                          <div className="spec-tag">
-                            <span className="lbl">Chest Pleats:</span>
-                            <span className="val">{m.noOfChestPleats}</span>
-                          </div>
-                        )}
-                        {m?.hip && (
-                          <div className="spec-tag">
-                            <span className="lbl">Hip:</span>
-                            <span className="val">{m.hip}</span>
-                          </div>
-                        )}
-                        {m?.height && (
-                          <div className="spec-tag">
-                            <span className="lbl">Height:</span>
-                            <span className="val">{m.height}</span>
-                          </div>
-                        )}
-                        {m?.dressSize && (
-                          <div className="spec-tag">
-                            <span className="lbl">Dress Size:</span>
-                            <span className="val">{m.dressSize}</span>
-                          </div>
-                        )}
-                        {m?.notes && (
-                          <div className="spec-tag">
-                            <span className="lbl">Care Note:</span>
-                            <span className="val">{m.notes}</span>
-                          </div>
-                        )}
+                          {m?.pallu && (
+                            <div className="spec-chip">
+                              <span className="chip-key">Pallu:</span>
+                              <span className="chip-val">{m.pallu}</span>
+                            </div>
+                          )}
+                          {m?.firstPleatSize && (
+                            <div className="spec-chip">
+                              <span className="chip-key">First Pleat:</span>
+                              <span className="chip-val">
+                                {m.firstPleatSize}
+                              </span>
+                            </div>
+                          )}
+                          {m?.shoulderToRightTight && (
+                            <div className="spec-chip">
+                              <span className="chip-key">Shoulder:</span>
+                              <span className="chip-val">
+                                {m.shoulderToRightTight}
+                              </span>
+                            </div>
+                          )}
+                          {m?.shoulderToTight && (
+                            <div className="spec-chip">
+                              <span className="chip-key">
+                                Shoulder to Tight:
+                              </span>
+                              <span className="chip-val">
+                                {m.shoulderToTight}
+                              </span>
+                            </div>
+                          )}
+                          {m?.chest && (
+                            <div className="spec-chip">
+                              <span className="chip-key">Chest:</span>
+                              <span className="chip-val">{m.chest}</span>
+                            </div>
+                          )}
+                          {m?.noOfChestPleats && (
+                            <div className="spec-chip">
+                              <span className="chip-key">Chest Pleats:</span>
+                              <span className="chip-val">
+                                {m.noOfChestPleats}
+                              </span>
+                            </div>
+                          )}
+                          {m?.hip && (
+                            <div className="spec-chip">
+                              <span className="chip-key">Hip:</span>
+                              <span className="chip-val">{m.hip}</span>
+                            </div>
+                          )}
+                          {m?.height && (
+                            <div className="spec-chip">
+                              <span className="chip-key">Height:</span>
+                              <span className="chip-val">{m.height}</span>
+                            </div>
+                          )}
+                          {m?.dressSize && (
+                            <div className="spec-chip">
+                              <span className="chip-key">Dress Size:</span>
+                              <span className="chip-val">{m.dressSize}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
+                      {/* Item Special Care / Notes */}
                       {careText && (
                         <div className="service-care-callout">
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#000000"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            style={{
-                              display: "inline-block",
-                              verticalAlign: "middle",
-                              flexShrink: 0,
-                            }}
-                          >
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="16" x2="12" y2="12"></line>
-                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                          </svg>
-                          <span className="care-label">
-                            Special Care / Note:
-                          </span>
-                          <span className="care-text">{careText}</span>
+                          <span className="care-prefix">
+                            Special Instructions:
+                          </span>{" "}
+                          <span>{careText}</span>
                         </div>
                       )}
                     </td>
                     <td className="td-amount">
-                      ₹{Number(service.price).toLocaleString("en-IN")}
+                      ₹{Number(service.price || 0).toLocaleString("en-IN")}
                     </td>
                   </tr>
                 );
@@ -1112,9 +1298,9 @@ export const CustomInvoiceModal = ({
           </table>
         </div>
 
-        {/* 4. Notes & Financial Summary (2 Column Grid) */}
-        <div className="invoice-bottom-grid">
-          {/* Left: Special Notes Card */}
+        {/* 4. Special Notes (Left) & Financial Totals (Right) */}
+        <div className="invoice-bottom-layout">
+          {/* Left: Pre-Pleating Care Guidelines */}
           <div className="notes-box">
             <div className="notes-box-title">SPECIAL NOTE:</div>
             <ul className="special-notes-list">
@@ -1148,21 +1334,91 @@ export const CustomInvoiceModal = ({
                 ).toLocaleString("en-IN")}
               </span>
             </div>
-            {data.financials?.discount > 0 && (
-              <div className="total-row discount-row">
-                <span className="total-label">Special Discount:</span>
-                <span className="total-val">
-                  -₹{Number(data.financials?.discount).toLocaleString("en-IN")}
-                </span>
-              </div>
-            )}
+            <div className="total-row other-charges-row">
+              <span className="total-label">Other Charges:</span>
+              <span className="total-val">
+                ₹
+                {Number(data.financials?.otherCharges || 0).toLocaleString(
+                  "en-IN",
+                )}
+              </span>
+            </div>
+            <div
+              className="total-row discount-row"
+              style={{
+                color:
+                  Number(data.financials?.discount || 0) > 0
+                    ? "#15803d"
+                    : "#475569",
+              }}
+            >
+              <span className="total-label" style={{ color: "inherit" }}>
+                Discount:
+              </span>
+              <span className="total-val" style={{ color: "inherit" }}>
+                {Number(data.financials?.discount || 0) > 0
+                  ? `-₹${Number(data.financials?.discount).toLocaleString("en-IN")}`
+                  : "₹0"}
+              </span>
+            </div>
             <div className="total-row total-highlight-row">
-              <span className="total-label">Total Amount:</span>
+              <span className="total-label">TOTAL BILLED AMOUNT:</span>
               <span className="total-val">
                 ₹
                 {Number(data.financials?.totalAmount || 0).toLocaleString(
                   "en-IN",
                 )}
+              </span>
+            </div>
+            <div
+              className="total-row advance-paid-row"
+              style={{ color: "#15803d", paddingTop: 2 }}
+            >
+              <span className="total-label" style={{ color: "#15803d" }}>
+                Paid Amount:
+              </span>
+              <span
+                className="total-val"
+                style={{ color: "#15803d", fontWeight: 600 }}
+              >
+                ₹
+                {Number(data.financials?.advancePaid || 0).toLocaleString(
+                  "en-IN",
+                )}
+              </span>
+            </div>
+            <div
+              className={`total-row ${String(data.paymentStatus || "").toLowerCase() === "paid" ? "balance-paid-row" : "balance-due-row"}`}
+              style={{
+                color:
+                  String(data.paymentStatus || "").toLowerCase() === "paid"
+                    ? "#15803d"
+                    : "#b45309",
+                paddingTop: 2,
+              }}
+            >
+              <span
+                className="total-label"
+                style={{ color: "inherit", fontWeight: 700 }}
+              >
+                {String(data.paymentStatus || "").toLowerCase() === "paid"
+                  ? "Balance Paid:"
+                  : "Balance Due:"}
+              </span>
+              <span
+                className="total-val"
+                style={{ color: "inherit", fontWeight: 700 }}
+              >
+                ₹
+                {Number(
+                  String(data.paymentStatus || "").toLowerCase() === "paid"
+                    ? (data.financials?.balancePaid !== undefined && Number(data.financials?.balancePaid) > 0
+                        ? data.financials?.balancePaid
+                        : Math.max(0, Number(data.financials?.totalAmount || 0) - Number(data.financials?.advancePaid || 0)))
+                    : (data.financials?.balanceDue !== undefined && Number(data.financials?.balanceDue) > 0
+                        ? data.financials?.balanceDue
+                        : Math.max(0, Number(data.financials?.totalAmount || 0) - Number(data.financials?.advancePaid || 0)))
+                ).toLocaleString("en-IN")}
               </span>
             </div>
           </div>
@@ -1195,12 +1451,12 @@ export const CustomInvoiceModal = ({
           </div>
           <div className="review-link-line">
             <a
-              href="https://g.page/r/CfQ3Ljt5NC9EBM/review"
+              href="https://g.page/r/CfQ3Ljt5NC91EBM/review"
               target="_blank"
               rel="noopener noreferrer"
               className="review-link"
             >
-              https://g.page/r/CfQ3Ljt5NC9EBM/review
+              https://g.page/r/CfQ3Ljt5NC91EBM/review
             </a>
           </div>
         </div>

@@ -1284,12 +1284,27 @@ export const getAllServices = async (onlyActive = false) => {
     if (snapshot && !snapshot.empty) {
       const services = snapshot.docs.map((d) => {
         const data = d.data();
+        const resolvedPrice = Number(
+          data.servicePrice !== undefined && data.servicePrice !== null
+            ? data.servicePrice
+            : data.price !== undefined && data.price !== null
+              ? data.price
+              : data.amount || 0
+        ) || 0;
+        const resolvedDiscountPrice = Number(
+          data.serviceDiscountedPrice !== undefined && data.serviceDiscountedPrice !== null
+            ? data.serviceDiscountedPrice
+            : data.discountedPrice !== undefined && data.discountedPrice !== null
+              ? data.discountedPrice
+              : resolvedPrice
+        ) || resolvedPrice;
+
         return {
           id: d.id,
           ...data,
-          serviceName: data.serviceName || 'Unnamed Service',
-          servicePrice: Number(data.servicePrice) || 0,
-          serviceDiscountedPrice: Number(data.serviceDiscountedPrice) || 0,
+          serviceName: data.serviceName || data.name || data.title || 'Unnamed Service',
+          servicePrice: resolvedPrice,
+          serviceDiscountedPrice: resolvedDiscountPrice,
           description: data.description || '',
           active: data.active !== false,
           rawCreatedAt: data.createdAt,
@@ -1748,32 +1763,18 @@ export const generateOrderId = () => {
 };
 
 /**
- * Format order document object ensuring unique 5-digit ORD-***** ID
+ * Format order document object ensuring clean, persistent ID
  */
 const formatOrderDoc = (id, data) => {
   const rawCreated = data.createdAt || data.orderDate || new Date().toISOString();
   const rawUpdated = data.updatedAt || null;
   const status = String(data.status || data.orderStatus || 'pending').toLowerCase();
 
-  // Determine unique 5-digit order ID
-  let cleanId;
-  const docKey = id || data.id || '';
-  if (docKey && docIdToOrderId.has(docKey)) {
-    cleanId = docIdToOrderId.get(docKey);
-  } else {
-    const rawCandidate = data.orderId || data.id || id || '';
-    const isFiveDigits = /^ORD-\d{5}$/.test(rawCandidate) && rawCandidate !== 'ORD-77770';
+  // Determine unique order ID - strictly preserve the actual Firestore document ID
+  const cleanId = String(id || data.id || data.orderId || '').trim() || generateOrderId();
 
-    if (isFiveDigits && !assignedOrderIds.has(rawCandidate)) {
-      cleanId = rawCandidate;
-      assignedOrderIds.add(cleanId);
-    } else {
-      cleanId = generateOrderId();
-    }
-
-    if (docKey) {
-      docIdToOrderId.set(docKey, cleanId);
-    }
+  if (id && cleanId) {
+    docIdToOrderId.set(id, cleanId);
   }
 
   const client = data.client || {
@@ -1799,10 +1800,27 @@ const formatOrderDoc = (id, data) => {
     totalItems: items.length || data.totalItems || 1,
     subtotal: Number(data.subtotal) || items.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0),
     pickupDeliveryCharges: Number(data.pickupDeliveryCharges || 0),
+    otherCharges: Number(data.otherCharges || 0),
     discount: Number(data.discount || 0),
+    advancePayment: Number(data.advancePayment || data.paidAmount || 0),
+    paidAmount: Number(data.paidAmount) || Number(data.advancePayment) || 0,
+    balancePaid:
+      data.balancePaid !== undefined && data.balancePaid !== null && !isNaN(Number(data.balancePaid))
+        ? Number(data.balancePaid)
+        : (status === 'paid' || String(data.paymentStatus).toLowerCase() === 'paid'
+            ? Math.max(0, (Number(data.totalAmount) || 0) - Number(data.advancePayment || 0))
+            : 0),
+    balanceDue:
+      data.balanceDue !== undefined && data.balanceDue !== null && !isNaN(Number(data.balanceDue))
+        ? Number(data.balanceDue)
+        : (status === 'paid' || String(data.paymentStatus).toLowerCase() === 'paid'
+            ? 0
+            : Math.max(0, (Number(data.totalAmount) || 0) - Number(data.advancePayment || data.paidAmount || 0))),
     totalAmount: Number(data.totalAmount) || items.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0) || 0,
     status,
     orderStatus: status,
+    paymentStatus: String(data.paymentStatus || 'pending'),
+    paymentMethod: String(data.paymentMethod || 'UPI'),
     occasion: data.occasion || '',
     orderDate: formatDateSafe(data.orderDate || rawCreated),
     deliveryDate: data.deliveryDate ? formatDateSafe(data.deliveryDate) : '-',
@@ -2003,6 +2021,10 @@ export const getOrdersByUserId = async (userId, userEmail = '', userMobile = '')
  * @param {Object} updates
  */
 export const updateOrder = async (orderId, updates) => {
+  if (!orderId) {
+    console.warn('updateOrder called without valid orderId');
+    return false;
+  }
   const now = new Date();
   const currentUid = updates.updatedBy || auth?.currentUser?.uid || '';
   const updatePayload = {
@@ -2015,17 +2037,32 @@ export const updateOrder = async (orderId, updates) => {
   delete updatePayload.createdAt;
   delete updatePayload.createdBy;
 
+  const cached = getCachedOrders() || [];
+  const existingOrder = cached.find((o) => o.id === orderId || o.orderId === orderId);
+
   try {
     const docRef = doc(db, COLLECTIONS.ORDERS, orderId);
-    await withTimeout(setDoc(docRef, updatePayload, { merge: true }), 4000);
+    // Use updateDoc to update existing document without creating hollow ghost docs
+    await withTimeout(updateDoc(docRef, updatePayload), 4000).catch(async () => {
+      // If doc does not exist yet (e.g. was offline/seed), create with FULL order model from cache
+      if (existingOrder && (existingOrder.client || existingOrder.items)) {
+        const fullPayload = createOrderModel({
+          ...existingOrder,
+          ...updates,
+          id: orderId,
+          orderId,
+          updatedBy: currentUid,
+        });
+        await setDoc(docRef, fullPayload, { merge: true });
+      }
+    });
   } catch (err) {
     console.warn('updateOrder firestore note (cached locally):', err.message || err);
   }
 
   // Update local cache
-  const cached = getCachedOrders() || [];
   const updatedList = cached.map((ord) =>
-    ord.id === orderId
+    ord.id === orderId || ord.orderId === orderId
       ? {
           ...ord,
           ...updates,

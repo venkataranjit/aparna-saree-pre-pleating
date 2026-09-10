@@ -188,6 +188,39 @@
             font-weight: 600;
           }
         }
+
+        .status-pill {
+          font-size: 0.72rem;
+          font-weight: 700;
+          padding: 2px 7px;
+          border-radius: 3px;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+
+          &.status-completed {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+          }
+
+          &.status-in-progress {
+            background: #ffedd5;
+            color: #ea580c;
+            border: 1px solid #fed7aa;
+          }
+
+          &.status-cancelled {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+          }
+
+          &.status-pending {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+          }
+        }
       }
     }
 
@@ -230,9 +263,9 @@
         }
 
         .pay-status-pill {
-          font-size: 0.76rem;
-          font-weight: 600;
-          padding: 2px 8px;
+          font-size: 0.72rem;
+          font-weight: 700;
+          padding: 2px 7px;
           border-radius: 3px;
           text-transform: uppercase;
           letter-spacing: 0.3px;
@@ -241,6 +274,18 @@
             background: #dcfce7;
             color: #15803d;
             border: 1px solid #bbf7d0;
+          }
+
+          &.pay-partial {
+            background: #fef9c3;
+            color: #ca8a04;
+            border: 1px solid #fef08a;
+          }
+
+          &.pay-pending {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
           }
         }
       }

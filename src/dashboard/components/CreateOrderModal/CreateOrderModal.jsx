@@ -36,8 +36,6 @@ import {
 } from "../../../components/common";
 import {
   getAllUsers,
-  getAllClients,
-  getAllOrders,
   getAllServices,
   getAllMeasurements,
   getMeasurementsByUserId,
@@ -144,9 +142,15 @@ const orderValidationSchema = Yup.object({
           .typeError("Service price must be a valid number")
           .required("Service price is required")
           .min(1, "Service price must be greater than ₹0"),
-        measurementProfile: customMeasurementValidationSchema.required(
-          "Measurement profile is required",
-        ),
+        includeMeasurements: Yup.boolean(),
+        measurementProfile: Yup.mixed().when("includeMeasurements", {
+          is: (val) => val === true || val === undefined,
+          then: () =>
+            customMeasurementValidationSchema.required(
+              "Measurement profile is required",
+            ),
+          otherwise: () => Yup.mixed().nullable().notRequired(),
+        }),
       }),
     )
     .min(1, "At least one service is required in the order"),
@@ -168,6 +172,7 @@ const createEmptyItem = (idx = 1) => ({
   finalPrice: 0,
   sareeType: "Kanjeevaram Silk (Pure Zari)",
   customSareeType: "",
+  includeMeasurements: true,
   selectedMeasurementId: "custom",
   customMeasurement: {
     title: "Custom Sizing",
@@ -230,6 +235,8 @@ export default function CreateOrderModal({
   const [paymentStatus, setPaymentStatus] = useState("paid");
   const [paymentMethod, setPaymentMethod] = useState("UPI");
   const [pickupDeliveryCharges, setPickupDeliveryCharges] = useState(0);
+  const [otherCharges, setOtherCharges] = useState(0);
+  const [advancePayment, setAdvancePayment] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [orderNotes, setOrderNotes] = useState("");
 
@@ -357,95 +364,38 @@ export default function CreateOrderModal({
           return;
         }
 
-        // Standard Admin / Staff Loader
-        const [
-          usersData,
-          clientsData,
-          ordersData,
-          servicesData,
-          measurementsData,
-        ] = await Promise.all([
+        // Standard Admin / Staff Loader - Single source of truth (Users collection)
+        const [usersData, servicesData, measurementsData] = await Promise.all([
           getAllUsers().catch(() => []),
-          getAllClients().catch(() => []),
-          getAllOrders().catch(() => []),
           getAllServices(false).catch(() => []),
           getAllMeasurements().catch(() => []),
         ]);
 
-        // Build robust, deduplicated client list
-        const clientMap = new Map();
+        // Filter client accounts (same as Clients page)
+        const validClients = (usersData || [])
+          .filter((u) => {
+            const email = (u.email || "").toLowerCase().trim();
+            if (email === SUPERADMIN_EMAIL.toLowerCase()) return false;
+            const r = (u.role || "").toLowerCase();
+            return (
+              r !== USER_ROLES.SUPERADMIN &&
+              r !== USER_ROLES.ADMIN &&
+              r !== USER_ROLES.STAFF &&
+              Boolean(u.username) &&
+              u.username !== "—" &&
+              u.username !== "Client"
+            );
+          })
+          .map((u) => ({
+            id: u.id,
+            username: u.username || u.clientName || "",
+            userMobile: u.userMobile || u.clientMobile || "",
+            email: u.email || "",
+            userAddress: u.userAddress || "",
+            role: USER_ROLES.CLIENT,
+          }))
+          .sort((a, b) => (a.username || "").localeCompare(b.username || ""));
 
-        // 1. Add clients collection documents
-        (clientsData || []).forEach((c) => {
-          const name = c.username || c.clientName || "";
-          if (name) {
-            const key = (c.id || c.email || name).toLowerCase().trim();
-            clientMap.set(key, {
-              id: c.id,
-              username: name,
-              userMobile: c.userMobile || c.clientMobile || "",
-              email: c.email || c.clientEmail || "",
-              userAddress: c.userAddress || c.clientAddress || "",
-              role: USER_ROLES.CLIENT,
-            });
-          }
-        });
-
-        // 3. Add registered users who are clients
-        (usersData || []).forEach((u) => {
-          const email = (u.email || "").toLowerCase().trim();
-          if (email === SUPERADMIN_EMAIL.toLowerCase()) return;
-          const r = (u.role || "").toLowerCase();
-          if (
-            r === USER_ROLES.SUPERADMIN ||
-            r === USER_ROLES.ADMIN ||
-            r === USER_ROLES.STAFF
-          ) {
-            return;
-          }
-          if (u.username) {
-            const key = (u.id || u.email || u.username).toLowerCase().trim();
-            clientMap.set(key, {
-              id: u.id,
-              username: u.username,
-              userMobile: u.userMobile || "",
-              email: u.email || "",
-              userAddress: u.userAddress || "",
-              role: USER_ROLES.CLIENT,
-            });
-          }
-        });
-
-        // 4. Extract clients from previous orders if not already present
-        (ordersData || []).forEach((ord) => {
-          const c = ord.client || ord;
-          const name =
-            c?.username ||
-            ord.username ||
-            (typeof ord.client === "string" ? ord.client : "");
-          const mobile = c?.userMobile || ord.userMobile || ord.phone || "";
-          const email = c?.email || ord.email || "";
-          const address = c?.userAddress || ord.userAddress || "";
-          const cid = c?.clientId || ord.clientId;
-          if (name && name !== "—" && name !== "Client") {
-            const key = (cid || email || name).toLowerCase().trim();
-            if (!clientMap.has(key)) {
-              clientMap.set(key, {
-                id: cid || `client_${name.toLowerCase().replace(/\s+/g, "_")}`,
-                username: name,
-                userMobile: mobile,
-                email,
-                userAddress: address,
-                role: USER_ROLES.CLIENT,
-              });
-            }
-          }
-        });
-
-        // Convert to array and sort alphabetically by username
-        const validClients = Array.from(clientMap.values()).sort((a, b) =>
-          (a.username || "").localeCompare(b.username || ""),
-        );
         setClients(validClients);
 
         // Active services
@@ -474,6 +424,14 @@ export default function CreateOrderModal({
             m.username.trim() !== "—"
           ) {
             uids.add(String(m.username).trim().toLowerCase());
+          }
+          if (m.userMobile || m.clientMobile || m.phone) {
+            const cleanMobile = String(
+              m.userMobile || m.clientMobile || m.phone,
+            )
+              .replace(/\D/g, "")
+              .slice(-10);
+            if (cleanMobile) uids.add(cleanMobile);
           }
 
           uids.forEach((uid) => {
@@ -659,6 +617,20 @@ export default function CreateOrderModal({
         if (foundClient.email && foundClient.email.includes("@"))
           clientKeys.add(foundClient.email.toLowerCase().trim());
         if (
+          foundClient.userMobile ||
+          foundClient.clientMobile ||
+          foundClient.phone
+        ) {
+          const cleanMobile = String(
+            foundClient.userMobile ||
+              foundClient.clientMobile ||
+              foundClient.phone,
+          )
+            .replace(/\D/g, "")
+            .slice(-10);
+          if (cleanMobile) clientKeys.add(cleanMobile);
+        }
+        if (
           foundClient.username &&
           foundClient.username.trim().toLowerCase() !== "client" &&
           foundClient.username.trim() !== "—"
@@ -704,9 +676,24 @@ export default function CreateOrderModal({
           .toLowerCase()
           .trim();
         const mUsername = (m.username || "").toString().toLowerCase().trim();
+        const mMobile = String(m.userMobile || m.clientMobile || m.phone || "")
+          .replace(/\D/g, "")
+          .slice(-10);
+        const clientMobile = String(
+          foundClient?.userMobile ||
+            foundClient?.clientMobile ||
+            foundClient?.phone ||
+            "",
+        )
+          .replace(/\D/g, "")
+          .slice(-10);
 
         const belongs =
           (mUserId && clientKeys.has(mUserId)) ||
+          (clientMobile &&
+            mMobile &&
+            mMobile.length === 10 &&
+            mMobile === clientMobile) ||
           (foundClient?.email &&
             mEmail &&
             mEmail.includes("@") &&
@@ -850,17 +837,27 @@ export default function CreateOrderModal({
     setItems((prev) => {
       const next = [...prev];
       if (foundSvc) {
-        const p = Number(foundSvc.servicePrice) || 0;
-        const dp = Number(foundSvc.serviceDiscountedPrice) || p;
-        const selectedPrice = dp || p;
+        const regPrice = Number(
+          foundSvc.servicePrice !== undefined && foundSvc.servicePrice !== null
+            ? foundSvc.servicePrice
+            : foundSvc.price !== undefined && foundSvc.price !== null
+              ? foundSvc.price
+              : foundSvc.amount || 0,
+        ) || 0;
+        const offerPrice = Number(
+          foundSvc.serviceDiscountedPrice !== undefined && foundSvc.serviceDiscountedPrice !== null && Number(foundSvc.serviceDiscountedPrice) > 0
+            ? foundSvc.serviceDiscountedPrice
+            : regPrice,
+        ) || regPrice;
+
         next[index] = {
           ...next[index],
           serviceId: foundSvc.id,
-          serviceName: foundSvc.serviceName || "",
-          servicePrice: selectedPrice,
-          serviceDiscountedPrice: dp,
+          serviceName: foundSvc.serviceName || foundSvc.name || foundSvc.title || "",
+          servicePrice: regPrice,
+          serviceDiscountedPrice: offerPrice,
           serviceDescription: foundSvc.description || "",
-          finalPrice: selectedPrice,
+          finalPrice: offerPrice,
         };
       } else {
         next[index] = {
@@ -879,6 +876,25 @@ export default function CreateOrderModal({
     setValidationErrors((prev) => ({
       ...prev,
       [`items[${index}].serviceId`]: undefined,
+      [`items[${index}].servicePrice`]: undefined,
+      [`items[${index}].finalPrice`]: undefined,
+    }));
+  };
+
+  const handlePriceChange = (index, newPrice) => {
+    const numVal = newPrice === "" ? "" : Number(newPrice);
+    const finalVal = numVal === "" ? 0 : numVal;
+    setItems((prev) => {
+      const next = [...prev];
+      next[index] = {
+        ...next[index],
+        finalPrice: numVal,
+        serviceDiscountedPrice: finalVal,
+      };
+      return next;
+    });
+    setValidationErrors((prev) => ({
+      ...prev,
       [`items[${index}].servicePrice`]: undefined,
       [`items[${index}].finalPrice`]: undefined,
     }));
@@ -933,9 +949,22 @@ export default function CreateOrderModal({
     setValidationErrors((prev) => {
       const copy = { ...prev };
       delete copy[`items[${index}].${field}`];
-      if (field === "selectedMeasurementId") {
+      if (
+        field === "selectedMeasurementId" ||
+        field === "includeMeasurements"
+      ) {
         Object.keys(copy).forEach((k) => {
-          if (k.startsWith(`items[${index}].measurementProfile`)) {
+          if (
+            k.startsWith(`items[${index}].measurementProfile`) ||
+            k.startsWith(`items[${index}].pallu`) ||
+            k.startsWith(`items[${index}].shoulderToRightTight`) ||
+            k.startsWith(`items[${index}].chest`) ||
+            k.startsWith(`items[${index}].hip`) ||
+            k.startsWith(`items[${index}].firstPleatSize`) ||
+            k.startsWith(`items[${index}].noOfChestPleats`) ||
+            k.startsWith(`items[${index}].height`) ||
+            k.startsWith(`items[${index}].dressSize`)
+          ) {
             delete copy[k];
           }
         });
@@ -1039,20 +1068,26 @@ export default function CreateOrderModal({
   const subtotalAmount = useMemo(() => {
     return items.reduce((acc, it) => {
       const price =
-        it.servicePrice !== "" &&
-        it.servicePrice !== undefined &&
-        it.servicePrice !== null
-          ? Number(it.servicePrice)
-          : Number(it.finalPrice) || 0;
+        it.finalPrice !== "" &&
+        it.finalPrice !== undefined &&
+        it.finalPrice !== null
+          ? Number(it.finalPrice)
+          : Number(it.serviceDiscountedPrice) || Number(it.servicePrice) || 0;
       return acc + (Number.isNaN(price) ? 0 : price);
     }, 0);
   }, [items]);
 
   const calculatedTotal = useMemo(() => {
     const pickupDelivery = Number(pickupDeliveryCharges) || 0;
+    const other = Number(otherCharges) || 0;
     const disc = Number(discount) || 0;
-    return Math.max(0, subtotalAmount + pickupDelivery - disc);
-  }, [subtotalAmount, pickupDeliveryCharges, discount]);
+    return Math.max(0, subtotalAmount + pickupDelivery + other - disc);
+  }, [subtotalAmount, pickupDeliveryCharges, otherCharges, discount]);
+
+  const balanceDue = useMemo(() => {
+    const advance = Number(advancePayment) || 0;
+    return Math.max(0, calculatedTotal - advance);
+  }, [calculatedTotal, advancePayment]);
 
   const handleResetForm = () => {
     isSubmittingRef.current = false;
@@ -1085,6 +1120,8 @@ export default function CreateOrderModal({
     setPaymentStatus(isClientMode ? "pending" : "paid");
     setPaymentMethod("UPI");
     setPickupDeliveryCharges(0);
+    setOtherCharges(0);
+    setAdvancePayment(0);
     setDiscount(0);
     setOrderNotes("");
     setValidationErrors({});
@@ -1106,54 +1143,72 @@ export default function CreateOrderModal({
 
     // Pre-process items and extract all 8 measurement parameters before validation
     const processedItems = items.map((it, idx) => {
+      const includeMeasurements = it.includeMeasurements !== false;
       let measurementProfile = null;
-      if (it.selectedMeasurementId && it.selectedMeasurementId !== "custom") {
-        const foundM = clientSavedMeasures.find(
-          (m) => m.id === it.selectedMeasurementId,
-        );
-        if (foundM) {
+
+      if (includeMeasurements) {
+        if (it.selectedMeasurementId && it.selectedMeasurementId !== "custom") {
+          const foundM = clientSavedMeasures.find(
+            (m) => m.id === it.selectedMeasurementId,
+          );
+          if (foundM) {
+            measurementProfile = {
+              measurementId: foundM.id,
+              title: foundM.title || "Standard Sizing",
+              pallu: String(foundM.pallu || foundM.palluLength || "").trim(),
+              shoulderToRightTight: String(
+                foundM.shoulderToRightTight || foundM.shoulder || "",
+              ).trim(),
+              chest: String(foundM.chest || foundM.chestSize || "").trim(),
+              hip: String(foundM.hip || foundM.hipSize || "").trim(),
+              firstPleatSize: String(
+                foundM.firstPleatSize || foundM.firstPleat || "",
+              ).trim(),
+              noOfChestPleats: String(
+                foundM.noOfChestPleats || foundM.chestPleats || "",
+              ).trim(),
+              height: String(foundM.height || "").trim(),
+              dressSize: String(foundM.dressSize || "").trim(),
+              notes: foundM.notes || "",
+            };
+          }
+        }
+
+        // Fallback if measurementProfile is still null (e.g. custom or unlinked)
+        if (!measurementProfile) {
           measurementProfile = {
-            measurementId: foundM.id,
-            title: foundM.title || "Standard Sizing",
-            pallu: String(foundM.pallu || foundM.palluLength || "").trim(),
+            measurementId: `custom_${idx + 1}`,
+            title: it.customMeasurement?.title || "Custom Sizing",
+            pallu: String(it.customMeasurement?.pallu || "").trim(),
             shoulderToRightTight: String(
-              foundM.shoulderToRightTight || foundM.shoulder || "",
+              it.customMeasurement?.shoulderToRightTight || "",
             ).trim(),
-            chest: String(foundM.chest || foundM.chestSize || "").trim(),
-            hip: String(foundM.hip || foundM.hipSize || "").trim(),
+            chest: String(it.customMeasurement?.chest || "").trim(),
+            hip: String(it.customMeasurement?.hip || "").trim(),
             firstPleatSize: String(
-              foundM.firstPleatSize || foundM.firstPleat || "",
+              it.customMeasurement?.firstPleatSize || "",
             ).trim(),
             noOfChestPleats: String(
-              foundM.noOfChestPleats || foundM.chestPleats || "",
+              it.customMeasurement?.noOfChestPleats || "",
             ).trim(),
-            height: String(foundM.height || "").trim(),
-            dressSize: String(foundM.dressSize || "").trim(),
-            notes: foundM.notes || "",
+            height: String(it.customMeasurement?.height || "").trim(),
+            dressSize: String(it.customMeasurement?.dressSize || "").trim(),
+            notes: String(it.customMeasurement?.notes || "").trim(),
           };
         }
-      }
-
-      // Fallback if measurementProfile is still null (e.g. custom or unlinked)
-      if (!measurementProfile) {
+      } else {
         measurementProfile = {
-          measurementId: `custom_${idx + 1}`,
-          title: it.customMeasurement?.title || "Custom Sizing",
-          pallu: String(it.customMeasurement?.pallu || "").trim(),
-          shoulderToRightTight: String(
-            it.customMeasurement?.shoulderToRightTight || "",
-          ).trim(),
-          chest: String(it.customMeasurement?.chest || "").trim(),
-          hip: String(it.customMeasurement?.hip || "").trim(),
-          firstPleatSize: String(
-            it.customMeasurement?.firstPleatSize || "",
-          ).trim(),
-          noOfChestPleats: String(
-            it.customMeasurement?.noOfChestPleats || "",
-          ).trim(),
-          height: String(it.customMeasurement?.height || "").trim(),
-          dressSize: String(it.customMeasurement?.dressSize || "").trim(),
-          notes: String(it.customMeasurement?.notes || "").trim(),
+          measurementId: `no_meas_${idx + 1}`,
+          title: "Standard (No Measurements)",
+          pallu: "",
+          shoulderToRightTight: "",
+          chest: "",
+          hip: "",
+          firstPleatSize: "",
+          noOfChestPleats: "",
+          height: "",
+          dressSize: "",
+          notes: String(it.itemNotes || "").trim(),
         };
       }
 
@@ -1170,10 +1225,32 @@ export default function CreateOrderModal({
             ? Number(it.finalPrice)
             : NaN,
         sareeType: it.sareeType || "Kanjeevaram Silk (Pure Zari)",
+        includeMeasurements,
         measurementProfile,
         itemNotes: it.itemNotes || "",
       };
     });
+
+    const numPaid = Number(advancePayment) || 0;
+    const resolvedPaymentStatus =
+      numPaid >= calculatedTotal && calculatedTotal > 0
+        ? "paid"
+        : numPaid > 0
+          ? "partial"
+          : "pending";
+    const resolvedPaid =
+      resolvedPaymentStatus === "paid"
+        ? (numPaid > 0 ? numPaid : calculatedTotal)
+        : numPaid;
+    const resolvedAdvance = numPaid;
+    const resolvedBalanceDue =
+      resolvedPaymentStatus === "paid"
+        ? 0
+        : Math.max(0, calculatedTotal - numPaid);
+    const resolvedBalancePaid =
+      resolvedPaymentStatus === "paid"
+        ? (numPaid > 0 ? Math.max(0, calculatedTotal - numPaid) : calculatedTotal)
+        : 0;
 
     // Yup Validation Execution on full order including all 8 measurement parameters
     setValidationErrors({});
@@ -1189,7 +1266,7 @@ export default function CreateOrderModal({
           orderDate,
           deliveryDate,
           orderStatus,
-          paymentStatus,
+          paymentStatus: resolvedPaymentStatus,
           paymentMethod,
         },
         { abortEarly: false },
@@ -1250,15 +1327,14 @@ export default function CreateOrderModal({
         totalItems: processedItems.length,
         subtotal: subtotalAmount,
         pickupDeliveryCharges: Number(pickupDeliveryCharges) || 0,
+        otherCharges: Number(otherCharges) || 0,
+        advancePayment: resolvedAdvance,
+        paidAmount: resolvedPaid,
         discount: Number(discount) || 0,
         totalAmount: calculatedTotal,
-        paidAmount:
-          paymentStatus === "paid"
-            ? calculatedTotal
-            : paymentStatus === "partial"
-              ? Math.round(calculatedTotal / 2)
-              : 0,
-        paymentStatus,
+        balanceDue: resolvedBalanceDue,
+        balancePaid: resolvedBalancePaid,
+        paymentStatus: resolvedPaymentStatus,
         paymentMethod,
         orderStatus,
         status: orderStatus,
@@ -1327,11 +1403,15 @@ export default function CreateOrderModal({
 
   // Options for Service Select
   const serviceSelectOptions = useMemo(() => {
-    return services.map((s) => ({
-      value: s.id,
-      label: s.serviceName,
-      subtitle: `Offer: ₹${s.serviceDiscountedPrice || s.servicePrice} (Reg: ₹${s.servicePrice})`,
-    }));
+    return services.map((s) => {
+      const p = Number(s.servicePrice !== undefined && s.servicePrice !== null ? s.servicePrice : s.price || 0);
+      const dp = Number(s.serviceDiscountedPrice !== undefined && s.serviceDiscountedPrice !== null ? s.serviceDiscountedPrice : p);
+      return {
+        value: s.id,
+        label: s.serviceName,
+        subtitle: dp > 0 && dp < p ? `Offer: ₹${dp} (Reg: ₹${p})` : `Price: ₹${p}`,
+      };
+    });
   }, [services]);
 
   return (
@@ -1357,11 +1437,7 @@ export default function CreateOrderModal({
               ₹{calculatedTotal.toLocaleString("en-IN")}
             </span>
             <span className="summary-count">
-              ({items.length} {items.length === 1 ? "Service" : "Services"}
-              {Number(pickupDeliveryCharges) > 0
-                ? ` • +₹${Number(pickupDeliveryCharges)} Delivery`
-                : ""}
-              {Number(discount) > 0 ? ` • -₹${Number(discount)} Disc` : ""})
+              ({items.length} {items.length === 1 ? "Service" : "Services"})
             </span>
           </div>
 
@@ -1439,120 +1515,131 @@ export default function CreateOrderModal({
             </div>
 
             <div className="form-grid form-grid--2col">
-              <AppInput
-                label="Client Full Name"
-                placeholder="e.g. Priya Sharma"
-                value={clientForm.username}
-                onChange={(e) => {
-                  if (initialClient) return;
-                  setClientForm((prev) => ({
-                    ...prev,
-                    username: e.target.value,
-                  }));
-                  setValidationErrors((prev) => ({
-                    ...prev,
-                    "client.username": undefined,
-                  }));
-                }}
-                disabled={submitting}
-                readOnly={Boolean(initialClient)}
-                startAdornment={<PersonOutlineIcon />}
-                required
-                error={Boolean(validationErrors["client.username"])}
-                helperText={validationErrors["client.username"]}
-              />
+              <div className="form-field-wrap">
+                <AppInput
+                  label="Client Full Name"
+                  placeholder="e.g. Priya Sharma"
+                  value={clientForm.username}
+                  onChange={(e) => {
+                    if (initialClient) return;
+                    setClientForm((prev) => ({
+                      ...prev,
+                      username: e.target.value,
+                    }));
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      "client.username": undefined,
+                    }));
+                  }}
+                  disabled={submitting}
+                  readOnly={Boolean(initialClient)}
+                  startAdornment={<PersonOutlineIcon />}
+                  required
+                  error={Boolean(validationErrors["client.username"])}
+                  helperText={validationErrors["client.username"]}
+                />
+              </div>
 
-              <AppInput
-                label="Mobile Number (10 Digits)"
-                placeholder="e.g. 9849012345"
-                inputMode="numeric"
-                maxLength={10}
-                onKeyDown={(e) => {
-                  if (initialClient) return;
-                  if (
-                    !/^\d$/.test(e.key) &&
-                    ![
-                      "Backspace",
-                      "Delete",
-                      "ArrowLeft",
-                      "ArrowRight",
-                      "Tab",
-                    ].includes(e.key) &&
-                    !(e.ctrlKey || e.metaKey)
-                  ) {
-                    e.preventDefault();
+              <div className="form-field-wrap">
+                <AppInput
+                  label="Mobile Number (10 Digits)"
+                  placeholder="e.g. 9849012345"
+                  inputMode="numeric"
+                  maxLength={10}
+                  onKeyDown={(e) => {
+                    if (initialClient) return;
+                    if (
+                      !/^\d$/.test(e.key) &&
+                      ![
+                        "Backspace",
+                        "Delete",
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "Tab",
+                      ].includes(e.key) &&
+                      !(e.ctrlKey || e.metaKey)
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
+                  value={clientForm.userMobile}
+                  onChange={(e) => {
+                    if (initialClient) return;
+                    const sanitized = e.target.value
+                      .replace(/\D/g, "")
+                      .slice(0, 10);
+                    setClientForm((prev) => ({
+                      ...prev,
+                      userMobile: sanitized,
+                    }));
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      "client.userMobile": undefined,
+                    }));
+                  }}
+                  disabled={submitting}
+                  readOnly={Boolean(initialClient)}
+                  startAdornment={<PhoneIphoneOutlinedIcon />}
+                  required
+                  error={Boolean(validationErrors["client.userMobile"])}
+                  helperText={validationErrors["client.userMobile"]}
+                />
+              </div>
+
+              <div className="form-field-wrap">
+                <AppInput
+                  label="Email Address (optional)"
+                  placeholder="e.g. priya.sharma@gmail.com"
+                  type="email"
+                  value={clientForm.email}
+                  onChange={(e) => {
+                    if (initialClient) return;
+                    setClientForm((prev) => ({
+                      ...prev,
+                      email: e.target.value,
+                    }));
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      "client.email": undefined,
+                    }));
+                  }}
+                  disabled={submitting}
+                  readOnly={Boolean(initialClient)}
+                  startAdornment={<EmailOutlinedIcon />}
+                  error={Boolean(validationErrors["client.email"])}
+                  helperText={validationErrors["client.email"]}
+                />
+              </div>
+
+              <div className="form-field-wrap">
+                <AppInput
+                  label={
+                    isClientMode
+                      ? "Delivery / Pickup Address"
+                      : "Address / Location (optional)"
                   }
-                }}
-                value={clientForm.userMobile}
-                onChange={(e) => {
-                  if (initialClient) return;
-                  const sanitized = e.target.value
-                    .replace(/\D/g, "")
-                    .slice(0, 10);
-                  setClientForm((prev) => ({
-                    ...prev,
-                    userMobile: sanitized,
-                  }));
-                  setValidationErrors((prev) => ({
-                    ...prev,
-                    "client.userMobile": undefined,
-                  }));
-                }}
-                disabled={submitting}
-                readOnly={Boolean(initialClient)}
-                startAdornment={<PhoneIphoneOutlinedIcon />}
-                required
-                error={Boolean(validationErrors["client.userMobile"])}
-                helperText={validationErrors["client.userMobile"]}
-              />
-
-              <AppInput
-                label="Email Address (optional)"
-                placeholder="e.g. priya.sharma@gmail.com"
-                type="email"
-                value={clientForm.email}
-                onChange={(e) => {
-                  if (initialClient) return;
-                  setClientForm((prev) => ({ ...prev, email: e.target.value }));
-                  setValidationErrors((prev) => ({
-                    ...prev,
-                    "client.email": undefined,
-                  }));
-                }}
-                disabled={submitting}
-                readOnly={Boolean(initialClient)}
-                startAdornment={<EmailOutlinedIcon />}
-                error={Boolean(validationErrors["client.email"])}
-                helperText={validationErrors["client.email"]}
-              />
-
-              <AppInput
-                label={
-                  isClientMode
-                    ? "Delivery / Pickup Address"
-                    : "Address / Location (optional)"
-                }
-                placeholder={
-                  isClientMode
-                    ? "e.g. Flat 301, Sri Sai Heights, Madhapur, Hyderabad"
-                    : "e.g. Flat 302, Green Meadows, Jubilee Hills"
-                }
-                value={clientForm.userAddress}
-                onChange={(e) => {
-                  if (initialClient) return;
-                  setClientForm((prev) => ({
-                    ...prev,
-                    userAddress: e.target.value,
-                  }));
-                  setValidationErrors((prev) => ({
-                    ...prev,
-                    "client.userAddress": undefined,
-                  }));
-                }}
-                disabled={submitting}
-                readOnly={Boolean(initialClient)}
-                startAdornment={<LocationOnOutlinedIcon />}
-              />
+                  placeholder={
+                    isClientMode
+                      ? "e.g. Flat 301, Sri Sai Heights, Madhapur, Hyderabad"
+                      : "e.g. Flat 302, Green Meadows, Jubilee Hills"
+                  }
+                  value={clientForm.userAddress}
+                  onChange={(e) => {
+                    if (initialClient) return;
+                    setClientForm((prev) => ({
+                      ...prev,
+                      userAddress: e.target.value,
+                    }));
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      "client.userAddress": undefined,
+                    }));
+                  }}
+                  disabled={submitting}
+                  readOnly={Boolean(initialClient)}
+                  startAdornment={<LocationOnOutlinedIcon />}
+                />
+              </div>
             </div>
           </div>
 
@@ -1667,29 +1754,17 @@ export default function CreateOrderModal({
                         type="number"
                         placeholder="e.g. 1000"
                         value={
-                          item.servicePrice === "" ||
-                          item.servicePrice === undefined
+                          item.finalPrice === "" ||
+                          item.finalPrice === undefined
                             ? ""
-                            : item.servicePrice
+                            : item.finalPrice
                         }
                         onChange={(e) => {
                           const cleanVal = e.target.value.replace(
                             /[^0-9]/g,
                             "",
                           );
-                          const numVal =
-                            cleanVal === "" ? "" : Number(cleanVal);
-                          handleItemFieldChange(idx, "servicePrice", numVal);
-                          handleItemFieldChange(
-                            idx,
-                            "finalPrice",
-                            numVal === "" ? 0 : numVal,
-                          );
-                          setValidationErrors((prev) => ({
-                            ...prev,
-                            [`items[${idx}].servicePrice`]: undefined,
-                            [`items[${idx}].finalPrice`]: undefined,
-                          }));
+                          handlePriceChange(idx, cleanVal);
                         }}
                         disabled={submitting}
                         startAdornment={<CurrencyRupeeIcon />}
@@ -1700,7 +1775,10 @@ export default function CreateOrderModal({
                         )}
                         helperText={
                           validationErrors[`items[${idx}].servicePrice`] ||
-                          validationErrors[`items[${idx}].finalPrice`]
+                          validationErrors[`items[${idx}].finalPrice`] ||
+                          (Number(item.servicePrice) > 0
+                            ? `Reg. Price: ₹${item.servicePrice}`
+                            : "")
                         }
                       />
                     </div>
@@ -1716,56 +1794,99 @@ export default function CreateOrderModal({
                   {/* Measurement Profile Linking */}
                   <div className="item-measurement-section">
                     <div className="measurement-header-row">
-                      <div className="sub-title">
-                        <StraightenOutlinedIcon style={{ fontSize: 15 }} />
-                        <span>Measurement Profile for this Saree:</span>
+                      <div className="sub-title-with-toggle">
+                        <div className="sub-title">
+                          <StraightenOutlinedIcon style={{ fontSize: 16 }} />
+                          <span>Measurement Profile:</span>
+                        </div>
+
+                        <div className="meas-switch-wrapper">
+                          <label
+                            className="meas-toggle-switch"
+                            title={
+                              item.includeMeasurements !== false
+                                ? "Turn Off Measurements for this Service"
+                                : "Turn On Measurements for this Service"
+                            }
+                          >
+                            <input
+                              type="checkbox"
+                              checked={item.includeMeasurements !== false}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                handleItemFieldChange(
+                                  idx,
+                                  "includeMeasurements",
+                                  checked,
+                                );
+                              }}
+                              disabled={submitting}
+                            />
+                            <span className="switch-slider" />
+                          </label>
+                          <span
+                            className={`meas-switch-label ${
+                              item.includeMeasurements !== false ? "on" : "off"
+                            }`}
+                          ></span>
+                        </div>
                       </div>
 
-                      <div className="measure-picker-inline">
-                        <AppSelect
-                          size="sm"
-                          placeholder={
-                            !selectedClientId || selectedClientId === "new"
-                              ? "-- Enter Custom Pleat Sizing --"
-                              : clientSavedMeasures.length > 0
-                                ? "-- Choose Profile --"
-                                : "-- Custom Sizing (No Saved Profiles) --"
-                          }
-                          value={item.selectedMeasurementId || "custom"}
-                          onChange={(e) =>
-                            handleItemFieldChange(
-                              idx,
-                              "selectedMeasurementId",
-                              e.target.value,
-                            )
-                          }
-                          options={[
-                            {
-                              value: "custom",
-                              label: "Custom Sizing for this Order",
-                              subtitle:
-                                selectedClientId &&
-                                selectedClientId !== "new" &&
-                                clientSavedMeasures.length === 0
-                                  ? "No saved profiles for this client • Enter custom pleat dimensions below"
-                                  : "Enter custom pleat dimensions below",
-                            },
-                            ...clientSavedMeasures.map((m) => ({
-                              value: m.id,
-                              label: m.title || "Saved Profile",
-                              subtitle: `Pallu: ${m.pallu || "—"} | Pleats: ${m.noOfChestPleats || "—"}`,
-                            })),
-                          ]}
-                          startAdornment={<StraightenOutlinedIcon />}
-                          disabled={submitting}
-                          className="inline-measure-select"
-                        />
-                      </div>
+                      {item.includeMeasurements !== false && (
+                        <div className="measure-picker-inline">
+                          <AppSelect
+                            size="sm"
+                            placeholder={
+                              !selectedClientId || selectedClientId === "new"
+                                ? "-- Enter Custom Pleat Sizing --"
+                                : clientSavedMeasures.length > 0
+                                  ? "-- Choose Profile --"
+                                  : "-- Custom Sizing (No Saved Profiles) --"
+                            }
+                            value={item.selectedMeasurementId || "custom"}
+                            onChange={(e) =>
+                              handleItemFieldChange(
+                                idx,
+                                "selectedMeasurementId",
+                                e.target.value,
+                              )
+                            }
+                            options={[
+                              {
+                                value: "custom",
+                                label: "Custom Sizing for this Order",
+                                subtitle:
+                                  selectedClientId &&
+                                  selectedClientId !== "new" &&
+                                  clientSavedMeasures.length === 0
+                                    ? "No saved profiles for this client • Enter custom pleat dimensions below"
+                                    : "Enter custom pleat dimensions below",
+                              },
+                              ...clientSavedMeasures.map((m) => ({
+                                value: m.id,
+                                label: m.title || "Saved Profile",
+                                subtitle: `Pallu: ${m.pallu || "—"} | Pleats: ${m.noOfChestPleats || "—"}`,
+                              })),
+                            ]}
+                            startAdornment={<StraightenOutlinedIcon />}
+                            disabled={submitting}
+                            className="inline-measure-select"
+                          />
+                        </div>
+                      )}
                     </div>
 
-                    {/* Quick Specs Grid */}
-                    {item.selectedMeasurementId &&
-                    item.selectedMeasurementId !== "custom" ? (
+                    {item.includeMeasurements === false ? (
+                      <div className="measure-skipped-banner">
+                        <InfoOutlinedIcon style={{ fontSize: 16 }} />
+                        <span>
+                          No measurements required for this service (e.g.
+                          Ironing, Standard Fold, or Dry Cleaning). You can
+                          still enter custom notes below if needed.
+                        </span>
+                      </div>
+                    ) : item.selectedMeasurementId &&
+                      item.selectedMeasurementId !== "custom" ? (
                       (() => {
                         const m = clientSavedMeasures.find(
                           (x) => x.id === item.selectedMeasurementId,
@@ -2106,42 +2227,46 @@ export default function CreateOrderModal({
             </div>
 
             <div className="form-grid form-grid--3col">
-              <AppDatePicker
-                label="Order Creation Date"
-                name="orderDate"
-                value={orderDate}
-                onChange={(e) => {
-                  setOrderDate(e.target.value);
-                  setValidationErrors((prev) => ({
-                    ...prev,
-                    orderDate: undefined,
-                  }));
-                }}
-                disabled={submitting}
-                required
-                error={Boolean(validationErrors.orderDate)}
-                helperText={validationErrors.orderDate}
-              />
+              <div className="form-field-wrap">
+                <AppDatePicker
+                  label="Order Creation Date"
+                  name="orderDate"
+                  value={orderDate}
+                  onChange={(e) => {
+                    setOrderDate(e.target.value);
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      orderDate: undefined,
+                    }));
+                  }}
+                  disabled={submitting}
+                  required
+                  error={Boolean(validationErrors.orderDate)}
+                  helperText={validationErrors.orderDate}
+                />
+              </div>
 
-              <AppDatePicker
-                label="Target Delivery Date"
-                name="deliveryDate"
-                placeholder="Select delivery target date..."
-                value={deliveryDate}
-                onChange={(e) => {
-                  setDeliveryDate(e.target.value);
-                  setValidationErrors((prev) => ({
-                    ...prev,
-                    deliveryDate: undefined,
-                  }));
-                }}
-                disabled={submitting}
-                minDate={orderDate}
-                required
-                showPresets
-                error={Boolean(validationErrors.deliveryDate)}
-                helperText={validationErrors.deliveryDate}
-              />
+              <div className="form-field-wrap">
+                <AppDatePicker
+                  label="Target Delivery Date"
+                  name="deliveryDate"
+                  placeholder="Select delivery target date..."
+                  value={deliveryDate}
+                  onChange={(e) => {
+                    setDeliveryDate(e.target.value);
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      deliveryDate: undefined,
+                    }));
+                  }}
+                  disabled={submitting}
+                  minDate={orderDate}
+                  required
+                  showPresets
+                  error={Boolean(validationErrors.deliveryDate)}
+                  helperText={validationErrors.deliveryDate}
+                />
+              </div>
 
               <div className="form-field-wrap">
                 <AppSelect
@@ -2170,7 +2295,7 @@ export default function CreateOrderModal({
             )}
 
             <div
-              className={`form-grid ${isClientMode ? "form-grid--2col" : "form-grid--3col"}`}
+              className={`form-grid ${!isClientMode ? "form-grid--2col" : ""}`}
               style={{ marginTop: 14 }}
             >
               {!isClientMode && (
@@ -2193,31 +2318,6 @@ export default function CreateOrderModal({
                   />
                 </div>
               )}
-
-              <div className="form-field-wrap">
-                <AppSelect
-                  label={isClientMode ? "Payment Preference" : "Payment Status"}
-                  value={paymentStatus}
-                  onChange={(e) => setPaymentStatus(e.target.value)}
-                  options={
-                    isClientMode
-                      ? [
-                          {
-                            value: "pending",
-                            label: "Pay on Delivery / Pickup",
-                          },
-                          { value: "paid", label: "Prepaid / Paid Online" },
-                        ]
-                      : [
-                          { value: "paid", label: "Paid in Full" },
-                          { value: "pending", label: "Pending Payment" },
-                          { value: "partial", label: "Advance / Partial Paid" },
-                        ]
-                  }
-                  startAdornment={<PaymentOutlinedIcon />}
-                  disabled={submitting}
-                />
-              </div>
 
               <div className="form-field-wrap">
                 <AppSelect
@@ -2262,14 +2362,56 @@ export default function CreateOrderModal({
 
               <div className="form-field-wrap">
                 <AppInput
-                  label="Final Price (₹)"
-                  value={calculatedTotal.toLocaleString("en-IN")}
-                  readOnly={true}
-                  disabled={false}
-                  inputProps={{ readOnly: true }}
+                  label="Other Charges (₹)"
+                  placeholder="0"
+                  value={otherCharges === 0 ? "" : otherCharges}
+                  onChange={(e) => {
+                    const cleanVal = e.target.value.replace(/[^0-9]/g, "");
+                    setOtherCharges(cleanVal === "" ? 0 : Number(cleanVal));
+                  }}
+                  onKeyDown={(e) => handleNumericKeyDown(e, false)}
                   startAdornment={<CurrencyRupeeIcon />}
-                  helperText="Auto-calculated (Service Price + Pickup & Delivery Charges)"
-                  className="final-price-readonly-input"
+                  disabled={submitting}
+                  helperText="Optional extra or handling fee added to total"
+                />
+              </div>
+
+              <div className="form-field-wrap">
+                <AppInput
+                  label="Discount (₹)"
+                  placeholder="0"
+                  value={discount === 0 ? "" : discount}
+                  onChange={(e) => {
+                    const cleanVal = e.target.value.replace(/[^0-9]/g, "");
+                    setDiscount(cleanVal === "" ? 0 : Number(cleanVal));
+                  }}
+                  onKeyDown={(e) => handleNumericKeyDown(e, false)}
+                  startAdornment={<CurrencyRupeeIcon />}
+                  disabled={submitting}
+                  helperText="Optional discount deducted from total"
+                />
+              </div>
+
+              <div className="form-field-wrap">
+                <AppInput
+                  label="Paid Amount (₹)"
+                  placeholder="0"
+                  value={advancePayment === 0 ? "" : advancePayment}
+                  onChange={(e) => {
+                    const cleanVal = e.target.value.replace(/[^0-9]/g, "");
+                    const numVal = cleanVal === "" ? 0 : Number(cleanVal);
+                    setAdvancePayment(numVal);
+                  }}
+                  onKeyDown={(e) => handleNumericKeyDown(e, false)}
+                  startAdornment={<CurrencyRupeeIcon />}
+                  disabled={submitting}
+                  helperText={
+                    advancePayment > 0
+                      ? advancePayment >= calculatedTotal && calculatedTotal > 0
+                        ? `Paid in Full (₹${Number(advancePayment).toLocaleString("en-IN")})`
+                        : `Partial (Advance: ₹${Number(advancePayment).toLocaleString("en-IN")}, Balance Due: ₹${Math.max(0, calculatedTotal - Number(advancePayment)).toLocaleString("en-IN")})`
+                      : "Amount paid by client (0 = Pending, Partial = Advance, Full = Paid)"
+                  }
                 />
               </div>
             </div>

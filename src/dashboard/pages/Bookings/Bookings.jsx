@@ -39,10 +39,7 @@ import StatCard from "../../components/StatCard/StatCard";
 import DateTimeCell from "../../components/DateTimeCell/DateTimeCell";
 import CreateOrderModal from "../../components/CreateOrderModal/CreateOrderModal";
 import OrderDetailsModal from "../../components/OrderDetailsModal/OrderDetailsModal";
-import CustomInvoiceModal, {
-  mapOrderToInvoiceData,
-  downloadInvoicePdfDirectly,
-} from "../../components/CustomInvoiceModal/CustomInvoiceModal";
+import { downloadInvoicePdfDirectly } from "../../components/CustomInvoiceModal/CustomInvoiceModal";
 import {
   getAllOrders,
   getLatestItemTimestamp,
@@ -179,8 +176,6 @@ const Bookings = () => {
   // Modals
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
-  const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState(null);
 
   // Fetch orders
   const fetchOrders = useCallback(
@@ -460,15 +455,6 @@ const Bookings = () => {
             className="refresh-btn"
           >
             {loading || refreshing ? "Refreshing..." : "Refresh"}
-          </AppButton>
-          <AppButton
-            variant="secondary"
-            size="md"
-            startIcon={<ReceiptLongOutlinedIcon />}
-            onClick={() => setInvoiceModalOpen(true)}
-            className="sample-invoice-btn"
-          >
-            Custom Invoice
           </AppButton>
           <AppButton
             variant="primary"
@@ -777,7 +763,7 @@ const Bookings = () => {
                             size="sm"
                             square
                             className="action-btn--invoice"
-                            title="Direct Download Tax Invoice (PDF)"
+                            title="Download Order Details (PDF)"
                             onClick={(e) => {
                               e.stopPropagation();
                               downloadInvoicePdfDirectly(order);
@@ -915,7 +901,7 @@ const Bookings = () => {
                         variant="secondary"
                         square
                         className="action-btn--invoice"
-                        title="Direct Download Tax Invoice (PDF)"
+                        title="Download Order Details (PDF)"
                         onClick={(e) => {
                           e.stopPropagation();
                           downloadInvoicePdfDirectly(order);
@@ -999,23 +985,9 @@ const Bookings = () => {
                         )}
                       </div>
 
-                      {/* Items mini chips preview */}
-                      {items.length > 1 && (
-                        <div className="items-mini-chips">
-                          {items.map((it, idx) => (
-                            <span key={it.id || idx} className="item-mini-chip">
-                              <DryCleaningOutlinedIcon
-                                style={{ fontSize: 12, marginRight: 4 }}
-                              />
-                              {it.serviceName} — ₹{it.finalPrice || 0}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {order.notes && (
-                        <p className="order-notes">{order.notes}</p>
-                      )}
+                      <div className="amount-tag">
+                        {getOrderTotalAmount(order)}
+                      </div>
                     </div>
 
                     <div className="detailed-card-meta">
@@ -1064,13 +1036,13 @@ const Bookings = () => {
                       size="sm"
                       variant="secondary"
                       startIcon={<ReceiptLongOutlinedIcon />}
-                      title="Direct Download Tax Invoice (PDF)"
+                      title="Download Order Details (PDF)"
                       onClick={(e) => {
                         e.stopPropagation();
                         downloadInvoicePdfDirectly(order);
                       }}
                     >
-                      Tax Invoice
+                      Order Details
                     </AppButton>
                   </div>
                 </div>
@@ -1106,20 +1078,6 @@ const Bookings = () => {
         order={selectedOrder}
         onStatusUpdated={handleStatusUpdated}
         onOrderUpdated={handleStatusUpdated}
-      />
-
-      {/* Custom Tax Invoice Modal (Dynamic Order Data & Printable PDF) */}
-      <CustomInvoiceModal
-        open={invoiceModalOpen}
-        onClose={() => {
-          setInvoiceModalOpen(false);
-          setSelectedOrderForInvoice(null);
-        }}
-        invoiceData={
-          selectedOrderForInvoice
-            ? mapOrderToInvoiceData(selectedOrderForInvoice)
-            : undefined
-        }
       />
     </div>
   );

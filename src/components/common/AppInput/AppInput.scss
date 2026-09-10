@@ -5,6 +5,9 @@
   flex-direction: column;
   gap: 6px;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   font-family: $font-family-base;
 
   &--error {
@@ -64,6 +67,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   background: var(--input-bg, #0d0d0d);
   border: 1px solid $surface-border;
   border-radius: $border-radius-md;
@@ -166,13 +173,16 @@
 
 .app-input-control {
   flex: 1;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   background: transparent;
   border: none;
   outline: none;
   font-family: $font-family-base;
   font-size: 14px;
   color: $text-primary;
-  width: 100%;
 
   @include mobile {
     font-size: 12.5px;

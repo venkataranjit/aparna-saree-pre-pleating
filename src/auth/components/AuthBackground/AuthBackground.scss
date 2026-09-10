@@ -24,29 +24,72 @@
     position: absolute;
     inset: 0;
     background-color: transparent;
-    background-image: radial-gradient(rgba(212, 175, 55, 0.18) 1.25px, transparent 1.25px);
+    background-image: radial-gradient(
+      rgba(212, 175, 55, 0.18) 1.25px,
+      transparent 1.25px
+    );
     background-size: 28px 28px;
-    mask-image: radial-gradient(ellipse 75% 65% at 50% 50%, black 35%, transparent 88%);
-    -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 50%, black 35%, transparent 88%);
+    mask-image: radial-gradient(
+      ellipse 75% 65% at 50% 50%,
+      black 35%,
+      transparent 88%
+    );
+    -webkit-mask-image: radial-gradient(
+      ellipse 75% 65% at 50% 50%,
+      black 35%,
+      transparent 88%
+    );
 
     @media (max-width: 640px) {
       background-size: 22px 22px;
-      mask-image: radial-gradient(ellipse 85% 70% at 50% 50%, black 25%, transparent 90%);
-      -webkit-mask-image: radial-gradient(ellipse 85% 70% at 50% 50%, black 25%, transparent 90%);
+      mask-image: radial-gradient(
+        ellipse 85% 70% at 50% 50%,
+        black 25%,
+        transparent 90%
+      );
+      -webkit-mask-image: radial-gradient(
+        ellipse 85% 70% at 50% 50%,
+        black 25%,
+        transparent 90%
+      );
     }
 
     [data-theme="dark"] & {
-      background-image: radial-gradient(rgba(226, 232, 240, 0.16) 1.25px, transparent 1.25px);
+      background-image: radial-gradient(
+        rgba(226, 232, 240, 0.09) 1.15px,
+        transparent 1.15px
+      );
+      mask-image: radial-gradient(
+        ellipse 80% 70% at 50% 50%,
+        black 28%,
+        transparent 88%
+      );
+      -webkit-mask-image: radial-gradient(
+        ellipse 80% 70% at 50% 50%,
+        black 28%,
+        transparent 88%
+      );
     }
 
     [data-theme="light"] & {
-      background-image: radial-gradient(rgba(100, 116, 139, 0.25) 1.25px, transparent 1.25px);
-      mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, black 45%, transparent 92%);
-      -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, black 45%, transparent 92%);
+      background-image: radial-gradient(
+        rgba(100, 116, 139, 0.10) 1.15px,
+        transparent 1.15px
+      );
+      mask-image: radial-gradient(
+        ellipse 80% 70% at 50% 50%,
+        black 28%,
+        transparent 88%
+      );
+      -webkit-mask-image: radial-gradient(
+        ellipse 80% 70% at 50% 50%,
+        black 28%,
+        transparent 88%
+      );
     }
   }
 
-  // 3. Glowing & Growing Particles (Pulsing / Breathing)
+  // 3. Glowing & Growing Particles (Subtle Pulsing)
   &__glowing-dots {
     position: absolute;
     inset: 0;
@@ -54,74 +97,93 @@
     .dot {
       position: absolute;
       border-radius: 50%;
-      background: radial-gradient(circle, #fff3cc 0%, #d4af37 60%, transparent 100%);
-      box-shadow: 0 0 10px rgba(212, 175, 55, 0.8), 0 0 20px rgba(212, 175, 55, 0.35);
+      background: radial-gradient(
+        circle,
+        #fff3cc 0%,
+        #d4af37 60%,
+        transparent 100%
+      );
+      box-shadow:
+        0 0 10px rgba(212, 175, 55, 0.8),
+        0 0 20px rgba(212, 175, 55, 0.35);
       opacity: 0;
 
       [data-theme="dark"] & {
-        background: radial-gradient(circle, #f1f5f9 0%, #94a3b8 60%, transparent 100%);
-        box-shadow: 0 0 8px rgba(241, 245, 249, 0.5), 0 0 16px rgba(148, 163, 184, 0.3);
+        background: radial-gradient(
+          circle,
+          rgba(241, 245, 249, 0.45) 0%,
+          rgba(148, 163, 184, 0.2) 60%,
+          transparent 100%
+        );
+        box-shadow: 0 0 6px rgba(241, 245, 249, 0.25);
+        animation-name: dotGrowPulseSubtleDark !important;
       }
 
       [data-theme="light"] & {
-        background: radial-gradient(circle, #475569 0%, #64748b 65%, rgba(148, 163, 184, 0.2) 100%);
-        box-shadow: 0 0 6px rgba(71, 85, 105, 0.35), 0 0 14px rgba(100, 116, 139, 0.18);
+        background: radial-gradient(
+          circle,
+          rgba(100, 116, 139, 0.4) 0%,
+          rgba(148, 163, 184, 0.18) 65%,
+          transparent 100%
+        );
+        box-shadow: 0 0 5px rgba(100, 116, 139, 0.2);
+        animation-name: dotGrowPulseSubtleLight !important;
       }
 
       &--1 {
         top: 18%;
         left: 14%;
-        width: 5px;
-        height: 5px;
+        width: 4.5px;
+        height: 4.5px;
         animation: dotGrowPulse 6s ease-in-out infinite 0.2s;
       }
       &--2 {
         top: 28%;
         right: 16%;
-        width: 6px;
-        height: 6px;
+        width: 5.5px;
+        height: 5.5px;
         animation: dotGrowPulse 7.5s ease-in-out infinite 1.5s;
       }
       &--3 {
         top: 48%;
         left: 8%;
-        width: 4.5px;
-        height: 4.5px;
+        width: 4px;
+        height: 4px;
         animation: dotGrowPulse 6.8s ease-in-out infinite 3s;
       }
       &--4 {
         top: 62%;
         right: 12%;
-        width: 5.5px;
-        height: 5.5px;
+        width: 5px;
+        height: 5px;
         animation: dotGrowPulse 8s ease-in-out infinite 2s;
       }
       &--5 {
         top: 76%;
         left: 20%;
-        width: 5px;
-        height: 5px;
+        width: 4.5px;
+        height: 4.5px;
         animation: dotGrowPulse 7s ease-in-out infinite 0.8s;
       }
       &--6 {
         top: 84%;
         right: 25%;
-        width: 4.5px;
-        height: 4.5px;
+        width: 4px;
+        height: 4px;
         animation: dotGrowPulse 6.5s ease-in-out infinite 2.5s;
       }
       &--7 {
         top: 12%;
         right: 35%;
-        width: 4px;
-        height: 4px;
+        width: 3.5px;
+        height: 3.5px;
         animation: dotGrowPulse 5.8s ease-in-out infinite 3.5s;
       }
       &--8 {
         top: 88%;
         left: 45%;
-        width: 4px;
-        height: 4px;
+        width: 3.5px;
+        height: 3.5px;
         animation: dotGrowPulse 7.2s ease-in-out infinite 1.2s;
       }
     }
@@ -144,9 +206,41 @@
   }
 }
 
+// Faint / Dull Pulse for Dark Mode
+@keyframes dotGrowPulseSubtleDark {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.3);
+  }
+  50% {
+    opacity: 0.45;
+    transform: translateY(-7px) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.3);
+  }
+}
+
+// Faint / Dull Pulse for Light Mode
+@keyframes dotGrowPulseSubtleLight {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.3);
+  }
+  50% {
+    opacity: 0.40;
+    transform: translateY(-7px) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.3);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .auth-black-backdrop__glowing-dots .dot {
     animation: none !important;
-    opacity: 0.4 !important;
+    opacity: 0.15 !important;
   }
 }

@@ -807,21 +807,7 @@ export const downloadInvoicePdfDirectly = async (order) => {
       }
 
       toast.dismiss(toastId);
-
-      // Trigger native Android Share/Open Sheet so user can save to Drive, view PDF, or send via WhatsApp
-      try {
-        await Share.share({
-          title: `Order Details - ${orderId}`,
-          text: `Aparna Saree Pre-Pleating Order Details for Order #${orderId}`,
-          url: savedFile.uri,
-          dialogTitle: `Save or Open Order Details #${orderId}`,
-        });
-        toast.success(`Order details ready for Order #${orderId}`);
-      } catch (shareErr) {
-        // User closed the share sheet or dismissed it
-        console.log("Share sheet action dismissed or finished:", shareErr);
-        toast.success(`Order details saved to device for Order #${orderId}`);
-      }
+      toast.success(`Order details PDF saved to your device for Order #${orderId}`);
     } else {
       // Browser download (Desktop / Web)
       pdf.save(fileName);
@@ -832,6 +818,313 @@ export const downloadInvoicePdfDirectly = async (order) => {
     console.error("Direct PDF export failed:", err);
     toast.dismiss(toastId);
     toast.error("Failed to generate PDF download. Please try again.");
+  } finally {
+    if (document.body.contains(container)) {
+      document.body.removeChild(container);
+    }
+  }
+};
+
+/**
+ * Generates Order Details PDF and shares it to WhatsApp
+ * On Android APK: Uses Capacitor Filesystem & Share to share the PDF directly with WhatsApp
+ * On Web:
+ *   - Mobile browser: Uses navigator.share with PDF file
+ *   - Desktop browser: Downloads PDF + opens client's WhatsApp Web chat with pre-filled message
+ */
+export const shareOrderPdfToWhatsApp = async (order) => {
+  if (!order) {
+    toast.error("No order selected for WhatsApp sharing.");
+    return;
+  }
+
+  const data = mapOrderToInvoiceData(order);
+  if (!data) {
+    toast.error("Unable to format order details data.");
+    return;
+  }
+
+  const orderId = data.orderId || "Order";
+  const clientName = data.client?.name || "Client";
+  const clientMobileRaw =
+    data.client?.mobile || order.userMobile || order.clientMobile || "";
+  const cleanDigits = String(clientMobileRaw).replace(/[^0-9]/g, "");
+  const formattedPhone =
+    cleanDigits.length === 10 ? `91${cleanDigits}` : cleanDigits;
+
+  const totalAmount =
+    data.financials?.totalAmount != null
+      ? `₹${Number(data.financials.totalAmount).toLocaleString("en-IN")}`
+      : "";
+  const orderStatus = (data.orderStatus || "Confirmed").toUpperCase();
+  const deliveryDate = data.deliveryDate
+    ? `\nTarget Delivery: ${data.deliveryDate}`
+    : "";
+
+  const whatsappMessage = `Hello ${clientName} ji,\n\nHere are your *Order Details* for *Order #${orderId}* from *Aparna Saree Pre-Pleating Studio*.\n\n*Status:* ${orderStatus}\n*Total Amount:* ${totalAmount}${deliveryDate}\n\nPlease find your official Order Details PDF attached.\n\nThank you for choosing Aparna Saree Pre-Pleating Studio! ✨`;
+
+  const toastId = toast.info(`Preparing Order PDF for ${orderId}...`, {
+    autoClose: false,
+  });
+
+  const container = document.createElement("div");
+  container.id = "whatsapp-pdf-export-container";
+  container.style.position = "fixed";
+  container.style.left = "0px";
+  container.style.top = "0px";
+  container.style.width = "780px";
+  container.style.height = "1138px";
+  container.style.minHeight = "1138px";
+  container.style.background = "#ffffff";
+  container.style.zIndex = "-9999";
+  container.style.opacity = "1";
+  container.style.pointerEvents = "none";
+  container.style.boxSizing = "border-box";
+  container.style.display = "flex";
+  container.style.flexDirection = "column";
+  container.style.justifyContent = "space-between";
+
+  const inlineStyles = document.createElement("style");
+  inlineStyles.innerHTML = `
+    #whatsapp-pdf-export-container .service-row td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 12px;
+      vertical-align: top;
+    }
+    #whatsapp-pdf-export-container .service-row:nth-child(even) td {
+      background: #f8fafc;
+    }
+    #whatsapp-pdf-export-container .service-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    #whatsapp-pdf-export-container .specs-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+    #whatsapp-pdf-export-container .spec-pill {
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    #whatsapp-pdf-export-container .spec-pill.fabric-pill {
+      background: #fef3c7;
+      color: #92400e;
+      border-color: #fcd34d;
+      font-weight: 600;
+    }
+    #whatsapp-pdf-export-container .care-box {
+      font-size: 11px;
+      background: #fffbeb;
+      border-left: 2.5px solid #f59e0b;
+      padding: 4px 8px;
+      border-radius: 3px;
+      margin-top: 4px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    #whatsapp-pdf-export-container .care-box .care-lbl {
+      font-weight: 600;
+      color: #1e293b;
+    }
+    #whatsapp-pdf-export-container .care-box .care-val {
+      color: #334155;
+    }
+    #whatsapp-pdf-export-container .td-amt {
+      text-align: right;
+      font-weight: 600;
+      font-size: 14px;
+      color: #0f172a;
+    }
+  `;
+  container.appendChild(inlineStyles);
+
+  const contentWrap = document.createElement("div");
+  contentWrap.style.width = "100%";
+  contentWrap.style.height = "100%";
+  contentWrap.style.display = "flex";
+  contentWrap.style.flexDirection = "column";
+  contentWrap.style.justifyContent = "space-between";
+  contentWrap.innerHTML = buildInvoiceHtmlSnippet(data);
+  container.appendChild(contentWrap);
+
+  document.body.appendChild(container);
+
+  try {
+    const images = Array.from(container.querySelectorAll("img"));
+    await Promise.all(
+      images.map(
+        (img) =>
+          new Promise((resolve) => {
+            if (img.complete) {
+              resolve();
+            } else {
+              img.onload = () => resolve();
+              img.onerror = () => resolve();
+            }
+          }),
+      ),
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: "#ffffff",
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: 780,
+      windowHeight: 1138,
+    });
+
+    const imgData = canvas.toDataURL("image/jpeg", 0.98);
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const marginX = 6;
+    const marginY = 4;
+    const contentWidth = pdfWidth - marginX * 2;
+    const contentHeight = pdfHeight - marginY * 2;
+
+    pdf.addImage(
+      imgData,
+      "JPEG",
+      marginX,
+      marginY,
+      contentWidth,
+      contentHeight,
+    );
+
+    const reviewAnchor = container.querySelector("a");
+    if (reviewAnchor) {
+      const linkRect = reviewAnchor.getBoundingClientRect();
+      const contRect = container.getBoundingClientRect();
+      if (contRect.width > 0 && contRect.height > 0) {
+        const relX =
+          marginX +
+          ((linkRect.left - contRect.left) / contRect.width) * contentWidth;
+        const relY =
+          marginY +
+          ((linkRect.top - contRect.top) / contRect.height) * contentHeight;
+        const relW = (linkRect.width / contRect.width) * contentWidth;
+        const relH = (linkRect.height / contRect.height) * contentHeight;
+        pdf.link(relX, relY, relW, relH, { url: reviewAnchor.href });
+      }
+    }
+
+    const fileName = `Order-Details-${orderId}.pdf`;
+
+    if (Capacitor.isNativePlatform()) {
+      const pdfBase64 = pdf.output("datauristring").split(",")[1];
+
+      // Save PDF to Documents for permanent access
+      try {
+        await Filesystem.writeFile({
+          path: fileName,
+          data: pdfBase64,
+          directory: Directory.Documents,
+        });
+      } catch (docErr) {
+        console.warn("Could not save to Documents:", docErr);
+      }
+
+      // Save PDF to Cache for sharing (required for Share plugin)
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: pdfBase64,
+        directory: Directory.Cache,
+      });
+
+      toast.dismiss(toastId);
+      toast.info(
+        `Select WhatsApp → search "${clientName}" to send the PDF`,
+        { autoClose: 5000 }
+      );
+
+      // Open share sheet with PDF attached + message text
+      // When user picks WhatsApp, the PDF will be attached and message pre-filled
+      try {
+        await Share.share({
+          title: `Order Details - ${orderId}`,
+          text: whatsappMessage,
+          url: savedFile.uri,
+          dialogTitle: `Share Order PDF via WhatsApp`,
+        });
+        toast.success(`Order PDF shared for #${orderId}`);
+      } catch (shareErr) {
+        console.log("Share dismissed:", shareErr);
+        toast.success(`Order PDF saved to your device for #${orderId}`);
+      }
+    } else {
+      // Web platform (Desktop / Mobile Browser)
+      const pdfBlob = pdf.output("blob");
+      const pdfFile = new File([pdfBlob], fileName, {
+        type: "application/pdf",
+      });
+
+      if (
+        typeof navigator !== "undefined" &&
+        navigator.canShare &&
+        navigator.canShare({ files: [pdfFile] })
+      ) {
+        toast.dismiss(toastId);
+        try {
+          await navigator.share({
+            title: `Order Details - ${orderId}`,
+            text: whatsappMessage,
+            files: [pdfFile],
+          });
+          toast.success("Order details shared via WhatsApp!");
+        } catch (shareErr) {
+          if (shareErr.name !== "AbortError") {
+            pdf.save(fileName);
+            const encoded = encodeURIComponent(whatsappMessage);
+            const waUrl = formattedPhone
+              ? `https://web.whatsapp.com/send?phone=${formattedPhone}&text=${encoded}`
+              : `https://web.whatsapp.com/send?text=${encoded}`;
+            window.open(waUrl, "_blank");
+            toast.success(`PDF downloaded! WhatsApp opened for ${clientName}`);
+          }
+        }
+      } else {
+        // Desktop Web Browser: Download PDF + open WhatsApp chat
+        pdf.save(fileName);
+        toast.dismiss(toastId);
+
+        const encoded = encodeURIComponent(whatsappMessage);
+        const waUrl = formattedPhone
+          ? `https://web.whatsapp.com/send?phone=${formattedPhone}&text=${encoded}`
+          : `https://web.whatsapp.com/send?text=${encoded}`;
+
+        window.open(waUrl, "_blank");
+        toast.success(
+          `Order PDF downloaded! WhatsApp chat opened — attach the downloaded PDF to send.`,
+        );
+      }
+    }
+  } catch (err) {
+    console.error("WhatsApp Order PDF share failed:", err);
+    toast.dismiss(toastId);
+    toast.error("Failed to generate Order PDF for WhatsApp. Please try again.");
   } finally {
     if (document.body.contains(container)) {
       document.body.removeChild(container);

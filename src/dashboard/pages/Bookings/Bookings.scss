@@ -898,3 +898,17 @@
     transform: rotate(360deg);
   }
 }
+
+/* WhatsApp share button */
+.action-btn--whatsapp {
+  &.app-btn {
+    background: #25d366;
+    border-color: #25d366;
+    color: #fff;
+
+    &:hover {
+      background: #1ebe57;
+      border-color: #1ebe57;
+    }
+  }
+}

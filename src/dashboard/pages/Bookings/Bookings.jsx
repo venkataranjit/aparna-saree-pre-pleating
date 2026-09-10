@@ -18,6 +18,8 @@ import DryCleaningOutlinedIcon from "@mui/icons-material/DryCleaningOutlined";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+
 // Common Components & Layout
 import {
   AppButton,
@@ -39,7 +41,10 @@ import StatCard from "../../components/StatCard/StatCard";
 import DateTimeCell from "../../components/DateTimeCell/DateTimeCell";
 import CreateOrderModal from "../../components/CreateOrderModal/CreateOrderModal";
 import OrderDetailsModal from "../../components/OrderDetailsModal/OrderDetailsModal";
-import { downloadInvoicePdfDirectly } from "../../components/CustomInvoiceModal/CustomInvoiceModal";
+import {
+  downloadInvoicePdfDirectly,
+  shareOrderPdfToWhatsApp,
+} from "../../components/CustomInvoiceModal/CustomInvoiceModal";
 import {
   getAllOrders,
   getLatestItemTimestamp,
@@ -771,6 +776,19 @@ const Bookings = () => {
                           >
                             <ReceiptLongOutlinedIcon style={{ fontSize: 16 }} />
                           </AppButton>
+                          <AppButton
+                            variant="secondary"
+                            size="sm"
+                            square
+                            className="action-btn--whatsapp"
+                            title="Share Order PDF to WhatsApp"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              shareOrderPdfToWhatsApp(order);
+                            }}
+                          >
+                            <WhatsAppIcon style={{ fontSize: 16 }} />
+                          </AppButton>
                         </div>
                       </AppTableCell>
                     </AppTableRow>
@@ -909,6 +927,19 @@ const Bookings = () => {
                       >
                         <ReceiptLongOutlinedIcon style={{ fontSize: 16 }} />
                       </AppButton>
+                      <AppButton
+                        size="sm"
+                        variant="secondary"
+                        square
+                        className="action-btn--whatsapp"
+                        title="Share Order PDF to WhatsApp"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          shareOrderPdfToWhatsApp(order);
+                        }}
+                      >
+                        <WhatsAppIcon style={{ fontSize: 16 }} />
+                      </AppButton>
                     </div>
                   </div>
                 </div>
@@ -1043,6 +1074,19 @@ const Bookings = () => {
                       }}
                     >
                       Order Details
+                    </AppButton>
+                    <AppButton
+                      size="sm"
+                      variant="secondary"
+                      startIcon={<WhatsAppIcon />}
+                      className="action-btn--whatsapp"
+                      title="Share Order PDF to WhatsApp"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        shareOrderPdfToWhatsApp(order);
+                      }}
+                    >
+                      WhatsApp
                     </AppButton>
                   </div>
                 </div>

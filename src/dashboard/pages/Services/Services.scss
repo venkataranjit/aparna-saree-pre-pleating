@@ -309,6 +309,21 @@
         }
       }
 
+      .service-order-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2px 7px;
+        background: var(--surface-gold-tint, rgba(212, 175, 55, 0.15));
+        border: 1px solid var(--border-gold-subtle, rgba(212, 175, 55, 0.35));
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: $color-gold;
+        letter-spacing: 0.3px;
+        min-width: 28px;
+      }
+
       .price-text {
         font-weight: 700;
         font-size: 0.9rem;

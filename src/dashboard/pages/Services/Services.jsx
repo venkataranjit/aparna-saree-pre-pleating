@@ -28,6 +28,7 @@ import VerifiedOutlinedIcon from "@mui/icons-material/VerifiedOutlined";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined";
+import FormatListNumberedOutlinedIcon from "@mui/icons-material/FormatListNumberedOutlined";
 
 // Common Components & Layout
 import {
@@ -114,6 +115,10 @@ const serviceValidationSchema = Yup.object({
         return Number(val) <= Number(servicePrice);
       },
     ),
+  displayOrder: Yup.number()
+    .typeError("Display order must be a valid number")
+    .min(1, "Display order must be at least 1")
+    .nullable(),
   description: Yup.string()
     .trim()
     .max(250, "Description cannot exceed 250 characters"),
@@ -145,8 +150,8 @@ const Services = () => {
   // Table pagination & sorting
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [sortField, setSortField] = useState("createdAt");
-  const [sortDirection, setSortDirection] = useState("desc");
+  const [sortField, setSortField] = useState("displayOrder");
+  const [sortDirection, setSortDirection] = useState("asc");
   const [expandedServices, setExpandedServices] = useState(new Set());
 
   // Modal States
@@ -187,12 +192,18 @@ const Services = () => {
       serviceName: "",
       servicePrice: "",
       serviceDiscountedPrice: "",
+      displayOrder: "",
       description: "",
       active: true,
     },
     validationSchema: serviceValidationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
+        const orderVal =
+          values.displayOrder !== "" && values.displayOrder !== null
+            ? Number(values.displayOrder)
+            : services.length + 1;
+
         const payload = {
           serviceName: values.serviceName.trim(),
           servicePrice: Number(values.servicePrice) || 0,
@@ -201,6 +212,7 @@ const Services = () => {
             values.serviceDiscountedPrice !== null
               ? Number(values.serviceDiscountedPrice)
               : Number(values.servicePrice),
+          displayOrder: orderVal,
           description: values.description.trim(),
           active: Boolean(values.active),
         };
@@ -233,6 +245,7 @@ const Services = () => {
       serviceName: "",
       servicePrice: "",
       serviceDiscountedPrice: "",
+      displayOrder: "",
       description: "",
       active: true,
     },
@@ -240,6 +253,11 @@ const Services = () => {
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       if (!selectedServiceForEdit) return;
       try {
+        const orderVal =
+          values.displayOrder !== "" && values.displayOrder !== null
+            ? Number(values.displayOrder)
+            : selectedServiceForEdit.displayOrder || 0;
+
         const payload = {
           serviceName: values.serviceName.trim(),
           servicePrice: Number(values.servicePrice) || 0,
@@ -248,6 +266,7 @@ const Services = () => {
             values.serviceDiscountedPrice !== null
               ? Number(values.serviceDiscountedPrice)
               : Number(values.servicePrice),
+          displayOrder: orderVal,
           description: values.description.trim(),
           active: Boolean(values.active),
         };
@@ -334,6 +353,7 @@ const Services = () => {
       serviceName: service.serviceName || "",
       servicePrice: service.servicePrice ?? "",
       serviceDiscountedPrice: service.serviceDiscountedPrice ?? "",
+      displayOrder: service.displayOrder && service.displayOrder > 0 ? service.displayOrder : "",
       description: service.description || "",
       active: service.active !== false,
     });
@@ -387,16 +407,26 @@ const Services = () => {
         const nameMatch = (service.serviceName || "").toLowerCase().includes(q);
         const descMatch = (service.description || "").toLowerCase().includes(q);
         const priceMatch = String(service.servicePrice || "").includes(q);
-        return nameMatch || descMatch || priceMatch;
+        const orderMatch = String(service.displayOrder || "").includes(q);
+        return nameMatch || descMatch || priceMatch || orderMatch;
       }
 
       return true;
     });
   }, [services, activeTab, searchTerm]);
 
-  // Sorting: recently added or recently updated show at top by default
+  // Sorting: displayOrder ascending by default
   const sortedServices = useMemo(() => {
     return [...filteredServices].sort((a, b) => {
+      if (sortField === "displayOrder") {
+        const orderA = a.displayOrder && a.displayOrder > 0 ? Number(a.displayOrder) : 999999;
+        const orderB = b.displayOrder && b.displayOrder > 0 ? Number(b.displayOrder) : 999999;
+        if (orderA !== orderB) {
+          return sortDirection === "asc" ? orderA - orderB : orderB - orderA;
+        }
+        return (a.serviceName || "").localeCompare(b.serviceName || "");
+      }
+
       if (
         sortField === "createdAt" ||
         sortField === "updatedAt" ||
@@ -480,7 +510,19 @@ const Services = () => {
               size="md"
               startIcon={<AddCircleOutlineIcon />}
               onClick={() => {
+                const maxOrder = services.reduce(
+                  (max, s) => Math.max(max, Number(s.displayOrder) || 0),
+                  0,
+                );
                 createFormik.resetForm();
+                createFormik.setValues({
+                  serviceName: "",
+                  servicePrice: "",
+                  serviceDiscountedPrice: "",
+                  displayOrder: maxOrder + 1,
+                  description: "",
+                  active: true,
+                });
                 setDialogOpen(true);
               }}
               className="add-service-btn"
@@ -587,6 +629,17 @@ const Services = () => {
             <AppTable className="services-table">
               <AppTableHead>
                 <AppTableRow>
+                  <AppTableCell head style={{ width: 85, textAlign: "center" }}>
+                    <AppTableSortLabel
+                      active={sortField === "displayOrder"}
+                      direction={
+                        sortField === "displayOrder" ? sortDirection : "asc"
+                      }
+                      onClick={() => handleRequestSort("displayOrder")}
+                    >
+                      ORDER #
+                    </AppTableSortLabel>
+                  </AppTableCell>
                   <AppTableCell head>
                     <AppTableSortLabel
                       active={sortField === "serviceName"}
@@ -659,6 +712,11 @@ const Services = () => {
                         onClick={() => toggleRowExpand(service.id)}
                         style={{ cursor: "pointer" }}
                       >
+                        <AppTableCell style={{ textAlign: "center" }}>
+                          <span className="service-order-pill">
+                            #{service.displayOrder && service.displayOrder > 0 ? service.displayOrder : "—"}
+                          </span>
+                        </AppTableCell>
                         <AppTableCell>
                           <div className="service-name-cell">
                             <div className="user-avatar-circle service-icon-circle">
@@ -829,7 +887,7 @@ const Services = () => {
                       {isExpanded && (
                         <AppTableRow className="table-expanded-row">
                           <AppTableCell
-                            colSpan={5}
+                            colSpan={6}
                             className="table-expanded-cell"
                           >
                             <div className="table-expanded-container">
@@ -933,8 +991,13 @@ const Services = () => {
                 >
                   <div className="card-top-accent" />
                   <div className="card-header">
-                    <div className="user-avatar-circle service-icon-circle">
-                      {getServiceIcon(service.serviceName)}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div className="user-avatar-circle service-icon-circle">
+                        {getServiceIcon(service.serviceName)}
+                      </div>
+                      <span className="service-order-pill">
+                        #{service.displayOrder && service.displayOrder > 0 ? service.displayOrder : "—"}
+                      </span>
                     </div>
                     <span
                       onClick={() => userCanEdit && handleToggleActive(service)}
@@ -1097,9 +1160,14 @@ const Services = () => {
                   <div className="detailed-card-main">
                     <div className="detailed-card-header">
                       <div className="detailed-card-title-row">
-                        <h3 className="service-heading">
-                          {service.serviceName}
-                        </h3>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                          <span className="service-order-pill">
+                            #{service.displayOrder && service.displayOrder > 0 ? service.displayOrder : "—"}
+                          </span>
+                          <h3 className="service-heading">
+                            {service.serviceName}
+                          </h3>
+                        </div>
                         <span
                           onClick={() =>
                             userCanEdit && handleToggleActive(service)
@@ -1129,6 +1197,12 @@ const Services = () => {
                     </div>
 
                     <div className="detailed-card-meta">
+                      <div className="meta-tile">
+                        <span className="meta-label">Display Order</span>
+                        <span className="meta-value">
+                          #{service.displayOrder && service.displayOrder > 0 ? service.displayOrder : "—"}
+                        </span>
+                      </div>
                       <div className="meta-tile">
                         <span className="meta-label">Regular Price</span>
                         <span className="meta-value regular-strike">
@@ -1269,25 +1343,49 @@ const Services = () => {
         }
       >
         <div className="service-form-dialog">
-          <AppInput
-            label="Service Title"
-            name="serviceName"
-            placeholder="e.g. Bridal Kanjeevaram Saree Pre-Pleating"
-            value={createFormik.values.serviceName}
-            onChange={createFormik.handleChange}
-            onBlur={createFormik.handleBlur}
-            error={
-              createFormik.touched.serviceName &&
-              Boolean(createFormik.errors.serviceName)
-            }
-            helperText={
-              createFormik.touched.serviceName &&
-              createFormik.errors.serviceName
-            }
-            startAdornment={<DryCleaningOutlinedIcon />}
-            disabled={createFormik.isSubmitting}
-            autoFocus
-          />
+          <div className="service-form-grid-2">
+            <AppInput
+              label="Service Title"
+              name="serviceName"
+              placeholder="e.g. Bridal Kanjeevaram Saree Pre-Pleating"
+              value={createFormik.values.serviceName}
+              onChange={createFormik.handleChange}
+              onBlur={createFormik.handleBlur}
+              error={
+                createFormik.touched.serviceName &&
+                Boolean(createFormik.errors.serviceName)
+              }
+              helperText={
+                createFormik.touched.serviceName &&
+                createFormik.errors.serviceName
+              }
+              startAdornment={<DryCleaningOutlinedIcon />}
+              disabled={createFormik.isSubmitting}
+              autoFocus
+            />
+
+            <AppInput
+              label="Display Order (Sequence #)"
+              name="displayOrder"
+              type="number"
+              min={1}
+              placeholder="e.g. 1, 2, 3..."
+              value={createFormik.values.displayOrder}
+              onChange={createFormik.handleChange}
+              onBlur={createFormik.handleBlur}
+              error={
+                createFormik.touched.displayOrder &&
+                Boolean(createFormik.errors.displayOrder)
+              }
+              helperText={
+                (createFormik.touched.displayOrder &&
+                  createFormik.errors.displayOrder) ||
+                "Order in catalog & order dropdown (1 = Top)."
+              }
+              startAdornment={<FormatListNumberedOutlinedIcon />}
+              disabled={createFormik.isSubmitting}
+            />
+          </div>
 
           <div className="service-form-grid-2">
             <AppInput
@@ -1414,22 +1512,46 @@ const Services = () => {
         }
       >
         <div className="service-form-dialog">
-          <AppInput
-            label="Service Title"
-            name="serviceName"
-            value={editFormik.values.serviceName}
-            onChange={editFormik.handleChange}
-            onBlur={editFormik.handleBlur}
-            error={
-              editFormik.touched.serviceName &&
-              Boolean(editFormik.errors.serviceName)
-            }
-            helperText={
-              editFormik.touched.serviceName && editFormik.errors.serviceName
-            }
-            startAdornment={<DryCleaningOutlinedIcon />}
-            disabled={editFormik.isSubmitting}
-          />
+          <div className="service-form-grid-2">
+            <AppInput
+              label="Service Title"
+              name="serviceName"
+              value={editFormik.values.serviceName}
+              onChange={editFormik.handleChange}
+              onBlur={editFormik.handleBlur}
+              error={
+                editFormik.touched.serviceName &&
+                Boolean(editFormik.errors.serviceName)
+              }
+              helperText={
+                editFormik.touched.serviceName && editFormik.errors.serviceName
+              }
+              startAdornment={<DryCleaningOutlinedIcon />}
+              disabled={editFormik.isSubmitting}
+            />
+
+            <AppInput
+              label="Display Order (Sequence #)"
+              name="displayOrder"
+              type="number"
+              min={1}
+              placeholder="e.g. 1, 2, 3..."
+              value={editFormik.values.displayOrder}
+              onChange={editFormik.handleChange}
+              onBlur={editFormik.handleBlur}
+              error={
+                editFormik.touched.displayOrder &&
+                Boolean(editFormik.errors.displayOrder)
+              }
+              helperText={
+                (createFormik.touched.displayOrder &&
+                  createFormik.errors.displayOrder) ||
+                "Order in catalog & order dropdown (1 = Top)."
+              }
+              startAdornment={<FormatListNumberedOutlinedIcon />}
+              disabled={editFormik.isSubmitting}
+            />
+          </div>
 
           <div className="service-form-grid-2">
             <AppInput

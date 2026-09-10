@@ -1299,12 +1299,21 @@ export const getAllServices = async (onlyActive = false) => {
               : resolvedPrice
         ) || resolvedPrice;
 
+        const resolvedDisplayOrder = Number(
+          data.displayOrder !== undefined && data.displayOrder !== null
+            ? data.displayOrder
+            : data.orderIndex !== undefined && data.orderIndex !== null
+              ? data.orderIndex
+              : 0
+        );
+
         return {
           id: d.id,
           ...data,
           serviceName: data.serviceName || data.name || data.title || 'Unnamed Service',
           servicePrice: resolvedPrice,
           serviceDiscountedPrice: resolvedDiscountPrice,
+          displayOrder: resolvedDisplayOrder,
           description: data.description || '',
           active: data.active !== false,
           rawCreatedAt: data.createdAt,
@@ -1312,6 +1321,14 @@ export const getAllServices = async (onlyActive = false) => {
           createdAt: data.createdAt ? formatDateSafe(data.createdAt) : formatDateSafe(new Date()),
           updatedAt: data.updatedAt ? formatDateSafe(data.updatedAt) : null,
         };
+      });
+
+      // Sort services by displayOrder ascending (1, 2, 3...), fallback to serviceName
+      services.sort((a, b) => {
+        const orderA = a.displayOrder && a.displayOrder > 0 ? Number(a.displayOrder) : 999999;
+        const orderB = b.displayOrder && b.displayOrder > 0 ? Number(b.displayOrder) : 999999;
+        if (orderA !== orderB) return orderA - orderB;
+        return (a.serviceName || '').localeCompare(b.serviceName || '');
       });
 
       setCachedServices(services);
@@ -1324,7 +1341,13 @@ export const getAllServices = async (onlyActive = false) => {
     console.warn('getAllServices firestore note (falling back to cache):', err.message || err);
     const cached = getCachedServices();
     if (cached && cached.length > 0) {
-      return onlyActive ? cached.filter((s) => s.active) : cached;
+      const sorted = (onlyActive ? cached.filter((s) => s.active) : cached).sort((a, b) => {
+        const orderA = a.displayOrder && a.displayOrder > 0 ? Number(a.displayOrder) : 999999;
+        const orderB = b.displayOrder && b.displayOrder > 0 ? Number(b.displayOrder) : 999999;
+        if (orderA !== orderB) return orderA - orderB;
+        return (a.serviceName || '').localeCompare(b.serviceName || '');
+      });
+      return sorted;
     }
     return [];
   }
@@ -1339,6 +1362,10 @@ export const updateService = async (serviceId, serviceData) => {
     description: serviceData.description ? String(serviceData.description).trim() : '',
     updatedAt: serverTimestamp(),
   };
+
+  if (serviceData.displayOrder !== undefined && serviceData.displayOrder !== null) {
+    payload.displayOrder = Number(serviceData.displayOrder) || 0;
+  }
 
   try {
     const docRef = doc(db, COLLECTIONS.SERVICES, serviceId);

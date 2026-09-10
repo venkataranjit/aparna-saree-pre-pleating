@@ -162,12 +162,14 @@ export const createServiceModel = ({
   serviceDiscountedPrice = 0,
   description = "",
   active = true,
+  displayOrder = 0,
 } = {}) => ({
   serviceName: String(serviceName).trim(),
   servicePrice: Number(servicePrice) || 0,
   serviceDiscountedPrice: Number(serviceDiscountedPrice) || 0,
   description: String(description || "").trim(),
   active: Boolean(active),
+  displayOrder: Number(displayOrder) || 0,
   createdAt: serverTimestamp(),
 });
 

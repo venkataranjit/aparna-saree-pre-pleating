@@ -1403,12 +1403,19 @@ export default function CreateOrderModal({
 
   // Options for Service Select
   const serviceSelectOptions = useMemo(() => {
-    return services.map((s) => {
+    const sorted = [...services].sort((a, b) => {
+      const orderA = a.displayOrder && a.displayOrder > 0 ? Number(a.displayOrder) : 999999;
+      const orderB = b.displayOrder && b.displayOrder > 0 ? Number(b.displayOrder) : 999999;
+      if (orderA !== orderB) return orderA - orderB;
+      return (a.serviceName || "").localeCompare(b.serviceName || "");
+    });
+
+    return sorted.map((s) => {
       const p = Number(s.servicePrice !== undefined && s.servicePrice !== null ? s.servicePrice : s.price || 0);
       const dp = Number(s.serviceDiscountedPrice !== undefined && s.serviceDiscountedPrice !== null ? s.serviceDiscountedPrice : p);
       return {
         value: s.id,
-        label: s.serviceName,
+        label: s.displayOrder && s.displayOrder > 0 ? `#${s.displayOrder} - ${s.serviceName}` : s.serviceName,
         subtitle: dp > 0 && dp < p ? `Offer: ₹${dp} (Reg: ₹${p})` : `Price: ₹${p}`,
       };
     });

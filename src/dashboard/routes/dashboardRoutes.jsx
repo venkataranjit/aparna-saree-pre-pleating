@@ -7,6 +7,7 @@ import Users from '../pages/Users/Users';
 import Clients from '../pages/Clients/Clients';
 import Expenses from '../pages/Expenses/Expenses';
 import MyProfile from '../pages/MyProfile/MyProfile';
+import HelpSupport from '../pages/HelpSupport/HelpSupport';
 
 export const dashboardRoutes = [
   {
@@ -32,6 +33,10 @@ export const dashboardRoutes = [
       {
         path: 'expenses',
         element: <Expenses />,
+      },
+      {
+        path: 'support',
+        element: <HelpSupport />,
       },
       {
         path: 'profile',

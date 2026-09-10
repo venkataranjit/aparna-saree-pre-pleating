@@ -596,3 +596,185 @@ body,
     transform: rotate(360deg);
   }
 }
+
+// ============================================================================
+// Global MUI Menu / Popover & Contrast Enhancement for All 3 Modes
+// ============================================================================
+
+// Default (Royal Obsidian Gold) Mode Popover & Menu Overrides
+:root,
+[data-theme="default"] {
+  .MuiPopover-paper,
+  .MuiMenu-paper {
+    background-color: #0f0f0f !important;
+    background: linear-gradient(165deg, #141414 0%, #0a0a0b 100%) !important;
+    border: 1px solid rgba(212, 175, 55, 0.28) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(212, 175, 55, 0.2) !important;
+    border-radius: 10px !important;
+    color: #e6d8a3 !important;
+
+    .MuiList-root {
+      padding: 6px !important;
+    }
+
+    .MuiMenuItem-root {
+      color: #e6d8a3 !important;
+      font-size: 0.86rem !important;
+      font-weight: 600 !important;
+      border-radius: 6px !important;
+      margin: 2px 0 !important;
+      padding: 6px 12px !important;
+      transition: all 0.18s ease !important;
+
+      &:hover {
+        background-color: rgba(212, 175, 55, 0.15) !important;
+        color: #ffffff !important;
+      }
+
+      &.Mui-selected {
+        background-color: rgba(212, 175, 55, 0.22) !important;
+        color: #d4af37 !important;
+        font-weight: 700 !important;
+
+        &:hover {
+          background-color: rgba(212, 175, 55, 0.28) !important;
+        }
+      }
+    }
+  }
+}
+
+// Dark (Midnight Slate) Mode Popover & Menu Overrides
+[data-theme="dark"] {
+  .MuiPopover-paper,
+  .MuiMenu-paper {
+    background-color: #1a1e29 !important;
+    background: linear-gradient(165deg, #1e2433 0%, #151822 100%) !important;
+    border: 1px solid rgba(226, 232, 240, 0.15) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(226, 232, 240, 0.08) !important;
+    border-radius: 10px !important;
+    color: #f1f5f9 !important;
+
+    .MuiList-root {
+      padding: 6px !important;
+    }
+
+    .MuiMenuItem-root {
+      color: #f1f5f9 !important;
+      font-size: 0.86rem !important;
+      font-weight: 600 !important;
+      border-radius: 6px !important;
+      margin: 2px 0 !important;
+      padding: 6px 12px !important;
+      transition: all 0.18s ease !important;
+
+      &:hover {
+        background-color: rgba(241, 245, 249, 0.08) !important;
+        color: #ffffff !important;
+      }
+
+      &.Mui-selected {
+        background-color: rgba(241, 245, 249, 0.16) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+
+        &:hover {
+          background-color: rgba(241, 245, 249, 0.22) !important;
+        }
+      }
+    }
+  }
+}
+
+// Light (Soft Slate Mist) Mode Popover & Menu Overrides (Clean white, high contrast)
+[data-theme="light"] {
+  .MuiPopover-paper,
+  .MuiMenu-paper {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.12) !important;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12), 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    border-radius: 10px !important;
+    color: #0f172a !important;
+
+    .MuiList-root {
+      padding: 6px !important;
+    }
+
+    .MuiMenuItem-root {
+      color: #1e293b !important;
+      font-size: 0.86rem !important;
+      font-weight: 600 !important;
+      border-radius: 6px !important;
+      margin: 2px 0 !important;
+      padding: 6px 12px !important;
+      transition: all 0.18s ease !important;
+
+      &:hover {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+      }
+
+      &.Mui-selected {
+        background-color: #e2e8f0 !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+
+        &:hover {
+          background-color: #cbd5e1 !important;
+        }
+      }
+    }
+  }
+}
+
+// Global High Contrast Overrides for Status Pills across All Pages
+[data-theme="light"] {
+  .status-pill {
+    font-weight: 700 !important;
+
+    &.completed {
+      background-color: #dcfce7 !important;
+      border: 1px solid rgba(22, 163, 74, 0.35) !important;
+      color: #15803d !important;
+
+      .dot {
+        background-color: #16a34a !important;
+        box-shadow: 0 0 4px rgba(22, 163, 74, 0.5) !important;
+      }
+    }
+
+    &.in-progress {
+      background-color: #ffedd5 !important;
+      border: 1px solid rgba(234, 88, 12, 0.35) !important;
+      color: #c2410c !important;
+
+      .dot {
+        background-color: #ea580c !important;
+        box-shadow: 0 0 4px rgba(234, 88, 12, 0.5) !important;
+      }
+    }
+
+    &.pending {
+      background-color: #fee2e2 !important;
+      border: 1px solid rgba(220, 38, 38, 0.35) !important;
+      color: #b91c1c !important;
+
+      .dot {
+        background-color: #dc2626 !important;
+        box-shadow: 0 0 4px rgba(220, 38, 38, 0.5) !important;
+      }
+    }
+
+    &.cancelled {
+      background-color: #f1f5f9 !important;
+      border: 1px solid rgba(51, 65, 85, 0.25) !important;
+      color: #334155 !important;
+
+      .dot {
+        background-color: #475569 !important;
+        box-shadow: 0 0 4px rgba(71, 85, 105, 0.4) !important;
+      }
+    }
+  }
+}

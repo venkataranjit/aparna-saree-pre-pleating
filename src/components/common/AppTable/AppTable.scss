@@ -125,8 +125,8 @@
 }
 
 .app-table-pagination {
-  color: $text-primary !important;
-  border-top: 1px solid $surface-border !important;
+  color: var(--text-primary) !important;
+  border-top: 1px solid var(--surface-border) !important;
   background-color: var(--table-head-bg, #080808) !important;
   display: flex;
   align-items: center;
@@ -137,44 +137,115 @@
     padding: 4px 6px;
   }
 
+  .MuiTablePagination-toolbar {
+    min-height: 46px;
+    padding-left: 8px;
+    padding-right: 8px;
+    color: var(--text-primary) !important;
+    gap: 4px;
+  }
+
+  .MuiTablePagination-selectLabel,
   p {
     margin: 0;
-    font-size: 0.82rem;
-    color: $text-muted;
+    font-size: 0.84rem !important;
+    font-weight: 600 !important;
+    color: var(--text-muted) !important;
 
     @include mobile {
-      font-size: 0.72rem;
+      font-size: 0.74rem !important;
     }
   }
 
-  select {
-    color: $color-gold !important;
+  .MuiTablePagination-displayedRows {
+    margin: 0;
+    font-size: 0.84rem !important;
+    font-weight: 600 !important;
+    color: var(--text-muted) !important;
+
+    @include mobile {
+      font-size: 0.74rem !important;
+    }
+  }
+
+  // Sleek Single-Border Container for Rows-Per-Page Select
+  .MuiTablePagination-input,
+  .MuiInputBase-root {
+    margin-left: 8px !important;
+    margin-right: 14px !important;
+    border: 1px solid var(--surface-border, rgba(212, 175, 55, 0.25)) !important;
     background-color: var(--input-bg, #121212) !important;
-    border: 1px solid $surface-border !important;
-    border-radius: 6px;
-    padding: 2px 6px;
-    font-size: 0.82rem;
-    cursor: pointer;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    outline: none !important;
+    height: 32px !important;
+    box-sizing: border-box !important;
 
-    @include mobile {
-      font-size: 0.72rem;
+    &:hover {
+      border-color: var(--color-gold, #d4af37) !important;
+    }
+
+    &:focus-within {
+      border-color: var(--color-gold, #d4af37) !important;
+      box-shadow: 0 0 0 2px var(--surface-gold-tint, rgba(212, 175, 55, 0.2)) !important;
+    }
+
+    .MuiTablePagination-select,
+    .MuiSelect-select,
+    select {
+      padding: 4px 24px 4px 10px !important;
+      font-size: 0.84rem !important;
+      font-weight: 700 !important;
+      color: var(--color-gold, #d4af37) !important;
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      display: flex !important;
+      align-items: center !important;
+      min-height: auto !important;
+      line-height: 1.3 !important;
+      box-shadow: none !important;
+    }
+
+    .MuiTablePagination-selectIcon,
+    .MuiSelect-icon {
+      right: 4px !important;
+      top: calc(50% - 10px) !important;
+      color: var(--color-gold, #d4af37) !important;
+      font-size: 20px !important;
+      pointer-events: none !important;
+    }
+
+    fieldset,
+    .MuiOutlinedInput-notchedOutline {
+      border: none !important;
+      outline: none !important;
     }
   }
 
+  select.MuiNativeSelect-select,
+  select.MuiTablePagination-select {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .MuiTablePagination-actions button,
   button {
-    color: $color-gold !important;
+    color: var(--color-gold, #d4af37) !important;
     padding: 6px;
     border-radius: 6px;
     transition: all 0.2s ease;
 
     &:hover:not(:disabled) {
       background-color: var(--surface-gold-tint, rgba(212, 175, 55, 0.12));
-      color: $color-gold !important;
+      color: var(--color-gold, #d4af37) !important;
     }
 
     &:disabled {
-      color: $text-muted !important;
-      opacity: 0.4;
+      color: var(--text-muted) !important;
+      opacity: 0.35 !important;
     }
 
     svg {
@@ -182,6 +253,132 @@
 
       @include mobile {
         font-size: 18px;
+      }
+    }
+  }
+}
+
+// Light Mode Specific Contrast Overrides for Pagination
+[data-theme="light"] {
+  .app-table-pagination {
+    background-color: #f8fafc !important;
+    border-top-color: rgba(15, 23, 42, 0.08) !important;
+    color: #0f172a !important;
+
+    .MuiTablePagination-selectLabel,
+    .MuiTablePagination-displayedRows,
+    p {
+      color: #334155 !important;
+      font-weight: 600 !important;
+    }
+
+    .MuiTablePagination-input,
+    .MuiInputBase-root {
+      background-color: #ffffff !important;
+      border: 1px solid rgba(15, 23, 42, 0.18) !important;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+
+      &:hover {
+        border-color: #0f172a !important;
+      }
+
+      &:focus-within {
+        border-color: #0f172a !important;
+        box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.1) !important;
+      }
+
+      .MuiTablePagination-select,
+      .MuiSelect-select,
+      select {
+        color: #0f172a !important;
+        font-weight: 700 !important;
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+
+      .MuiTablePagination-selectIcon,
+      .MuiSelect-icon {
+        color: #334155 !important;
+      }
+    }
+
+    .MuiTablePagination-actions button,
+    button {
+      color: #0f172a !important;
+
+      &:hover:not(:disabled) {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+      }
+
+      &:disabled {
+        color: #94a3b8 !important;
+        opacity: 0.4 !important;
+      }
+    }
+  }
+}
+
+// Dark Mode Specific Contrast Overrides for Pagination
+[data-theme="dark"] {
+  .app-table-pagination {
+    background-color: #141721 !important;
+    border-top-color: rgba(226, 232, 240, 0.08) !important;
+    color: #f8fafc !important;
+
+    .MuiTablePagination-selectLabel,
+    .MuiTablePagination-displayedRows,
+    p {
+      color: #cbd5e1 !important;
+      font-weight: 600 !important;
+    }
+
+    .MuiTablePagination-input,
+    .MuiInputBase-root {
+      background-color: #1a1e29 !important;
+      border: 1px solid rgba(226, 232, 240, 0.15) !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+
+      &:hover {
+        border-color: #f8fafc !important;
+      }
+
+      &:focus-within {
+        border-color: #f8fafc !important;
+        box-shadow: 0 0 0 2px rgba(226, 232, 240, 0.15) !important;
+      }
+
+      .MuiTablePagination-select,
+      .MuiSelect-select,
+      select {
+        color: #f8fafc !important;
+        font-weight: 700 !important;
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+
+      .MuiTablePagination-selectIcon,
+      .MuiSelect-icon {
+        color: #cbd5e1 !important;
+      }
+    }
+
+    .MuiTablePagination-actions button,
+    button {
+      color: #f1f5f9 !important;
+
+      &:hover:not(:disabled) {
+        background-color: rgba(241, 245, 249, 0.08) !important;
+        color: #ffffff !important;
+      }
+
+      &:disabled {
+        color: #64748b !important;
+        opacity: 0.4 !important;
       }
     }
   }

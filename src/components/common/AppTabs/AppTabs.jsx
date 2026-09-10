@@ -4,13 +4,15 @@ import './AppTabs.scss';
 export default function AppTabs({
   tabs = [],
   value,
+  activeTab,
   onChange,
   className = '',
 }) {
+  const currentVal = value !== undefined ? value : activeTab;
   return (
     <div className={`app-tabs-wrap ${className}`.trim()} role="tablist">
       {tabs.map((tab) => {
-        const isActive = tab.value === value;
+        const isActive = tab.value === currentVal;
         return (
           <button
             key={tab.value}

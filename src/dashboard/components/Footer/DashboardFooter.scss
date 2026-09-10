@@ -131,5 +131,84 @@
       justify-content: center;
     }
   }
-}
 
+  [data-theme="light"] & {
+    border-top-color: rgba(15, 23, 42, 0.08) !important;
+
+    .dashboard-footer__copyright {
+      color: #475569 !important;
+
+      .rights-text {
+        color: #64748b !important;
+      }
+
+      .divider-dot {
+        color: #b45309 !important;
+      }
+    }
+
+    .dashboard-footer__developer {
+      .dev-icon {
+        color: #b45309 !important;
+      }
+
+      .dev-text {
+        color: #475569 !important;
+        font-weight: 600 !important;
+      }
+
+      .developer-link {
+        background: #f1f5f9 !important;
+        border-color: rgba(15, 23, 42, 0.14) !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+
+        &:hover {
+          background: #e2e8f0 !important;
+          border-color: #0f172a !important;
+          color: #0f172a !important;
+        }
+      }
+    }
+  }
+
+  [data-theme="dark"] & {
+    border-top-color: rgba(226, 232, 240, 0.08) !important;
+
+    .dashboard-footer__copyright {
+      color: #94a3b8 !important;
+
+      .rights-text {
+        color: #64748b !important;
+      }
+
+      .divider-dot {
+        color: #fbbf24 !important;
+      }
+    }
+
+    .dashboard-footer__developer {
+      .dev-icon {
+        color: #fbbf24 !important;
+      }
+
+      .dev-text {
+        color: #94a3b8 !important;
+        font-weight: 600 !important;
+      }
+
+      .developer-link {
+        background: #1a1e29 !important;
+        border-color: rgba(226, 232, 240, 0.12) !important;
+        color: #f8fafc !important;
+
+        &:hover {
+          background: #222736 !important;
+          border-color: #fbbf24 !important;
+          color: #fbbf24 !important;
+        }
+      }
+    }
+  }
+
+}

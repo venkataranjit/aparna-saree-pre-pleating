@@ -9,7 +9,7 @@ import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import CheckroomOutlinedIcon from "@mui/icons-material/CheckroomOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
-import TouchAppOutlinedIcon from "@mui/icons-material/TouchAppOutlined";
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import FacebookIcon from "@mui/icons-material/Facebook";
@@ -260,11 +260,14 @@ export const getPaymentStatusMeta = (status) => {
  */
 export const INVOICE_PDF_INTERNAL_CSS = `
   #order-pdf-export-container,
+  .invoice-pdf-page,
   .invoice-pdf-wrapper {
-    width: 100%;
+    width: 794px;
+    min-width: 794px;
     max-width: 794px;
-    height: 100%;
+    height: 1123px;
     min-height: 1123px;
+    max-height: 1123px;
     margin: 0;
     padding: 0;
     background: #ffffff;
@@ -276,6 +279,8 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    overflow: hidden;
+    position: relative;
   }
 
   #order-pdf-export-container .pdf-header-banner {
@@ -890,11 +895,12 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     background: #faf6f0;
     border: 1px solid #ebdccb;
     border-radius: 8px;
-    padding: 7px 18px 7px 14px;
+    padding: 10px 20px 10px 16px;
+    min-height: 86px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 4px;
+    margin-top: 5px;
     margin-bottom: 6px;
     box-sizing: border-box;
     overflow: hidden;
@@ -905,9 +911,9 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     position: absolute;
     left: -8px;
     bottom: -10px;
-    height: 125%;
+    height: 130%;
     width: auto;
-    max-width: 140px;
+    max-width: 145px;
     object-fit: contain;
     pointer-events: none;
     z-index: 0;
@@ -924,22 +930,22 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     justify-content: center;
     text-align: center;
     flex: 1;
-    padding: 0 10px 0 38px;
+    padding: 0 12px 0 42px;
   }
 
   #order-pdf-export-container .thankyou-script-img {
-    height: 35px;
+    height: 38px;
     width: auto;
-    max-width: 135px;
+    max-width: 145px;
     object-fit: contain;
     display: block;
-    margin: 0 auto 1px auto;
+    margin: 0 auto 2px auto;
     mix-blend-mode: multiply;
   }
 
   #order-pdf-export-container .thankyou-for-choosing {
     font-family: 'Cinzel', 'Playfair Display', 'Times New Roman', Georgia, serif;
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 700;
     color: #08182b;
     line-height: 1.25;
@@ -956,12 +962,12 @@ export const INVOICE_PDF_INTERNAL_CSS = `
 
   #order-pdf-export-container .thankyou-heart {
     color: #caa368;
-    font-size: 9.5px;
+    font-size: 10px;
     line-height: 1;
   }
 
   #order-pdf-export-container .thankyou-tradition {
-    font-size: 9.5px;
+    font-size: 10px;
     font-weight: 500;
     color: #334155;
     line-height: 1.2;
@@ -972,7 +978,7 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     position: relative;
     z-index: 1;
     width: 1px;
-    height: 56px;
+    height: 62px;
     background: #caa368;
     opacity: 0.55;
     margin: 0 16px 0 12px;
@@ -1000,8 +1006,8 @@ export const INVOICE_PDF_INTERNAL_CSS = `
   }
 
   #order-pdf-export-container .thankyou-qr-img {
-    width: 58px;
-    height: 58px;
+    width: 62px;
+    height: 62px;
     display: block;
     object-fit: contain;
   }
@@ -1037,7 +1043,7 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     background: #08182b;
     color: #ffffff !important;
     text-decoration: none !important;
-    padding: 6px 16px;
+    padding: 6px 14px;
     border-radius: 9999px;
     font-size: 11px;
     font-weight: 600;
@@ -1047,14 +1053,14 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     box-shadow: 0 2px 4px rgba(8, 24, 43, 0.15);
   }
 
-  #order-pdf-export-container .cta-hand-icon {
+  #order-pdf-export-container .cta-arrow-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
     font-size: 13px;
     line-height: 1;
-    margin-left: 1px;
+    margin-left: 2px;
   }
 
   #order-pdf-export-container .signature-section {
@@ -1221,152 +1227,32 @@ export const INVOICE_PDF_INTERNAL_CSS = `
 `;
 
 /**
- * Generates an HTML string snippet for PDF export using clean semantic classes
+ * Modular HTML Builders for Invoice Components
  */
-export const buildInvoiceHtmlSnippet = (data = {}) => {
-  const isPaid = String(data.paymentStatus || "").toLowerCase() === "paid";
-  const orderStatusClass = `status-${String(data.orderStatus || "pending").toLowerCase()}`;
+export const buildHeaderBannerHtml = () => `
+  <div class="pdf-header-banner">
+    <img src="${pdfHeaderImg}" alt="Aparna Saree Pre-Pleating" />
+  </div>
+`;
 
-  const orderStatusLabel =
-    data.orderStatus === "completed"
-      ? "Completed"
-      : data.orderStatus === "in-progress"
-        ? "In-Progress"
-        : data.orderStatus === "cancelled"
-          ? "Cancelled"
-          : "Pending";
+export const buildMainHeadingHtml = (title = "ORDER DETAILS") => `
+  <div class="pdf-main-heading-wrap">
+    <div class="pdf-heading-line line-left"></div>
+    <div class="pdf-main-heading">${title}</div>
+    <div class="pdf-heading-line line-right"></div>
+  </div>
+`;
 
-  const hangerIcon = renderToStaticMarkup(
-    <CheckroomOutlinedIcon style={{ fontSize: 16, color: "#ffffff" }} />,
-  );
-
-  const servicesRowsHtml = (data.services || [])
-    .map((s, idx) => {
-      const m = s.measurementProfile || {};
-      const specsHtml = [
-        s.fabric
-          ? `<span class="spec-pill"><span class="lbl">Fabric:</span> <span class="val">${s.fabric}</span></span>`
-          : "",
-        m.title
-          ? `<span class="spec-pill"><span class="lbl">Profile:</span> <span class="val">${m.title}</span></span>`
-          : "",
-        m.pallu
-          ? `<span class="spec-pill"><span class="lbl">Pallu:</span> <span class="val">${m.pallu}</span></span>`
-          : "",
-        m.firstPleatSize
-          ? `<span class="spec-pill"><span class="lbl">First Pleat:</span> <span class="val">${m.firstPleatSize}</span></span>`
-          : "",
-        m.shoulderToRightTight
-          ? `<span class="spec-pill"><span class="lbl">Shoulder-Tight:</span> <span class="val">${m.shoulderToRightTight}</span></span>`
-          : "",
-        m.shoulderToTight
-          ? `<span class="spec-pill"><span class="lbl">Shoulder-Tight:</span> <span class="val">${m.shoulderToTight}</span></span>`
-          : "",
-        m.chest
-          ? `<span class="spec-pill"><span class="lbl">Chest:</span> <span class="val">${m.chest}</span></span>`
-          : "",
-        m.noOfChestPleats
-          ? `<span class="spec-pill"><span class="lbl">Chest Pleats:</span> <span class="val">${m.noOfChestPleats}</span></span>`
-          : "",
-        m.hip
-          ? `<span class="spec-pill"><span class="lbl">Hip:</span> <span class="val">${m.hip}</span></span>`
-          : "",
-        m.height
-          ? `<span class="spec-pill"><span class="lbl">Height:</span> <span class="val">${m.height}</span></span>`
-          : "",
-        m.dressSize
-          ? `<span class="spec-pill"><span class="lbl">Dress Size:</span> <span class="val">${m.dressSize}</span></span>`
-          : "",
-        m.notes
-          ? `<span class="spec-pill"><span class="lbl">Care Note:</span> <span class="val">${m.notes}</span></span>`
-          : "",
-      ]
-        .filter(Boolean)
-        .join(" ");
-
-      const careText = s.specialCare || m.notes || "";
-      const careHtml = careText
-        ? `<div class="care-box"><span class="care-lbl">Special Care / Note:</span> <span class="care-val">${careText}</span></div>`
-        : "";
-
-      return `
-        <tr class="service-row">
-          <td class="td-num">
-            <span class="num-badge">${idx + 1}</span>
-          </td>
-          <td class="td-desc">
-            <div class="service-name">${s.serviceName}</div>
-            <div class="specs-wrap">${specsHtml}</div>
-            ${careHtml}
-          </td>
-          <td class="td-amt">₹${Number(s.price || 0).toLocaleString("en-IN")}</td>
-        </tr>
-      `;
-    })
-    .join("");
-
-  const discountAmount = Number(data.financials?.discount || 0);
-  const balanceDisplayAmount = isPaid
-    ? data.financials?.balancePaid !== undefined &&
-      Number(data.financials?.balancePaid) > 0
-      ? data.financials?.balancePaid
-      : Math.max(
-          0,
-          Number(data.financials?.totalAmount || 0) -
-            Number(data.financials?.advancePaid || 0),
-        )
-    : data.financials?.balanceDue !== undefined &&
-        Number(data.financials?.balanceDue) > 0
-      ? data.financials?.balanceDue
-      : Math.max(
-          0,
-          Number(data.financials?.totalAmount || 0) -
-            Number(data.financials?.advancePaid || 0),
-        );
-
+export const buildDossierGridHtml = (data = {}) => {
   const orderDetailsIcon = renderToStaticMarkup(
     <ReceiptLongOutlinedIcon style={{ fontSize: 13, color: "#08182b" }} />,
   );
   const billedToIcon = renderToStaticMarkup(
     <PersonOutlineIcon style={{ fontSize: 13, color: "#08182b" }} />,
   );
-  const reviewStarIcon = renderToStaticMarkup(
-    <StarRoundedIcon style={{ fontSize: 14, color: "#0f172a" }} />,
-  );
-  const locIcon = renderToStaticMarkup(
-    <LocationOnOutlinedIcon style={{ fontSize: 18, color: "#08182b" }} />,
-  );
-  const phoneIcon = renderToStaticMarkup(
-    <PhoneOutlinedIcon style={{ fontSize: 17, color: "#08182b" }} />,
-  );
-  const emailIcon = renderToStaticMarkup(
-    <EmailOutlinedIcon style={{ fontSize: 17, color: "#08182b" }} />,
-  );
-  const instaIcon = renderToStaticMarkup(
-    <InstagramIcon style={{ fontSize: 16, color: "#08182b" }} />,
-  );
-  const waIcon = renderToStaticMarkup(
-    <WhatsAppIcon style={{ fontSize: 16, color: "#08182b" }} />,
-  );
-  const fbIcon = renderToStaticMarkup(
-    <FacebookIcon style={{ fontSize: 16, color: "#08182b" }} />,
-  );
-  const noteIcon = renderToStaticMarkup(
-    <InfoOutlinedIcon style={{ fontSize: 13, color: "#08182b" }} />,
-  );
-  const walletIcon = renderToStaticMarkup(
-    <AccountBalanceWalletOutlinedIcon
-      style={{ fontSize: 13, color: "#08182b" }}
-    />,
-  );
-  const touchHandIcon = renderToStaticMarkup(
-    <TouchAppOutlinedIcon
-      style={{ fontSize: 13, color: "#ffffff", verticalAlign: "middle" }}
-    />,
-  );
 
   const occasionRowHtml =
-    data.occasion && data.occasion !== "-" && data.occasion.trim() !== ""
+    data.occasion && data.occasion !== "-" && String(data.occasion).trim() !== ""
       ? `
         <tr>
           <td class="kv-key">Occasion</td>
@@ -1405,6 +1291,7 @@ export const buildInvoiceHtmlSnippet = (data = {}) => {
     `;
   }
 
+  const isPaid = String(data.paymentStatus || "").toLowerCase() === "paid";
   let paymentPillHtml = "";
   if (isPaid) {
     paymentPillHtml = `
@@ -1428,273 +1315,394 @@ export const buildInvoiceHtmlSnippet = (data = {}) => {
   }
 
   return `
-    <div class="invoice-pdf-wrapper">
-      
-      <!-- 1. Flush Full-Width Big Poster Header Banner (0px gap top, left, right) -->
-      <div class="pdf-header-banner">
-        <img src="${pdfHeaderImg}" alt="Aparna Saree Pre-Pleating" />
-      </div>
-
-      <div class="pdf-content-body">
-        
-        <!-- 2. Main Heading: Order Details -->
-        <div class="pdf-main-heading-wrap">
-          <div class="pdf-heading-line line-left"></div>
-          <div class="pdf-main-heading">ORDER DETAILS</div>
-          <div class="pdf-heading-line line-right"></div>
+    <div class="pdf-dossier-grid">
+      <div class="pdf-panel-card order-info-panel">
+        <div class="panel-header">
+          ${orderDetailsIcon}
+          <span>ORDER INFORMATION</span>
         </div>
-
-        <!-- 3. Meta Dossier Grid (Left: Order Information, Right: Client Details) -->
-        <div class="pdf-dossier-grid">
-          
-          <!-- Left: Order Information Panel -->
-          <div class="pdf-panel-card order-info-panel">
-            <div class="panel-header">
-              ${orderDetailsIcon}
-              <span>ORDER INFORMATION</span>
-            </div>
-            <div class="panel-body">
-              <table class="info-kv-table">
-                <tbody>
-                  <tr>
-                    <td class="kv-key">Invoice No</td>
-                    <td class="kv-val kv-val-bold">${data.invoiceNumber || data.orderId}</td>
-                  </tr>
-                  <tr>
-                    <td class="kv-key">Order ID</td>
-                    <td class="kv-val kv-val-bold">${data.orderId}</td>
-                  </tr>
-                  <tr>
-                    <td class="kv-key">Order Date</td>
-                    <td class="kv-val kv-val-bold">${data.bookingDate}</td>
-                  </tr>
-                  <tr>
-                    <td class="kv-key">Delivery Date</td>
-                    <td class="kv-val kv-val-delivery">${data.deliveryDate}</td>
-                  </tr>
-                  ${occasionRowHtml}
-                </tbody>
-              </table>
-              <div class="panel-footer-row">
-                <span class="footer-label-text">Order Status</span>
-                ${orderStatusPillHtml}
-              </div>
-            </div>
-          </div>
-
-          <!-- Right: Client Details Panel -->
-          <div class="pdf-panel-card client-info-panel">
-            <div class="panel-header">
-              ${billedToIcon}
-              <span>CLIENT DETAILS</span>
-            </div>
-            <div class="panel-body">
-              <table class="info-kv-table">
-                <tbody>
-                  <tr>
-                    <td class="kv-key">Name</td>
-                    <td class="kv-val kv-val-bold">${data.client?.name || "Client"}</td>
-                  </tr>
-                  <tr>
-                    <td class="kv-key">Phone</td>
-                    <td class="kv-val">${data.client?.mobile || "—"}</td>
-                  </tr>
-                  <tr>
-                    <td class="kv-key">Email</td>
-                    <td class="kv-val">${data.client?.email || "—"}</td>
-                  </tr>
-                  <tr>
-                    <td class="kv-key">Address</td>
-                    <td class="kv-val">${data.client?.address || "—"}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div class="panel-footer-row">
-                <span class="footer-label-text">Mode of Payment &nbsp;(${data.paymentMethod || "UPI"})</span>
-                ${paymentPillHtml}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. Ordered Services Table -->
-        <div class="pdf-services-card">
-          <div class="services-header-bar">
-            ${hangerIcon}
-            <span>SERVICES</span>
-          </div>
-
-          <table class="services-table">
-            <thead>
-              <tr>
-                <th class="th-num">#</th>
-                <th class="th-desc">SERVICE DESCRIPTION</th>
-                <th class="th-amt">AMOUNT</th>
-              </tr>
-            </thead>
+        <div class="panel-body">
+          <table class="info-kv-table">
             <tbody>
-              ${servicesRowsHtml}
+              <tr>
+                <td class="kv-key">Invoice No</td>
+                <td class="kv-val kv-val-bold">${data.invoiceNumber || data.orderId}</td>
+              </tr>
+              <tr>
+                <td class="kv-key">Order ID</td>
+                <td class="kv-val kv-val-bold">${data.orderId}</td>
+              </tr>
+              <tr>
+                <td class="kv-key">Order Date</td>
+                <td class="kv-val kv-val-bold">${data.bookingDate}</td>
+              </tr>
+              <tr>
+                <td class="kv-key">Delivery Date</td>
+                <td class="kv-val kv-val-delivery">${data.deliveryDate}</td>
+              </tr>
+              ${occasionRowHtml}
             </tbody>
           </table>
-        </div>
-
-        <!-- 5. Notes & Financial Summary (2 Column Grid) -->
-        <div class="pdf-bottom-grid">
-          <!-- Left: Special Notes Panel -->
-          <div class="pdf-panel-card special-notes-panel">
-            <div class="panel-header">
-              ${noteIcon}
-              <span>SPECIAL NOTE</span>
-            </div>
-            <div class="panel-body">
-              <ul class="notes-list">
-                <li>Please use the pre-pleated saree within 2 months.</li>
-                <li>After using the pre-pleated saree, please iron it before storing.</li>
-                <li>Do not put weight on pre-pleated sarees, especially fluffy pleats.</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Right: Payment Summary Panel -->
-          <div class="pdf-panel-card payment-summary-panel">
-            <div class="panel-header">
-              ${walletIcon}
-              <span>PAYMENT SUMMARY</span>
-            </div>
-            <div class="panel-body">
-              <div class="total-row">
-                <span class="total-lbl">Services Subtotal</span>
-                <span class="total-val">₹${Number(data.financials?.subtotal || 0).toLocaleString("en-IN")}</span>
-              </div>
-              <div class="total-row">
-                <span class="total-lbl">Pickup &amp; Delivery Charges</span>
-                <span class="total-val">₹${Number(data.financials?.pickupDeliveryCharges || 0).toLocaleString("en-IN")}</span>
-              </div>
-              <div class="total-row">
-                <span class="total-lbl">Other Charges</span>
-                <span class="total-val">₹${Number(data.financials?.otherCharges || 0).toLocaleString("en-IN")}</span>
-              </div>
-              <div class="total-row discount-row ${discountAmount > 0 ? "has-discount" : ""}">
-                <span class="total-lbl">Discount</span>
-                <span class="total-val">${discountAmount > 0 ? "-₹" + discountAmount.toLocaleString("en-IN") : "₹0"}</span>
-              </div>
-              <div class="total-row grand-total-row">
-                <span class="grand-lbl">TOTAL BILLED AMOUNT</span>
-                <span class="grand-val">₹${Number(data.financials?.totalAmount || 0).toLocaleString("en-IN")}</span>
-              </div>
-              <div class="total-row advance-paid-row">
-                <span class="total-lbl">Paid Amount</span>
-                <span class="total-val">₹${Number(data.financials?.advancePaid || 0).toLocaleString("en-IN")}</span>
-              </div>
-              <div class="total-row balance-row ${isPaid ? "is-paid" : ""}">
-                <span class="balance-lbl">${isPaid ? "Balance Paid" : "Balance Due"}</span>
-                <span class="balance-val">₹${Number(balanceDisplayAmount).toLocaleString("en-IN")}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 6. Thank You & Google Review Banner Card -->
-        <div class="thankyou-banner-card">
-          <!-- Left botanical flower illustration -->
-          <img src="${flowerImg}" alt="" class="thankyou-bg-flower" />
-
-          <!-- Center: Thank you message -->
-          <div class="thankyou-content-center">
-            <img src="${thankyouImg}" alt="Thank You" class="thankyou-script-img" />
-            <div class="thankyou-for-choosing">for choosing Aparna Saree Pre-Pleating!</div>
-            <div class="thankyou-heart-wrap">
-              <span class="thankyou-heart">♥</span>
-            </div>
-            <div class="thankyou-tradition">Your trust keeps our tradition alive.</div>
-          </div>
-
-          <!-- Divider -->
-          <div class="thankyou-vert-divider"></div>
-
-          <!-- Right: QR Code & Review CTA -->
-          <div class="thankyou-right-col">
-            <div class="thankyou-qr-wrapper">
-              <img src="${reviewQrImg}" alt="Scan to Review" class="thankyou-qr-img" />
-            </div>
-            <div class="thankyou-cta-col">
-              <div class="cta-share-text">Share your experience</div>
-              <div class="cta-stars">★★★★★</div>
-              <a href="https://g.page/r/CfQ3Ljt5NC91EBM/review" target="_blank" rel="noopener noreferrer" class="cta-review-btn">
-                <span>Review Us</span>
-                <span class="cta-hand-icon">${touchHandIcon}</span>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- 7. Authorized Signatory Row -->
-        <div class="signature-section">
-          <div class="signature-wrapper">
-            <img src="${signatureImg}" alt="Authorized Signature" />
-            <div class="signatory-title">AUTHORIZED SIGNATORY</div>
+          <div class="panel-footer-row">
+            <span class="footer-label-text">Order Status</span>
+            ${orderStatusPillHtml}
           </div>
         </div>
       </div>
 
-      <!-- 8. Master Luxury Footer -->
-      <div class="pdf-luxury-footer">
-        <div class="footer-top-line"></div>
-        
-        <div class="footer-contact-row">
-          <!-- 1. Address -->
-          <div class="footer-col footer-col-address">
-            <span class="footer-icon">${locIcon}</span>
-            <div class="footer-text-block">
-              <div>H.No. 4715, 1st Floor, Road No. 17,</div>
-              <div>New MIG, BHEL, Hyderabad - 502032</div>
-            </div>
-          </div>
-
-          <!-- 2. Phone & Timing -->
-          <div class="footer-col footer-col-phone">
-            <span class="footer-icon">${phoneIcon}</span>
-            <div class="footer-text-block">
-              <div class="phone-num">+91 98765 43210</div>
-              <div class="timing-text">Mon - Sat | 10:00 AM - 7:00 PM</div>
-            </div>
-          </div>
-
-          <!-- 3. Email -->
-          <div class="footer-col footer-col-email">
-            <span class="footer-icon">${emailIcon}</span>
-            <div class="footer-text-block">
-              <div class="email-text">support@aparnasaree.com</div>
-            </div>
-          </div>
-
-          <!-- 4. Social Links -->
-          <div class="footer-col footer-col-social">
-            <div class="social-icons-row">
-              <span class="social-icon">${instaIcon}</span>
-              <span class="social-icon">${waIcon}</span>
-              <span class="social-icon">${fbIcon}</span>
-            </div>
-            <div class="follow-us-text">FOLLOW US</div>
-          </div>
+      <div class="pdf-panel-card client-info-panel">
+        <div class="panel-header">
+          ${billedToIcon}
+          <span>CLIENT DETAILS</span>
         </div>
-
-        <!-- Tagline Banner with Gold Flourishes -->
-        <div class="footer-tagline-row">
-          <div class="tagline-line line-left"></div>
-          <span class="tagline-ornament">❖</span>
-          <span class="tagline-text">DRAPE TODAY &nbsp;•&nbsp; MEMORIES FOREVER</span>
-          <span class="tagline-ornament">❖</span>
-          <div class="tagline-line line-right"></div>
+        <div class="panel-body">
+          <table class="info-kv-table">
+            <tbody>
+              <tr>
+                <td class="kv-key">Client Name</td>
+                <td class="kv-val kv-val-bold">${data.client?.name || "Valued Client"}</td>
+              </tr>
+              <tr>
+                <td class="kv-key">Phone</td>
+                <td class="kv-val">${data.client?.mobile || "—"}</td>
+              </tr>
+              <tr>
+                <td class="kv-key">Email</td>
+                <td class="kv-val">${data.client?.email || "—"}</td>
+              </tr>
+              <tr>
+                <td class="kv-key">Address</td>
+                <td class="kv-val">${data.client?.address || "—"}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="panel-footer-row">
+            <span class="footer-label-text">Mode of Payment &nbsp;(${data.paymentMethod || "UPI"})</span>
+            ${paymentPillHtml}
+          </div>
         </div>
       </div>
     </div>
   `;
 };
 
+export const buildServiceRowHtml = (s, idx) => {
+  const m = s.measurementProfile || {};
+  const specsHtml = [
+    s.fabric
+      ? `<span class="spec-pill"><span class="lbl">Fabric:</span> <span class="val">${s.fabric}</span></span>`
+      : "",
+    m.title
+      ? `<span class="spec-pill"><span class="lbl">Profile:</span> <span class="val">${m.title}</span></span>`
+      : "",
+    m.pallu
+      ? `<span class="spec-pill"><span class="lbl">Pallu:</span> <span class="val">${m.pallu}</span></span>`
+      : "",
+    m.firstPleatSize
+      ? `<span class="spec-pill"><span class="lbl">First Pleat:</span> <span class="val">${m.firstPleatSize}</span></span>`
+      : "",
+    m.shoulderToRightTight
+      ? `<span class="spec-pill"><span class="lbl">Shoulder-Tight:</span> <span class="val">${m.shoulderToRightTight}</span></span>`
+      : "",
+    m.shoulderToTight
+      ? `<span class="spec-pill"><span class="lbl">Shoulder-Tight:</span> <span class="val">${m.shoulderToTight}</span></span>`
+      : "",
+    m.chest
+      ? `<span class="spec-pill"><span class="lbl">Chest:</span> <span class="val">${m.chest}</span></span>`
+      : "",
+    m.noOfChestPleats
+      ? `<span class="spec-pill"><span class="lbl">Chest Pleats:</span> <span class="val">${m.noOfChestPleats}</span></span>`
+      : "",
+    m.hip
+      ? `<span class="spec-pill"><span class="lbl">Hip:</span> <span class="val">${m.hip}</span></span>`
+      : "",
+    m.height
+      ? `<span class="spec-pill"><span class="lbl">Height:</span> <span class="val">${m.height}</span></span>`
+      : "",
+    m.dressSize
+      ? `<span class="spec-pill"><span class="lbl">Dress Size:</span> <span class="val">${m.dressSize}</span></span>`
+      : "",
+    m.notes
+      ? `<span class="spec-pill"><span class="lbl">Care Note:</span> <span class="val">${m.notes}</span></span>`
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const careText = s.specialCare || m.notes || "";
+  const careHtml = careText
+    ? `<div class="care-box"><span class="care-lbl">Special Care / Note:</span> <span class="care-val">${careText}</span></div>`
+    : "";
+
+  return `
+    <tr class="service-row">
+      <td class="td-num">
+        <span class="num-badge">${idx + 1}</span>
+      </td>
+      <td class="td-desc">
+        <div class="service-name">${s.serviceName}</div>
+        <div class="specs-wrap">${specsHtml}</div>
+        ${careHtml}
+      </td>
+      <td class="td-amt">₹${Number(s.price || 0).toLocaleString("en-IN")}</td>
+    </tr>
+  `;
+};
+
+export const buildServicesTableHtml = (rowsHtml, isContinued = false) => {
+  const hangerIcon = renderToStaticMarkup(
+    <CheckroomOutlinedIcon style={{ fontSize: 16, color: "#ffffff" }} />,
+  );
+
+  return `
+    <div class="pdf-services-card">
+      <div class="services-header-bar">
+        ${hangerIcon}
+        <span>SERVICES${isContinued ? " (CONTINUED)" : ""}</span>
+      </div>
+      <table class="services-table">
+        <thead>
+          <tr>
+            <th class="th-num">#</th>
+            <th class="th-desc">SERVICE DESCRIPTION</th>
+            <th class="th-amt">AMOUNT</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+      </table>
+    </div>
+  `;
+};
+
+export const buildBottomGridHtml = (data = {}) => {
+  const noteIcon = renderToStaticMarkup(
+    <InfoOutlinedIcon style={{ fontSize: 13, color: "#08182b" }} />,
+  );
+  const walletIcon = renderToStaticMarkup(
+    <AccountBalanceWalletOutlinedIcon
+      style={{ fontSize: 13, color: "#08182b" }}
+    />,
+  );
+
+  const isPaid = String(data.paymentStatus || "").toLowerCase() === "paid";
+  const discountAmount = Number(data.financials?.discount || 0);
+  const balanceDisplayAmount = isPaid
+    ? data.financials?.balancePaid !== undefined &&
+      Number(data.financials?.balancePaid) > 0
+      ? data.financials?.balancePaid
+      : Math.max(
+          0,
+          Number(data.financials?.totalAmount || 0) -
+            Number(data.financials?.advancePaid || 0),
+        )
+    : data.financials?.balanceDue !== undefined &&
+        Number(data.financials?.balanceDue) > 0
+      ? data.financials?.balanceDue
+      : Math.max(
+          0,
+          Number(data.financials?.totalAmount || 0) -
+            Number(data.financials?.advancePaid || 0),
+        );
+
+  return `
+    <div class="pdf-bottom-grid">
+      <div class="pdf-panel-card special-notes-panel">
+        <div class="panel-header">
+          ${noteIcon}
+          <span>SPECIAL NOTE</span>
+        </div>
+        <div class="panel-body">
+          <ul class="notes-list">
+            <li>Please use the pre-pleated saree within 2 months.</li>
+            <li>After using the pre-pleated saree, please iron it before storing.</li>
+            <li>Do not put weight on pre-pleated sarees, especially fluffy pleats.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pdf-panel-card payment-summary-panel">
+        <div class="panel-header">
+          ${walletIcon}
+          <span>PAYMENT SUMMARY</span>
+        </div>
+        <div class="panel-body">
+          <div class="total-row">
+            <span class="total-lbl">Services Subtotal</span>
+            <span class="total-val">₹${Number(data.financials?.subtotal || 0).toLocaleString("en-IN")}</span>
+          </div>
+          <div class="total-row">
+            <span class="total-lbl">Pickup &amp; Delivery Charges</span>
+            <span class="total-val">₹${Number(data.financials?.pickupDeliveryCharges || 0).toLocaleString("en-IN")}</span>
+          </div>
+          <div class="total-row">
+            <span class="total-lbl">Other Charges</span>
+            <span class="total-val">₹${Number(data.financials?.otherCharges || 0).toLocaleString("en-IN")}</span>
+          </div>
+          <div class="total-row discount-row ${discountAmount > 0 ? "has-discount" : ""}">
+            <span class="total-lbl">Discount</span>
+            <span class="total-val">${discountAmount > 0 ? "-₹" + discountAmount.toLocaleString("en-IN") : "₹0"}</span>
+          </div>
+          <div class="total-row grand-total-row">
+            <span class="grand-lbl">TOTAL BILLED AMOUNT</span>
+            <span class="grand-val">₹${Number(data.financials?.totalAmount || 0).toLocaleString("en-IN")}</span>
+          </div>
+          <div class="total-row advance-paid-row">
+            <span class="total-lbl">Paid Amount</span>
+            <span class="total-val">₹${Number(data.financials?.advancePaid || 0).toLocaleString("en-IN")}</span>
+          </div>
+          <div class="total-row balance-row ${isPaid ? "is-paid" : ""}">
+            <span class="balance-lbl">${isPaid ? "Balance Paid" : "Balance Due"}</span>
+            <span class="balance-val">₹${Number(balanceDisplayAmount).toLocaleString("en-IN")}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
+export const buildThankYouBannerHtml = () => {
+  const arrowIcon = renderToStaticMarkup(
+    <ArrowForwardRoundedIcon
+      style={{ fontSize: 13, color: "#ffffff", verticalAlign: "middle" }}
+    />,
+  );
+
+  return `
+    <div class="thankyou-banner-card">
+      <img src="${flowerImg}" alt="" class="thankyou-bg-flower" />
+      <div class="thankyou-content-center">
+        <img src="${thankyouImg}" alt="Thank You" class="thankyou-script-img" />
+        <div class="thankyou-for-choosing">for choosing Aparna Saree Pre-Pleating!</div>
+        <div class="thankyou-heart-wrap">
+          <span class="thankyou-heart">♥</span>
+        </div>
+        <div class="thankyou-tradition">Your trust keeps our tradition alive.</div>
+      </div>
+      <div class="thankyou-vert-divider"></div>
+      <div class="thankyou-right-col">
+        <div class="thankyou-qr-wrapper">
+          <img src="${reviewQrImg}" alt="Scan to Review" class="thankyou-qr-img" />
+        </div>
+        <div class="thankyou-cta-col">
+          <div class="cta-share-text">Share your experience</div>
+          <div class="cta-stars">★★★★★</div>
+          <a href="https://g.page/r/CfQ3Ljt5NC91EBM/review" target="_blank" rel="noopener noreferrer" class="cta-review-btn">
+            <span>Review Us</span>
+            <span class="cta-arrow-icon">${arrowIcon}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
+export const buildSignatureSectionHtml = () => `
+  <div class="signature-section">
+    <div class="signature-wrapper">
+      <img src="${signatureImg}" alt="Authorized Signature" />
+      <div class="signatory-title">AUTHORIZED SIGNATORY</div>
+    </div>
+  </div>
+`;
+
+export const buildLuxuryFooterHtml = () => {
+  const locIcon = renderToStaticMarkup(
+    <LocationOnOutlinedIcon style={{ fontSize: 18, color: "#08182b" }} />,
+  );
+  const phoneIcon = renderToStaticMarkup(
+    <PhoneOutlinedIcon style={{ fontSize: 17, color: "#08182b" }} />,
+  );
+  const emailIcon = renderToStaticMarkup(
+    <EmailOutlinedIcon style={{ fontSize: 17, color: "#08182b" }} />,
+  );
+  const instaIcon = renderToStaticMarkup(
+    <InstagramIcon style={{ fontSize: 16, color: "#08182b" }} />,
+  );
+  const waIcon = renderToStaticMarkup(
+    <WhatsAppIcon style={{ fontSize: 16, color: "#08182b" }} />,
+  );
+  const fbIcon = renderToStaticMarkup(
+    <FacebookIcon style={{ fontSize: 16, color: "#08182b" }} />,
+  );
+
+  return `
+    <div class="pdf-luxury-footer">
+      <div class="footer-top-line"></div>
+      <div class="footer-contact-row">
+        <div class="footer-col footer-col-address">
+          <span class="footer-icon">${locIcon}</span>
+          <div class="footer-text-block">
+            <div>H.No. 4715, 1st Floor, Road No. 17,</div>
+            <div>New MIG, BHEL, Hyderabad - 502032</div>
+          </div>
+        </div>
+
+        <div class="footer-col footer-col-phone">
+          <span class="footer-icon">${phoneIcon}</span>
+          <div class="footer-text-block">
+            <div class="phone-num">+91 98765 43210</div>
+            <div class="timing-text">Mon - Sat | 10:00 AM - 7:00 PM</div>
+          </div>
+        </div>
+
+        <div class="footer-col footer-col-email">
+          <span class="footer-icon">${emailIcon}</span>
+          <div class="footer-text-block">
+            <div class="email-text">support@aparnasaree.com</div>
+          </div>
+        </div>
+
+        <div class="footer-col footer-col-social">
+          <div class="social-icons-row">
+            <span class="social-icon">${instaIcon}</span>
+            <span class="social-icon">${waIcon}</span>
+            <span class="social-icon">${fbIcon}</span>
+          </div>
+          <div class="follow-us-text">FOLLOW US</div>
+        </div>
+      </div>
+
+      <div class="footer-tagline-row">
+        <div class="tagline-line line-left"></div>
+        <span class="tagline-ornament">❖</span>
+        <span class="tagline-text">DRAPE TODAY &nbsp;•&nbsp; MEMORIES FOREVER</span>
+        <span class="tagline-ornament">❖</span>
+        <div class="tagline-line line-right"></div>
+      </div>
+    </div>
+  `;
+};
+
+/**
+ * Generates single-page HTML snippet for backward compatibility
+ */
+export const buildInvoiceHtmlSnippet = (data = {}) => {
+  const serviceRowsHtml = (data.services || [])
+    .map((s, idx) => buildServiceRowHtml(s, idx))
+    .join("");
+
+  return `
+    <div class="invoice-pdf-page">
+      ${buildHeaderBannerHtml()}
+      <div class="pdf-content-body">
+        ${buildMainHeadingHtml("ORDER DETAILS")}
+        ${buildDossierGridHtml(data)}
+        ${buildServicesTableHtml(serviceRowsHtml, false)}
+        ${buildBottomGridHtml(data)}
+        ${buildThankYouBannerHtml()}
+        ${buildSignatureSectionHtml()}
+      </div>
+      ${buildLuxuryFooterHtml()}
+    </div>
+  `;
+};
+
 /**
  * Unified Core PDF Generator
- * Renders the off-screen A4 container dynamically and compiles it to high-res jsPDF instance.
+ * Dynamically computes component heights, intelligently packs intact containers across A4 pages,
+ * and renders high-definition multi-page jsPDF instance without breaking any containers.
  */
 export const generateOrderInvoicePdf = async (
   order,
@@ -1734,32 +1742,172 @@ export const generateOrderInvoicePdf = async (
     ? toast.info(progressMessage, { autoClose: false })
     : null;
 
+  const totalServices = (data.services || []).length;
+
+  const estimateRowHeight = (s) => {
+    let h = 55;
+    const m = s.measurementProfile || {};
+    const specCount = [
+      s.fabric,
+      m.title,
+      m.pallu,
+      m.firstPleatSize,
+      m.shoulderToRightTight,
+      m.shoulderToTight,
+      m.chest,
+      m.noOfChestPleats,
+      m.hip,
+      m.height,
+      m.dressSize,
+      m.notes,
+    ].filter(Boolean).length;
+    if (specCount > 4) h += 26;
+    if (s.specialCare || m.notes) h += 28;
+    return h;
+  };
+
+  const rowHeights = (data.services || []).map(estimateRowHeight);
+  const totalServicesHeight =
+    totalServices > 0
+      ? 55 + rowHeights.reduce((sum, h) => sum + h, 0)
+      : 0;
+
+  // Bottom cards: Special Notes & Payment Summary (175) + Thank You (92) + Signature (60) = 327px
+  const BOTTOM_BLOCKS_HEIGHT = 327;
+  // Available body height on Page 1 when Heading (38) + Dossier (185) are present:
+  // 1123 - 138 (header) - 80 (footer) - 20 (padding) - 38 (heading) - 185 (dossier) = 662px
+  const PAGE1_AVAILABLE_FOR_REST = 662;
+
+  // Single page check: can all services + bottom blocks fit on Page 1 comfortably?
+  const canFitSinglePage =
+    totalServices <= 2 &&
+    totalServicesHeight + BOTTOM_BLOCKS_HEIGHT <= PAGE1_AVAILABLE_FOR_REST;
+
+  const pages = [];
+
+  if (canFitSinglePage) {
+    const allRowsHtml = (data.services || [])
+      .map((s, idx) => buildServiceRowHtml(s, idx))
+      .join("");
+
+    const singlePageBody = [
+      buildMainHeadingHtml("ORDER DETAILS"),
+      buildDossierGridHtml(data),
+      totalServices > 0 ? buildServicesTableHtml(allRowsHtml, false) : "",
+      buildBottomGridHtml(data),
+      buildThankYouBannerHtml(),
+      buildSignatureSectionHtml(),
+    ].join("");
+
+    pages.push(singlePageBody);
+  } else {
+    // Multi-page flow
+    // Page 1: Heading + Dossier + Services that fit in PAGE1_AVAILABLE_FOR_REST
+    let serviceIdx = 0;
+    const page1Rows = [];
+    let page1TableHeight = totalServices > 0 ? 55 : 0;
+
+    while (
+      serviceIdx < totalServices &&
+      page1TableHeight + rowHeights[serviceIdx] <= PAGE1_AVAILABLE_FOR_REST - 30
+    ) {
+      page1Rows.push(buildServiceRowHtml(data.services[serviceIdx], serviceIdx));
+      page1TableHeight += rowHeights[serviceIdx];
+      serviceIdx++;
+    }
+
+    const page1Body = [
+      buildMainHeadingHtml("ORDER DETAILS"),
+      buildDossierGridHtml(data),
+      page1Rows.length > 0 ? buildServicesTableHtml(page1Rows.join(""), false) : "",
+    ].join("");
+
+    pages.push(page1Body);
+
+    // Page 2 (and subsequent pages if huge number of items):
+    const PAGE2_AVAILABLE = 847;
+
+    while (serviceIdx < totalServices) {
+      const currentPageRows = [];
+      let currentPageTableHeight = 55;
+
+      while (
+        serviceIdx < totalServices &&
+        currentPageTableHeight + rowHeights[serviceIdx] + BOTTOM_BLOCKS_HEIGHT <= PAGE2_AVAILABLE
+      ) {
+        currentPageRows.push(buildServiceRowHtml(data.services[serviceIdx], serviceIdx));
+        currentPageTableHeight += rowHeights[serviceIdx];
+        serviceIdx++;
+      }
+
+      if (currentPageRows.length === 0 && serviceIdx < totalServices) {
+        while (
+          serviceIdx < totalServices &&
+          currentPageTableHeight + rowHeights[serviceIdx] <= PAGE2_AVAILABLE - 30
+        ) {
+          currentPageRows.push(buildServiceRowHtml(data.services[serviceIdx], serviceIdx));
+          currentPageTableHeight += rowHeights[serviceIdx];
+          serviceIdx++;
+        }
+      }
+
+      const pageBodyParts = [
+        buildMainHeadingHtml("ORDER DETAILS (CONTINUED)"),
+        currentPageRows.length > 0 ? buildServicesTableHtml(currentPageRows.join(""), true) : "",
+      ];
+
+      if (serviceIdx >= totalServices) {
+        pageBodyParts.push(buildBottomGridHtml(data));
+        pageBodyParts.push(buildThankYouBannerHtml());
+        pageBodyParts.push(buildSignatureSectionHtml());
+      }
+
+      pages.push(pageBodyParts.join(""));
+    }
+
+    // If services all fit on Page 1, but bottom blocks needed Page 2:
+    if (pages.length === 1) {
+      const page2Body = [
+        buildMainHeadingHtml("ORDER DETAILS (CONTINUED)"),
+        buildBottomGridHtml(data),
+        buildThankYouBannerHtml(),
+        buildSignatureSectionHtml(),
+      ].join("");
+      pages.push(page2Body);
+    }
+  }
+
+  // Create export container with intact individual A4 page divs
   const container = document.createElement("div");
   container.id = "order-pdf-export-container";
   container.style.position = "fixed";
   container.style.left = "0px";
   container.style.top = "0px";
   container.style.width = "794px";
-  container.style.height = "1123px";
-  container.style.minHeight = "1123px";
   container.style.background = "#ffffff";
   container.style.zIndex = "-9999";
   container.style.opacity = "1";
   container.style.pointerEvents = "none";
-  container.style.boxSizing = "border-box";
-  container.style.display = "flex";
-  container.style.flexDirection = "column";
-  container.style.justifyContent = "space-between";
   container.style.margin = "0";
   container.style.padding = "0";
+  container.style.boxSizing = "border-box";
 
   const inlineStyles = document.createElement("style");
   inlineStyles.innerHTML = INVOICE_PDF_INTERNAL_CSS;
   container.appendChild(inlineStyles);
 
-  const contentWrap = document.createElement("div");
-  contentWrap.innerHTML = buildInvoiceHtmlSnippet(data);
-  container.appendChild(contentWrap);
+  pages.forEach((pageBodyHtml) => {
+    const pageEl = document.createElement("div");
+    pageEl.className = "invoice-pdf-page";
+    pageEl.innerHTML = `
+      ${buildHeaderBannerHtml()}
+      <div class="pdf-content-body">
+        ${pageBodyHtml}
+      </div>
+      ${buildLuxuryFooterHtml()}
+    `;
+    container.appendChild(pageEl);
+  });
 
   document.body.appendChild(container);
 
@@ -1782,18 +1930,6 @@ export const generateOrderInvoicePdf = async (
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    const canvas = await html2canvas(container, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#ffffff",
-      scrollX: 0,
-      scrollY: 0,
-      windowWidth: 794,
-      windowHeight: 1123,
-    });
-
-    const imgData = canvas.toDataURL("image/jpeg", 0.98);
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "mm",
@@ -1802,34 +1938,52 @@ export const generateOrderInvoicePdf = async (
 
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-    const marginX = 0;
-    const marginY = 0;
-    const contentWidth = pdfWidth;
-    const contentHeight = pdfHeight;
 
-    pdf.addImage(
-      imgData,
-      "JPEG",
-      marginX,
-      marginY,
-      contentWidth,
-      contentHeight,
-    );
+    const pageDivs = Array.from(container.querySelectorAll(".invoice-pdf-page"));
 
-    const reviewAnchor = container.querySelector("a");
-    if (reviewAnchor) {
-      const linkRect = reviewAnchor.getBoundingClientRect();
-      const contRect = container.getBoundingClientRect();
-      if (contRect.width > 0 && contRect.height > 0) {
-        const relX =
-          marginX +
-          ((linkRect.left - contRect.left) / contRect.width) * contentWidth;
-        const relY =
-          marginY +
-          ((linkRect.top - contRect.top) / contRect.height) * contentHeight;
-        const relW = (linkRect.width / contRect.width) * contentWidth;
-        const relH = (linkRect.height / contRect.height) * contentHeight;
-        pdf.link(relX, relY, relW, relH, { url: reviewAnchor.href });
+    for (let pageIdx = 0; pageIdx < pageDivs.length; pageIdx++) {
+      const pageDiv = pageDivs[pageIdx];
+
+      const pageCanvas = await html2canvas(pageDiv, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: 794,
+        windowHeight: 1123,
+      });
+
+      if (pageIdx > 0) {
+        pdf.addPage();
+      }
+
+      const pageImgData = pageCanvas.toDataURL("image/jpeg", 0.98);
+      pdf.addImage(pageImgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+
+      // Map clickable link annotations for this specific page
+      const anchors = Array.from(pageDiv.querySelectorAll("a"));
+      const pageRect = pageDiv.getBoundingClientRect();
+
+      if (pageRect.width > 0 && pageRect.height > 0) {
+        anchors.forEach((anchor) => {
+          if (!anchor.href) return;
+          const linkRect = anchor.getBoundingClientRect();
+          const relX =
+            ((linkRect.left - pageRect.left) / pageRect.width) * pdfWidth;
+          const relY =
+            ((linkRect.top - pageRect.top) / pageRect.height) * pdfHeight;
+          const relW = (linkRect.width / pageRect.width) * pdfWidth;
+          const relH = (linkRect.height / pageRect.height) * pdfHeight;
+
+          try {
+            pdf.setPage(pageIdx + 1);
+            pdf.link(relX, relY, relW, relH, { url: anchor.href });
+          } catch (linkErr) {
+            console.warn("Could not set PDF link annotation:", linkErr);
+          }
+        });
       }
     }
 

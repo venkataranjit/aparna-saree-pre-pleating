@@ -20,8 +20,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 import { AppModal, AppButton, AppSpinner } from "../../../components/common";
-import CustomInvoiceModal, {
-  mapOrderToInvoiceData,
+import {
   downloadInvoicePdfDirectly,
   shareOrderPdfToWhatsApp,
   openClientWhatsAppChat,
@@ -56,7 +55,6 @@ const OrderDetailsModal = ({
   const [currentPaymentStatus, setCurrentPaymentStatus] = useState("paid");
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [updatingTarget, setUpdatingTarget] = useState(null);
-  const [showCustomInvoice, setShowCustomInvoice] = useState(false);
 
   useEffect(() => {
     if (order) {
@@ -891,15 +889,6 @@ const OrderDetailsModal = ({
         </div>
       </div>
 
-      {/* Custom Tax Invoice Modal (Dynamic Order Data & Printable PDF) */}
-      <CustomInvoiceModal
-        open={showCustomInvoice}
-        onClose={() => setShowCustomInvoice(false)}
-        invoiceData={mapOrderToInvoiceData({
-          ...order,
-          paymentStatus: currentPaymentStatus,
-        })}
-      />
     </AppModal>
   );
 };

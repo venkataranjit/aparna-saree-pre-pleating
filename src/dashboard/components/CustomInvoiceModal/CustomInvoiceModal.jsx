@@ -1,3 +1,12 @@
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
+import CheckroomOutlinedIcon from "@mui/icons-material/CheckroomOutlined";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { toast } from "react-toastify";
@@ -5,7 +14,7 @@ import { Capacitor } from "@capacitor/core";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
 import { formatDateSafe } from "../../../firebase/dbService";
-import logoLight from "../../../assets/logo-light.png";
+import pdfHeaderImg from "../../../assets/pdf-header.jpg";
 import signatureImg from "../../../assets/signature.png";
 import "./CustomInvoiceModal.scss";
 
@@ -237,20 +246,706 @@ export const getPaymentStatusMeta = (status) => {
   };
 };
 
+/**
+ * Clean Internal CSS Stylesheet for PDF Generation
+ */
+export const INVOICE_PDF_INTERNAL_CSS = `
+  #order-pdf-export-container,
+  .invoice-pdf-wrapper {
+    width: 100%;
+    max-width: 794px;
+    height: 100%;
+    min-height: 1123px;
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+    color: #0f172a;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    box-sizing: border-box;
+    font-size: 11.5px;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  #order-pdf-export-container .pdf-header-banner {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    line-height: 0;
+    font-size: 0;
+    display: block;
+  }
+
+  #order-pdf-export-container .pdf-header-banner img {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
+  #order-pdf-export-container .pdf-content-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 22px 6px 22px;
+    box-sizing: border-box;
+  }
+
+  #order-pdf-export-container .pdf-main-heading-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 2px 0 10px 0;
+  }
+
+  #order-pdf-export-container .pdf-heading-line {
+    flex: 1;
+    height: 1.5px;
+    border-radius: 2px;
+  }
+
+  #order-pdf-export-container .pdf-heading-line.line-left {
+    background: linear-gradient(90deg, rgba(8, 24, 43, 0.05), rgba(8, 24, 43, 0.35));
+  }
+
+  #order-pdf-export-container .pdf-heading-line.line-right {
+    background: linear-gradient(90deg, rgba(8, 24, 43, 0.35), rgba(8, 24, 43, 0.05));
+  }
+
+  #order-pdf-export-container .pdf-main-heading {
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #08182b;
+    letter-spacing: 2.2px;
+    text-transform: uppercase;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  #order-pdf-export-container .pdf-dossier-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  #order-pdf-export-container .pdf-panel-card {
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    height: 100%;
+  }
+
+  /* Left Panel: Order Information */
+  #order-pdf-export-container .order-info-panel {
+    border: 1px solid #d0e2f2;
+    background: #f6f6fc;
+  }
+
+  #order-pdf-export-container .order-info-panel .panel-header {
+    background: #e4f1fb;
+    border-bottom: 1px solid #d0e2f2;
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #08182b;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  #order-pdf-export-container .order-info-panel .panel-body {
+    background: #f6f6fc;
+    padding: 8px 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+  }
+
+  /* Right Panel: Client Details */
+  #order-pdf-export-container .client-info-panel {
+    border: 1px solid #f0dfcf;
+    background: #fcf8f4;
+  }
+
+  #order-pdf-export-container .client-info-panel .panel-header {
+    background: #faf2ea;
+    border-bottom: 1px solid #f0dfcf;
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #08182b;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  #order-pdf-export-container .client-info-panel .panel-body {
+    background: #fcf8f4;
+    padding: 8px 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+  }
+
+  #order-pdf-export-container .info-kv-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  #order-pdf-export-container .info-kv-table tr td {
+    padding: 2.5px 0;
+    font-size: 11px;
+    line-height: 1.35;
+    vertical-align: middle;
+  }
+
+  #order-pdf-export-container .info-kv-table .kv-key {
+    color: #475569;
+    font-weight: 500;
+    width: 95px;
+    white-space: nowrap;
+    text-align: left;
+  }
+
+  #order-pdf-export-container .info-kv-table .kv-val {
+    color: #0f172a;
+    font-weight: 500;
+    word-break: break-word;
+    text-align: right;
+  }
+
+  #order-pdf-export-container .info-kv-table .kv-val-bold {
+    color: #08182b;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  #order-pdf-export-container .info-kv-table .kv-val-delivery {
+    color: #15803d;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  #order-pdf-export-container .panel-footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+    padding-top: 6px;
+  }
+
+  #order-pdf-export-container .order-info-panel .panel-footer-row {
+    border-top: 1px dashed #d0e2f2;
+  }
+
+  #order-pdf-export-container .client-info-panel .panel-footer-row {
+    border-top: 1px dashed #f0dfcf;
+  }
+
+  #order-pdf-export-container .footer-label-text {
+    font-size: 10.5px;
+    color: #08182b;
+    font-weight: 500;
+  }
+
+  #order-pdf-export-container .pay-pill {
+    padding: 2.5px 9px;
+    border-radius: 20px;
+    font-size: 9.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  #order-pdf-export-container .pay-pill-paid {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+  }
+
+  #order-pdf-export-container .pill-check-icon {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #15803d;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8.5px;
+    font-weight: 900;
+  }
+
+  #order-pdf-export-container .pill-dot-icon {
+    font-size: 8px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  #order-pdf-export-container .pay-pill-partial {
+    background: #ffedd5;
+    color: #ea580c;
+    border: 1px solid #fed7aa;
+  }
+
+  #order-pdf-export-container .pay-pill-cancelled {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+  }
+
+  #order-pdf-export-container .pay-pill-pending {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+
+  #order-pdf-export-container .pdf-services-card {
+    border: 1px solid #d0e2f2;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    background: #ffffff;
+    box-sizing: border-box;
+  }
+
+  #order-pdf-export-container .services-header-bar {
+    background: #0f2540;
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  #order-pdf-export-container .services-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  #order-pdf-export-container .services-table thead tr {
+    background: #faf2ea;
+    border-bottom: 1px solid #f0dfcf;
+  }
+
+  #order-pdf-export-container .services-table th {
+    padding: 6px 10px;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #08182b;
+  }
+
+  #order-pdf-export-container .services-table th.th-num {
+    width: 38px;
+    text-align: center;
+    padding-left: 8px;
+    padding-right: 4px;
+  }
+
+  #order-pdf-export-container .services-table th.th-desc {
+    text-align: left;
+    padding-left: 6px;
+  }
+
+  #order-pdf-export-container .services-table th.th-amt {
+    width: 90px;
+    text-align: right;
+    padding-right: 12px;
+  }
+
+  #order-pdf-export-container .service-row td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: top;
+  }
+
+  #order-pdf-export-container .service-row:last-child td {
+    border-bottom: none;
+  }
+
+  #order-pdf-export-container .td-num {
+    width: 38px;
+    text-align: center;
+    padding-left: 8px;
+    padding-right: 4px;
+    vertical-align: top;
+    padding-top: 10px;
+  }
+
+  #order-pdf-export-container .num-badge {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #08182b;
+  }
+
+  #order-pdf-export-container .td-desc {
+    padding-left: 6px;
+  }
+
+  #order-pdf-export-container .service-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #08182b;
+    margin-bottom: 5px;
+  }
+
+  #order-pdf-export-container .specs-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 5px;
+    margin-bottom: 2px;
+  }
+
+  #order-pdf-export-container .spec-pill {
+    font-size: 10px;
+    padding: 2.5px 7px;
+    border-radius: 4px;
+    background: #f1f6fa;
+    color: #475569;
+    border: 1px solid #e2edf6;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  #order-pdf-export-container .spec-pill .lbl {
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  #order-pdf-export-container .spec-pill .val {
+    color: #08182b;
+    font-weight: 700;
+  }
+
+  #order-pdf-export-container .care-box {
+    font-size: 10px;
+    background: #f1f6fa;
+    border: 1px solid #e2edf6;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin-top: 5px;
+    color: #08182b;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  #order-pdf-export-container .care-box .care-lbl {
+    font-weight: 700;
+    color: #08182b;
+  }
+
+  #order-pdf-export-container .care-box .care-val {
+    font-weight: 500;
+    color: #334155;
+  }
+
+  #order-pdf-export-container .td-amt {
+    text-align: right;
+    font-weight: 700;
+    color: #08182b;
+    font-size: 14.5px;
+    padding-right: 12px;
+    vertical-align: top;
+    padding-top: 10px;
+  }
+
+  #order-pdf-export-container .pdf-bottom-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  #order-pdf-export-container .special-notes-card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    padding: 9px 12px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  #order-pdf-export-container .notes-heading {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+  }
+
+  #order-pdf-export-container .notes-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 10px;
+    color: #334155;
+    line-height: 1.45;
+  }
+
+  #order-pdf-export-container .notes-list li {
+    position: relative;
+    padding-left: 10px;
+    margin-bottom: 2px;
+  }
+
+  #order-pdf-export-container .notes-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #475569;
+    font-weight: bold;
+  }
+
+  #order-pdf-export-container .totals-card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 11px;
+  }
+
+  #order-pdf-export-container .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  #order-pdf-export-container .total-row .total-lbl {
+    color: #475569;
+    font-weight: 500;
+    font-size: 10.5px;
+  }
+
+  #order-pdf-export-container .total-row .total-val {
+    color: #0f172a;
+    font-weight: 600;
+    font-size: 11px;
+  }
+
+  #order-pdf-export-container .discount-row {
+    color: #475569;
+  }
+
+  #order-pdf-export-container .discount-row.has-discount {
+    color: #15803d;
+  }
+
+  #order-pdf-export-container .grand-total-row {
+    padding-top: 3px;
+    border-top: 1.5px solid #0f172a;
+    margin-top: 1px;
+  }
+
+  #order-pdf-export-container .grand-total-row .grand-lbl {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 11.5px;
+  }
+
+  #order-pdf-export-container .grand-total-row .grand-val {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 13.5px;
+  }
+
+  #order-pdf-export-container .advance-paid-row {
+    color: #475569;
+    padding-top: 1px;
+  }
+
+  #order-pdf-export-container .balance-row {
+    padding-top: 1px;
+  }
+
+  #order-pdf-export-container .balance-row.is-paid {
+    color: #15803d;
+  }
+
+  #order-pdf-export-container .balance-row:not(.is-paid) {
+    color: #0f172a;
+  }
+
+  #order-pdf-export-container .balance-row .balance-lbl {
+    font-weight: 700;
+    font-size: 10.5px;
+  }
+
+  #order-pdf-export-container .balance-row .balance-val {
+    font-weight: 700;
+    font-size: 11.5px;
+  }
+
+  #order-pdf-export-container .google-review-card {
+    background: transparent;
+    padding: 6px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 2px;
+    margin-bottom: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  #order-pdf-export-container .review-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f172a;
+    text-align: center;
+  }
+
+  #order-pdf-export-container .review-subtitle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #334155;
+    text-align: center;
+  }
+
+  #order-pdf-export-container .review-link-wrap {
+    text-align: center;
+  }
+
+  #order-pdf-export-container .review-link-wrap a {
+    font-size: 11px;
+    color: #1d4ed8;
+    font-weight: 600;
+    text-decoration: underline;
+    word-break: break-all;
+    display: inline-block;
+  }
+
+  #order-pdf-export-container .signature-section {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    margin-top: 6px;
+    margin-bottom: 6px;
+  }
+
+  #order-pdf-export-container .signature-wrapper {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 130px;
+  }
+
+  #order-pdf-export-container .signature-wrapper img {
+    height: 34px;
+    width: auto;
+    max-width: 130px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 2px auto;
+  }
+
+  #order-pdf-export-container .signatory-title {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  #order-pdf-export-container .pdf-address-footer {
+    margin-top: auto;
+    padding-top: 6px;
+    border-top: 1px solid #cbd5e1;
+    text-align: center;
+    font-size: 10px;
+    color: #475569;
+    line-height: 1.4;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  #order-pdf-export-container .address-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+  }
+
+  #order-pdf-export-container .address-lbl {
+    font-weight: 600;
+    color: #0f172a;
+  }
+`;
 
 /**
- * Generates an HTML string snippet for PDF export
+ * Generates an HTML string snippet for PDF export using clean semantic classes
  */
 export const buildInvoiceHtmlSnippet = (data = {}) => {
-  const orderStatusMeta = getOrderStatusMeta(data.orderStatus);
-  const paymentStatusMeta = getPaymentStatusMeta(data.paymentStatus);
+  const isPaid = String(data.paymentStatus || "").toLowerCase() === "paid";
+  const orderStatusClass = `status-${String(data.orderStatus || "pending").toLowerCase()}`;
+
+  const orderStatusLabel =
+    data.orderStatus === "completed"
+      ? "Completed"
+      : data.orderStatus === "in-progress"
+        ? "In-Progress"
+        : data.orderStatus === "cancelled"
+          ? "Cancelled"
+          : "Pending";
+
+  const hangerIcon = renderToStaticMarkup(
+    <CheckroomOutlinedIcon style={{ fontSize: 16, color: "#ffffff" }} />,
+  );
 
   const servicesRowsHtml = (data.services || [])
-    .map((s) => {
+    .map((s, idx) => {
       const m = s.measurementProfile || {};
       const specsHtml = [
         s.fabric
-          ? `<span class="spec-pill fabric-pill"><span class="lbl">Fabric:</span> <span class="val">${s.fabric}</span></span>`
+          ? `<span class="spec-pill"><span class="lbl">Fabric:</span> <span class="val">${s.fabric}</span></span>`
           : "",
         m.title
           ? `<span class="spec-pill"><span class="lbl">Profile:</span> <span class="val">${m.title}</span></span>`
@@ -296,6 +991,9 @@ export const buildInvoiceHtmlSnippet = (data = {}) => {
 
       return `
         <tr class="service-row">
+          <td class="td-num">
+            <span class="num-badge">${idx + 1}</span>
+          </td>
           <td class="td-desc">
             <div class="service-name">${s.serviceName}</div>
             <div class="specs-wrap">${specsHtml}</div>
@@ -307,104 +1005,200 @@ export const buildInvoiceHtmlSnippet = (data = {}) => {
     })
     .join("");
 
+  const discountAmount = Number(data.financials?.discount || 0);
+  const balanceDisplayAmount = isPaid
+    ? data.financials?.balancePaid !== undefined &&
+      Number(data.financials?.balancePaid) > 0
+      ? data.financials?.balancePaid
+      : Math.max(
+          0,
+          Number(data.financials?.totalAmount || 0) -
+            Number(data.financials?.advancePaid || 0),
+        )
+    : data.financials?.balanceDue !== undefined &&
+        Number(data.financials?.balanceDue) > 0
+      ? data.financials?.balanceDue
+      : Math.max(
+          0,
+          Number(data.financials?.totalAmount || 0) -
+            Number(data.financials?.advancePaid || 0),
+        );
+
+  const orderDetailsIcon = renderToStaticMarkup(
+    <ReceiptLongOutlinedIcon style={{ fontSize: 13, color: "#08182b" }} />,
+  );
+  const billedToIcon = renderToStaticMarkup(
+    <PersonOutlineIcon style={{ fontSize: 13, color: "#08182b" }} />,
+  );
+  const reviewStarIcon = renderToStaticMarkup(
+    <StarRoundedIcon style={{ fontSize: 14, color: "#0f172a" }} />,
+  );
+
+  const occasionRowHtml =
+    data.occasion && data.occasion !== "-" && data.occasion.trim() !== ""
+      ? `
+        <tr>
+          <td class="kv-key">Occasion</td>
+          <td class="kv-val">${data.occasion}</td>
+        </tr>
+      `
+      : "";
+
+  let orderStatusPillHtml = "";
+  const sStatus = String(data.orderStatus || "in-progress").toLowerCase();
+  if (sStatus === "completed") {
+    orderStatusPillHtml = `
+      <span class="pay-pill pay-pill-paid">
+        <span class="pill-check-icon">✓</span>
+        <span>COMPLETED</span>
+      </span>
+    `;
+  } else if (sStatus === "in-progress") {
+    orderStatusPillHtml = `
+      <span class="pay-pill pay-pill-partial">
+        <span class="pill-dot-icon">●</span>
+        <span>IN-PROGRESS</span>
+      </span>
+    `;
+  } else if (sStatus === "cancelled") {
+    orderStatusPillHtml = `
+      <span class="pay-pill pay-pill-cancelled">
+        <span>CANCELLED</span>
+      </span>
+    `;
+  } else {
+    orderStatusPillHtml = `
+      <span class="pay-pill pay-pill-pending">
+        <span>PENDING</span>
+      </span>
+    `;
+  }
+
+  let paymentPillHtml = "";
+  if (isPaid) {
+    paymentPillHtml = `
+      <span class="pay-pill pay-pill-paid">
+        <span class="pill-check-icon">✓</span>
+        <span>PAID IN FULL</span>
+      </span>
+    `;
+  } else if (String(data.paymentStatus || "").toLowerCase() === "partial") {
+    paymentPillHtml = `
+      <span class="pay-pill pay-pill-partial">
+        <span>ADVANCE / PARTIAL</span>
+      </span>
+    `;
+  } else {
+    paymentPillHtml = `
+      <span class="pay-pill pay-pill-pending">
+        <span>PENDING PAYMENT</span>
+      </span>
+    `;
+  }
+
   return `
-    <div class="invoice-pdf-wrapper" style="width: 100%; max-width: 780px; height: 100%; min-height: 1120px; margin: 0 auto; background: #ffffff; color: #0f172a; padding: 10px 14px 4px 14px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box; font-size: 12.5px; line-height: 1.45; display: flex; flex-direction: column; justify-content: space-between;">
+    <div class="invoice-pdf-wrapper">
       
-      <div style="flex: 1; display: flex; flex-direction: column;">
-        <!-- 1. Centered Brand Logo -->
-        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 6px; text-align: center;">
-          <img src="${logoLight}" alt="Aparna Saree Pre-Pleating" style="width: 58%; max-width: 360px; height: auto; object-fit: contain; display: block; margin: 0 auto;" />
+      <!-- 1. Flush Full-Width Big Poster Header Banner (0px gap top, left, right) -->
+      <div class="pdf-header-banner">
+        <img src="${pdfHeaderImg}" alt="Aparna Saree Pre-Pleating" />
+      </div>
+
+      <div class="pdf-content-body">
+        
+        <!-- 2. Main Heading: Order Details -->
+        <div class="pdf-main-heading-wrap">
+          <div class="pdf-heading-line line-left"></div>
+          <div class="pdf-main-heading">ORDER DETAILS</div>
+          <div class="pdf-heading-line line-right"></div>
         </div>
 
-        <div style="height: 1.5px; background: #cbd5e1; margin: 5px 0 8px 0; border-radius: 9999px;"></div>
-
-        <!-- 2. Meta Dossier Grid (Left: Order Details, Right: Client Details) -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+        <!-- 3. Meta Dossier Grid (Left: Order Information, Right: Client Details) -->
+        <div class="pdf-dossier-grid">
           
-          <!-- Left: Order Details Meta Card -->
-          <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
-            <div style="background: #0f172a; color: #ffffff; padding: 5px 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; flex-shrink: 0;"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" fill="none"/><path d="M16 8H8" fill="none"/><path d="M16 12H8" fill="none"/><path d="M13 16H8" fill="none"/></svg>
-              <span>ORDER DETAILS</span>
+          <!-- Left: Order Information Panel -->
+          <div class="pdf-panel-card order-info-panel">
+            <div class="panel-header">
+              ${orderDetailsIcon}
+              <span>ORDER INFORMATION</span>
             </div>
-            <div style="padding: 7px 10px; display: flex; flex-direction: column; gap: 3.5px; flex: 1; font-size: 12px;">
-              <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <span style="color: #64748b; font-weight: 500; font-size: 12px;">Order No:</span>
-                <span style="color: #0f172a; font-weight: 600; font-size: 12.5px;">${data.invoiceNumber || data.orderId}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <span style="color: #64748b; font-weight: 500; font-size: 12px;">Order ID:</span>
-                <span style="color: #0f172a; font-weight: 600; font-size: 12.5px;">${data.orderId}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <span style="color: #64748b; font-weight: 500; font-size: 12px;">Order Date:</span>
-                <span style="color: #0f172a; font-weight: 600; font-size: 12.5px;">${data.bookingDate}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <span style="color: #64748b; font-weight: 500; font-size: 12px;">Delivery Date:</span>
-                <span style="color: #047857; font-weight: 600; font-size: 12.5px;">${data.deliveryDate}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <span style="color: #64748b; font-weight: 500; font-size: 12px;">Occasion:</span>
-                <span style="color: #0f172a; font-weight: 600; font-size: 12.5px;">${data.occasion}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px; padding-top: 2px; border-top: 1px dashed #cbd5e1;">
-                <span style="color: #64748b; font-weight: 500; font-size: 12px;">Order Status:</span>
-                <span style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; ${orderStatusMeta.style}">
-                  ${orderStatusMeta.label}
-                </span>
+            <div class="panel-body">
+              <table class="info-kv-table">
+                <tbody>
+                  <tr>
+                    <td class="kv-key">Invoice No</td>
+                    <td class="kv-val kv-val-bold">${data.invoiceNumber || data.orderId}</td>
+                  </tr>
+                  <tr>
+                    <td class="kv-key">Order ID</td>
+                    <td class="kv-val kv-val-bold">${data.orderId}</td>
+                  </tr>
+                  <tr>
+                    <td class="kv-key">Order Date</td>
+                    <td class="kv-val kv-val-bold">${data.bookingDate}</td>
+                  </tr>
+                  <tr>
+                    <td class="kv-key">Delivery Date</td>
+                    <td class="kv-val kv-val-delivery">${data.deliveryDate}</td>
+                  </tr>
+                  ${occasionRowHtml}
+                </tbody>
+              </table>
+              <div class="panel-footer-row">
+                <span class="footer-label-text">Order Status</span>
+                ${orderStatusPillHtml}
               </div>
             </div>
           </div>
 
-          <!-- Right: Client Details Card -->
-          <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
-            <div style="background: #0f172a; color: #ffffff; padding: 5px 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; flex-shrink: 0;"><circle cx="12" cy="7" r="4" fill="none"></circle><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" fill="none"></path></svg>
-              <span>BILLED TO (CLIENT DETAILS)</span>
+          <!-- Right: Client Details Panel -->
+          <div class="pdf-panel-card client-info-panel">
+            <div class="panel-header">
+              ${billedToIcon}
+              <span>CLIENT DETAILS</span>
             </div>
-            <div style="padding: 7px 10px; display: flex; flex-direction: column; gap: 3.5px; flex: 1; font-size: 12px;">
-              <div style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 2px; display: flex; align-items: center; gap: 6px;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; flex-shrink: 0;"><circle cx="12" cy="7" r="4"></circle><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path></svg>
-                <span>${data.client?.name || "Client"}</span>
-              </div>
-              <div style="color: #475569; font-size: 12px; line-height: 1.35; display: flex; align-items: center; gap: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; flex-shrink: 0;"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                <span>${data.client?.mobile || "—"}</span>
-              </div>
-              <div style="color: #475569; font-size: 12px; line-height: 1.35; display: flex; align-items: center; gap: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; flex-shrink: 0;"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
-                <span>${data.client?.email || "—"}</span>
-              </div>
-              <div style="color: #475569; font-size: 12px; line-height: 1.35; display: flex; align-items: flex-start; gap: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: top; margin-top: 2px; flex-shrink: 0;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <span>${data.client?.address || "—"}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 3px; padding-top: 3px; border-top: 1px dashed #cbd5e1;">
-                <span style="font-size: 11.5px; color: #475569; font-weight: 500;">Payment Mode: ${data.paymentMethod || "UPI"}</span>
-                <span style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; ${paymentStatusMeta.style}">
-                  ${paymentStatusMeta.label}
-                </span>
+            <div class="panel-body">
+              <table class="info-kv-table">
+                <tbody>
+                  <tr>
+                    <td class="kv-key">Name</td>
+                    <td class="kv-val kv-val-bold">${data.client?.name || "Client"}</td>
+                  </tr>
+                  <tr>
+                    <td class="kv-key">Phone</td>
+                    <td class="kv-val">${data.client?.mobile || "—"}</td>
+                  </tr>
+                  <tr>
+                    <td class="kv-key">Email</td>
+                    <td class="kv-val">${data.client?.email || "—"}</td>
+                  </tr>
+                  <tr>
+                    <td class="kv-key">Address</td>
+                    <td class="kv-val">${data.client?.address || "—"}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="panel-footer-row">
+                <span class="footer-label-text">Mode of Payment &nbsp;(${data.paymentMethod || "UPI"})</span>
+                ${paymentPillHtml}
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 3. Ordered Services Table -->
-        <div style="margin-bottom: 8px;">
-          <div style="font-size: 12px; font-weight: 600; color: #0f172a; letter-spacing: 0.5px; margin-bottom: 4px; padding-bottom: 3px; border-bottom: 1.5px solid #0f172a;">
-            ORDERED SAREE SERVICES & TAILORING SPECIFICATIONS (${data.services?.length || 0})
+        <!-- 4. Ordered Services Table -->
+        <div class="pdf-services-card">
+          <div class="services-header-bar">
+            ${hangerIcon}
+            <span>SERVICES</span>
           </div>
 
-          <table style="width: 100%; border-collapse: collapse;">
+          <table class="services-table">
             <thead>
-              <tr style="background: #0f172a; color: #ffffff;">
-                <th style="padding: 6px 10px; font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; text-align: left;">
-                  Service Description, Fabric & Tailoring Specifications
-                </th>
-                <th style="padding: 6px 10px; font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; width: 120px; text-align: right;">
-                  Amount
-                </th>
+              <tr>
+                <th class="th-num">#</th>
+                <th class="th-desc">SERVICE DESCRIPTION</th>
+                <th class="th-amt">AMOUNT</th>
               </tr>
             </thead>
             <tbody>
@@ -413,15 +1207,13 @@ export const buildInvoiceHtmlSnippet = (data = {}) => {
           </table>
         </div>
 
-        <!-- 4. Notes & Financial Summary (2 Column Grid) -->
-        <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 8px; margin-bottom: 8px;">
+        <!-- 5. Notes & Financial Summary (2 Column Grid) -->
+        <div class="pdf-bottom-grid">
           
           <!-- Left: Special Notes Card -->
-          <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 7px 10px; border-radius: 5px; display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 11.5px; font-weight: 600; color: #0f172a; letter-spacing: 0.4px; margin-bottom: 3px;">
-              SPECIAL NOTE:
-            </div>
-            <ul style="margin: 0; padding-left: 15px; font-size: 11px; color: #334155; line-height: 1.4;">
+          <div class="special-notes-card">
+            <div class="notes-heading">SPECIAL NOTE:</div>
+            <ul class="notes-list">
               <li>Please use the pre-pleated saree within 2 months.</li>
               <li>After using the pre-pleated saree, please iron it before storing.</li>
               <li>Do not put weight on pre-pleated sarees, especially fluffy pleats.</li>
@@ -429,87 +1221,65 @@ export const buildInvoiceHtmlSnippet = (data = {}) => {
           </div>
 
           <!-- Right: Totals Card -->
-          <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; padding: 7px 11px; display: flex; flex-direction: column; gap: 3.5px; font-size: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #475569; font-weight: 500; font-size: 11.5px;">Services Subtotal:</span>
-              <span style="color: #0f172a; font-weight: 600; font-size: 12px;">₹${Number(data.financials?.subtotal || 0).toLocaleString("en-IN")}</span>
+          <div class="totals-card">
+            <div class="total-row">
+              <span class="total-lbl">Services Subtotal:</span>
+              <span class="total-val">₹${Number(data.financials?.subtotal || 0).toLocaleString("en-IN")}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #475569; font-weight: 500; font-size: 11.5px;">Pickup & Delivery Charges:</span>
-              <span style="color: #0f172a; font-weight: 600; font-size: 12px;">₹${Number(data.financials?.pickupDeliveryCharges || 0).toLocaleString("en-IN")}</span>
+            <div class="total-row">
+              <span class="total-lbl">Pickup & Delivery Charges:</span>
+              <span class="total-val">₹${Number(data.financials?.pickupDeliveryCharges || 0).toLocaleString("en-IN")}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #475569; font-weight: 500; font-size: 11.5px;">Other Charges:</span>
-              <span style="color: #0f172a; font-weight: 600; font-size: 12px;">₹${Number(data.financials?.otherCharges || 0).toLocaleString("en-IN")}</span>
+            <div class="total-row">
+              <span class="total-lbl">Other Charges:</span>
+              <span class="total-val">₹${Number(data.financials?.otherCharges || 0).toLocaleString("en-IN")}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; color: ${Number(data.financials?.discount || 0) > 0 ? "#15803d" : "#475569"};">
-              <span style="font-weight: 500; font-size: 11.5px;">Discount:</span>
-              <span style="font-weight: 600; font-size: 12px;">${Number(data.financials?.discount || 0) > 0 ? "-₹" + Number(data.financials?.discount).toLocaleString("en-IN") : "₹0"}</span>
+            <div class="total-row discount-row ${discountAmount > 0 ? "has-discount" : ""}">
+              <span class="total-lbl">Discount:</span>
+              <span class="total-val">${discountAmount > 0 ? "-₹" + discountAmount.toLocaleString("en-IN") : "₹0"}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; border-top: 1.5px solid #0f172a; margin-top: 1px;">
-              <span style="font-weight: 700; color: #0f172a; font-size: 13px;">TOTAL BILLED AMOUNT:</span>
-              <span style="font-weight: 700; color: #0f172a; font-size: 15px;">₹${Number(data.financials?.totalAmount || 0).toLocaleString("en-IN")}</span>
+            <div class="total-row grand-total-row">
+              <span class="grand-lbl">TOTAL BILLED AMOUNT:</span>
+              <span class="grand-val">₹${Number(data.financials?.totalAmount || 0).toLocaleString("en-IN")}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; color: #15803d; padding-top: 2px;">
-              <span style="font-weight: 500; font-size: 11.5px;">Paid Amount:</span>
-              <span style="font-weight: 600; font-size: 12px;">₹${Number(data.financials?.advancePaid || 0).toLocaleString("en-IN")}</span>
+            <div class="total-row advance-paid-row">
+              <span class="total-lbl">Paid Amount:</span>
+              <span class="total-val">₹${Number(data.financials?.advancePaid || 0).toLocaleString("en-IN")}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; color: ${String(data.paymentStatus || "").toLowerCase() === "paid" ? "#15803d" : "#b45309"}; padding-top: 2px;">
-              <span style="font-weight: 700; font-size: 11.5px;">${String(data.paymentStatus || "").toLowerCase() === "paid" ? "Balance Paid:" : "Balance Due:"}</span>
-              <span style="font-weight: 700; font-size: 12.5px;">₹${Number(
-                String(data.paymentStatus || "").toLowerCase() === "paid"
-                  ? data.financials?.balancePaid !== undefined &&
-                    Number(data.financials?.balancePaid) > 0
-                    ? data.financials?.balancePaid
-                    : Math.max(
-                        0,
-                        Number(data.financials?.totalAmount || 0) -
-                          Number(data.financials?.advancePaid || 0),
-                      )
-                  : data.financials?.balanceDue !== undefined &&
-                      Number(data.financials?.balanceDue) > 0
-                    ? data.financials?.balanceDue
-                    : Math.max(
-                        0,
-                        Number(data.financials?.totalAmount || 0) -
-                          Number(data.financials?.advancePaid || 0),
-                      ),
-              ).toLocaleString("en-IN")}</span>
+            <div class="total-row balance-row ${isPaid ? "is-paid" : ""}">
+              <span class="balance-lbl">${isPaid ? "Balance Paid:" : "Balance Due:"}</span>
+              <span class="balance-val">₹${Number(balanceDisplayAmount).toLocaleString("en-IN")}</span>
             </div>
           </div>
         </div>
 
-        <!-- 5. 100% Full Width Thank You & Google Review Box (Centered) -->
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 9px 14px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 4px; margin-bottom: 6px; width: 100%; box-sizing: border-box;">
-          <div style="font-size: 13.5px; font-weight: 600; color: #0f172a; text-align: center;">
-            Thank you for choosing Aparna Saree Pre-Pleating! ✨
-          </div>
-          <div style="display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 12.5px; font-weight: 500; color: #475569; text-align: center;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; flex-shrink: 0;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        <!-- 6. Google Review Box -->
+        <div class="google-review-card">
+          <div class="review-title">Thank you for choosing Aparna Saree Pre-Pleating! ✨</div>
+          <div class="review-subtitle">
+            ${reviewStarIcon}
             <span>Please review if you like our service:</span>
           </div>
-          <div style="text-align: center; margin-top: 1px;">
-            <a href="https://g.page/r/CfQ3Ljt5NC91EBM/review" target="_blank" rel="noopener noreferrer" style="font-size: 12.5px; color: #1d4ed8; font-weight: 600; text-decoration: underline; word-break: break-all; display: inline-block;">
+          <div class="review-link-wrap">
+            <a href="https://g.page/r/CfQ3Ljt5NC91EBM/review" target="_blank" rel="noopener noreferrer">
               https://g.page/r/CfQ3Ljt5NC91EBM/review
             </a>
           </div>
         </div>
 
-        <!-- 6. Authorized Signature Row -->
-        <div style="display: flex; justify-content: flex-end; align-items: flex-end; margin-top: 30px; margin-bottom: 6px;">
-          <div style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 140px;">
-            <img src="${signatureImg}" alt="Authorized Signature" style="height: 38px; width: auto; max-width: 140px; object-fit: contain; display: block; margin: 0 auto 2px auto;" />
-            <div style="font-size: 10.5px; font-weight: 600; color: #334155; text-transform: uppercase; letter-spacing: 0.5px;">
-              Authorized Signatory
-            </div>
+        <!-- 7. Authorized Signatory Row -->
+        <div class="signature-section">
+          <div class="signature-wrapper">
+            <img src="${signatureImg}" alt="Authorized Signature" />
+            <div class="signatory-title">AUTHORIZED SIGNATORY</div>
           </div>
         </div>
       </div>
 
-      <!-- 7. Address -->
-      <div style="margin-top: auto; padding-top: 6px; border-top: 1px solid #cbd5e1; text-align: center; font-size: 11px; color: #334155; line-height: 1.4; width: 100%;">
-        <div style="display: flex; justify-content: center; align-items: center; gap: 5px;">
-          <span style="font-weight: 600; color: #0f172a;">Address:</span>
+      <!-- 8. Address -->
+      <div class="pdf-address-footer">
+        <div class="address-content">
+          <span class="address-lbl">Address:</span>
           <span>H.No. 4715, 1st Floor, Road No. 17, New MIG, BHEL, Hyderabad - 502032</span>
         </div>
       </div>
@@ -521,7 +1291,10 @@ export const buildInvoiceHtmlSnippet = (data = {}) => {
  * Unified Core PDF Generator
  * Renders the off-screen A4 container dynamically and compiles it to high-res jsPDF instance.
  */
-export const generateOrderInvoicePdf = async (order, { progressMessage = null } = {}) => {
+export const generateOrderInvoicePdf = async (
+  order,
+  { progressMessage = null } = {},
+) => {
   if (!order) {
     toast.error("No order selected for invoice generation.");
     return null;
@@ -561,9 +1334,9 @@ export const generateOrderInvoicePdf = async (order, { progressMessage = null } 
   container.style.position = "fixed";
   container.style.left = "0px";
   container.style.top = "0px";
-  container.style.width = "780px";
-  container.style.height = "1138px";
-  container.style.minHeight = "1138px";
+  container.style.width = "794px";
+  container.style.height = "1123px";
+  container.style.minHeight = "1123px";
   container.style.background = "#ffffff";
   container.style.zIndex = "-9999";
   container.style.opacity = "1";
@@ -572,67 +1345,11 @@ export const generateOrderInvoicePdf = async (order, { progressMessage = null } 
   container.style.display = "flex";
   container.style.flexDirection = "column";
   container.style.justifyContent = "space-between";
+  container.style.margin = "0";
+  container.style.padding = "0";
 
   const inlineStyles = document.createElement("style");
-  inlineStyles.innerHTML = `
-    #order-pdf-export-container .service-row td {
-      padding: 7px 10px;
-      border-bottom: 1px solid #e2e8f0;
-      font-size: 12px;
-      vertical-align: top;
-    }
-    #order-pdf-export-container .service-row:nth-child(even) td {
-      background: #f8fafc;
-    }
-    #order-pdf-export-container .service-name {
-      font-size: 14px;
-      font-weight: 600;
-      color: #0f172a;
-      margin-bottom: 4px;
-    }
-    #order-pdf-export-container .specs-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      width: 100%;
-      gap: 4px;
-      margin-bottom: 4px;
-    }
-    #order-pdf-export-container .spec-pill {
-      font-size: 11px;
-      padding: 1px 6px;
-      border-radius: 3px;
-      background: #f1f5f9;
-      color: #334155;
-      border: 1px solid #cbd5e1;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-    }
-    #order-pdf-export-container .spec-pill .lbl {
-      color: #64748b;
-      font-weight: 500;
-    }
-    #order-pdf-export-container .spec-pill .val {
-      color: #0f172a;
-      font-weight: 600;
-    }
-    #order-pdf-export-container .spec-pill.fabric-pill {
-      background: #fef3c7;
-      color: #92400e;
-      border-color: #fcd34d;
-      font-weight: 600;
-    }
-    #order-pdf-export-container .care-box {
-      font-size: 11px;
-      background: #fffbeb;
-      border-left: 2.5px solid #f59e0b;
-      padding: 3.5px 7px;
-      border-radius: 2px;
-      margin-top: 3px;
-      color: #78350f;
-    }
-  `;
-
+  inlineStyles.innerHTML = INVOICE_PDF_INTERNAL_CSS;
   container.appendChild(inlineStyles);
 
   const contentWrap = document.createElement("div");
@@ -647,17 +1364,18 @@ export const generateOrderInvoicePdf = async (order, { progressMessage = null } 
       images.map(
         (img) =>
           new Promise((resolve) => {
-            if (img.complete) {
+            if (img.complete && img.naturalHeight !== 0) {
               resolve();
             } else {
               img.onload = () => resolve();
               img.onerror = () => resolve();
+              setTimeout(resolve, 800);
             }
           }),
       ),
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 150));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     const canvas = await html2canvas(container, {
       scale: 2,
@@ -666,8 +1384,8 @@ export const generateOrderInvoicePdf = async (order, { progressMessage = null } 
       backgroundColor: "#ffffff",
       scrollX: 0,
       scrollY: 0,
-      windowWidth: 780,
-      windowHeight: 1138,
+      windowWidth: 794,
+      windowHeight: 1123,
     });
 
     const imgData = canvas.toDataURL("image/jpeg", 0.98);
@@ -679,10 +1397,10 @@ export const generateOrderInvoicePdf = async (order, { progressMessage = null } 
 
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-    const marginX = 6;
-    const marginY = 4;
-    const contentWidth = pdfWidth - marginX * 2;
-    const contentHeight = pdfHeight - marginY * 2;
+    const marginX = 0;
+    const marginY = 0;
+    const contentWidth = pdfWidth;
+    const contentHeight = pdfHeight;
 
     pdf.addImage(
       imgData,
@@ -767,7 +1485,9 @@ export const downloadInvoicePdfDirectly = async (order) => {
       }
 
       if (toastId) toast.dismiss(toastId);
-      toast.success(`Order details PDF saved to your device for Order #${orderId}`);
+      toast.success(
+        `Order details PDF saved to your device for Order #${orderId}`,
+      );
     } else {
       // Browser download (Desktop / Web)
       pdf.save(fileName);
@@ -795,7 +1515,8 @@ export const shareOrderPdfToWhatsApp = async (order) => {
     if (!result) return;
 
     toastId = result.toastId;
-    const { pdf, fileName, clientName, formattedPhone, whatsappMessage } = result;
+    const { pdf, fileName, clientName, formattedPhone, whatsappMessage } =
+      result;
 
     if (Capacitor.isNativePlatform()) {
       const pdfBase64 = pdf.output("datauristring").split(",")[1];
@@ -828,7 +1549,9 @@ export const shareOrderPdfToWhatsApp = async (order) => {
           url: savedFile.uri,
           dialogTitle: `Send Invoice to WhatsApp`,
         });
-        toast.success(`PDF attached! Select WhatsApp to send to ${clientName}.`);
+        toast.success(
+          `PDF attached! Select WhatsApp to send to ${clientName}.`,
+        );
       } catch (shareErr) {
         if (shareErr?.message !== "Share canceled") {
           const encoded = encodeURIComponent(whatsappMessage);
@@ -857,7 +1580,9 @@ export const shareOrderPdfToWhatsApp = async (order) => {
             text: whatsappMessage,
             files: [pdfFile],
           });
-          toast.success(`PDF attached! Select WhatsApp to send to ${clientName}.`);
+          toast.success(
+            `PDF attached! Select WhatsApp to send to ${clientName}.`,
+          );
         } catch (shareErr) {
           if (shareErr.name !== "AbortError") {
             pdf.save(fileName);
@@ -866,7 +1591,9 @@ export const shareOrderPdfToWhatsApp = async (order) => {
               ? `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encoded}`
               : `https://api.whatsapp.com/send?text=${encoded}`;
             window.open(waUrl, "_blank");
-            toast.info(`PDF downloaded. Attach the downloaded PDF in WhatsApp chat.`);
+            toast.info(
+              `PDF downloaded. Attach the downloaded PDF in WhatsApp chat.`,
+            );
           }
         }
       } else {

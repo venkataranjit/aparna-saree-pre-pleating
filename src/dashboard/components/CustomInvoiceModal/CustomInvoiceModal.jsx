@@ -7,6 +7,12 @@ import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import CheckroomOutlinedIcon from "@mui/icons-material/CheckroomOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import TouchAppOutlinedIcon from "@mui/icons-material/TouchAppOutlined";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import FacebookIcon from "@mui/icons-material/Facebook";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { toast } from "react-toastify";
@@ -16,6 +22,9 @@ import { Share } from "@capacitor/share";
 import { formatDateSafe } from "../../../firebase/dbService";
 import pdfHeaderImg from "../../../assets/pdf-header.jpg";
 import signatureImg from "../../../assets/signature.png";
+import reviewQrImg from "../../../assets/review-qr.png";
+import thankyouImg from "../../../assets/thankyou.jpg";
+import flowerImg from "../../../assets/flower.png";
 import "./CustomInvoiceModal.scss";
 
 /**
@@ -688,42 +697,64 @@ export const INVOICE_PDF_INTERNAL_CSS = `
 
   #order-pdf-export-container .pdf-bottom-grid {
     display: grid;
-    grid-template-columns: 1.15fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
-  #order-pdf-export-container .special-notes-card {
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
-    padding: 9px 12px;
-    border-radius: 4px;
+  /* Bottom Left Panel: Special Notes */
+  #order-pdf-export-container .special-notes-panel {
+    border: 1px solid #d0e2f2;
+    background: #f6f6fc;
+    border-radius: 6px;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    box-sizing: border-box;
+    height: 100%;
   }
 
-  #order-pdf-export-container .notes-heading {
-    font-size: 10.5px;
+  #order-pdf-export-container .special-notes-panel .panel-header {
+    background: #e4f1fb;
+    border-bottom: 1px solid #d0e2f2;
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #08182b;
+    font-size: 11.5px;
     font-weight: 700;
-    color: #0f172a;
-    letter-spacing: 0.4px;
-    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  #order-pdf-export-container .special-notes-panel .panel-body {
+    background: #f6f6fc;
+    padding: 12px 14px 10px 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    box-sizing: border-box;
   }
 
   #order-pdf-export-container .notes-list {
     margin: 0;
     padding: 0;
     list-style: none;
-    font-size: 10px;
+    font-size: 10.5px;
     color: #334155;
-    line-height: 1.45;
+    line-height: 1.55;
   }
 
   #order-pdf-export-container .notes-list li {
     position: relative;
-    padding-left: 10px;
-    margin-bottom: 2px;
+    padding-left: 12px;
+    margin-bottom: 5px;
+  }
+
+  #order-pdf-export-container .notes-list li:last-child {
+    margin-bottom: 0;
   }
 
   #order-pdf-export-container .notes-list li::before {
@@ -732,17 +763,44 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     left: 0;
     color: #475569;
     font-weight: bold;
+    font-size: 13px;
+    line-height: 1.2;
   }
 
-  #order-pdf-export-container .totals-card {
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
+  /* Bottom Right Panel: Payment Summary */
+  #order-pdf-export-container .payment-summary-panel {
+    border: 1px solid #f0dfcf;
+    background: #fcf8f4;
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    height: 100%;
+  }
+
+  #order-pdf-export-container .payment-summary-panel .panel-header {
+    background: #faf2ea;
+    border-bottom: 1px solid #f0dfcf;
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #08182b;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  #order-pdf-export-container .payment-summary-panel .panel-body {
+    background: #fcf8f4;
     padding: 8px 12px;
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 3px;
-    font-size: 11px;
+    box-sizing: border-box;
   }
 
   #order-pdf-export-container .total-row {
@@ -773,19 +831,19 @@ export const INVOICE_PDF_INTERNAL_CSS = `
 
   #order-pdf-export-container .grand-total-row {
     padding-top: 3px;
-    border-top: 1.5px solid #0f172a;
-    margin-top: 1px;
+    border-top: 1.5px solid #08182b;
+    margin-top: 2px;
   }
 
   #order-pdf-export-container .grand-total-row .grand-lbl {
     font-weight: 700;
-    color: #0f172a;
+    color: #08182b;
     font-size: 11.5px;
   }
 
   #order-pdf-export-container .grand-total-row .grand-val {
     font-weight: 700;
-    color: #0f172a;
+    color: #08182b;
     font-size: 13.5px;
   }
 
@@ -802,8 +860,18 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     color: #15803d;
   }
 
+  #order-pdf-export-container .balance-row.is-paid .balance-lbl,
+  #order-pdf-export-container .balance-row.is-paid .balance-val {
+    color: #15803d;
+  }
+
   #order-pdf-export-container .balance-row:not(.is-paid) {
-    color: #0f172a;
+    color: #dc2626;
+  }
+
+  #order-pdf-export-container .balance-row:not(.is-paid) .balance-lbl,
+  #order-pdf-export-container .balance-row:not(.is-paid) .balance-val {
+    color: #dc2626;
   }
 
   #order-pdf-export-container .balance-row .balance-lbl {
@@ -816,49 +884,177 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     font-size: 11.5px;
   }
 
-  #order-pdf-export-container .google-review-card {
-    background: transparent;
-    padding: 6px 12px;
+  /* 6. Thank You & Google Review Banner Card */
+  #order-pdf-export-container .thankyou-banner-card {
+    position: relative;
+    background: #faf6f0;
+    border: 1px solid #ebdccb;
+    border-radius: 8px;
+    padding: 7px 18px 7px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+    margin-bottom: 6px;
+    box-sizing: border-box;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  #order-pdf-export-container .thankyou-bg-flower {
+    position: absolute;
+    left: -8px;
+    bottom: -10px;
+    height: 125%;
+    width: auto;
+    max-width: 140px;
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.95;
+    mix-blend-mode: multiply;
+  }
+
+  #order-pdf-export-container .thankyou-content-center {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 2px;
-    margin-bottom: 8px;
-    width: 100%;
-    box-sizing: border-box;
+    flex: 1;
+    padding: 0 10px 0 38px;
   }
 
-  #order-pdf-export-container .review-title {
+  #order-pdf-export-container .thankyou-script-img {
+    height: 35px;
+    width: auto;
+    max-width: 135px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 1px auto;
+    mix-blend-mode: multiply;
+  }
+
+  #order-pdf-export-container .thankyou-for-choosing {
+    font-family: 'Cinzel', 'Playfair Display', 'Times New Roman', Georgia, serif;
     font-size: 12px;
     font-weight: 700;
-    color: #0f172a;
-    text-align: center;
+    color: #08182b;
+    line-height: 1.25;
+    letter-spacing: 0.3px;
+    margin-top: 1px;
   }
 
-  #order-pdf-export-container .review-subtitle {
+  #order-pdf-export-container .thankyou-heart-wrap {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    font-size: 11px;
+    margin: 2px 0 1px 0;
+  }
+
+  #order-pdf-export-container .thankyou-heart {
+    color: #caa368;
+    font-size: 9.5px;
+    line-height: 1;
+  }
+
+  #order-pdf-export-container .thankyou-tradition {
+    font-size: 9.5px;
     font-weight: 500;
     color: #334155;
-    text-align: center;
+    line-height: 1.2;
+    letter-spacing: 0.2px;
   }
 
-  #order-pdf-export-container .review-link-wrap {
-    text-align: center;
+  #order-pdf-export-container .thankyou-vert-divider {
+    position: relative;
+    z-index: 1;
+    width: 1px;
+    height: 56px;
+    background: #caa368;
+    opacity: 0.55;
+    margin: 0 16px 0 12px;
+    flex-shrink: 0;
   }
 
-  #order-pdf-export-container .review-link-wrap a {
+  #order-pdf-export-container .thankyou-right-col {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  #order-pdf-export-container .thankyou-qr-wrapper {
+    background: #ffffff;
+    border: 1px solid #ebdccb;
+    border-radius: 6px;
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  #order-pdf-export-container .thankyou-qr-img {
+    width: 58px;
+    height: 58px;
+    display: block;
+    object-fit: contain;
+  }
+
+  #order-pdf-export-container .thankyou-cta-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 3px;
+  }
+
+  #order-pdf-export-container .cta-share-text {
     font-size: 11px;
-    color: #1d4ed8;
     font-weight: 600;
-    text-decoration: underline;
-    word-break: break-all;
-    display: inline-block;
+    color: #08182b;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  #order-pdf-export-container .cta-stars {
+    color: #f59e0b;
+    font-size: 13px;
+    line-height: 1;
+    letter-spacing: 2px;
+  }
+
+  #order-pdf-export-container .cta-review-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #08182b;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.3px;
+    margin-top: 2px;
+    box-shadow: 0 2px 4px rgba(8, 24, 43, 0.15);
+  }
+
+  #order-pdf-export-container .cta-hand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 13px;
+    line-height: 1;
+    margin-left: 1px;
   }
 
   #order-pdf-export-container .signature-section {
@@ -895,28 +1091,132 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     letter-spacing: 0.5px;
   }
 
-  #order-pdf-export-container .pdf-address-footer {
+  #order-pdf-export-container .pdf-luxury-footer {
     margin-top: auto;
-    padding-top: 6px;
-    border-top: 1px solid #cbd5e1;
-    text-align: center;
-    font-size: 10px;
-    color: #475569;
-    line-height: 1.4;
     width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+    background: #ffffff;
+  }
+
+  #order-pdf-export-container .footer-top-line {
+    width: 100%;
+    height: 1.5px;
+    background: #caa368;
+    margin-bottom: 8px;
+  }
+
+  #order-pdf-export-container .footer-contact-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px 8px 24px;
+    gap: 12px;
     box-sizing: border-box;
   }
 
-  #order-pdf-export-container .address-content {
+  #order-pdf-export-container .footer-col {
     display: flex;
-    justify-content: center;
     align-items: center;
-    gap: 4px;
+    gap: 9px;
   }
 
-  #order-pdf-export-container .address-lbl {
+  #order-pdf-export-container .footer-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #08182b;
+    flex-shrink: 0;
+  }
+
+  #order-pdf-export-container .footer-text-block {
+    font-size: 10px;
+    color: #08182b;
+    line-height: 1.35;
+    font-weight: 500;
+  }
+
+  #order-pdf-export-container .phone-num {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #08182b;
+    line-height: 1.25;
+  }
+
+  #order-pdf-export-container .timing-text {
+    font-size: 9px;
+    color: #475569;
+    font-weight: 500;
+    margin-top: 1.5px;
+    line-height: 1.2;
+  }
+
+  #order-pdf-export-container .email-text {
+    font-size: 10.5px;
     font-weight: 600;
-    color: #0f172a;
+    color: #08182b;
+  }
+
+  #order-pdf-export-container .footer-col-social {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+
+  #order-pdf-export-container .social-icons-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  #order-pdf-export-container .social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #08182b;
+  }
+
+  #order-pdf-export-container .follow-us-text {
+    font-size: 7.5px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #08182b;
+    text-transform: uppercase;
+  }
+
+  #order-pdf-export-container .footer-tagline-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px 12px 24px;
+    gap: 8px;
+    box-sizing: border-box;
+  }
+
+  #order-pdf-export-container .tagline-line {
+    flex: 1;
+    height: 1px;
+    background: #caa368;
+  }
+
+  #order-pdf-export-container .tagline-ornament {
+    color: #caa368;
+    font-size: 10px;
+    line-height: 1;
+    padding: 0 3px;
+  }
+
+  #order-pdf-export-container .tagline-text {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    color: #08182b;
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding: 0 6px;
   }
 `;
 
@@ -1032,6 +1332,37 @@ export const buildInvoiceHtmlSnippet = (data = {}) => {
   );
   const reviewStarIcon = renderToStaticMarkup(
     <StarRoundedIcon style={{ fontSize: 14, color: "#0f172a" }} />,
+  );
+  const locIcon = renderToStaticMarkup(
+    <LocationOnOutlinedIcon style={{ fontSize: 18, color: "#08182b" }} />,
+  );
+  const phoneIcon = renderToStaticMarkup(
+    <PhoneOutlinedIcon style={{ fontSize: 17, color: "#08182b" }} />,
+  );
+  const emailIcon = renderToStaticMarkup(
+    <EmailOutlinedIcon style={{ fontSize: 17, color: "#08182b" }} />,
+  );
+  const instaIcon = renderToStaticMarkup(
+    <InstagramIcon style={{ fontSize: 16, color: "#08182b" }} />,
+  );
+  const waIcon = renderToStaticMarkup(
+    <WhatsAppIcon style={{ fontSize: 16, color: "#08182b" }} />,
+  );
+  const fbIcon = renderToStaticMarkup(
+    <FacebookIcon style={{ fontSize: 16, color: "#08182b" }} />,
+  );
+  const noteIcon = renderToStaticMarkup(
+    <InfoOutlinedIcon style={{ fontSize: 13, color: "#08182b" }} />,
+  );
+  const walletIcon = renderToStaticMarkup(
+    <AccountBalanceWalletOutlinedIcon
+      style={{ fontSize: 13, color: "#08182b" }}
+    />,
+  );
+  const touchHandIcon = renderToStaticMarkup(
+    <TouchAppOutlinedIcon
+      style={{ fontSize: 13, color: "#ffffff", verticalAlign: "middle" }}
+    />,
   );
 
   const occasionRowHtml =
@@ -1209,61 +1540,91 @@ export const buildInvoiceHtmlSnippet = (data = {}) => {
 
         <!-- 5. Notes & Financial Summary (2 Column Grid) -->
         <div class="pdf-bottom-grid">
-          
-          <!-- Left: Special Notes Card -->
-          <div class="special-notes-card">
-            <div class="notes-heading">SPECIAL NOTE:</div>
-            <ul class="notes-list">
-              <li>Please use the pre-pleated saree within 2 months.</li>
-              <li>After using the pre-pleated saree, please iron it before storing.</li>
-              <li>Do not put weight on pre-pleated sarees, especially fluffy pleats.</li>
-            </ul>
+          <!-- Left: Special Notes Panel -->
+          <div class="pdf-panel-card special-notes-panel">
+            <div class="panel-header">
+              ${noteIcon}
+              <span>SPECIAL NOTE</span>
+            </div>
+            <div class="panel-body">
+              <ul class="notes-list">
+                <li>Please use the pre-pleated saree within 2 months.</li>
+                <li>After using the pre-pleated saree, please iron it before storing.</li>
+                <li>Do not put weight on pre-pleated sarees, especially fluffy pleats.</li>
+              </ul>
+            </div>
           </div>
 
-          <!-- Right: Totals Card -->
-          <div class="totals-card">
-            <div class="total-row">
-              <span class="total-lbl">Services Subtotal:</span>
-              <span class="total-val">₹${Number(data.financials?.subtotal || 0).toLocaleString("en-IN")}</span>
+          <!-- Right: Payment Summary Panel -->
+          <div class="pdf-panel-card payment-summary-panel">
+            <div class="panel-header">
+              ${walletIcon}
+              <span>PAYMENT SUMMARY</span>
             </div>
-            <div class="total-row">
-              <span class="total-lbl">Pickup & Delivery Charges:</span>
-              <span class="total-val">₹${Number(data.financials?.pickupDeliveryCharges || 0).toLocaleString("en-IN")}</span>
-            </div>
-            <div class="total-row">
-              <span class="total-lbl">Other Charges:</span>
-              <span class="total-val">₹${Number(data.financials?.otherCharges || 0).toLocaleString("en-IN")}</span>
-            </div>
-            <div class="total-row discount-row ${discountAmount > 0 ? "has-discount" : ""}">
-              <span class="total-lbl">Discount:</span>
-              <span class="total-val">${discountAmount > 0 ? "-₹" + discountAmount.toLocaleString("en-IN") : "₹0"}</span>
-            </div>
-            <div class="total-row grand-total-row">
-              <span class="grand-lbl">TOTAL BILLED AMOUNT:</span>
-              <span class="grand-val">₹${Number(data.financials?.totalAmount || 0).toLocaleString("en-IN")}</span>
-            </div>
-            <div class="total-row advance-paid-row">
-              <span class="total-lbl">Paid Amount:</span>
-              <span class="total-val">₹${Number(data.financials?.advancePaid || 0).toLocaleString("en-IN")}</span>
-            </div>
-            <div class="total-row balance-row ${isPaid ? "is-paid" : ""}">
-              <span class="balance-lbl">${isPaid ? "Balance Paid:" : "Balance Due:"}</span>
-              <span class="balance-val">₹${Number(balanceDisplayAmount).toLocaleString("en-IN")}</span>
+            <div class="panel-body">
+              <div class="total-row">
+                <span class="total-lbl">Services Subtotal</span>
+                <span class="total-val">₹${Number(data.financials?.subtotal || 0).toLocaleString("en-IN")}</span>
+              </div>
+              <div class="total-row">
+                <span class="total-lbl">Pickup &amp; Delivery Charges</span>
+                <span class="total-val">₹${Number(data.financials?.pickupDeliveryCharges || 0).toLocaleString("en-IN")}</span>
+              </div>
+              <div class="total-row">
+                <span class="total-lbl">Other Charges</span>
+                <span class="total-val">₹${Number(data.financials?.otherCharges || 0).toLocaleString("en-IN")}</span>
+              </div>
+              <div class="total-row discount-row ${discountAmount > 0 ? "has-discount" : ""}">
+                <span class="total-lbl">Discount</span>
+                <span class="total-val">${discountAmount > 0 ? "-₹" + discountAmount.toLocaleString("en-IN") : "₹0"}</span>
+              </div>
+              <div class="total-row grand-total-row">
+                <span class="grand-lbl">TOTAL BILLED AMOUNT</span>
+                <span class="grand-val">₹${Number(data.financials?.totalAmount || 0).toLocaleString("en-IN")}</span>
+              </div>
+              <div class="total-row advance-paid-row">
+                <span class="total-lbl">Paid Amount</span>
+                <span class="total-val">₹${Number(data.financials?.advancePaid || 0).toLocaleString("en-IN")}</span>
+              </div>
+              <div class="total-row balance-row ${isPaid ? "is-paid" : ""}">
+                <span class="balance-lbl">${isPaid ? "Balance Paid" : "Balance Due"}</span>
+                <span class="balance-val">₹${Number(balanceDisplayAmount).toLocaleString("en-IN")}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- 6. Google Review Box -->
-        <div class="google-review-card">
-          <div class="review-title">Thank you for choosing Aparna Saree Pre-Pleating! ✨</div>
-          <div class="review-subtitle">
-            ${reviewStarIcon}
-            <span>Please review if you like our service:</span>
+        <!-- 6. Thank You & Google Review Banner Card -->
+        <div class="thankyou-banner-card">
+          <!-- Left botanical flower illustration -->
+          <img src="${flowerImg}" alt="" class="thankyou-bg-flower" />
+
+          <!-- Center: Thank you message -->
+          <div class="thankyou-content-center">
+            <img src="${thankyouImg}" alt="Thank You" class="thankyou-script-img" />
+            <div class="thankyou-for-choosing">for choosing Aparna Saree Pre-Pleating!</div>
+            <div class="thankyou-heart-wrap">
+              <span class="thankyou-heart">♥</span>
+            </div>
+            <div class="thankyou-tradition">Your trust keeps our tradition alive.</div>
           </div>
-          <div class="review-link-wrap">
-            <a href="https://g.page/r/CfQ3Ljt5NC91EBM/review" target="_blank" rel="noopener noreferrer">
-              https://g.page/r/CfQ3Ljt5NC91EBM/review
-            </a>
+
+          <!-- Divider -->
+          <div class="thankyou-vert-divider"></div>
+
+          <!-- Right: QR Code & Review CTA -->
+          <div class="thankyou-right-col">
+            <div class="thankyou-qr-wrapper">
+              <img src="${reviewQrImg}" alt="Scan to Review" class="thankyou-qr-img" />
+            </div>
+            <div class="thankyou-cta-col">
+              <div class="cta-share-text">Share your experience</div>
+              <div class="cta-stars">★★★★★</div>
+              <a href="https://g.page/r/CfQ3Ljt5NC91EBM/review" target="_blank" rel="noopener noreferrer" class="cta-review-btn">
+                <span>Review Us</span>
+                <span class="cta-hand-icon">${touchHandIcon}</span>
+              </a>
+            </div>
           </div>
         </div>
 
@@ -1276,11 +1637,55 @@ export const buildInvoiceHtmlSnippet = (data = {}) => {
         </div>
       </div>
 
-      <!-- 8. Address -->
-      <div class="pdf-address-footer">
-        <div class="address-content">
-          <span class="address-lbl">Address:</span>
-          <span>H.No. 4715, 1st Floor, Road No. 17, New MIG, BHEL, Hyderabad - 502032</span>
+      <!-- 8. Master Luxury Footer -->
+      <div class="pdf-luxury-footer">
+        <div class="footer-top-line"></div>
+        
+        <div class="footer-contact-row">
+          <!-- 1. Address -->
+          <div class="footer-col footer-col-address">
+            <span class="footer-icon">${locIcon}</span>
+            <div class="footer-text-block">
+              <div>H.No. 4715, 1st Floor, Road No. 17,</div>
+              <div>New MIG, BHEL, Hyderabad - 502032</div>
+            </div>
+          </div>
+
+          <!-- 2. Phone & Timing -->
+          <div class="footer-col footer-col-phone">
+            <span class="footer-icon">${phoneIcon}</span>
+            <div class="footer-text-block">
+              <div class="phone-num">+91 98765 43210</div>
+              <div class="timing-text">Mon - Sat | 10:00 AM - 7:00 PM</div>
+            </div>
+          </div>
+
+          <!-- 3. Email -->
+          <div class="footer-col footer-col-email">
+            <span class="footer-icon">${emailIcon}</span>
+            <div class="footer-text-block">
+              <div class="email-text">support@aparnasaree.com</div>
+            </div>
+          </div>
+
+          <!-- 4. Social Links -->
+          <div class="footer-col footer-col-social">
+            <div class="social-icons-row">
+              <span class="social-icon">${instaIcon}</span>
+              <span class="social-icon">${waIcon}</span>
+              <span class="social-icon">${fbIcon}</span>
+            </div>
+            <div class="follow-us-text">FOLLOW US</div>
+          </div>
+        </div>
+
+        <!-- Tagline Banner with Gold Flourishes -->
+        <div class="footer-tagline-row">
+          <div class="tagline-line line-left"></div>
+          <span class="tagline-ornament">❖</span>
+          <span class="tagline-text">DRAPE TODAY &nbsp;•&nbsp; MEMORIES FOREVER</span>
+          <span class="tagline-ornament">❖</span>
+          <div class="tagline-line line-right"></div>
         </div>
       </div>
     </div>

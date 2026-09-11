@@ -666,16 +666,12 @@ export function buildInvoiceHtml(data = SAMPLE_INVOICE) {
               <span class="lbl">Delivery Date:</span>
               <span class="val delivery">${data.deliveryDate}</span>
             </div>
-            ${
-              data.occasion
-                ? `
+           
             <div class="meta-line">
               <span class="lbl">Occasion:</span>
               <span class="val">${data.occasion}</span>
             </div>
-            `
-                : ""
-            }
+           
           </div>
         </div>
 

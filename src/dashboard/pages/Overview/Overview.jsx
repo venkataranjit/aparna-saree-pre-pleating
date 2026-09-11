@@ -112,13 +112,36 @@ const Overview = () => {
   // Admin calculations
   const totalOrders = orders.length;
   const totalServices = services.length;
-  const totalRevenue = orders.reduce((sum, ord) => {
-    const val =
-      Number(ord.totalAmount) ||
-      Number(String(ord.amount || 0).replace(/[^0-9]/g, "")) ||
-      0;
-    return sum + val;
-  }, 0);
+  const totalReceivedRevenue = orders
+    .filter((o) => (o.status || o.orderStatus || "").toLowerCase() !== "cancelled")
+    .reduce((sum, ord) => {
+      const paymentStatus = String(ord.paymentStatus || "").toLowerCase();
+      const total =
+        Number(ord.totalAmount) ||
+        Number(String(ord.amount || 0).replace(/[^0-9]/g, "")) ||
+        0;
+      if (paymentStatus === "paid") {
+        return sum + (ord.paidAmount !== undefined && ord.paidAmount !== null && ord.paidAmount !== "" ? Number(ord.paidAmount) || total : total);
+      }
+      const paid = Number(ord.paidAmount) || Number(ord.advancePayment) || 0;
+      return sum + paid;
+    }, 0);
+
+  const totalPendingRevenue = orders
+    .filter((o) => (o.status || o.orderStatus || "").toLowerCase() !== "cancelled")
+    .reduce((sum, ord) => {
+      const paymentStatus = String(ord.paymentStatus || "").toLowerCase();
+      if (paymentStatus === "paid") return sum;
+      const total =
+        Number(ord.totalAmount) ||
+        Number(String(ord.amount || 0).replace(/[^0-9]/g, "")) ||
+        0;
+      const paid = Number(ord.paidAmount) || Number(ord.advancePayment) || 0;
+      const pending = ord.balanceDue !== undefined && ord.balanceDue !== null && ord.balanceDue !== ""
+        ? Math.max(0, Number(ord.balanceDue) || 0)
+        : Math.max(0, total - paid);
+      return sum + pending;
+    }, 0);
 
   // Client calculations
   const clientInProgressCount = orders.filter(
@@ -227,9 +250,9 @@ const Overview = () => {
 
             <StatCard
               title="Total Revenue"
-              value={`₹${totalRevenue.toLocaleString("en-IN")}`}
-              change="All Billed Orders"
-              trendType="completed"
+              value={`₹${totalReceivedRevenue.toLocaleString("en-IN")}`}
+              change={totalPendingRevenue > 0 ? `Pending: ₹${totalPendingRevenue.toLocaleString("en-IN")}` : "All Paid"}
+              trendType={totalPendingRevenue > 0 ? "pending" : "completed"}
               icon={<CurrencyRupeeIcon />}
             />
           </div>

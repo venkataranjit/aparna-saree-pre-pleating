@@ -652,7 +652,8 @@
         color: $text-muted;
       }
 
-      .action-btn--view {
+      .action-btn--view,
+      .action-btn--invoice {
         width: 32px;
         height: 32px;
         min-width: 32px;
@@ -881,9 +882,13 @@
 
     .detailed-card-actions {
       flex-shrink: 0;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
 
       @media (max-width: 900px) {
-        display: flex;
+        width: 100%;
         justify-content: flex-end;
       }
     }
@@ -896,19 +901,5 @@
   }
   to {
     transform: rotate(360deg);
-  }
-}
-
-/* WhatsApp share button */
-.action-btn--whatsapp {
-  &.app-btn {
-    background: #25d366;
-    border-color: #25d366;
-    color: #fff;
-
-    &:hover {
-      background: #1ebe57;
-      border-color: #1ebe57;
-    }
   }
 }

@@ -149,6 +149,44 @@ export const getOrderAmountNumeric = (order) => {
   return items.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0);
 };
 
+export const getOrderPaidAmountNumeric = (order) => {
+  if (!order) return 0;
+  if ((order.status || order.orderStatus || "").toLowerCase() === "cancelled") {
+    return 0;
+  }
+  const paymentStatus = String(order.paymentStatus || "").toLowerCase();
+  const total = getOrderAmountNumeric(order);
+  if (paymentStatus === "paid") {
+    return order.paidAmount !== undefined && order.paidAmount !== null && order.paidAmount !== ""
+      ? Number(order.paidAmount) || total
+      : total;
+  }
+  if (order.paidAmount !== undefined && order.paidAmount !== null && order.paidAmount !== "") {
+    return Number(order.paidAmount) || 0;
+  }
+  if (order.advancePayment !== undefined && order.advancePayment !== null && order.advancePayment !== "") {
+    return Number(order.advancePayment) || 0;
+  }
+  return 0;
+};
+
+export const getOrderPendingAmountNumeric = (order) => {
+  if (!order) return 0;
+  if ((order.status || order.orderStatus || "").toLowerCase() === "cancelled") {
+    return 0;
+  }
+  const paymentStatus = String(order.paymentStatus || "").toLowerCase();
+  if (paymentStatus === "paid") {
+    return 0;
+  }
+  const total = getOrderAmountNumeric(order);
+  const paid = getOrderPaidAmountNumeric(order);
+  if (order.balanceDue !== undefined && order.balanceDue !== null && order.balanceDue !== "") {
+    return Math.max(0, Number(order.balanceDue) || 0);
+  }
+  return Math.max(0, total - paid);
+};
+
 const Bookings = () => {
   const { isSuperAdmin, role } = useAuth();
   const userRole = (role || "").toLowerCase();
@@ -278,12 +316,20 @@ const Bookings = () => {
     ).length;
   }, [orders]);
 
-  const totalRevenue = useMemo(() => {
+  const totalReceivedRevenue = useMemo(() => {
     return orders
       .filter(
         (o) => (o.status || o.orderStatus || "").toLowerCase() !== "cancelled",
       )
-      .reduce((acc, o) => acc + getOrderAmountNumeric(o), 0);
+      .reduce((acc, o) => acc + getOrderPaidAmountNumeric(o), 0);
+  }, [orders]);
+
+  const totalPendingRevenue = useMemo(() => {
+    return orders
+      .filter(
+        (o) => (o.status || o.orderStatus || "").toLowerCase() !== "cancelled",
+      )
+      .reduce((acc, o) => acc + getOrderPendingAmountNumeric(o), 0);
   }, [orders]);
 
   // Tabs configured strictly with { label, value } for AppTabs
@@ -483,9 +529,9 @@ const Bookings = () => {
           icon={<ReceiptLongOutlinedIcon />}
         />
         <StatCard
-          title="In Progress"
-          value={String(inProgressCount)}
-          change="Under processing & fold"
+          title="In Progress + Pending"
+          value={String(inProgressCount + pendingCount)}
+          change="Under processing & pending"
           trendType="pending"
           icon={<PendingActionsOutlinedIcon />}
         />
@@ -498,9 +544,9 @@ const Bookings = () => {
         />
         <StatCard
           title="Total Revenue"
-          value={`₹${totalRevenue.toLocaleString("en-IN")}`}
-          change="Active bookings value"
-          trendType="completed"
+          value={`₹${totalReceivedRevenue.toLocaleString("en-IN")}`}
+          change={totalPendingRevenue > 0 ? `Pending: ₹${totalPendingRevenue.toLocaleString("en-IN")}` : "All Paid"}
+          trendType={totalPendingRevenue > 0 ? "pending" : "completed"}
           icon={<CurrencyRupeeIcon />}
         />
       </div>

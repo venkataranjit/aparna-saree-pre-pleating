@@ -143,7 +143,12 @@ const OrderDetailsModal = ({
       if (newPayStatus === "paid") {
         updatePayload = {
           ...updatePayload,
-          balancePaid: remainingDue > 0 ? remainingDue : (advPaid > 0 ? remainingDue : totalAmt),
+          balancePaid:
+            remainingDue > 0
+              ? remainingDue
+              : advPaid > 0
+                ? remainingDue
+                : totalAmt,
           balanceDue: 0,
           paidAmount: totalAmt,
         };
@@ -242,7 +247,9 @@ const OrderDetailsModal = ({
   const balancePaidAmount = Number(
     order.balancePaid !== undefined && order.balancePaid !== null
       ? order.balancePaid
-      : (balanceDue > 0 ? balanceDue : Math.max(0, totalCalculatedAmount - advancePaid)),
+      : balanceDue > 0
+        ? balanceDue
+        : Math.max(0, totalCalculatedAmount - advancePaid),
   );
 
   return (
@@ -367,15 +374,15 @@ const OrderDetailsModal = ({
                   {formatDateSafe(order.deliveryDate || order.eventDate)}
                 </span>
               </div>
-              {order.occasion && (
-                <div className="info-row">
-                  <span className="info-label">Occasion / Event</span>
-                  <span className="info-val">
-                    <CelebrationOutlinedIcon className="inline-icon" />
-                    {order.occasion}
-                  </span>
-                </div>
-              )}
+
+              <div className="info-row">
+                <span className="info-label">Occasion / Event</span>
+                <span className="info-val">
+                  <CelebrationOutlinedIcon className="inline-icon" />
+                  {order.occasion && String(order.occasion).trim() ? order.occasion : "-"}
+                </span>
+              </div>
+
               <div className="info-row">
                 <span className="info-label">Total Sarees</span>
                 <span className="info-val highlight">
@@ -414,7 +421,9 @@ const OrderDetailsModal = ({
                     </div>
 
                     {/* Line 1: Saree Fabric, Measurement Profile, and Dress Size (compact) in one line */}
-                    <div className={`dossier-item-primary-grid ${m?.dressSize ? "has-dress-size" : ""}`}>
+                    <div
+                      className={`dossier-item-primary-grid ${m?.dressSize ? "has-dress-size" : ""}`}
+                    >
                       <div className="spec-tile">
                         <DryCleaningOutlinedIcon className="spec-icon" />
                         <span className="spec-label">Saree Fabric</span>
@@ -425,11 +434,12 @@ const OrderDetailsModal = ({
 
                       <div className="spec-tile">
                         <StraightenOutlinedIcon className="spec-icon" />
-                        <span className="spec-label">
-                          Measurement Profile
-                        </span>
+                        <span className="spec-label">Measurement Profile</span>
                         <span className="spec-val">
-                          {m?.title || (item.includeMeasurements === false ? "Standard (No Measurements)" : "Custom Sizing")}
+                          {m?.title ||
+                            (item.includeMeasurements === false
+                              ? "Standard (No Measurements)"
+                              : "Custom Sizing")}
                         </span>
                       </div>
 
@@ -443,7 +453,13 @@ const OrderDetailsModal = ({
                     </div>
 
                     {/* Line 2: Remaining 7 Measurement Parameters in one row */}
-                    {(m?.pallu || m?.shoulderToRightTight || m?.chest || m?.hip || m?.firstPleatSize || m?.noOfChestPleats || m?.height) && (
+                    {(m?.pallu ||
+                      m?.shoulderToRightTight ||
+                      m?.chest ||
+                      m?.hip ||
+                      m?.firstPleatSize ||
+                      m?.noOfChestPleats ||
+                      m?.height) && (
                       <div className="dossier-item-measurements-grid">
                         {m?.pallu && (
                           <div className="spec-tile">
@@ -456,7 +472,9 @@ const OrderDetailsModal = ({
                         {m?.shoulderToRightTight && (
                           <div className="spec-tile">
                             <StraightenOutlinedIcon className="spec-icon" />
-                            <span className="spec-label">Shoulder to Tight</span>
+                            <span className="spec-label">
+                              Shoulder to Tight
+                            </span>
                             <span className="spec-val">
                               {m.shoulderToRightTight}&quot;
                             </span>
@@ -493,7 +511,9 @@ const OrderDetailsModal = ({
                           <div className="spec-tile">
                             <LayersOutlinedIcon className="spec-icon" />
                             <span className="spec-label">Chest Pleats</span>
-                            <span className="spec-val">{m.noOfChestPleats}</span>
+                            <span className="spec-val">
+                              {m.noOfChestPleats}
+                            </span>
                           </div>
                         )}
 
@@ -562,7 +582,11 @@ const OrderDetailsModal = ({
                       disabled={updatingStatus}
                     >
                       {updatingTarget === "order-in-progress" && (
-                        <AppSpinner size="xs" color="inherit" style={{ marginRight: 6 }} />
+                        <AppSpinner
+                          size="xs"
+                          color="inherit"
+                          style={{ marginRight: 6 }}
+                        />
                       )}
                       <span>In-Progress</span>
                     </button>
@@ -573,7 +597,11 @@ const OrderDetailsModal = ({
                       disabled={updatingStatus}
                     >
                       {updatingTarget === "order-completed" && (
-                        <AppSpinner size="xs" color="inherit" style={{ marginRight: 6 }} />
+                        <AppSpinner
+                          size="xs"
+                          color="inherit"
+                          style={{ marginRight: 6 }}
+                        />
                       )}
                       <span>Completed</span>
                     </button>
@@ -584,7 +612,11 @@ const OrderDetailsModal = ({
                       disabled={updatingStatus}
                     >
                       {updatingTarget === "order-pending" && (
-                        <AppSpinner size="xs" color="inherit" style={{ marginRight: 6 }} />
+                        <AppSpinner
+                          size="xs"
+                          color="inherit"
+                          style={{ marginRight: 6 }}
+                        />
                       )}
                       <span>Pending</span>
                     </button>
@@ -595,7 +627,11 @@ const OrderDetailsModal = ({
                       disabled={updatingStatus}
                     >
                       {updatingTarget === "order-cancelled" && (
-                        <AppSpinner size="xs" color="inherit" style={{ marginRight: 6 }} />
+                        <AppSpinner
+                          size="xs"
+                          color="inherit"
+                          style={{ marginRight: 6 }}
+                        />
                       )}
                       <span>Cancelled</span>
                     </button>
@@ -621,7 +657,9 @@ const OrderDetailsModal = ({
                       }}
                       title="Payment is settled in full and locked against further changes"
                     >
-                      <LockOutlinedIcon style={{ fontSize: 15, color: "#10b981" }} />
+                      <LockOutlinedIcon
+                        style={{ fontSize: 15, color: "#10b981" }}
+                      />
                       <span>Paid in Full (Locked)</span>
                     </div>
                   ) : (
@@ -633,7 +671,11 @@ const OrderDetailsModal = ({
                         disabled={updatingStatus}
                       >
                         {updatingTarget === "pay-paid" && (
-                          <AppSpinner size="xs" color="inherit" style={{ marginRight: 6 }} />
+                          <AppSpinner
+                            size="xs"
+                            color="inherit"
+                            style={{ marginRight: 6 }}
+                          />
                         )}
                         <span>Paid in Full</span>
                       </button>
@@ -644,7 +686,11 @@ const OrderDetailsModal = ({
                         disabled={updatingStatus}
                       >
                         {updatingTarget === "pay-partial" && (
-                          <AppSpinner size="xs" color="inherit" style={{ marginRight: 6 }} />
+                          <AppSpinner
+                            size="xs"
+                            color="inherit"
+                            style={{ marginRight: 6 }}
+                          />
                         )}
                         <span>Partial / Advance</span>
                       </button>
@@ -655,7 +701,11 @@ const OrderDetailsModal = ({
                         disabled={updatingStatus}
                       >
                         {updatingTarget === "pay-pending" && (
-                          <AppSpinner size="xs" color="inherit" style={{ marginRight: 6 }} />
+                          <AppSpinner
+                            size="xs"
+                            color="inherit"
+                            style={{ marginRight: 6 }}
+                          />
                         )}
                         <span>Pending Payment</span>
                       </button>
@@ -774,7 +824,8 @@ const OrderDetailsModal = ({
                   className="pay-val"
                   style={{ color: "#10b981", fontWeight: 700 }}
                 >
-                  ₹{Number(
+                  ₹
+                  {Number(
                     balancePaidAmount > 0
                       ? balancePaidAmount
                       : Math.max(0, totalCalculatedAmount - advancePaid),

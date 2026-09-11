@@ -307,10 +307,10 @@ export const AuthProvider = ({ children }) => {
         };
 
         // Optimistically set cached profile if available to prevent UI flicker
-        const cached = getCachedSession();
-        if (cached?.user?.uid === user.uid && cached?.profile) {
+        const cachedSession = getCachedSession();
+        if (cachedSession?.user?.uid === user.uid && cachedSession?.profile) {
           setCurrentUser(safeUser);
-          setUserProfile(cached.profile);
+          setUserProfile(cachedSession.profile);
         }
 
         const resolved = await fetchOrInitProfile(user);
@@ -323,12 +323,12 @@ export const AuthProvider = ({ children }) => {
         // NEVER logout automatically:
         // If Firebase auth listener emits null (offline, transient refresh, or cold boot),
         // check if a valid cached session exists in localStorage.
-        const cached = getCachedSession();
-        if (cached?.user && cached.user.uid) {
+        const cachedFallback = getCachedSession();
+        if (cachedFallback?.user && cachedFallback.user.uid) {
           // Retain logged-in state permanently
-          setCurrentUser(cached.user);
-          if (cached.profile) {
-            setUserProfile(cached.profile);
+          setCurrentUser(cachedFallback.user);
+          if (cachedFallback.profile) {
+            setUserProfile(cachedFallback.profile);
           }
         } else {
           // If cache was manually cleared by user (clear data / clear browser cache)

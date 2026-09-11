@@ -778,3 +778,482 @@ body,
     }
   }
 }
+
+// ============================================================================
+// Global 3-Mode Action Button Styling & Hover Matrix across All Pages
+// ============================================================================
+
+// 1. Default (Royal Obsidian Gold) Action Buttons
+:root,
+[data-theme="default"] {
+  .action-btns .action-btn--edit,
+  .action-btns .action-btn--more,
+  .action-btns .action-btn--invoice,
+  .card-footer .action-btn--invoice,
+  .action-btn--edit,
+  .action-btn--more,
+  .action-btn--invoice {
+    background-color: var(--surface-gold-tint, rgba(212, 175, 55, 0.12)) !important;
+    color: var(--color-gold, #d4af37) !important;
+    border: 1px solid var(--surface-border, rgba(212, 175, 55, 0.22)) !important;
+
+    svg {
+      color: var(--color-gold, #d4af37) !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(212, 175, 55, 0.28) !important;
+      color: var(--color-gold, #e6d8a3) !important;
+      border-color: #d4af37 !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #e6d8a3 !important;
+      }
+    }
+
+    &.is-active {
+      background-color: rgba(212, 175, 55, 0.22) !important;
+      border-color: #d4af37 !important;
+      color: #d4af37 !important;
+    }
+  }
+
+  .action-btns .action-btn--measure,
+  .action-btns .action-btn--enable,
+  .action-btn--measure,
+  .action-btn--enable {
+    background-color: rgba(16, 185, 129, 0.14) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.38) !important;
+
+    svg {
+      color: #34d399 !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(16, 185, 129, 0.28) !important;
+      color: #6ee7b7 !important;
+      border-color: #10b981 !important;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #6ee7b7 !important;
+      }
+    }
+  }
+
+  .action-btns .action-btn--delete,
+  .action-btns .action-btn--disable,
+  .action-btn--delete,
+  .action-btn--disable {
+    background-color: rgba(239, 68, 68, 0.14) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.38) !important;
+
+    svg {
+      color: #f87171 !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(239, 68, 68, 0.28) !important;
+      color: #fca5a5 !important;
+      border-color: #ef4444 !important;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #fca5a5 !important;
+      }
+    }
+  }
+
+  .action-btns .action-btn--view,
+  .card-footer .action-btn--view,
+  .action-btn--view {
+    background-color: rgba(59, 130, 246, 0.14) !important;
+    color: #60a5fa !important;
+    border: 1px solid rgba(59, 130, 246, 0.38) !important;
+
+    svg {
+      color: #60a5fa !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(59, 130, 246, 0.28) !important;
+      color: #93c5fd !important;
+      border-color: #3b82f6 !important;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #93c5fd !important;
+      }
+    }
+  }
+
+  .action-btns .action-btn--order,
+  .action-btn--order {
+    background-color: rgba(168, 85, 247, 0.14) !important;
+    color: #c084fc !important;
+    border: 1px solid rgba(168, 85, 247, 0.38) !important;
+
+    svg {
+      color: #c084fc !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(168, 85, 247, 0.28) !important;
+      color: #e9d5ff !important;
+      border-color: #a855f7 !important;
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #e9d5ff !important;
+      }
+    }
+  }
+
+  .action-btns .action-btn--whatsapp,
+  .card-footer .action-btn--whatsapp,
+  .action-btn--whatsapp {
+    background-color: rgba(37, 211, 102, 0.14) !important;
+    color: #25d366 !important;
+    border: 1px solid rgba(37, 211, 102, 0.38) !important;
+
+    svg {
+      color: #25d366 !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(37, 211, 102, 0.28) !important;
+      color: #86efac !important;
+      border-color: #25d366 !important;
+      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #86efac !important;
+      }
+    }
+  }
+}
+
+// 2. Dark Mode (Midnight Slate - Slate Whites, Absolutely NO Gold)
+[data-theme="dark"] {
+  .action-btns .action-btn--edit,
+  .action-btns .action-btn--more,
+  .action-btns .action-btn--invoice,
+  .card-footer .action-btn--invoice,
+  .action-btn--edit,
+  .action-btn--more,
+  .action-btn--invoice {
+    background-color: rgba(241, 245, 249, 0.08) !important;
+    border: 1px solid rgba(226, 232, 240, 0.14) !important;
+    color: #f8fafc !important;
+
+    svg {
+      color: #f8fafc !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(241, 245, 249, 0.18) !important;
+      border-color: #cbd5e1 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #ffffff !important;
+      }
+    }
+
+    &.is-active {
+      background-color: rgba(241, 245, 249, 0.22) !important;
+      border-color: #f8fafc !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .action-btns .action-btn--measure,
+  .action-btns .action-btn--enable,
+  .action-btn--measure,
+  .action-btn--enable {
+    background-color: rgba(34, 197, 94, 0.14) !important;
+    color: #4ade80 !important;
+    border: 1px solid rgba(34, 197, 94, 0.35) !important;
+
+    svg {
+      color: #4ade80 !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(34, 197, 94, 0.28) !important;
+      color: #86efac !important;
+      border-color: #22c55e !important;
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #86efac !important;
+      }
+    }
+  }
+
+  .action-btns .action-btn--delete,
+  .action-btns .action-btn--disable,
+  .action-btn--delete,
+  .action-btn--disable {
+    background-color: rgba(239, 68, 68, 0.14) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+
+    svg {
+      color: #f87171 !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(239, 68, 68, 0.28) !important;
+      color: #fca5a5 !important;
+      border-color: #ef4444 !important;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #fca5a5 !important;
+      }
+    }
+  }
+
+  .action-btns .action-btn--view,
+  .card-footer .action-btn--view,
+  .action-btn--view {
+    background-color: rgba(59, 130, 246, 0.14) !important;
+    color: #93c5fd !important;
+    border: 1px solid rgba(59, 130, 246, 0.35) !important;
+
+    svg {
+      color: #93c5fd !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(59, 130, 246, 0.28) !important;
+      color: #bfdbfe !important;
+      border-color: #60a5fa !important;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #bfdbfe !important;
+      }
+    }
+  }
+
+  .action-btns .action-btn--order,
+  .action-btn--order {
+    background-color: rgba(168, 85, 247, 0.14) !important;
+    color: #c084fc !important;
+    border: 1px solid rgba(168, 85, 247, 0.35) !important;
+
+    svg {
+      color: #c084fc !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(168, 85, 247, 0.28) !important;
+      color: #e9d5ff !important;
+      border-color: #a855f7 !important;
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #e9d5ff !important;
+      }
+    }
+  }
+
+  .action-btns .action-btn--whatsapp,
+  .card-footer .action-btn--whatsapp,
+  .action-btn--whatsapp {
+    background-color: rgba(37, 211, 102, 0.14) !important;
+    color: #4ade80 !important;
+    border: 1px solid rgba(37, 211, 102, 0.35) !important;
+
+    svg {
+      color: #4ade80 !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(37, 211, 102, 0.28) !important;
+      color: #86efac !important;
+      border-color: #22c55e !important;
+      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #86efac !important;
+      }
+    }
+  }
+}
+
+// 3. Light Mode (Soft Slate Mist - Slate Charcoals, Absolutely NO Gold)
+[data-theme="light"] {
+  .action-btns .action-btn--edit,
+  .action-btns .action-btn--more,
+  .action-btns .action-btn--invoice,
+  .card-footer .action-btn--invoice,
+  .action-btn--edit,
+  .action-btn--more,
+  .action-btn--invoice {
+    background-color: #f1f5f9 !important;
+    border: 1px solid rgba(15, 23, 42, 0.14) !important;
+    color: #0f172a !important;
+
+    svg {
+      color: #0f172a !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: #e2e8f0 !important;
+      border-color: #0f172a !important;
+      color: #0f172a !important;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #0f172a !important;
+      }
+    }
+
+    &.is-active {
+      background-color: #e2e8f0 !important;
+      border-color: #0f172a !important;
+      color: #0f172a !important;
+    }
+  }
+
+  .action-btns .action-btn--measure,
+  .action-btns .action-btn--enable,
+  .action-btn--measure,
+  .action-btn--enable {
+    background-color: #f0fdf4 !important;
+    color: #15803d !important;
+    border: 1px solid #bbf7d0 !important;
+
+    svg {
+      color: #15803d !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: #dcfce7 !important;
+      border-color: #22c55e !important;
+      color: #166534 !important;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.18) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #166534 !important;
+      }
+    }
+  }
+
+  .action-btns .action-btn--delete,
+  .action-btns .action-btn--disable,
+  .action-btn--delete,
+  .action-btn--disable {
+    background-color: #fef2f2 !important;
+    color: #dc2626 !important;
+    border: 1px solid #fecaca !important;
+
+    svg {
+      color: #dc2626 !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: #fee2e2 !important;
+      border-color: #ef4444 !important;
+      color: #b91c1c !important;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.18) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #b91c1c !important;
+      }
+    }
+  }
+
+  .action-btns .action-btn--view,
+  .card-footer .action-btn--view,
+  .action-btn--view {
+    background-color: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe !important;
+
+    svg {
+      color: #1d4ed8 !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: #dbeafe !important;
+      border-color: #3b82f6 !important;
+      color: #1e40af !important;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.18) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #1e40af !important;
+      }
+    }
+  }
+
+  .action-btns .action-btn--order,
+  .action-btn--order {
+    background-color: #faf5ff !important;
+    color: #7e22ce !important;
+    border: 1px solid #e9d5ff !important;
+
+    svg {
+      color: #7e22ce !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: #f3e8ff !important;
+      border-color: #a855f7 !important;
+      color: #6b21a8 !important;
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.18) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #6b21a8 !important;
+      }
+    }
+  }
+
+  .action-btns .action-btn--whatsapp,
+  .card-footer .action-btn--whatsapp,
+  .action-btn--whatsapp {
+    background-color: #f0fdf4 !important;
+    color: #15803d !important;
+    border: 1px solid #86efac !important;
+
+    svg {
+      color: #15803d !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: #dcfce7 !important;
+      border-color: #22c55e !important;
+      color: #166534 !important;
+      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.18) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #166534 !important;
+      }
+    }
+  }
+}

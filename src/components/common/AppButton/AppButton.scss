@@ -82,15 +82,16 @@
   }
 
   &--secondary {
-    background: var(--surface-gold-tint, rgba(255, 255, 255, 0.05));
-    color: var(--color-gold, #ffffff);
+    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.08));
+    color: var(--color-gold, #d4af37);
     border-color: $surface-border;
 
     &:hover:not(:disabled) {
-      background: var(--surface-border-hover, rgba(255, 255, 255, 0.12));
-      border-color: var(--color-gold, #ffffff);
-      color: var(--color-gold, #ffffff);
-      transform: translateY(-1px);
+      border-color: var(--color-gold, #d4af37);
+      background-color: rgba(212, 175, 55, 0.24);
+      color: var(--color-gold, #e6d8a3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     &:active:not(:disabled) {
@@ -107,8 +108,8 @@
       background: rgba(239, 68, 68, 0.22);
       border-color: #ef4444;
       color: #fca5a5;
-      box-shadow: 0 2px 10px rgba(239, 68, 68, 0.35);
-      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transform: translateY(-2px);
     }
 
     &:active:not(:disabled) {
@@ -125,8 +126,8 @@
       background: rgba(59, 130, 246, 0.25);
       border-color: #3b82f6;
       color: #93c5fd;
-      box-shadow: 0 2px 10px rgba(59, 130, 246, 0.35);
-      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transform: translateY(-2px);
     }
 
     &:active:not(:disabled) {
@@ -143,8 +144,8 @@
       background: rgba(16, 185, 129, 0.25);
       border-color: #10b981;
       color: #6ee7b7;
-      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
-      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transform: translateY(-2px);
     }
 
     &:active:not(:disabled) {
@@ -161,8 +162,8 @@
       background: rgba(245, 158, 11, 0.25);
       border-color: #f59e0b;
       color: #fde68a;
-      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35);
-      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transform: translateY(-2px);
     }
 
     &:active:not(:disabled) {
@@ -179,8 +180,8 @@
       background: var(--surface-border-hover, rgba(255, 255, 255, 0.1));
       border-color: var(--surface-border-hover, rgba(255, 255, 255, 0.2));
       color: $text-primary;
-      box-shadow: 0 0 12px var(--surface-gold-tint, rgba(0, 0, 0, 0.12));
-      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transform: translateY(-2px);
     }
 
     &:active:not(:disabled) {

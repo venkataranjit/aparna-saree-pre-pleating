@@ -7,6 +7,7 @@ import './StatCard.scss';
 const StatCard = ({
   title,
   value,
+  subValue,
   prevValue,
   prevLabel = null,
   icon,
@@ -56,6 +57,12 @@ const StatCard = ({
         <span className="stat-card__value">
           {value}
         </span>
+
+        {subValue && (
+          <span className="stat-card__sub-value">
+            {subValue}
+          </span>
+        )}
       </div>
 
       {/* Footer: Trend / Status Pill */}

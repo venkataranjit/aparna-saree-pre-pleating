@@ -1096,10 +1096,12 @@ const Expenses = () => {
                                     />
                                   </AppButton>
 
-                                  {/* View More Pill Button (Accordion Expand) */}
-                                  <button
-                                    type="button"
-                                    className={`view-more-pill-btn ${isExpanded ? "is-active" : ""}`}
+                                  {/* View More Button (Accordion Expand) */}
+                                  <AppButton
+                                    variant="secondary"
+                                    size="sm"
+                                    square
+                                    className={`action-btn--more ${isExpanded ? "is-active" : ""}`}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       toggleRowExpand(exp.id);
@@ -1111,15 +1113,16 @@ const Expenses = () => {
                                         : "View More Details"
                                     }
                                   >
-                                    <span className="btn-text">
-                                      {isExpanded ? "Less" : "More"}
-                                    </span>
-                                    <span
-                                      className={`chevron-wrap ${isExpanded ? "rotated" : ""}`}
-                                    >
-                                      <KeyboardArrowDownIcon />
-                                    </span>
-                                  </button>
+                                    <KeyboardArrowDownIcon
+                                      style={{
+                                        fontSize: 18,
+                                        transform: isExpanded
+                                          ? "rotate(180deg)"
+                                          : "rotate(0deg)",
+                                        transition: "transform 0.25s ease",
+                                      }}
+                                    />
+                                  </AppButton>
                                 </div>
                               </AppTableCell>
                             </AppTableRow>

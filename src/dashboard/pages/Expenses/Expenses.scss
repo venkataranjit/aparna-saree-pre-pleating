@@ -515,50 +515,6 @@
         max-width: 30px;
       }
 
-      // 1. View (Crystal Blue)
-      &.action-btn--view {
-        background-color: rgba(59, 130, 246, 0.14) !important;
-        color: #60a5fa !important;
-        border: 1px solid rgba(59, 130, 246, 0.38) !important;
-
-        &:hover {
-          background-color: rgba(59, 130, 246, 0.28) !important;
-          color: #93c5fd !important;
-          border-color: #3b82f6 !important;
-          box-shadow: 0 2px 10px rgba(59, 130, 246, 0.35) !important;
-          transform: translateY(-1px);
-        }
-      }
-
-      // 2. Edit (Gold)
-      &.action-btn--edit {
-        background-color: var(--surface-gold-tint, rgba(212, 175, 55, 0.14)) !important;
-        color: var(--color-gold, #d4af37) !important;
-        border: 1px solid $surface-border !important;
-
-        &:hover {
-          background-color: var(--surface-border-hover, rgba(212, 175, 55, 0.28)) !important;
-          color: var(--color-gold, #e6d8a3) !important;
-          border-color: $color-gold !important;
-          box-shadow: 0 2px 10px var(--surface-gold-tint, rgba(212, 175, 55, 0.35)) !important;
-          transform: translateY(-1px);
-        }
-      }
-
-      // 3. Delete (Red)
-      &.action-btn--delete {
-        background-color: rgba(239, 68, 68, 0.14) !important;
-        color: #f87171 !important;
-        border: 1px solid rgba(239, 68, 68, 0.38) !important;
-
-        &:hover:not(:disabled) {
-          background-color: rgba(239, 68, 68, 0.28) !important;
-          color: #fca5a5 !important;
-          border-color: #ef4444 !important;
-          box-shadow: 0 2px 10px rgba(239, 68, 68, 0.35) !important;
-          transform: translateY(-1px);
-        }
-      }
     }
 
     /* View More Pill Button */

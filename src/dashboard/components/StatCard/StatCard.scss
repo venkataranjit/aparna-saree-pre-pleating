@@ -272,6 +272,57 @@
   }
 }
 
+// Theme-Specific Badge Overrides
+[data-theme="light"] {
+  .stat-card__badge {
+    &.growth,
+    &.up,
+    &.completed,
+    &.progress,
+    &.pending {
+      background: rgba(15, 23, 42, 0.05) !important;
+      border: 1px solid rgba(15, 23, 42, 0.12) !important;
+      color: #1e293b !important;
+
+      .trend-icon,
+      .badge-icon {
+        color: #0f172a !important;
+        fill: #0f172a !important;
+      }
+
+      .trend-pulse-dot {
+        background-color: #0f172a !important;
+        box-shadow: 0 0 4px rgba(15, 23, 42, 0.3) !important;
+      }
+    }
+  }
+}
+
+[data-theme="dark"] {
+  .stat-card__badge {
+    &.growth,
+    &.up,
+    &.completed,
+    &.progress,
+    &.pending {
+      background: var(--surface-gold-tint, rgba(226, 232, 240, 0.06)) !important;
+      border: 1px solid var(--surface-border, rgba(226, 232, 240, 0.12)) !important;
+      color: var(--text-primary, #f1f5f9) !important;
+
+      .trend-icon,
+      .badge-icon {
+        color: var(--color-gold, #f1f5f9) !important;
+        fill: var(--color-gold, #f1f5f9) !important;
+      }
+
+      .trend-pulse-dot {
+        background-color: var(--color-gold, #f1f5f9) !important;
+        box-shadow: 0 0 6px rgba(226, 232, 240, 0.5) !important;
+      }
+    }
+  }
+}
+
 @keyframes pulseGlow {
   0%,
   100% {

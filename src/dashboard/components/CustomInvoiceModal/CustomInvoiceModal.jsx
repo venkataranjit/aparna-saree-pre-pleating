@@ -106,14 +106,25 @@ export const mapOrderToInvoiceData = (order) => {
   const advancePaid = Number(order.advancePayment || order.paidAmount || 0);
   const rawBalanceDue = Number(order.balanceDue);
   const balanceDue =
-    order.balanceDue !== undefined && order.balanceDue !== null && !isNaN(rawBalanceDue)
+    order.balanceDue !== undefined &&
+    order.balanceDue !== null &&
+    !isNaN(rawBalanceDue)
       ? rawBalanceDue
-      : (order.paymentStatus === "paid" ? 0 : Math.max(0, totalAmount - advancePaid));
+      : order.paymentStatus === "paid"
+        ? 0
+        : Math.max(0, totalAmount - advancePaid);
   const rawBalancePaid = Number(order.balancePaid);
   const balancePaid =
-    order.balancePaid !== undefined && order.balancePaid !== null && !isNaN(rawBalancePaid) && rawBalancePaid > 0
+    order.balancePaid !== undefined &&
+    order.balancePaid !== null &&
+    !isNaN(rawBalancePaid) &&
+    rawBalancePaid > 0
       ? rawBalancePaid
-      : (order.paymentStatus === "paid" ? (advancePaid > 0 ? Math.max(0, totalAmount - advancePaid) : totalAmount) : 0);
+      : order.paymentStatus === "paid"
+        ? advancePaid > 0
+          ? Math.max(0, totalAmount - advancePaid)
+          : totalAmount
+        : 0;
 
   const clientName =
     order.username ||
@@ -153,7 +164,7 @@ export const mapOrderToInvoiceData = (order) => {
     orderId: orderId,
     bookingDate: bookingDateStr,
     deliveryDate: deliveryDateStr,
-    occasion: order.occasion || "",
+    occasion: order.occasion && String(order.occasion).trim() ? String(order.occasion).trim() : "-",
     orderStatus,
     paymentStatus,
     paymentMethod: order.paymentMethod || "UPI / Cash",
@@ -416,16 +427,12 @@ export const buildInvoiceHtmlSnippet = (data = SAMPLE_INVOICE_DATA) => {
                 <span style="color: #64748b; font-weight: 500; font-size: 12px;">Delivery Date:</span>
                 <span style="color: #047857; font-weight: 600; font-size: 12.5px;">${data.deliveryDate}</span>
               </div>
-              ${
-                data.occasion
-                  ? `
+             
               <div style="display: flex; justify-content: space-between; align-items: baseline;">
                 <span style="color: #64748b; font-weight: 500; font-size: 12px;">Occasion:</span>
                 <span style="color: #0f172a; font-weight: 600; font-size: 12.5px;">${data.occasion}</span>
               </div>
-              `
-                  : ""
-              }
+             
               <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px; padding-top: 2px; border-top: 1px dashed #cbd5e1;">
                 <span style="color: #64748b; font-weight: 500; font-size: 12px;">Order Status:</span>
                 <span style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; ${orderStatusMeta.style}">
@@ -536,12 +543,22 @@ export const buildInvoiceHtmlSnippet = (data = SAMPLE_INVOICE_DATA) => {
               <span style="font-weight: 700; font-size: 11.5px;">${String(data.paymentStatus || "").toLowerCase() === "paid" ? "Balance Paid:" : "Balance Due:"}</span>
               <span style="font-weight: 700; font-size: 12.5px;">₹${Number(
                 String(data.paymentStatus || "").toLowerCase() === "paid"
-                  ? (data.financials?.balancePaid !== undefined && Number(data.financials?.balancePaid) > 0
-                      ? data.financials?.balancePaid
-                      : Math.max(0, Number(data.financials?.totalAmount || 0) - Number(data.financials?.advancePaid || 0)))
-                  : (data.financials?.balanceDue !== undefined && Number(data.financials?.balanceDue) > 0
-                      ? data.financials?.balanceDue
-                      : Math.max(0, Number(data.financials?.totalAmount || 0) - Number(data.financials?.advancePaid || 0)))
+                  ? data.financials?.balancePaid !== undefined &&
+                    Number(data.financials?.balancePaid) > 0
+                    ? data.financials?.balancePaid
+                    : Math.max(
+                        0,
+                        Number(data.financials?.totalAmount || 0) -
+                          Number(data.financials?.advancePaid || 0),
+                      )
+                  : data.financials?.balanceDue !== undefined &&
+                      Number(data.financials?.balanceDue) > 0
+                    ? data.financials?.balanceDue
+                    : Math.max(
+                        0,
+                        Number(data.financials?.totalAmount || 0) -
+                          Number(data.financials?.advancePaid || 0),
+                      ),
               ).toLocaleString("en-IN")}</span>
             </div>
           </div>
@@ -807,7 +824,9 @@ export const downloadInvoicePdfDirectly = async (order) => {
       }
 
       toast.dismiss(toastId);
-      toast.success(`Order details PDF saved to your device for Order #${orderId}`);
+      toast.success(
+        `Order details PDF saved to your device for Order #${orderId}`,
+      );
     } else {
       // Browser download (Desktop / Web)
       pdf.save(fileName);
@@ -1055,10 +1074,9 @@ export const shareOrderPdfToWhatsApp = async (order) => {
       });
 
       toast.dismiss(toastId);
-      toast.info(
-        `Select WhatsApp → search "${clientName}" to send the PDF`,
-        { autoClose: 5000 }
-      );
+      toast.info(`Select WhatsApp → search "${clientName}" to send the PDF`, {
+        autoClose: 5000,
+      });
 
       // Open share sheet with PDF attached + message text
       // When user picks WhatsApp, the PDF will be attached and message pre-filled
@@ -1263,12 +1281,10 @@ export const CustomInvoiceModal = ({
                   {data.deliveryDate}
                 </span>
               </div>
-              {data.occasion && (
-                <div className="meta-line">
-                  <span className="meta-label">Occasion:</span>
-                  <span className="meta-val">{data.occasion}</span>
-                </div>
-              )}
+              <div className="meta-line">
+                <span className="meta-label">Occasion:</span>
+                <span className="meta-val">{data.occasion || "-"}</span>
+              </div>
               <div
                 className="meta-line"
                 style={{
@@ -1705,12 +1721,22 @@ export const CustomInvoiceModal = ({
                 ₹
                 {Number(
                   String(data.paymentStatus || "").toLowerCase() === "paid"
-                    ? (data.financials?.balancePaid !== undefined && Number(data.financials?.balancePaid) > 0
-                        ? data.financials?.balancePaid
-                        : Math.max(0, Number(data.financials?.totalAmount || 0) - Number(data.financials?.advancePaid || 0)))
-                    : (data.financials?.balanceDue !== undefined && Number(data.financials?.balanceDue) > 0
-                        ? data.financials?.balanceDue
-                        : Math.max(0, Number(data.financials?.totalAmount || 0) - Number(data.financials?.advancePaid || 0)))
+                    ? data.financials?.balancePaid !== undefined &&
+                      Number(data.financials?.balancePaid) > 0
+                      ? data.financials?.balancePaid
+                      : Math.max(
+                          0,
+                          Number(data.financials?.totalAmount || 0) -
+                            Number(data.financials?.advancePaid || 0),
+                        )
+                    : data.financials?.balanceDue !== undefined &&
+                        Number(data.financials?.balanceDue) > 0
+                      ? data.financials?.balanceDue
+                      : Math.max(
+                          0,
+                          Number(data.financials?.totalAmount || 0) -
+                            Number(data.financials?.advancePaid || 0),
+                        ),
                 ).toLocaleString("en-IN")}
               </span>
             </div>

@@ -472,6 +472,38 @@
   }
 }
 
+// Action button -- More / Expand (Square icon button matching others)
+.action-btn--more,
+.action-btns .action-btn--more {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
+  padding: 0 !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: var(--surface-gold-tint, rgba(212, 175, 55, 0.12)) !important;
+  color: var(--color-gold, #d4af37) !important;
+  border: 1px solid $surface-border !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+  &:hover {
+    background-color: rgba(212, 175, 55, 0.28) !important;
+    color: var(--color-gold, #e6d8a3) !important;
+    border-color: $color-gold !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  &.is-active {
+    background-color: rgba(212, 175, 55, 0.22) !important;
+    border-color: $color-gold !important;
+    color: var(--color-gold, #d4af37) !important;
+  }
+}
+
 // Revamped View More Capsule Pill Button
 .view-more-pill-btn,
 .action-btns .view-more-pill-btn {
@@ -659,6 +691,84 @@
 
       .chevron-wrap svg {
         color: #ffffff !important;
+      }
+    }
+  }
+
+  // Light Mode Action Buttons (Slate Charcoal - No Gold)
+  .action-btn--more,
+  .action-btn--edit,
+  .action-btn--invoice,
+  .action-btns .action-btn--more,
+  .action-btns .action-btn--edit,
+  .action-btns .action-btn--invoice {
+    background: #f1f5f9 !important;
+    border: 1px solid rgba(15, 23, 42, 0.14) !important;
+    color: #0f172a !important;
+
+    svg {
+      color: #0f172a !important;
+    }
+
+    &:hover {
+      background: #e2e8f0 !important;
+      border-color: #0f172a !important;
+      color: #0f172a !important;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #0f172a !important;
+      }
+    }
+
+    &.is-active {
+      background: #e2e8f0 !important;
+      border-color: #0f172a !important;
+      color: #0f172a !important;
+
+      svg {
+        color: #0f172a !important;
+      }
+    }
+  }
+}
+
+// Dark Mode Overrides (Slate White - No Gold)
+[data-theme="dark"] {
+  .action-btn--more,
+  .action-btn--edit,
+  .action-btn--invoice,
+  .action-btns .action-btn--more,
+  .action-btns .action-btn--edit,
+  .action-btns .action-btn--invoice {
+    background: #1a1e29 !important;
+    border: 1px solid rgba(226, 232, 240, 0.12) !important;
+    color: #f8fafc !important;
+
+    svg {
+      color: #f8fafc !important;
+    }
+
+    &:hover {
+      background: #222736 !important;
+      border-color: #cbd5e1 !important;
+      color: #f8fafc !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #f8fafc !important;
+      }
+    }
+
+    &.is-active {
+      background: #222736 !important;
+      border-color: #cbd5e1 !important;
+      color: #f8fafc !important;
+
+      svg {
+        color: #f8fafc !important;
       }
     }
   }

@@ -8,6 +8,8 @@ import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import ShareOutlinedIcon from "@mui/icons-material/ShareOutlined";
 import PendingActionsOutlinedIcon from "@mui/icons-material/PendingActionsOutlined";
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
@@ -44,6 +46,7 @@ import OrderDetailsModal from "../../components/OrderDetailsModal/OrderDetailsMo
 import {
   downloadInvoicePdfDirectly,
   shareOrderPdfToWhatsApp,
+  openClientWhatsAppChat,
 } from "../../components/CustomInvoiceModal/CustomInvoiceModal";
 import {
   getAllOrders,
@@ -814,23 +817,36 @@ const Bookings = () => {
                             size="sm"
                             square
                             className="action-btn--invoice"
-                            title="Download Order Details (PDF)"
+                            title="Download Invoice (PDF)"
                             onClick={(e) => {
                               e.stopPropagation();
                               downloadInvoicePdfDirectly(order);
                             }}
                           >
-                            <ReceiptLongOutlinedIcon style={{ fontSize: 16 }} />
+                            <FileDownloadOutlinedIcon style={{ fontSize: 16 }} />
+                          </AppButton>
+                          <AppButton
+                            variant="secondary"
+                            size="sm"
+                            square
+                            className="action-btn--share"
+                            title="Share Invoice (PDF)"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              shareOrderPdfToWhatsApp(order);
+                            }}
+                          >
+                            <ShareOutlinedIcon style={{ fontSize: 16 }} />
                           </AppButton>
                           <AppButton
                             variant="secondary"
                             size="sm"
                             square
                             className="action-btn--whatsapp"
-                            title="Share Order PDF to WhatsApp"
+                            title="Chat on WhatsApp"
                             onClick={(e) => {
                               e.stopPropagation();
-                              shareOrderPdfToWhatsApp(order);
+                              openClientWhatsAppChat(order);
                             }}
                           >
                             <WhatsAppIcon style={{ fontSize: 16 }} />
@@ -965,23 +981,36 @@ const Bookings = () => {
                         variant="secondary"
                         square
                         className="action-btn--invoice"
-                        title="Download Order Details (PDF)"
+                        title="Download Invoice (PDF)"
                         onClick={(e) => {
                           e.stopPropagation();
                           downloadInvoicePdfDirectly(order);
                         }}
                       >
-                        <ReceiptLongOutlinedIcon style={{ fontSize: 16 }} />
+                        <FileDownloadOutlinedIcon style={{ fontSize: 16 }} />
+                      </AppButton>
+                      <AppButton
+                        size="sm"
+                        variant="secondary"
+                        square
+                        className="action-btn--share"
+                        title="Share Invoice (PDF)"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          shareOrderPdfToWhatsApp(order);
+                        }}
+                      >
+                        <ShareOutlinedIcon style={{ fontSize: 16 }} />
                       </AppButton>
                       <AppButton
                         size="sm"
                         variant="secondary"
                         square
                         className="action-btn--whatsapp"
-                        title="Share Order PDF to WhatsApp"
+                        title="Chat on WhatsApp"
                         onClick={(e) => {
                           e.stopPropagation();
-                          shareOrderPdfToWhatsApp(order);
+                          openClientWhatsAppChat(order);
                         }}
                       >
                         <WhatsAppIcon style={{ fontSize: 16 }} />
@@ -1112,27 +1141,40 @@ const Bookings = () => {
                     <AppButton
                       size="sm"
                       variant="secondary"
-                      startIcon={<ReceiptLongOutlinedIcon />}
-                      title="Download Order Details (PDF)"
+                      startIcon={<FileDownloadOutlinedIcon />}
+                      title="Download Invoice (PDF)"
                       onClick={(e) => {
                         e.stopPropagation();
                         downloadInvoicePdfDirectly(order);
                       }}
                     >
-                      Order Details
+                      Download PDF
+                    </AppButton>
+                    <AppButton
+                      size="sm"
+                      variant="secondary"
+                      startIcon={<ShareOutlinedIcon />}
+                      className="action-btn--share"
+                      title="Share Invoice (PDF)"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        shareOrderPdfToWhatsApp(order);
+                      }}
+                    >
+                      Share Invoice
                     </AppButton>
                     <AppButton
                       size="sm"
                       variant="secondary"
                       startIcon={<WhatsAppIcon />}
                       className="action-btn--whatsapp"
-                      title="Share Order PDF to WhatsApp"
+                      title="Chat on WhatsApp"
                       onClick={(e) => {
                         e.stopPropagation();
-                        shareOrderPdfToWhatsApp(order);
+                        openClientWhatsAppChat(order);
                       }}
                     >
-                      WhatsApp
+                      WhatsApp Chat
                     </AppButton>
                   </div>
                 </div>

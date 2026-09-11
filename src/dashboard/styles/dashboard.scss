@@ -917,6 +917,30 @@ body,
     }
   }
 
+  .action-btns .action-btn--share,
+  .card-footer .action-btn--share,
+  .action-btn--share {
+    background-color: rgba(168, 85, 247, 0.14) !important;
+    color: #c084fc !important;
+    border: 1px solid rgba(168, 85, 247, 0.38) !important;
+
+    svg {
+      color: #c084fc !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(168, 85, 247, 0.28) !important;
+      color: #e9d5ff !important;
+      border-color: #a855f7 !important;
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #e9d5ff !important;
+      }
+    }
+  }
+
   .action-btns .action-btn--whatsapp,
   .card-footer .action-btn--whatsapp,
   .action-btn--whatsapp {
@@ -1075,6 +1099,30 @@ body,
     }
   }
 
+  .action-btns .action-btn--share,
+  .card-footer .action-btn--share,
+  .action-btn--share {
+    background-color: rgba(168, 85, 247, 0.14) !important;
+    color: #c084fc !important;
+    border: 1px solid rgba(168, 85, 247, 0.35) !important;
+
+    svg {
+      color: #c084fc !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(168, 85, 247, 0.28) !important;
+      color: #e9d5ff !important;
+      border-color: #a855f7 !important;
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #e9d5ff !important;
+      }
+    }
+  }
+
   .action-btns .action-btn--whatsapp,
   .card-footer .action-btn--whatsapp,
   .action-btn--whatsapp {
@@ -1212,6 +1260,30 @@ body,
 
   .action-btns .action-btn--order,
   .action-btn--order {
+    background-color: #faf5ff !important;
+    color: #7e22ce !important;
+    border: 1px solid #e9d5ff !important;
+
+    svg {
+      color: #7e22ce !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: #f3e8ff !important;
+      border-color: #a855f7 !important;
+      color: #6b21a8 !important;
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.18) !important;
+      transform: translateY(-2px) !important;
+
+      svg {
+        color: #6b21a8 !important;
+      }
+    }
+  }
+
+  .action-btns .action-btn--share,
+  .card-footer .action-btn--share,
+  .action-btn--share {
     background-color: #faf5ff !important;
     color: #7e22ce !important;
     border: 1px solid #e9d5ff !important;

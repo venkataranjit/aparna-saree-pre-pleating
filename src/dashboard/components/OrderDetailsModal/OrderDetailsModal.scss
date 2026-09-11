@@ -96,7 +96,8 @@
     min-height: 0;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar-thumb-color, #d4af37) var(--scrollbar-track, #050505);
+    scrollbar-color: var(--scrollbar-thumb-color, #d4af37)
+      var(--scrollbar-track, #050505);
 
     @media (max-width: 768px) {
       padding: 16px;
@@ -116,7 +117,10 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background: var(--scrollbar-thumb-bg, var(--scrollbar-thumb-color, #d4af37)) !important;
+      background: var(
+        --scrollbar-thumb-bg,
+        var(--scrollbar-thumb-color, #d4af37)
+      ) !important;
       background-color: var(--scrollbar-thumb-color, #d4af37) !important;
       border-radius: 6px;
 
@@ -139,7 +143,9 @@
     border-radius: 12px;
     padding: 16px 18px;
     height: 100%;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
     box-shadow: var(--card-shadow, none);
 
     @media (max-width: 600px) {
@@ -387,7 +393,10 @@
       margin-bottom: 10px;
 
       &.has-dress-size {
-        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(95px, 120px);
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(
+            95px,
+            120px
+          );
 
         @media (max-width: 600px) {
           grid-template-columns: 1fr 1fr;
@@ -810,17 +819,21 @@
       gap: 10px;
 
       .custom-invoice-btn,
+      .share-invoice-btn,
+      .whatsapp-chat-btn,
       .print-btn {
         border: 1px solid var(--surface-border);
-        color: var(--color-gold);
+        color: var(--text-primary);
         background: var(--bg-card);
         font-weight: 600;
         font-size: 0.84rem;
-        padding: 7px 18px;
+        padding: 5px 10px;
         border-radius: 8px;
         touch-action: manipulation;
         transition: all 0.2s ease;
-
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
         @media (max-width: 600px) {
           width: 100%;
           justify-content: center;
@@ -837,8 +850,49 @@
         }
       }
 
+      .custom-invoice-btn {
+        color: var(--color-gold);
+      }
+
+      .share-invoice-btn {
+        color: #c084fc !important;
+        border-color: rgba(168, 85, 247, 0.38) !important;
+        background: rgba(168, 85, 247, 0.08) !important;
+
+        svg {
+          color: #c084fc !important;
+        }
+
+        &:hover,
+        &:active {
+          background: rgba(168, 85, 247, 0.2) !important;
+          border-color: #a855f7 !important;
+          color: #e9d5ff !important;
+        }
+      }
+
+      .whatsapp-chat-btn {
+        color: #25d366 !important;
+        border-color: rgba(37, 211, 102, 0.38) !important;
+        background: rgba(37, 211, 102, 0.08) !important;
+
+        svg {
+          color: #25d366 !important;
+        }
+
+        &:hover,
+        &:active {
+          background: rgba(37, 211, 102, 0.2) !important;
+          border-color: #25d366 !important;
+          color: #86efac !important;
+        }
+      }
+
       .close-btn {
-        background: var(--btn-primary-bg, linear-gradient(135deg, #d4af37 0%, #aa851c 100%));
+        background: var(
+          --btn-primary-bg,
+          linear-gradient(135deg, #d4af37 0%, #aa851c 100%)
+        );
         color: var(--btn-primary-text, #000000) !important;
         font-weight: 700;
         font-size: 0.84rem;
@@ -870,6 +924,120 @@
           flex: 1;
           min-height: 42px;
         }
+      }
+    }
+  }
+
+  .inline-wa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(37, 211, 102, 0.12);
+    border: 1px solid rgba(37, 211, 102, 0.38);
+    color: #25d366;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+
+    svg {
+      color: #25d366;
+    }
+
+    &:hover {
+      background: rgba(37, 211, 102, 0.25);
+      border-color: #25d366;
+      color: #86efac;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// Dark Mode Theme Overrides
+[data-theme="dark"] {
+  .order-details-app-modal {
+    .share-invoice-btn {
+      color: #c084fc !important;
+      border-color: rgba(168, 85, 247, 0.35) !important;
+      background: rgba(168, 85, 247, 0.1) !important;
+      svg {
+        color: #c084fc !important;
+      }
+      &:hover {
+        background: rgba(168, 85, 247, 0.22) !important;
+        color: #e9d5ff !important;
+      }
+    }
+    .whatsapp-chat-btn {
+      color: #4ade80 !important;
+      border-color: rgba(37, 211, 102, 0.35) !important;
+      background: rgba(37, 211, 102, 0.1) !important;
+      svg {
+        color: #4ade80 !important;
+      }
+      &:hover {
+        background: rgba(37, 211, 102, 0.22) !important;
+        color: #86efac !important;
+      }
+    }
+    .inline-wa-btn {
+      background: rgba(37, 211, 102, 0.14);
+      border-color: rgba(37, 211, 102, 0.35);
+      color: #4ade80;
+      svg {
+        color: #4ade80;
+      }
+      &:hover {
+        background: rgba(37, 211, 102, 0.28);
+        color: #86efac;
+      }
+    }
+  }
+}
+
+// Light Mode Theme Overrides
+[data-theme="light"] {
+  .order-details-app-modal {
+    .share-invoice-btn {
+      color: #7e22ce !important;
+      border-color: #e9d5ff !important;
+      background: #faf5ff !important;
+      svg {
+        color: #7e22ce !important;
+      }
+      &:hover {
+        background: #f3e8ff !important;
+        border-color: #a855f7 !important;
+        color: #6b21a8 !important;
+      }
+    }
+    .whatsapp-chat-btn {
+      color: #15803d !important;
+      border-color: #86efac !important;
+      background: #f0fdf4 !important;
+      svg {
+        color: #15803d !important;
+      }
+      &:hover {
+        background: #dcfce7 !important;
+        border-color: #22c55e !important;
+        color: #166534 !important;
+      }
+    }
+    .inline-wa-btn {
+      background: #f0fdf4;
+      border-color: #86efac;
+      color: #15803d;
+      svg {
+        color: #15803d;
+      }
+      &:hover {
+        background: #dcfce7;
+        border-color: #22c55e;
+        color: #166534;
       }
     }
   }

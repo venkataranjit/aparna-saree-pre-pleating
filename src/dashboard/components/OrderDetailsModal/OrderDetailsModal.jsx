@@ -10,8 +10,10 @@ import StraightenOutlinedIcon from "@mui/icons-material/StraightenOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import PaymentOutlinedIcon from "@mui/icons-material/PaymentOutlined";
-import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import ShareOutlinedIcon from "@mui/icons-material/ShareOutlined";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import CelebrationOutlinedIcon from "@mui/icons-material/CelebrationOutlined";
 import NotesOutlinedIcon from "@mui/icons-material/NotesOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -21,6 +23,8 @@ import { AppModal, AppButton, AppSpinner } from "../../../components/common";
 import CustomInvoiceModal, {
   mapOrderToInvoiceData,
   downloadInvoicePdfDirectly,
+  shareOrderPdfToWhatsApp,
+  openClientWhatsAppChat,
 } from "../CustomInvoiceModal/CustomInvoiceModal";
 import {
   formatDateSafe,
@@ -284,13 +288,25 @@ const OrderDetailsModal = ({
           <div className="actions-right">
             <AppButton
               variant="secondary"
-              startIcon={<ReceiptLongOutlinedIcon />}
+              startIcon={<FileDownloadOutlinedIcon />}
               onClick={() => downloadInvoicePdfDirectly(order)}
               className="custom-invoice-btn"
-              title="Download Order Details (PDF)"
-            >
-              Order Details
-            </AppButton>
+              title="Download Invoice (PDF)"
+            ></AppButton>
+            <AppButton
+              variant="secondary"
+              startIcon={<ShareOutlinedIcon />}
+              onClick={() => shareOrderPdfToWhatsApp(order)}
+              className="share-invoice-btn"
+              title="Share Invoice (PDF)"
+            ></AppButton>
+            <AppButton
+              variant="secondary"
+              startIcon={<WhatsAppIcon />}
+              onClick={() => openClientWhatsAppChat(order)}
+              className="whatsapp-chat-btn"
+              title="Chat on WhatsApp"
+            ></AppButton>
             <AppButton
               variant="primary"
               onClick={onClose}
@@ -325,9 +341,30 @@ const OrderDetailsModal = ({
               </div>
               <div className="info-row">
                 <span className="info-label">Mobile</span>
-                <span className="info-val">
-                  <PhoneOutlinedIcon className="inline-icon" />
-                  {clientMobile}
+                <span
+                  className="info-val"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <span>
+                    <PhoneOutlinedIcon className="inline-icon" />
+                    {clientMobile}
+                  </span>
+                  {clientMobile && clientMobile !== "—" && (
+                    <button
+                      type="button"
+                      className="inline-wa-btn"
+                      title="Open WhatsApp Chat"
+                      onClick={() => openClientWhatsAppChat(order)}
+                    >
+                      <WhatsAppIcon style={{ fontSize: 14 }} />
+                      <span>Chat</span>
+                    </button>
+                  )}
                 </span>
               </div>
               <div className="info-row">
@@ -379,7 +416,9 @@ const OrderDetailsModal = ({
                 <span className="info-label">Occasion / Event</span>
                 <span className="info-val">
                   <CelebrationOutlinedIcon className="inline-icon" />
-                  {order.occasion && String(order.occasion).trim() ? order.occasion : "-"}
+                  {order.occasion && String(order.occasion).trim()
+                    ? order.occasion
+                    : "-"}
                 </span>
               </div>
 

@@ -164,7 +164,10 @@ export const mapOrderToInvoiceData = (order) => {
     orderId: orderId,
     bookingDate: bookingDateStr,
     deliveryDate: deliveryDateStr,
-    occasion: order.occasion && String(order.occasion).trim() ? String(order.occasion).trim() : "-",
+    occasion:
+      order.occasion && String(order.occasion).trim()
+        ? String(order.occasion).trim()
+        : "-",
     orderStatus,
     paymentStatus,
     paymentMethod: order.paymentMethod || "UPI / Cash",
@@ -845,7 +848,46 @@ export const downloadInvoicePdfDirectly = async (order) => {
 };
 
 /**
- * Generates Order Details PDF and shares it to WhatsApp
+ * Opens client's direct WhatsApp chat window.
+ * If client phone number is available, launches wa.me direct chat with order greeting.
+ */
+export const openClientWhatsAppChat = (order) => {
+  if (!order) {
+    toast.error("No order selected.");
+    return;
+  }
+
+  const clientMobileRaw =
+    order.clientMobile ||
+    order.userMobile ||
+    order.phone ||
+    order.mobile ||
+    order.customerMobile ||
+    order.clientPhone ||
+    order.customerPhone ||
+    order.client?.mobile ||
+    "";
+
+  const cleanDigits = String(clientMobileRaw).replace(/[^0-9]/g, "");
+  if (!cleanDigits || cleanDigits.length < 10) {
+    toast.warning("No valid client mobile number found to open WhatsApp.");
+    return;
+  }
+
+  const formattedPhone =
+    cleanDigits.length === 10 ? `91${cleanDigits}` : cleanDigits;
+
+  const clientName = order.username || "";
+  const orderId = order.orderId || order.id || "";
+
+  const message = `Hai ${clientName} Garu`;
+
+  const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+  window.open(url, "_blank");
+};
+
+/**
+ * Generates Order Details PDF and shares it to WhatsApp / Share Sheet
  * On Android APK: Uses Capacitor Filesystem & Share to share the PDF directly with WhatsApp
  * On Web:
  *   - Mobile browser: Uses navigator.share with PDF file
@@ -1055,7 +1097,14 @@ export const shareOrderPdfToWhatsApp = async (order) => {
     if (Capacitor.isNativePlatform()) {
       const pdfBase64 = pdf.output("datauristring").split(",")[1];
 
-      // Save PDF to Documents for permanent access
+      // Save PDF to Cache for WhatsApp file attachment
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: pdfBase64,
+        directory: Directory.Cache,
+      });
+
+      // Also save to Documents for user records
       try {
         await Filesystem.writeFile({
           path: fileName,
@@ -1066,31 +1115,28 @@ export const shareOrderPdfToWhatsApp = async (order) => {
         console.warn("Could not save to Documents:", docErr);
       }
 
-      // Save PDF to Cache for sharing (required for Share plugin)
-      const savedFile = await Filesystem.writeFile({
-        path: fileName,
-        data: pdfBase64,
-        directory: Directory.Cache,
-      });
-
       toast.dismiss(toastId);
-      toast.info(`Select WhatsApp → search "${clientName}" to send the PDF`, {
-        autoClose: 5000,
-      });
 
-      // Open share sheet with PDF attached + message text
-      // When user picks WhatsApp, the PDF will be attached and message pre-filled
+      // Open Android/iOS Share Intent with PDF file attached + message text
       try {
         await Share.share({
           title: `Order Details - ${orderId}`,
           text: whatsappMessage,
           url: savedFile.uri,
-          dialogTitle: `Share Order PDF via WhatsApp`,
+          dialogTitle: `Send Invoice to WhatsApp`,
         });
-        toast.success(`Order PDF shared for #${orderId}`);
+        toast.success(
+          `PDF attached! Select WhatsApp to send to ${clientName}.`,
+        );
       } catch (shareErr) {
-        console.log("Share dismissed:", shareErr);
-        toast.success(`Order PDF saved to your device for #${orderId}`);
+        if (shareErr?.message !== "Share canceled") {
+          // Fallback to direct WhatsApp link
+          const encoded = encodeURIComponent(whatsappMessage);
+          const waUrl = formattedPhone
+            ? `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encoded}`
+            : `https://api.whatsapp.com/send?text=${encoded}`;
+          window.open(waUrl, "_system");
+        }
       }
     } else {
       // Web platform (Desktop / Mobile Browser)
@@ -1111,20 +1157,24 @@ export const shareOrderPdfToWhatsApp = async (order) => {
             text: whatsappMessage,
             files: [pdfFile],
           });
-          toast.success("Order details shared via WhatsApp!");
+          toast.success(
+            `PDF attached! Select WhatsApp to send to ${clientName}.`,
+          );
         } catch (shareErr) {
           if (shareErr.name !== "AbortError") {
             pdf.save(fileName);
             const encoded = encodeURIComponent(whatsappMessage);
             const waUrl = formattedPhone
-              ? `https://web.whatsapp.com/send?phone=${formattedPhone}&text=${encoded}`
-              : `https://web.whatsapp.com/send?text=${encoded}`;
+              ? `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encoded}`
+              : `https://api.whatsapp.com/send?text=${encoded}`;
             window.open(waUrl, "_blank");
-            toast.success(`PDF downloaded! WhatsApp opened for ${clientName}`);
+            toast.info(
+              `PDF downloaded. Attach the downloaded PDF in WhatsApp chat.`,
+            );
           }
         }
       } else {
-        // Desktop Web Browser: Download PDF + open WhatsApp chat
+        // Desktop Web Browser: download PDF + open WhatsApp chat
         pdf.save(fileName);
         toast.dismiss(toastId);
 
@@ -1134,8 +1184,8 @@ export const shareOrderPdfToWhatsApp = async (order) => {
           : `https://web.whatsapp.com/send?text=${encoded}`;
 
         window.open(waUrl, "_blank");
-        toast.success(
-          `Order PDF downloaded! WhatsApp chat opened — attach the downloaded PDF to send.`,
+        toast.info(
+          `Invoice PDF downloaded! WhatsApp chat opened — click 📎 to attach the downloaded PDF.`,
         );
       }
     }

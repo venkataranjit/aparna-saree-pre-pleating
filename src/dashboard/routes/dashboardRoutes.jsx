@@ -1,5 +1,6 @@
 import React from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
+import { ProtectedRoute } from '../../components/routes/ProtectedRoute';
 import Overview from '../pages/Overview/Overview';
 import Bookings from '../pages/Bookings/Bookings';
 import Services from '../pages/Services/Services';
@@ -12,7 +13,11 @@ import HelpSupport from '../pages/HelpSupport/HelpSupport';
 export const dashboardRoutes = [
   {
     path: '/dashboard',
-    element: <DashboardLayout />,
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,

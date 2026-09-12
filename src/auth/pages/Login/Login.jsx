@@ -1,7 +1,7 @@
 import { ThemeToggle } from '../../../components/common/ThemeToggle/ThemeToggle';
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
   signInWithPhoneNumber,
@@ -111,7 +111,12 @@ const FacebookLoader = () => (
 
 const Login = () => {
   const navigate = useNavigate();
-  const { currentUser, refreshProfile } = useAuth();
+  const { currentUser, loading: authLoading, refreshProfile } = useAuth();
+
+  // Synchronous guard: If already authenticated, redirect directly to dashboard
+  if (!authLoading && currentUser) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   // Redirect if already authenticated
   useEffect(() => {

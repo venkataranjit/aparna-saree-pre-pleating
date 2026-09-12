@@ -10,10 +10,11 @@ import NotFound from './dashboard/pages/NotFound/NotFound';
 import { AuthProvider, useAuth } from './auth/context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { PageLoader } from './components/common';
+import { PublicRoute } from './components/routes/ProtectedRoute';
 import './App.scss';
 
 function AppContent() {
-  const { loading } = useAuth();
+  const { currentUser, loading } = useAuth();
   const [animationDone, setAnimationDone] = React.useState(false);
   const [pageLoaded, setPageLoaded] = React.useState(false);
 
@@ -42,10 +43,19 @@ function AppContent() {
   return (
     <div className="app-root">
       <Routes>
-        {/* Default route points directly to dashboard since dashboard is active */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        {/* Default route: If authenticated -> /dashboard, if unauthenticated -> /login directly */}
+        <Route
+          path="/"
+          element={
+            currentUser ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
 
-        {/* Dashboard module routes */}
+        {/* Dashboard module routes (Guarded by ProtectedRoute) */}
         {dashboardRoutes.map((route) => (
           <Route key={route.path} path={route.path} element={route.element}>
             {route.children?.map((child) => (
@@ -64,10 +74,31 @@ function AppContent() {
           <Route key={route.path} path={route.path} element={route.element} />
         ))}
 
-        {/* Authentication routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        {/* Authentication routes (Public Only) */}
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPassword />
+            </PublicRoute>
+          }
+        />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/auth/action" element={<ResetPassword />} />
         <Route path="/__/auth/action" element={<ResetPassword />} />

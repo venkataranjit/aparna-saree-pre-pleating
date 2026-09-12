@@ -886,10 +886,6 @@ const MyProfile = () => {
                             ? `${items.length} Services Booked`
                             : items[0]?.serviceName || "Saree Pre-Pleating"}
                         </h4>
-                        <div className="fabric-chip">
-                          <span className="fabric-label">Fabric: </span>
-                          <span className="fabric-val">{fabricSummary}</span>
-                        </div>
                       </div>
 
                       {items.length > 1 && (
@@ -899,8 +895,7 @@ const MyProfile = () => {
                               <DryCleaningOutlinedIcon
                                 style={{ fontSize: 12, marginRight: 4 }}
                               />
-                              {it.serviceName} ({it.sareeType || "Saree"}) — ₹
-                              {it.finalPrice || 0}
+                              {it.serviceName} — ₹{it.finalPrice || 0}
                             </span>
                           ))}
                         </div>

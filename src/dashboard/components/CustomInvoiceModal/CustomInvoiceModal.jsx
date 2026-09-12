@@ -1043,9 +1043,9 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     background: #08182b;
     color: #ffffff !important;
     text-decoration: none !important;
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-radius: 9999px;
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 600;
     line-height: 1;
     letter-spacing: 0.3px;
@@ -1058,9 +1058,43 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1;
     margin-left: 2px;
+  }
+
+  #order-pdf-export-container .thankyou-follow-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  #order-pdf-export-container .thankyou-follow-row .follow-label {
+    font-size: 7.5px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #64748b;
+    text-transform: uppercase;
+  }
+
+  #order-pdf-export-container .thankyou-follow-row .social-icons-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  #order-pdf-export-container .thankyou-follow-row .social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #ebdccb;
+    color: #08182b;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
 
   #order-pdf-export-container .signature-section {
@@ -1105,99 +1139,124 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     background: #ffffff;
   }
 
-  #order-pdf-export-container .footer-top-line {
-    width: 100%;
-    height: 1.5px;
-    background: #caa368;
+  #order-pdf-export-container .footer-top-line-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 24px;
     margin-bottom: 8px;
+  }
+
+  #order-pdf-export-container .footer-top-line {
+    flex: 1;
+    height: 1px;
+    background: #caa368;
+    opacity: 0.8;
+  }
+
+  #order-pdf-export-container .footer-top-diamond {
+    color: #caa368;
+    font-size: 8px;
+    line-height: 1;
   }
 
   #order-pdf-export-container .footer-contact-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: stretch;
     padding: 0 24px 8px 24px;
-    gap: 12px;
+    gap: 14px;
     box-sizing: border-box;
   }
 
   #order-pdf-export-container .footer-col {
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 10px;
+    flex: 1;
   }
 
-  #order-pdf-export-container .footer-icon {
-    display: inline-flex;
+  #order-pdf-export-container .footer-col-divider {
+    width: 1px;
+    height: 36px;
+    background: #e8d7c2;
+    opacity: 0.75;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  #order-pdf-export-container .footer-icon-wrap {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #fdfaf6;
+    border: 1px solid #caa368;
+    display: flex;
     align-items: center;
     justify-content: center;
-    color: #08182b;
     flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(202, 163, 104, 0.15);
   }
 
   #order-pdf-export-container .footer-text-block {
-    font-size: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  #order-pdf-export-container .footer-col-title {
+    font-size: 7.5px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: #caa368;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    line-height: 1;
+  }
+
+  #order-pdf-export-container .address-line {
+    font-size: 9.5px;
     color: #08182b;
     line-height: 1.35;
     font-weight: 500;
   }
 
   #order-pdf-export-container .phone-num {
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: 700;
     color: #08182b;
-    line-height: 1.25;
-  }
-
-  #order-pdf-export-container .timing-text {
-    font-size: 9px;
-    color: #475569;
-    font-weight: 500;
-    margin-top: 1.5px;
     line-height: 1.2;
   }
 
-  #order-pdf-export-container .email-text {
-    font-size: 10.5px;
+  #order-pdf-export-container .timing-badge {
+    font-size: 8.5px;
+    color: #64748b;
     font-weight: 600;
-    color: #08182b;
+    margin-top: 1.5px;
+    line-height: 1.1;
   }
 
-  #order-pdf-export-container .footer-col-social {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    flex-shrink: 0;
-  }
-
-  #order-pdf-export-container .social-icons-row {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-  }
-
-  #order-pdf-export-container .social-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #08182b;
-  }
-
-  #order-pdf-export-container .follow-us-text {
-    font-size: 7.5px;
+  #order-pdf-export-container .email-text {
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 2px;
     color: #08182b;
-    text-transform: uppercase;
+    line-height: 1.2;
+  }
+
+  #order-pdf-export-container .web-text {
+    font-size: 8.5px;
+    font-weight: 500;
+    color: #64748b;
+    margin-top: 1px;
+    line-height: 1.1;
   }
 
   #order-pdf-export-container .footer-tagline-row {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 24px 12px 24px;
+    padding: 0 24px 10px 24px;
     gap: 8px;
     box-sizing: border-box;
   }
@@ -1216,7 +1275,7 @@ export const INVOICE_PDF_INTERNAL_CSS = `
   }
 
   #order-pdf-export-container .tagline-text {
-    font-size: 10px;
+    font-size: 9.5px;
     font-weight: 700;
     letter-spacing: 2.5px;
     color: #08182b;
@@ -1252,7 +1311,9 @@ export const buildDossierGridHtml = (data = {}) => {
   );
 
   const occasionRowHtml =
-    data.occasion && data.occasion !== "-" && String(data.occasion).trim() !== ""
+    data.occasion &&
+    data.occasion !== "-" &&
+    String(data.occasion).trim() !== ""
       ? `
         <tr>
           <td class="kv-key">Occasion</td>
@@ -1518,7 +1579,10 @@ export const buildBottomGridHtml = (data = {}) => {
             <li>Please use the pre-pleated saree within 2 months.</li>
             <li>After using the pre-pleated saree, please iron it before storing.</li>
             <li>Do not put weight on pre-pleated sarees, especially fluffy pleats.</li>
-          </ul>
+            <li>Avoid folding or pressing the pleats unnecessarily.</li>
+            <li>Keep the pre-pleated saree in a dry and clean place.</li>
+            <li>For any issues, please contact Aparna Saree Pre-Pleating.</li>
+            </ul>
         </div>
       </div>
 
@@ -1568,6 +1632,15 @@ export const buildThankYouBannerHtml = () => {
       style={{ fontSize: 13, color: "#ffffff", verticalAlign: "middle" }}
     />,
   );
+  const instaIcon = renderToStaticMarkup(
+    <InstagramIcon style={{ fontSize: 13, color: "#08182b" }} />,
+  );
+  const waIcon = renderToStaticMarkup(
+    <WhatsAppIcon style={{ fontSize: 13, color: "#08182b" }} />,
+  );
+  const fbIcon = renderToStaticMarkup(
+    <FacebookIcon style={{ fontSize: 13, color: "#08182b" }} />,
+  );
 
   return `
     <div class="thankyou-banner-card">
@@ -1592,6 +1665,14 @@ export const buildThankYouBannerHtml = () => {
             <span>Review Us</span>
             <span class="cta-arrow-icon">${arrowIcon}</span>
           </a>
+          <div class="thankyou-follow-row">
+            <span class="follow-label">Follow Us:</span>
+            <div class="social-icons-row">
+              <span class="social-icon" title="Instagram">${instaIcon}</span>
+              <span class="social-icon" title="WhatsApp">${waIcon}</span>
+              <span class="social-icon" title="Facebook">${fbIcon}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1609,58 +1690,52 @@ export const buildSignatureSectionHtml = () => `
 
 export const buildLuxuryFooterHtml = () => {
   const locIcon = renderToStaticMarkup(
-    <LocationOnOutlinedIcon style={{ fontSize: 18, color: "#08182b" }} />,
+    <LocationOnOutlinedIcon style={{ fontSize: 16, color: "#caa368" }} />,
   );
   const phoneIcon = renderToStaticMarkup(
-    <PhoneOutlinedIcon style={{ fontSize: 17, color: "#08182b" }} />,
+    <PhoneOutlinedIcon style={{ fontSize: 15, color: "#caa368" }} />,
   );
   const emailIcon = renderToStaticMarkup(
-    <EmailOutlinedIcon style={{ fontSize: 17, color: "#08182b" }} />,
-  );
-  const instaIcon = renderToStaticMarkup(
-    <InstagramIcon style={{ fontSize: 16, color: "#08182b" }} />,
-  );
-  const waIcon = renderToStaticMarkup(
-    <WhatsAppIcon style={{ fontSize: 16, color: "#08182b" }} />,
-  );
-  const fbIcon = renderToStaticMarkup(
-    <FacebookIcon style={{ fontSize: 16, color: "#08182b" }} />,
+    <EmailOutlinedIcon style={{ fontSize: 15, color: "#caa368" }} />,
   );
 
   return `
     <div class="pdf-luxury-footer">
-      <div class="footer-top-line"></div>
+      <div class="footer-top-line-wrap">
+        <div class="footer-top-line"></div>
+        <span class="footer-top-diamond">❖</span>
+        <div class="footer-top-line"></div>
+      </div>
       <div class="footer-contact-row">
         <div class="footer-col footer-col-address">
-          <span class="footer-icon">${locIcon}</span>
+          <div class="footer-icon-wrap">${locIcon}</div>
           <div class="footer-text-block">
-            <div>H.No. 4715, 1st Floor, Road No. 17,</div>
-            <div>New MIG, BHEL, Hyderabad - 502032</div>
+            <div class="footer-col-title">STUDIO ADDRESS</div>
+            <div class="address-line">H.No. 4715, 1st Floor, Road No. 17,</div>
+            <div class="address-line">New MIG, BHEL, Hyderabad - 502032</div>
           </div>
         </div>
+
+        <div class="footer-col-divider"></div>
 
         <div class="footer-col footer-col-phone">
-          <span class="footer-icon">${phoneIcon}</span>
+          <div class="footer-icon-wrap">${phoneIcon}</div>
           <div class="footer-text-block">
-            <div class="phone-num">+91 98765 43210</div>
-            <div class="timing-text">Mon - Sat | 10:00 AM - 7:00 PM</div>
+            <div class="footer-col-title">CALL & WHATSAPP SUPPORT</div>
+            <div class="phone-num">+91 95539 00003</div>
+            <div class="timing-badge">Mon - Sun • 10:00 AM - 10:00 PM</div>
           </div>
         </div>
+
+        <div class="footer-col-divider"></div>
 
         <div class="footer-col footer-col-email">
-          <span class="footer-icon">${emailIcon}</span>
+          <div class="footer-icon-wrap">${emailIcon}</div>
           <div class="footer-text-block">
-            <div class="email-text">support@aparnasaree.com</div>
+            <div class="footer-col-title">ONLINE ASSISTANCE</div>
+            <div class="email-text">aparnaaarvi@gmail.com</div>
+            <div class="web-text">https://aparnapleats-dev.vercel.app/landing</div>
           </div>
-        </div>
-
-        <div class="footer-col footer-col-social">
-          <div class="social-icons-row">
-            <span class="social-icon">${instaIcon}</span>
-            <span class="social-icon">${waIcon}</span>
-            <span class="social-icon">${fbIcon}</span>
-          </div>
-          <div class="follow-us-text">FOLLOW US</div>
         </div>
       </div>
 
@@ -1768,9 +1843,7 @@ export const generateOrderInvoicePdf = async (
 
   const rowHeights = (data.services || []).map(estimateRowHeight);
   const totalServicesHeight =
-    totalServices > 0
-      ? 55 + rowHeights.reduce((sum, h) => sum + h, 0)
-      : 0;
+    totalServices > 0 ? 55 + rowHeights.reduce((sum, h) => sum + h, 0) : 0;
 
   // Bottom cards: Special Notes & Payment Summary (175) + Thank You (92) + Signature (60) = 327px
   const BOTTOM_BLOCKS_HEIGHT = 327;
@@ -1811,7 +1884,9 @@ export const generateOrderInvoicePdf = async (
       serviceIdx < totalServices &&
       page1TableHeight + rowHeights[serviceIdx] <= PAGE1_AVAILABLE_FOR_REST - 30
     ) {
-      page1Rows.push(buildServiceRowHtml(data.services[serviceIdx], serviceIdx));
+      page1Rows.push(
+        buildServiceRowHtml(data.services[serviceIdx], serviceIdx),
+      );
       page1TableHeight += rowHeights[serviceIdx];
       serviceIdx++;
     }
@@ -1819,7 +1894,9 @@ export const generateOrderInvoicePdf = async (
     const page1Body = [
       buildMainHeadingHtml("ORDER DETAILS"),
       buildDossierGridHtml(data),
-      page1Rows.length > 0 ? buildServicesTableHtml(page1Rows.join(""), false) : "",
+      page1Rows.length > 0
+        ? buildServicesTableHtml(page1Rows.join(""), false)
+        : "",
     ].join("");
 
     pages.push(page1Body);
@@ -1833,9 +1910,14 @@ export const generateOrderInvoicePdf = async (
 
       while (
         serviceIdx < totalServices &&
-        currentPageTableHeight + rowHeights[serviceIdx] + BOTTOM_BLOCKS_HEIGHT <= PAGE2_AVAILABLE
+        currentPageTableHeight +
+          rowHeights[serviceIdx] +
+          BOTTOM_BLOCKS_HEIGHT <=
+          PAGE2_AVAILABLE
       ) {
-        currentPageRows.push(buildServiceRowHtml(data.services[serviceIdx], serviceIdx));
+        currentPageRows.push(
+          buildServiceRowHtml(data.services[serviceIdx], serviceIdx),
+        );
         currentPageTableHeight += rowHeights[serviceIdx];
         serviceIdx++;
       }
@@ -1843,9 +1925,12 @@ export const generateOrderInvoicePdf = async (
       if (currentPageRows.length === 0 && serviceIdx < totalServices) {
         while (
           serviceIdx < totalServices &&
-          currentPageTableHeight + rowHeights[serviceIdx] <= PAGE2_AVAILABLE - 30
+          currentPageTableHeight + rowHeights[serviceIdx] <=
+            PAGE2_AVAILABLE - 30
         ) {
-          currentPageRows.push(buildServiceRowHtml(data.services[serviceIdx], serviceIdx));
+          currentPageRows.push(
+            buildServiceRowHtml(data.services[serviceIdx], serviceIdx),
+          );
           currentPageTableHeight += rowHeights[serviceIdx];
           serviceIdx++;
         }
@@ -1853,7 +1938,9 @@ export const generateOrderInvoicePdf = async (
 
       const pageBodyParts = [
         buildMainHeadingHtml("ORDER DETAILS (CONTINUED)"),
-        currentPageRows.length > 0 ? buildServicesTableHtml(currentPageRows.join(""), true) : "",
+        currentPageRows.length > 0
+          ? buildServicesTableHtml(currentPageRows.join(""), true)
+          : "",
       ];
 
       if (serviceIdx >= totalServices) {
@@ -1939,7 +2026,9 @@ export const generateOrderInvoicePdf = async (
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    const pageDivs = Array.from(container.querySelectorAll(".invoice-pdf-page"));
+    const pageDivs = Array.from(
+      container.querySelectorAll(".invoice-pdf-page"),
+    );
 
     for (let pageIdx = 0; pageIdx < pageDivs.length; pageIdx++) {
       const pageDiv = pageDivs[pageIdx];

@@ -43,17 +43,10 @@ function AppContent() {
   return (
     <div className="app-root">
       <Routes>
-        {/* Default route: If authenticated -> /dashboard, if unauthenticated -> /login directly */}
-        <Route
-          path="/"
-          element={
-            currentUser ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
+        {/* Landing page module routes (Root / serves LandingPageNew) */}
+        {landingRoutes.map((route) => (
+          <Route key={route.path} path={route.path} element={route.element} />
+        ))}
 
         {/* Dashboard module routes (Guarded by ProtectedRoute) */}
         {dashboardRoutes.map((route) => (
@@ -69,10 +62,6 @@ function AppContent() {
           </Route>
         ))}
 
-        {/* Landing page module routes */}
-        {landingRoutes.map((route) => (
-          <Route key={route.path} path={route.path} element={route.element} />
-        ))}
 
         {/* Authentication routes (Public Only) */}
         <Route

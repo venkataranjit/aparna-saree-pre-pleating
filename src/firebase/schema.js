@@ -148,16 +148,28 @@ export const createUserModel = ({
 };
 
 /**
+ * Service Types
+ */
+export const SERVICE_TYPES = [
+  "Pleating Service",
+  "Draping Service",
+  "Other Service",
+];
+
+/**
  * 3. Service Model
  * @param {Object} data
  * @param {string} data.serviceName
+ * @param {string} [data.serviceType='Pleating Service']
  * @param {number} data.servicePrice
  * @param {number} data.serviceDiscountedPrice
  * @param {string} [data.description]
  * @param {boolean} [data.active=true]
+ * @param {number} [data.displayOrder=0]
  */
 export const createServiceModel = ({
   serviceName = "",
+  serviceType = "Pleating Service",
   servicePrice = 0,
   serviceDiscountedPrice = 0,
   description = "",
@@ -165,6 +177,7 @@ export const createServiceModel = ({
   displayOrder = 0,
 } = {}) => ({
   serviceName: String(serviceName).trim(),
+  serviceType: String(serviceType || "Pleating Service").trim(),
   servicePrice: Number(servicePrice) || 0,
   serviceDiscountedPrice: Number(serviceDiscountedPrice) || 0,
   description: String(description || "").trim(),
@@ -268,6 +281,7 @@ export const createOrderModel = ({
   email = "",
   userAddress = "",
   client = null,
+  serviceType = "",
   items = [],
   subtotal = 0,
   pickupDeliveryCharges = 0,
@@ -302,6 +316,7 @@ export const createOrderModel = ({
     itemId: it.itemId || `item_${idx + 1}_${Date.now()}`,
     serviceId: it.serviceId || "",
     serviceName: it.serviceName || "",
+    serviceType: String(it.serviceType || serviceType || "Pleating Service").trim(),
     servicePrice: Number(it.servicePrice) || 0,
     serviceDiscountedPrice: Number(it.serviceDiscountedPrice) || 0,
     serviceDescription: it.serviceDescription || it.description || "",
@@ -339,6 +354,7 @@ export const createOrderModel = ({
     email: String(clientObj.email || email || "").trim(),
     userAddress: String(clientObj.userAddress || userAddress || "").trim(),
     client: clientObj,
+    serviceType: String(serviceType || cleanItems[0]?.serviceType || "Pleating Service").trim(),
     items: cleanItems,
     totalItems: cleanItems.length,
     subtotal: resolvedSubtotal,

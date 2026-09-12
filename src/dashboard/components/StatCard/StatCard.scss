@@ -169,6 +169,18 @@
     }
   }
 
+  &__sub-value {
+    color: $text-muted !important;
+    font-size: 0.98rem !important;
+    font-weight: 500 !important;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.2px;
+
+    @media (max-width: 600px) {
+      font-size: 0.88rem !important;
+    }
+  }
+
   // Previous month small comparison chip
   &__prev-box {
     display: inline-flex;
@@ -210,6 +222,50 @@
   &__footer {
     display: flex;
     align-items: center;
+
+    &--custom {
+      width: 100%;
+      margin-top: 2px;
+    }
+  }
+
+  .stat-card-breakdown-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: $text-muted;
+    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.08));
+    border: 1px solid $surface-border;
+    border-radius: 999px;
+    padding: 3px 10px;
+    width: fit-content;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    @media (max-width: 600px) {
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      gap: 4px;
+    }
+
+    .breakdown-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+
+      strong {
+        color: var(--color-gold, #d4af37);
+        font-weight: 700;
+      }
+    }
+
+    .breakdown-divider {
+      color: $text-muted;
+      opacity: 0.45;
+    }
   }
 
   &__badge {

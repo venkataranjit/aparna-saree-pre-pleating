@@ -872,14 +872,14 @@ const OrderDetailsModal = ({
             ) : (
               <div
                 className="pay-row"
-                style={{ marginTop: 4, color: "#f59e0b" }}
+                style={{ marginTop: 4, color: "#ef4444" }}
               >
-                <span className="pay-label" style={{ color: "#f59e0b" }}>
+                <span className="pay-label" style={{ color: "#ef4444" }}>
                   Balance Due:
                 </span>
                 <span
                   className="pay-val"
-                  style={{ color: "#f59e0b", fontWeight: 700 }}
+                  style={{ color: "#ef4444", fontWeight: 700 }}
                 >
                   ₹{Number(balanceDue).toLocaleString("en-IN")}
                 </span>

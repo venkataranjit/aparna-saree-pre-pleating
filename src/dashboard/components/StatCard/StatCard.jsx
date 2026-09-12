@@ -13,6 +13,8 @@ const StatCard = ({
   icon,
   change,
   trendType = 'up',
+  customFooter = null,
+  children,
 }) => {
   const renderTrendIcon = () => {
     if (trendType === 'completed') {
@@ -65,8 +67,12 @@ const StatCard = ({
         )}
       </div>
 
-      {/* Footer: Trend / Status Pill */}
-      {change && (
+      {/* Footer: Trend / Status Pill or Custom Footer */}
+      {customFooter ? (
+        <div className="stat-card__footer stat-card__footer--custom">
+          {customFooter}
+        </div>
+      ) : change ? (
         <div className="stat-card__footer">
           <div className={`stat-card__badge ${trendType}`}>
             {renderTrendIcon()}
@@ -75,7 +81,9 @@ const StatCard = ({
             </span>
           </div>
         </div>
-      )}
+      ) : null}
+
+      {children}
     </div>
   );
 };

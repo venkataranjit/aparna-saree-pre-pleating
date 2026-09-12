@@ -12,8 +12,8 @@ import {
   orderBy,
   serverTimestamp,
   writeBatch,
-} from 'firebase/firestore';
-import { initializeApp, getApps } from 'firebase/app';
+} from "firebase/firestore";
+import { initializeApp, getApps } from "firebase/app";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -22,8 +22,8 @@ import {
   signInWithEmailAndPassword,
   updatePassword,
   sendPasswordResetEmail,
-} from 'firebase/auth';
-import { db, auth, firebaseConfig } from './config';
+} from "firebase/auth";
+import { db, auth, firebaseConfig } from "./config";
 import {
   COLLECTIONS,
   USER_ROLES,
@@ -38,7 +38,7 @@ import {
   createExpenseModel,
   EXPENSE_CATEGORIES,
   EXPENSE_PAYMENT_METHODS,
-} from './schema';
+} from "./schema";
 
 /**
  * ============================================================================
@@ -70,8 +70,18 @@ export const getBusinessById = async (businessId) => {
 };
 
 const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
 /**
@@ -82,28 +92,30 @@ const MONTH_NAMES = [
  * @param {string} [customFallback] - Optional custom fallback string if value is completely invalid
  * @returns {string} - Date formatted as "dd-mmm-yyyy"
  */
-export const formatDateSafe = (val, customFallback = '-') => {
+export const formatDateSafe = (val, customFallback = "-") => {
   const getFormatted = (d) => {
     if (!d || isNaN(d.getTime())) return null;
-    const day = String(d.getDate()).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, "0");
     const month = MONTH_NAMES[d.getMonth()];
     const year = d.getFullYear();
     return `${day}-${month}-${year}`;
   };
 
   const getFallback = () => {
-    return customFallback !== null && customFallback !== undefined ? customFallback : '-';
+    return customFallback !== null && customFallback !== undefined
+      ? customFallback
+      : "-";
   };
 
   if (
     !val ||
-    val === 'Recent' ||
-    val === 'recent' ||
-    val === 'null' ||
-    val === 'undefined' ||
-    val === '[object Object]' ||
-    val === '-' ||
-    val === '—'
+    val === "Recent" ||
+    val === "recent" ||
+    val === "null" ||
+    val === "undefined" ||
+    val === "[object Object]" ||
+    val === "-" ||
+    val === "—"
   ) {
     return getFallback();
   }
@@ -114,7 +126,7 @@ export const formatDateSafe = (val, customFallback = '-') => {
   }
 
   // 2. Firestore Timestamp object with .toDate()
-  if (typeof val === 'object' && typeof val.toDate === 'function') {
+  if (typeof val === "object" && typeof val.toDate === "function") {
     try {
       return getFormatted(val.toDate()) || getFallback();
     } catch {
@@ -123,7 +135,7 @@ export const formatDateSafe = (val, customFallback = '-') => {
   }
 
   // 3. Object with seconds: { seconds: ..., nanoseconds: ... }
-  if (typeof val === 'object' && typeof val.seconds === 'number') {
+  if (typeof val === "object" && typeof val.seconds === "number") {
     try {
       return getFormatted(new Date(val.seconds * 1000)) || getFallback();
     } catch {
@@ -132,7 +144,7 @@ export const formatDateSafe = (val, customFallback = '-') => {
   }
 
   // 4. Number (epoch milliseconds or seconds)
-  if (typeof val === 'number') {
+  if (typeof val === "number") {
     try {
       const ms = val < 10000000000 ? val * 1000 : val;
       return getFormatted(new Date(ms)) || getFallback();
@@ -142,15 +154,15 @@ export const formatDateSafe = (val, customFallback = '-') => {
   }
 
   // 5. String parsing
-  if (typeof val === 'string') {
+  if (typeof val === "string") {
     const trimmed = val.trim();
     if (
-      trimmed === 'Recent' ||
-      trimmed === 'recent' ||
-      trimmed === '[object Object]' ||
-      trimmed === '' ||
-      trimmed === '-' ||
-      trimmed === '—'
+      trimmed === "Recent" ||
+      trimmed === "recent" ||
+      trimmed === "[object Object]" ||
+      trimmed === "" ||
+      trimmed === "-" ||
+      trimmed === "—"
     ) {
       return getFallback();
     }
@@ -158,14 +170,17 @@ export const formatDateSafe = (val, customFallback = '-') => {
     // Check if already in "dd-mmm-yyyy" (e.g. "06-Sep-2026" or "6-Sep-2026")
     const ddMmmMatch = trimmed.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})/);
     if (ddMmmMatch) {
-      const day = String(ddMmmMatch[1]).padStart(2, '0');
+      const day = String(ddMmmMatch[1]).padStart(2, "0");
       const mRaw = ddMmmMatch[2];
-      const mStr = mRaw.charAt(0).toUpperCase() + mRaw.slice(1, 3).toLowerCase();
+      const mStr =
+        mRaw.charAt(0).toUpperCase() + mRaw.slice(1, 3).toLowerCase();
       return `${day}-${mStr}-${ddMmmMatch[3]}`;
     }
 
     // Check for "dd/mm/yyyy" or "dd-mm-yyyy"
-    const ddmmyyyyMatch = trimmed.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    const ddmmyyyyMatch = trimmed.match(
+      /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/,
+    );
     if (ddmmyyyyMatch) {
       const day = parseInt(ddmmyyyyMatch[1], 10);
       const month = parseInt(ddmmyyyyMatch[2], 10) - 1;
@@ -175,7 +190,9 @@ export const formatDateSafe = (val, customFallback = '-') => {
     }
 
     // Check for "yyyy-mm-dd" or "yyyy/mm/dd"
-    const yyyymmddMatch = trimmed.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+    const yyyymmddMatch = trimmed.match(
+      /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/,
+    );
     if (yyyymmddMatch) {
       const year = parseInt(yyyymmddMatch[1], 10);
       const month = parseInt(yyyymmddMatch[2], 10) - 1;
@@ -206,13 +223,13 @@ export const formatDateSafe = (val, customFallback = '-') => {
 export const formatTimeSafe = (val) => {
   if (
     !val ||
-    val === 'Recent' ||
-    val === 'recent' ||
-    val === 'null' ||
-    val === 'undefined' ||
-    val === '[object Object]' ||
-    val === '-' ||
-    val === '—'
+    val === "Recent" ||
+    val === "recent" ||
+    val === "null" ||
+    val === "undefined" ||
+    val === "[object Object]" ||
+    val === "-" ||
+    val === "—"
   ) {
     return null;
   }
@@ -224,26 +241,27 @@ export const formatTimeSafe = (val) => {
     dateObj = isNaN(val.getTime()) ? null : val;
   }
   // 2. Firestore Timestamp object with .toDate()
-  else if (typeof val === 'object' && typeof val.toDate === 'function') {
+  else if (typeof val === "object" && typeof val.toDate === "function") {
     try {
       dateObj = val.toDate();
     } catch {}
   }
   // 3. Object with seconds: { seconds: ..., nanoseconds: ... }
-  else if (typeof val === 'object' && typeof val.seconds === 'number') {
+  else if (typeof val === "object" && typeof val.seconds === "number") {
     dateObj = new Date(
-      val.seconds * 1000 + (val.nanoseconds ? Math.round(val.nanoseconds / 1000000) : 0)
+      val.seconds * 1000 +
+        (val.nanoseconds ? Math.round(val.nanoseconds / 1000000) : 0),
     );
   }
   // 4. Number (epoch milliseconds or seconds)
-  else if (typeof val === 'number') {
+  else if (typeof val === "number") {
     const ms = val < 10000000000 ? val * 1000 : val;
     dateObj = new Date(ms);
   }
   // 5. String parsing
-  else if (typeof val === 'string') {
+  else if (typeof val === "string") {
     const trimmed = val.trim();
-    if (!trimmed || trimmed === '-' || trimmed === '—') return null;
+    if (!trimmed || trimmed === "-" || trimmed === "—") return null;
 
     // Check if it is a pure date string without time component
     if (
@@ -254,7 +272,7 @@ export const formatTimeSafe = (val) => {
       return null;
     }
 
-    if (trimmed.includes('T') || trimmed.includes(':')) {
+    if (trimmed.includes("T") || trimmed.includes(":")) {
       const parsed = new Date(trimmed);
       if (!isNaN(parsed.getTime())) {
         dateObj = parsed;
@@ -267,11 +285,11 @@ export const formatTimeSafe = (val) => {
   }
 
   let hours = dateObj.getHours();
-  const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
   hours = hours % 12;
   hours = hours ? hours : 12;
-  const formattedHours = String(hours).padStart(2, '0');
+  const formattedHours = String(hours).padStart(2, "0");
 
   return `${formattedHours}:${minutes} ${ampm}`;
 };
@@ -280,7 +298,7 @@ export const formatTimeSafe = (val) => {
  * Extract structured date and time safe for table cells.
  * Returns { date: '05-Sep-2026', time: '08:45 PM' | null }
  */
-export const formatDateTimeSafe = (val, customFallback = '-') => {
+export const formatDateTimeSafe = (val, customFallback = "-") => {
   return {
     date: formatDateSafe(val, customFallback),
     time: formatTimeSafe(val),
@@ -292,33 +310,48 @@ export const formatDateTimeSafe = (val, customFallback = '-') => {
  * to epoch milliseconds for exact comparison. Returns NaN if invalid or empty.
  */
 export const getTimestampMillis = (val) => {
-  if (!val || val === '-' || val === '—' || val === 'null' || val === 'undefined') {
+  if (
+    !val ||
+    val === "-" ||
+    val === "—" ||
+    val === "null" ||
+    val === "undefined"
+  ) {
     return NaN;
   }
-  if (typeof val === 'number') {
+  if (typeof val === "number") {
     return val < 10000000000 ? val * 1000 : val;
   }
   if (val instanceof Date) {
     return val.getTime();
   }
-  if (typeof val === 'object') {
-    if (typeof val.toMillis === 'function') {
-      try { return val.toMillis(); } catch {}
+  if (typeof val === "object") {
+    if (typeof val.toMillis === "function") {
+      try {
+        return val.toMillis();
+      } catch {}
     }
-    if (typeof val.toDate === 'function') {
-      try { return val.toDate().getTime(); } catch {}
+    if (typeof val.toDate === "function") {
+      try {
+        return val.toDate().getTime();
+      } catch {}
     }
-    if (typeof val.seconds === 'number') {
-      return val.seconds * 1000 + (val.nanoseconds ? Math.round(val.nanoseconds / 1000000) : 0);
+    if (typeof val.seconds === "number") {
+      return (
+        val.seconds * 1000 +
+        (val.nanoseconds ? Math.round(val.nanoseconds / 1000000) : 0)
+      );
     }
   }
-  if (typeof val === 'string') {
+  if (typeof val === "string") {
     const s = val.trim();
-    if (!s || s === '-' || s === '—') return NaN;
+    if (!s || s === "-" || s === "—") return NaN;
     const match = s.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
     if (match) {
       const day = parseInt(match[1], 10);
-      const mIdx = MONTH_NAMES.findIndex((m) => m.toLowerCase() === match[2].toLowerCase());
+      const mIdx = MONTH_NAMES.findIndex(
+        (m) => m.toLowerCase() === match[2].toLowerCase(),
+      );
       const year = parseInt(match[3], 10);
       if (mIdx >= 0) {
         return new Date(year, mIdx, day).getTime();
@@ -337,10 +370,10 @@ export const getTimestampMillis = (val) => {
 export const getLatestItemTimestamp = (item) => {
   if (!item) return 0;
   const tUpdate = getTimestampMillis(
-    item.rawUpdatedAt || item.updatedAt || item.modifiedAt
+    item.rawUpdatedAt || item.updatedAt || item.modifiedAt,
   );
   const tCreate = getTimestampMillis(
-    item.rawCreatedAt || item.createdAt || item.date || item.orderDate
+    item.rawCreatedAt || item.createdAt || item.date || item.orderDate,
   );
   const validUpdate = !isNaN(tUpdate) && tUpdate > 0 ? tUpdate : 0;
   const validCreate = !isNaN(tCreate) && tCreate > 0 ? tCreate : 0;
@@ -356,7 +389,13 @@ export const getLatestItemTimestamp = (item) => {
  * @returns {{ date: string, time: string|null } | null}
  */
 export const getModifiedDateTime = (updatedVal, createdVal = null) => {
-  if (!updatedVal || updatedVal === '-' || updatedVal === '—' || updatedVal === 'null' || updatedVal === 'undefined') {
+  if (
+    !updatedVal ||
+    updatedVal === "-" ||
+    updatedVal === "—" ||
+    updatedVal === "null" ||
+    updatedVal === "undefined"
+  ) {
     return null;
   }
 
@@ -381,14 +420,18 @@ export const getModifiedDateTime = (updatedVal, createdVal = null) => {
   }
 
   // 3. Compare formatted date strings (e.g. 06-Sep-2026)
-  const formattedUpdated = formatDateSafe(updatedVal, '-');
-  if (!formattedUpdated || formattedUpdated === '-') return null;
+  const formattedUpdated = formatDateSafe(updatedVal, "-");
+  if (!formattedUpdated || formattedUpdated === "-") return null;
 
   if (createdVal) {
-    const formattedCreated = formatDateSafe(createdVal, '-');
+    const formattedCreated = formatDateSafe(createdVal, "-");
     if (formattedUpdated === formattedCreated) {
       // If the day is identical, check if there was a real later update (>10s)
-      if (isNaN(updatedMs) || isNaN(createdMs) || (updatedMs - createdMs <= 10000)) {
+      if (
+        isNaN(updatedMs) ||
+        isNaN(createdMs) ||
+        updatedMs - createdMs <= 10000
+      ) {
         return null;
       }
     }
@@ -412,7 +455,7 @@ export const getModifiedDateTime = (updatedVal, createdVal = null) => {
  */
 export const formatModifiedDate = (updatedVal, createdVal = null) => {
   const mod = getModifiedDateTime(updatedVal, createdVal);
-  if (!mod) return '-';
+  if (!mod) return "-";
   return mod.time ? `${mod.date} ${mod.time}` : mod.date;
 };
 
@@ -434,7 +477,7 @@ export const withTimeout = (promise, ms = 3500, fallbackVal = null) => {
   ]);
 };
 
-const LOCAL_USERS_KEY = 'aparna_users_data';
+const LOCAL_USERS_KEY = "aparna_users_data";
 
 // Registered Firebase Authentication users from Firebase Console
 export const KNOWN_FIREBASE_AUTH_USERS = [];
@@ -446,22 +489,32 @@ export const INITIAL_CLIENTS = [];
 export const INITIAL_MEASUREMENTS = [];
 
 export const getLocalUsers = () => {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(LOCAL_USERS_KEY);
     let list = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(list)) list = [];
 
     // Filter out any legacy mock clients or seed accounts
-    const MOCK_IDS = new Set(['client_priya', 'client_ananya', 'client_kavitha', 'client_sneha', 'client_divya', 'client_meenakshi']);
+    const MOCK_IDS = new Set([
+      "client_priya",
+      "client_ananya",
+      "client_kavitha",
+      "client_sneha",
+      "client_divya",
+      "client_meenakshi",
+    ]);
     list = list.filter((u) => u && u.id && !MOCK_IDS.has(u.id));
 
     // Strip legacy businessId if present and ensure createdAt/updatedAt are preserved properly
     list = list.map(({ businessId, ...rest }) => {
       return {
         ...rest,
-        createdAt: formatDateSafe(rest.createdAt, '-'),
-        updatedAt: rest.updatedAt && rest.updatedAt !== '-' ? formatDateSafe(rest.updatedAt, '-') : '-',
+        createdAt: formatDateSafe(rest.createdAt, "-"),
+        updatedAt:
+          rest.updatedAt && rest.updatedAt !== "-"
+            ? formatDateSafe(rest.updatedAt, "-")
+            : "-",
         rawCreatedAt: rest.rawCreatedAt || null,
         rawUpdatedAt: rest.rawUpdatedAt || null,
       };
@@ -474,7 +527,7 @@ export const getLocalUsers = () => {
 };
 
 export const saveLocalUsers = (users) => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
     localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
   } catch {
@@ -482,20 +535,28 @@ export const saveLocalUsers = (users) => {
   }
 };
 
-const LOCAL_MEASUREMENTS_KEY = 'aparna_measurements_data';
+const LOCAL_MEASUREMENTS_KEY = "aparna_measurements_data";
 
 export const getLocalMeasurements = () => {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(LOCAL_MEASUREMENTS_KEY);
     let list = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(list)) list = [];
 
-    const MOCK_MEASURE_PREFIXES = ['measure_priya', 'measure_ananya', 'measure_kavitha', 'measure_sneha', 'measure_divya', 'measure_meenakshi', 'm-'];
+    const MOCK_MEASURE_PREFIXES = [
+      "measure_priya",
+      "measure_ananya",
+      "measure_kavitha",
+      "measure_sneha",
+      "measure_divya",
+      "measure_meenakshi",
+      "m-",
+    ];
     list = list.filter((m) => {
       if (!m || !m.id) return false;
       if (MOCK_MEASURE_PREFIXES.some((p) => m.id.startsWith(p))) return false;
-      if (String(m.userId || '').startsWith('client_')) return false;
+      if (String(m.userId || "").startsWith("client_")) return false;
       return true;
     });
 
@@ -506,7 +567,7 @@ export const getLocalMeasurements = () => {
 };
 
 export const saveLocalMeasurements = (measurements) => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
     localStorage.setItem(LOCAL_MEASUREMENTS_KEY, JSON.stringify(measurements));
   } catch {
@@ -533,16 +594,25 @@ export const createUserProfile = async (uid, userData) => {
     const existingSnap = await withTimeout(getDoc(docRef), 3000, null);
     if (existingSnap && existingSnap.exists()) {
       const existingData = existingSnap.data();
-      if (existingData?.role && (!userData.role || userData.role === USER_ROLES.CLIENT)) {
+      if (
+        existingData?.role &&
+        (!userData.role || userData.role === USER_ROLES.CLIENT)
+      ) {
         resolvedRole = existingData.role;
       }
     } else if (userData.email) {
       const cleanEmail = userData.email.trim().toLowerCase();
-      const q = query(collection(db, COLLECTIONS.USERS), where('email', '==', cleanEmail));
+      const q = query(
+        collection(db, COLLECTIONS.USERS),
+        where("email", "==", cleanEmail),
+      );
       const emailSnap = await withTimeout(getDocs(q), 3000, null);
       if (emailSnap && !emailSnap.empty) {
         const existingData = emailSnap.docs[0].data();
-        if (existingData?.role && (!userData.role || userData.role === USER_ROLES.CLIENT)) {
+        if (
+          existingData?.role &&
+          (!userData.role || userData.role === USER_ROLES.CLIENT)
+        ) {
           resolvedRole = existingData.role;
         }
       }
@@ -555,7 +625,10 @@ export const createUserProfile = async (uid, userData) => {
     const localMatch = localList.find(
       (u) =>
         (u.id && u.id === uid) ||
-        (u.email && userData.email && (u.email || '').trim().toLowerCase() === userData.email.trim().toLowerCase())
+        (u.email &&
+          userData.email &&
+          (u.email || "").trim().toLowerCase() ===
+            userData.email.trim().toLowerCase()),
     );
     if (localMatch?.role && localMatch.role !== USER_ROLES.CLIENT) {
       resolvedRole = localMatch.role;
@@ -563,7 +636,10 @@ export const createUserProfile = async (uid, userData) => {
   }
 
   // SuperAdmin override
-  if (userData.email && userData.email.trim().toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()) {
+  if (
+    userData.email &&
+    userData.email.trim().toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()
+  ) {
     resolvedRole = USER_ROLES.SUPERADMIN;
   }
 
@@ -575,7 +651,7 @@ export const createUserProfile = async (uid, userData) => {
   try {
     await withTimeout(setDoc(docRef, model, { merge: true }), 3500);
   } catch (err) {
-    console.warn('createUserProfile firestore note:', err.message || err);
+    console.warn("createUserProfile firestore note:", err.message || err);
   }
   return { id: uid, ...model };
 };
@@ -591,7 +667,7 @@ export const createUserProfile = async (uid, userData) => {
  * @returns {Promise<{ uid: string, email: string }>}
  */
 export const createAuthUser = async ({ email, password, displayName }) => {
-  const secondaryAppName = 'SecondaryAuthAdminApp';
+  const secondaryAppName = "SecondaryAuthAdminApp";
   let secondaryApp;
   const existingApps = getApps();
   const found = existingApps.find((a) => a.name === secondaryAppName);
@@ -604,12 +680,16 @@ export const createAuthUser = async ({ email, password, displayName }) => {
   const secondaryAuth = getAuth(secondaryApp);
 
   try {
-    const cred = await createUserWithEmailAndPassword(secondaryAuth, email.trim(), password);
+    const cred = await createUserWithEmailAndPassword(
+      secondaryAuth,
+      email.trim(),
+      password,
+    );
     if (displayName && cred.user) {
       try {
         await updateProfile(cred.user, { displayName: displayName.trim() });
       } catch (pErr) {
-        console.warn('displayName update note:', pErr);
+        console.warn("displayName update note:", pErr);
       }
     }
     const uid = cred.user.uid;
@@ -631,8 +711,13 @@ export const createAuthUser = async ({ email, password, displayName }) => {
  * @param {string} params.currentPassword - Their current password (needed for re-auth)
  * @param {string} params.newPassword   - The new password to set
  */
-export const resetUserPassword = async ({ email, currentPassword = 'aparna', newPassword, displayName }) => {
-  const secondaryAppName = 'SecondaryAuthAdminApp';
+export const resetUserPassword = async ({
+  email,
+  currentPassword = "aparna",
+  newPassword,
+  displayName,
+}) => {
+  const secondaryAppName = "SecondaryAuthAdminApp";
   let secondaryApp;
   const existingApps = getApps();
   const found = existingApps.find((a) => a.name === secondaryAppName);
@@ -648,39 +733,56 @@ export const resetUserPassword = async ({ email, currentPassword = 'aparna', new
   try {
     // 1. Try to sign in with default/current password and update directly
     try {
-      const cred = await signInWithEmailAndPassword(secondaryAuth, cleanEmail, currentPassword);
+      const cred = await signInWithEmailAndPassword(
+        secondaryAuth,
+        cleanEmail,
+        currentPassword,
+      );
       await updatePassword(cred.user, newPassword);
       return {
-        method: 'updated',
-        message: 'Password updated successfully!',
+        method: "updated",
+        message: "Password updated successfully!",
       };
     } catch (authErr) {
       // 2. If user doesn't exist in Firebase Auth (created in Firestore only), create their Auth account
       if (
-        authErr.code === 'auth/user-not-found' ||
-        authErr.code === 'auth/invalid-credential' ||
-        authErr.code === 'auth/wrong-password'
+        authErr.code === "auth/user-not-found" ||
+        authErr.code === "auth/invalid-credential" ||
+        authErr.code === "auth/wrong-password"
       ) {
         try {
-          const newCred = await createUserWithEmailAndPassword(secondaryAuth, cleanEmail, newPassword);
+          const newCred = await createUserWithEmailAndPassword(
+            secondaryAuth,
+            cleanEmail,
+            newPassword,
+          );
           if (displayName && newCred.user) {
-            await updateProfile(newCred.user, { displayName: displayName.trim() }).catch(() => {});
+            await updateProfile(newCred.user, {
+              displayName: displayName.trim(),
+            }).catch(() => {});
           }
           return {
-            method: 'created',
-            message: 'Firebase Auth account created with the new password!',
+            method: "created",
+            message: "Firebase Auth account created with the new password!",
           };
         } catch (createErr) {
-          if (createErr.code === 'auth/email-already-in-use') {
+          if (createErr.code === "auth/email-already-in-use") {
             // User exists in Firebase Auth but current password was not 'aparna'.
             // Fall back to sending an official password reset link.
-            const actionCodeSettings = typeof window !== 'undefined' && window.location?.origin ? {
-              url: `${window.location.origin}/reset-password`,
-              handleCodeInApp: true,
-            } : undefined;
-            await sendPasswordResetEmail(secondaryAuth, cleanEmail, actionCodeSettings);
+            const actionCodeSettings =
+              typeof window !== "undefined" && window.location?.origin
+                ? {
+                    url: `${window.location.origin}/reset-password`,
+                    handleCodeInApp: true,
+                  }
+                : undefined;
+            await sendPasswordResetEmail(
+              secondaryAuth,
+              cleanEmail,
+              actionCodeSettings,
+            );
             return {
-              method: 'email_sent',
+              method: "email_sent",
               message: `A password reset link has been sent to ${cleanEmail}.`,
             };
           }
@@ -695,15 +797,13 @@ export const resetUserPassword = async ({ email, currentPassword = 'aparna', new
   }
 };
 
-
-
 /**
  * Normalizes an email address for comparison (trimmed and lowercase)
  * @param {string} email
  * @returns {string}
  */
 export const normalizeEmail = (email) => {
-  if (!email) return '';
+  if (!email) return "";
   return String(email).trim().toLowerCase();
 };
 
@@ -713,8 +813,8 @@ export const normalizeEmail = (email) => {
  * @returns {string}
  */
 export const normalizeMobile = (mobile) => {
-  if (!mobile) return '';
-  const digits = String(mobile).replace(/\D/g, '');
+  if (!mobile) return "";
+  const digits = String(mobile).replace(/\D/g, "");
   return digits.length >= 10 ? digits.slice(-10) : digits;
 };
 
@@ -728,7 +828,11 @@ export const normalizeMobile = (mobile) => {
  * @param {string} [params.excludeUserId] - User ID to exclude (for edit scenarios)
  * @returns {Promise<{ isUnique: boolean, emailExists: boolean, mobileExists: boolean, message: string|null, conflictingUser: Object|null }>}
  */
-export const checkUserUniqueness = async ({ email, userMobile, excludeUserId = null }) => {
+export const checkUserUniqueness = async ({
+  email,
+  userMobile,
+  excludeUserId = null,
+}) => {
   const cleanEmail = normalizeEmail(email);
   const cleanMobile = normalizeMobile(userMobile);
 
@@ -741,7 +845,7 @@ export const checkUserUniqueness = async ({ email, userMobile, excludeUserId = n
     const allUsers = await getAllUsers();
     for (const u of allUsers) {
       if (excludeUserId) {
-        const uId = String(u.id || u.uid || '');
+        const uId = String(u.id || u.uid || "");
         if (uId === String(excludeUserId)) {
           continue;
         }
@@ -761,7 +865,7 @@ export const checkUserUniqueness = async ({ email, userMobile, excludeUserId = n
       if (emailExists && mobileExists) break;
     }
   } catch (err) {
-    console.warn('getAllUsers in checkUserUniqueness note:', err);
+    console.warn("getAllUsers in checkUserUniqueness note:", err);
   }
 
   // 2. Query Firestore directly for email if not found yet
@@ -769,13 +873,13 @@ export const checkUserUniqueness = async ({ email, userMobile, excludeUserId = n
     try {
       const qEmail = query(
         collection(db, COLLECTIONS.USERS),
-        where('email', '==', cleanEmail)
+        where("email", "==", cleanEmail),
       );
       const snap = await withTimeout(getDocs(qEmail), 2500, null);
       if (snap && !snap.empty) {
         for (const d of snap.docs) {
           const docData = d.data();
-          const docId = String(d.id || docData.uid || docData.id || '');
+          const docId = String(d.id || docData.uid || docData.id || "");
           if (!excludeUserId || docId !== String(excludeUserId)) {
             emailExists = true;
             conflictingUser = { id: d.id, ...docData };
@@ -784,7 +888,7 @@ export const checkUserUniqueness = async ({ email, userMobile, excludeUserId = n
         }
       }
     } catch (e) {
-      console.warn('Firestore email uniqueness query note:', e);
+      console.warn("Firestore email uniqueness query note:", e);
     }
   }
 
@@ -793,13 +897,13 @@ export const checkUserUniqueness = async ({ email, userMobile, excludeUserId = n
     try {
       const qMobile = query(
         collection(db, COLLECTIONS.USERS),
-        where('userMobile', '==', cleanMobile)
+        where("userMobile", "==", cleanMobile),
       );
       const snap = await withTimeout(getDocs(qMobile), 2500, null);
       if (snap && !snap.empty) {
         for (const d of snap.docs) {
           const docData = d.data();
-          const docId = String(d.id || docData.uid || docData.id || '');
+          const docId = String(d.id || docData.uid || docData.id || "");
           if (!excludeUserId || docId !== String(excludeUserId)) {
             mobileExists = true;
             conflictingUser = { id: d.id, ...docData };
@@ -808,7 +912,7 @@ export const checkUserUniqueness = async ({ email, userMobile, excludeUserId = n
         }
       }
     } catch (e) {
-      console.warn('Firestore mobile uniqueness query note:', e);
+      console.warn("Firestore mobile uniqueness query note:", e);
     }
   }
 
@@ -846,7 +950,7 @@ export const createUser = async (userData) => {
   }
 
   const model = createUserModel(userData);
-  const tempId = 'user-' + Date.now();
+  const tempId = "user-" + Date.now();
   const now = new Date();
   const localItem = {
     id: tempId,
@@ -863,12 +967,18 @@ export const createUser = async (userData) => {
   saveLocalUsers(localList);
 
   try {
-    const docRef = await withTimeout(addDoc(collection(db, COLLECTIONS.USERS), model), 3500);
+    const docRef = await withTimeout(
+      addDoc(collection(db, COLLECTIONS.USERS), model),
+      3500,
+    );
     localItem.id = docRef.id;
     saveLocalUsers(localList);
     return { id: docRef.id, ...model };
   } catch (err) {
-    console.warn('Firestore createUser note (saved locally):', err.message || err);
+    console.warn(
+      "Firestore createUser note (saved locally):",
+      err.message || err,
+    );
     return localItem;
   }
 };
@@ -885,7 +995,10 @@ export const deleteUser = async (userId) => {
     const docRef = doc(db, COLLECTIONS.USERS, userId);
     await withTimeout(deleteDoc(docRef), 3000);
   } catch (err) {
-    console.warn('Firestore deleteUser note (removed locally):', err.message || err);
+    console.warn(
+      "Firestore deleteUser note (removed locally):",
+      err.message || err,
+    );
   }
   return true;
 };
@@ -905,7 +1018,7 @@ export const getUserProfile = async (uid) => {
       return { id: snapshot.id, ...snapshot.data() };
     }
   } catch (err) {
-    console.warn('getUserProfile firestore note:', err.message || err);
+    console.warn("getUserProfile firestore note:", err.message || err);
   }
   return localFound || null;
 };
@@ -927,25 +1040,26 @@ export const getAllUsers = async () => {
   try {
     const snapshot = await withTimeout(
       getDocs(collection(db, COLLECTIONS.USERS)),
-      3500
+      3500,
     );
 
     if (snapshot) {
       const remoteUsers = snapshot.docs.map((d) => {
         const data = d.data();
-        const emailLower = (data.email || '').toLowerCase();
-        const isVictory = emailLower === 'victoryranjit@gmail.com';
-        const isAparna = emailLower === 'ranjitaparna25@gmail.com';
-        const defaultCreated = (isVictory || isAparna) ? '05-Sep-2026' : null;
+        const emailLower = (data.email || "").toLowerCase();
+        const isVictory = emailLower === "victoryranjit@gmail.com";
+        const isAparna = emailLower === "ranjitaparna25@gmail.com";
+        const defaultCreated = isVictory || isAparna ? "05-Sep-2026" : null;
 
         const rawCreated = data.createdAt || defaultCreated;
-        const rawUpdated = (isVictory || isAparna) ? null : (data.updatedAt || null);
+        const rawUpdated =
+          isVictory || isAparna ? null : data.updatedAt || null;
 
         return {
           id: d.id,
           ...data,
-          createdAt: formatDateSafe(rawCreated, '-'),
-          updatedAt: rawUpdated ? formatDateSafe(rawUpdated, '-') : '-',
+          createdAt: formatDateSafe(rawCreated, "-"),
+          updatedAt: rawUpdated ? formatDateSafe(rawUpdated, "-") : "-",
           rawCreatedAt: rawCreated || null,
           rawUpdatedAt: rawUpdated || null,
         };
@@ -954,17 +1068,19 @@ export const getAllUsers = async () => {
       // Merge remote documents with local cache to preserve any local edits
       const mergedMap = new Map();
       remoteUsers.forEach((u) => {
-        const key = (u.email || u.id || '').toLowerCase();
+        const key = (u.email || u.id || "").toLowerCase();
         mergedMap.set(key, u);
       });
 
       localList.forEach((u) => {
-        const key = (u.email || u.id || '').toLowerCase();
+        const key = (u.email || u.id || "").toLowerCase();
         if (!mergedMap.has(key)) {
           mergedMap.set(key, u);
           // Auto-sync local user to Firestore if missing remotely
           if (u.id) {
-            setDoc(doc(db, COLLECTIONS.USERS, u.id), u, { merge: true }).catch(() => {});
+            setDoc(doc(db, COLLECTIONS.USERS, u.id), u, { merge: true }).catch(
+              () => {},
+            );
           }
         } else {
           const remoteItem = mergedMap.get(key);
@@ -977,7 +1093,10 @@ export const getAllUsers = async () => {
       return finalList;
     }
   } catch (err) {
-    console.warn('Firestore getAllUsers note (serving from local cache):', err.message || err);
+    console.warn(
+      "Firestore getAllUsers note (serving from local cache):",
+      err.message || err,
+    );
   }
 
   return localList;
@@ -995,15 +1114,19 @@ export const updateUserRole = async (userId, newRole) => {
   const targetRole = newRole;
   const validRoles = [USER_ROLES.ADMIN, USER_ROLES.STAFF, USER_ROLES.CLIENT];
   if (!validRoles.includes(targetRole)) {
-    throw new Error('Invalid role specified. Only Admin, Staff, or Client roles can be assigned.');
+    throw new Error(
+      "Invalid role specified. Only Admin, Staff, or Client roles can be assigned.",
+    );
   }
 
   // Update in local cache
   const localList = getLocalUsers();
   const idx = localList.findIndex((u) => u.id === userId);
   if (idx >= 0) {
-    if (localList[idx].email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()) {
-      throw new Error('Super Admin role is immutable and cannot be modified.');
+    if (
+      localList[idx].email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()
+    ) {
+      throw new Error("Super Admin role is immutable and cannot be modified.");
     }
     localList[idx].role = targetRole;
     saveLocalUsers(localList);
@@ -1019,8 +1142,12 @@ export const updateUserRole = async (userId, newRole) => {
 
     if (userSnapshot && userSnapshot.exists()) {
       const existingData = userSnapshot.data();
-      if (existingData.email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()) {
-        throw new Error('Super Admin role is immutable and cannot be modified.');
+      if (
+        existingData.email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()
+      ) {
+        throw new Error(
+          "Super Admin role is immutable and cannot be modified.",
+        );
       }
     }
 
@@ -1031,12 +1158,15 @@ export const updateUserRole = async (userId, newRole) => {
           role: newRole,
           updatedAt: serverTimestamp(),
         },
-        { merge: true }
+        { merge: true },
       ),
-      3000
+      3000,
     );
   } catch (err) {
-    console.warn('Firestore updateUserRole note (role updated locally):', err.message || err);
+    console.warn(
+      "Firestore updateUserRole note (role updated locally):",
+      err.message || err,
+    );
   }
 
   return { id: userId, role: newRole };
@@ -1051,8 +1181,10 @@ export const updateUserRole = async (userId, newRole) => {
  * @param {Object} updatedData - Updated fields
  */
 export const updateUser = async (userId, updatedData) => {
-  const cleanEmail = String(updatedData.email || '').trim().toLowerCase();
-  const cleanMobile = String(updatedData.userMobile || '').trim();
+  const cleanEmail = String(updatedData.email || "")
+    .trim()
+    .toLowerCase();
+  const cleanMobile = String(updatedData.userMobile || "").trim();
 
   // Validate uniqueness excluding current user
   if (cleanEmail || cleanMobile) {
@@ -1074,13 +1206,15 @@ export const updateUser = async (userId, updatedData) => {
   const existingIdx = localList.findIndex(
     (u) =>
       (userId && u.id === userId) ||
-      (cleanEmail && (u.email || '').toLowerCase() === cleanEmail)
+      (cleanEmail && (u.email || "").toLowerCase() === cleanEmail),
   );
 
   let finalRole = updatedData.role;
   if (
     cleanEmail === SUPERADMIN_EMAIL.toLowerCase() ||
-    (existingIdx >= 0 && localList[existingIdx]?.email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase())
+    (existingIdx >= 0 &&
+      localList[existingIdx]?.email?.toLowerCase() ===
+        SUPERADMIN_EMAIL.toLowerCase())
   ) {
     finalRole = USER_ROLES.SUPERADMIN;
   } else if (finalRole === USER_ROLES.SUPERADMIN) {
@@ -1091,11 +1225,13 @@ export const updateUser = async (userId, updatedData) => {
   const now = new Date();
   const payload = {
     ...existingUser,
-    id: userId || (existingIdx >= 0 ? localList[existingIdx].id : 'user-' + Date.now()),
-    username: String(updatedData.username || '').trim(),
+    id:
+      userId ||
+      (existingIdx >= 0 ? localList[existingIdx].id : "user-" + Date.now()),
+    username: String(updatedData.username || "").trim(),
     email: cleanEmail,
-    userMobile: String(updatedData.userMobile || '').trim(),
-    userAddress: String(updatedData.userAddress || '').trim(),
+    userMobile: String(updatedData.userMobile || "").trim(),
+    userAddress: String(updatedData.userAddress || "").trim(),
     role: finalRole,
     updatedAt: now.toISOString(),
     rawUpdatedAt: now,
@@ -1122,7 +1258,7 @@ export const updateUser = async (userId, updatedData) => {
     if (!targetDocRef && cleanEmail) {
       const q = query(
         collection(db, COLLECTIONS.USERS),
-        where('email', '==', cleanEmail)
+        where("email", "==", cleanEmail),
       );
       const snap = await withTimeout(getDocs(q), 2500, null);
       if (snap && !snap.empty) {
@@ -1137,7 +1273,10 @@ export const updateUser = async (userId, updatedData) => {
         : doc(collection(db, COLLECTIONS.USERS));
     }
 
-    const disabledState = updatedData.disabled !== undefined ? Boolean(updatedData.disabled) : Boolean(existingUser.disabled);
+    const disabledState =
+      updatedData.disabled !== undefined
+        ? Boolean(updatedData.disabled)
+        : Boolean(existingUser.disabled);
     const firestorePayload = {
       username: payload.username,
       email: payload.email,
@@ -1150,10 +1289,16 @@ export const updateUser = async (userId, updatedData) => {
 
     payload.disabled = disabledState;
 
-    await withTimeout(setDoc(targetDocRef, firestorePayload, { merge: true }), 3000);
+    await withTimeout(
+      setDoc(targetDocRef, firestorePayload, { merge: true }),
+      3000,
+    );
     payload.id = targetDocRef.id;
   } catch (fsErr) {
-    console.warn('Firestore updateUser sync note (saved locally):', fsErr.message || fsErr);
+    console.warn(
+      "Firestore updateUser sync note (saved locally):",
+      fsErr.message || fsErr,
+    );
   }
 
   return payload;
@@ -1168,12 +1313,12 @@ export const toggleUserStatus = async (userId, disabled) => {
   const localList = getLocalUsers();
   const existingIdx = localList.findIndex((u) => userId && u.id === userId);
   if (existingIdx < 0) {
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
 
   const user = localList[existingIdx];
   if (user.email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()) {
-    throw new Error('Super Admin account cannot be disabled.');
+    throw new Error("Super Admin account cannot be disabled.");
   }
 
   const now = new Date();
@@ -1196,18 +1341,19 @@ export const toggleUserStatus = async (userId, disabled) => {
           disabled: Boolean(disabled),
           updatedAt: serverTimestamp(),
         },
-        { merge: true }
+        { merge: true },
       ),
-      3000
+      3000,
     );
   } catch (fsErr) {
-    console.warn('Firestore toggleUserStatus note (saved locally):', fsErr.message || fsErr);
+    console.warn(
+      "Firestore toggleUserStatus note (saved locally):",
+      fsErr.message || fsErr,
+    );
   }
 
   return updatedUser;
 };
-
-
 
 /**
  * ============================================================================
@@ -1215,7 +1361,7 @@ export const toggleUserStatus = async (userId, disabled) => {
  * ============================================================================
  */
 
-const SERVICES_CACHE_KEY = 'aparna_services_cache';
+const SERVICES_CACHE_KEY = "aparna_services_cache";
 
 const getCachedServices = () => {
   try {
@@ -1243,12 +1389,15 @@ export const createService = async (serviceData) => {
   try {
     const docRef = await withTimeout(
       addDoc(collection(db, COLLECTIONS.SERVICES), model),
-      4000
+      4000,
     );
     createdId = docRef.id;
   } catch (err) {
-    console.warn('createService firestore note (using local ID):', err.message || err);
-    createdId = 'svc_' + Date.now();
+    console.warn(
+      "createService firestore note (using local ID):",
+      err.message || err,
+    );
+    createdId = "svc_" + Date.now();
   }
 
   const now = new Date();
@@ -1276,7 +1425,10 @@ export const getAllServices = async (onlyActive = false) => {
   try {
     let q = collection(db, COLLECTIONS.SERVICES);
     if (onlyActive) {
-      q = query(collection(db, COLLECTIONS.SERVICES), where('active', '==', true));
+      q = query(
+        collection(db, COLLECTIONS.SERVICES),
+        where("active", "==", true),
+      );
     }
 
     const snapshot = await withTimeout(getDocs(q), 4500);
@@ -1284,51 +1436,65 @@ export const getAllServices = async (onlyActive = false) => {
     if (snapshot && !snapshot.empty) {
       const services = snapshot.docs.map((d) => {
         const data = d.data();
-        const resolvedPrice = Number(
-          data.servicePrice !== undefined && data.servicePrice !== null
-            ? data.servicePrice
-            : data.price !== undefined && data.price !== null
-              ? data.price
-              : data.amount || 0
-        ) || 0;
-        const resolvedDiscountPrice = Number(
-          data.serviceDiscountedPrice !== undefined && data.serviceDiscountedPrice !== null
-            ? data.serviceDiscountedPrice
-            : data.discountedPrice !== undefined && data.discountedPrice !== null
-              ? data.discountedPrice
-              : resolvedPrice
-        ) || resolvedPrice;
+        const resolvedPrice =
+          Number(
+            data.servicePrice !== undefined && data.servicePrice !== null
+              ? data.servicePrice
+              : data.price !== undefined && data.price !== null
+                ? data.price
+                : data.amount || 0,
+          ) || 0;
+        const resolvedDiscountPrice =
+          Number(
+            data.serviceDiscountedPrice !== undefined &&
+              data.serviceDiscountedPrice !== null
+              ? data.serviceDiscountedPrice
+              : data.discountedPrice !== undefined &&
+                  data.discountedPrice !== null
+                ? data.discountedPrice
+                : resolvedPrice,
+          ) || resolvedPrice;
 
         const resolvedDisplayOrder = Number(
           data.displayOrder !== undefined && data.displayOrder !== null
             ? data.displayOrder
             : data.orderIndex !== undefined && data.orderIndex !== null
               ? data.orderIndex
-              : 0
+              : 0,
         );
 
         return {
           id: d.id,
           ...data,
-          serviceName: data.serviceName || data.name || data.title || 'Unnamed Service',
+          serviceName:
+            data.serviceName || data.name || data.title || "Unnamed Service",
+          serviceType: data.serviceType || "Pleating Service",
           servicePrice: resolvedPrice,
           serviceDiscountedPrice: resolvedDiscountPrice,
           displayOrder: resolvedDisplayOrder,
-          description: data.description || '',
+          description: data.description || "",
           active: data.active !== false,
           rawCreatedAt: data.createdAt,
           rawUpdatedAt: data.updatedAt,
-          createdAt: data.createdAt ? formatDateSafe(data.createdAt) : formatDateSafe(new Date()),
+          createdAt: data.createdAt
+            ? formatDateSafe(data.createdAt)
+            : formatDateSafe(new Date()),
           updatedAt: data.updatedAt ? formatDateSafe(data.updatedAt) : null,
         };
       });
 
       // Sort services by displayOrder ascending (1, 2, 3...), fallback to serviceName
       services.sort((a, b) => {
-        const orderA = a.displayOrder && a.displayOrder > 0 ? Number(a.displayOrder) : 999999;
-        const orderB = b.displayOrder && b.displayOrder > 0 ? Number(b.displayOrder) : 999999;
+        const orderA =
+          a.displayOrder && a.displayOrder > 0
+            ? Number(a.displayOrder)
+            : 999999;
+        const orderB =
+          b.displayOrder && b.displayOrder > 0
+            ? Number(b.displayOrder)
+            : 999999;
         if (orderA !== orderB) return orderA - orderB;
-        return (a.serviceName || '').localeCompare(b.serviceName || '');
+        return (a.serviceName || "").localeCompare(b.serviceName || "");
       });
 
       setCachedServices(services);
@@ -1338,14 +1504,25 @@ export const getAllServices = async (onlyActive = false) => {
     setCachedServices([]);
     return [];
   } catch (err) {
-    console.warn('getAllServices firestore note (falling back to cache):', err.message || err);
+    console.warn(
+      "getAllServices firestore note (falling back to cache):",
+      err.message || err,
+    );
     const cached = getCachedServices();
     if (cached && cached.length > 0) {
-      const sorted = (onlyActive ? cached.filter((s) => s.active) : cached).sort((a, b) => {
-        const orderA = a.displayOrder && a.displayOrder > 0 ? Number(a.displayOrder) : 999999;
-        const orderB = b.displayOrder && b.displayOrder > 0 ? Number(b.displayOrder) : 999999;
+      const sorted = (
+        onlyActive ? cached.filter((s) => s.active) : cached
+      ).sort((a, b) => {
+        const orderA =
+          a.displayOrder && a.displayOrder > 0
+            ? Number(a.displayOrder)
+            : 999999;
+        const orderB =
+          b.displayOrder && b.displayOrder > 0
+            ? Number(b.displayOrder)
+            : 999999;
         if (orderA !== orderB) return orderA - orderB;
-        return (a.serviceName || '').localeCompare(b.serviceName || '');
+        return (a.serviceName || "").localeCompare(b.serviceName || "");
       });
       return sorted;
     }
@@ -1355,15 +1532,27 @@ export const getAllServices = async (onlyActive = false) => {
 
 export const updateService = async (serviceId, serviceData) => {
   const payload = {
-    serviceName: String(serviceData.serviceName || '').trim(),
+    serviceName: String(serviceData.serviceName || "").trim(),
     servicePrice: Number(serviceData.servicePrice) || 0,
     serviceDiscountedPrice: Number(serviceData.serviceDiscountedPrice) || 0,
     active: Boolean(serviceData.active),
-    description: serviceData.description ? String(serviceData.description).trim() : '',
+    description: serviceData.description
+      ? String(serviceData.description).trim()
+      : "",
     updatedAt: serverTimestamp(),
   };
 
-  if (serviceData.displayOrder !== undefined && serviceData.displayOrder !== null) {
+  if (
+    serviceData.serviceType !== undefined &&
+    serviceData.serviceType !== null
+  ) {
+    payload.serviceType = String(serviceData.serviceType).trim();
+  }
+
+  if (
+    serviceData.displayOrder !== undefined &&
+    serviceData.displayOrder !== null
+  ) {
     payload.displayOrder = Number(serviceData.displayOrder) || 0;
   }
 
@@ -1371,7 +1560,10 @@ export const updateService = async (serviceId, serviceData) => {
     const docRef = doc(db, COLLECTIONS.SERVICES, serviceId);
     await withTimeout(setDoc(docRef, payload, { merge: true }), 4000);
   } catch (err) {
-    console.warn('updateService firestore note (cached locally):', err.message || err);
+    console.warn(
+      "updateService firestore note (cached locally):",
+      err.message || err,
+    );
   }
 
   // Update local cache
@@ -1385,7 +1577,7 @@ export const updateService = async (serviceId, serviceData) => {
           rawUpdatedAt: now.toISOString(),
           updatedAt: formatDateSafe(now),
         }
-      : s
+      : s,
   );
   setCachedServices(updated);
 
@@ -1406,7 +1598,10 @@ export const deleteService = async (serviceId) => {
     const docRef = doc(db, COLLECTIONS.SERVICES, serviceId);
     await withTimeout(deleteDoc(docRef), 4000);
   } catch (err) {
-    console.warn('deleteService firestore note (removed locally):', err.message || err);
+    console.warn(
+      "deleteService firestore note (removed locally):",
+      err.message || err,
+    );
   }
 
   // Update local cache
@@ -1430,7 +1625,10 @@ export const toggleServiceActive = async (serviceId, newStatus) => {
  * @param {string} [_businessId]
  * @param {boolean} [onlyActive=false]
  */
-export const getServicesByBusiness = async (_businessId, onlyActive = false) => {
+export const getServicesByBusiness = async (
+  _businessId,
+  onlyActive = false,
+) => {
   return await getAllServices(onlyActive);
 };
 
@@ -1466,18 +1664,18 @@ export const getAllClients = async () => {
         return {
           id: d.id,
           ...data,
-          clientName: data.clientName || data.username || '',
-          clientMobile: data.clientMobile || data.userMobile || '',
-          clientAddress: data.clientAddress || data.userAddress || '',
-          username: data.clientName || data.username || '',
-          userMobile: data.clientMobile || data.userMobile || '',
-          userAddress: data.clientAddress || data.userAddress || '',
+          clientName: data.clientName || data.username || "",
+          clientMobile: data.clientMobile || data.userMobile || "",
+          clientAddress: data.clientAddress || data.userAddress || "",
+          username: data.clientName || data.username || "",
+          userMobile: data.clientMobile || data.userMobile || "",
+          userAddress: data.clientAddress || data.userAddress || "",
           role: USER_ROLES.CLIENT,
         };
       });
     }
   } catch (err) {
-    console.warn('getAllClients error:', err.message || err);
+    console.warn("getAllClients error:", err.message || err);
   }
   return [];
 };
@@ -1518,7 +1716,7 @@ export const createMeasurement = async (measurementData) => {
   const now = new Date();
   const nowIso = now.toISOString();
   const model = createMeasurementModel(measurementData);
-  const tempId = 'm-' + Date.now();
+  const tempId = "m-" + Date.now();
   const localRecord = {
     ...model,
     id: tempId,
@@ -1532,7 +1730,10 @@ export const createMeasurement = async (measurementData) => {
   saveLocalMeasurements(localList);
 
   try {
-    const docRef = await withTimeout(addDoc(collection(db, COLLECTIONS.MEASUREMENTS), model), 3500);
+    const docRef = await withTimeout(
+      addDoc(collection(db, COLLECTIONS.MEASUREMENTS), model),
+      3500,
+    );
     localRecord.id = docRef.id;
     saveLocalMeasurements(localList);
 
@@ -1541,8 +1742,12 @@ export const createMeasurement = async (measurementData) => {
       try {
         const userRef = doc(db, COLLECTIONS.USERS, measurementData.userId);
         await withTimeout(
-          setDoc(userRef, { measurementId: docRef.id, updatedAt: serverTimestamp() }, { merge: true }),
-          2000
+          setDoc(
+            userRef,
+            { measurementId: docRef.id, updatedAt: serverTimestamp() },
+            { merge: true },
+          ),
+          2000,
         );
       } catch {
         // User doc might not exist yet if created prior
@@ -1556,7 +1761,7 @@ export const createMeasurement = async (measurementData) => {
       rawCreatedAt: now,
     };
   } catch (err) {
-    console.warn('Firestore measurement save note (saved locally):', err);
+    console.warn("Firestore measurement save note (saved locally):", err);
     return localRecord;
   }
 };
@@ -1574,7 +1779,7 @@ export const getMeasurementsByUserId = async (userId) => {
   try {
     const q = query(
       collection(db, COLLECTIONS.MEASUREMENTS),
-      where('userId', '==', userId)
+      where("userId", "==", userId),
     );
     const snapshot = await withTimeout(getDocs(q), 3000, null);
     if (snapshot && !snapshot.empty) {
@@ -1589,12 +1794,14 @@ export const getMeasurementsByUserId = async (userId) => {
       const merged = Array.from(map.values());
 
       // Update local storage
-      const otherUserMeasurements = getLocalMeasurements().filter((m) => m.userId !== userId);
+      const otherUserMeasurements = getLocalMeasurements().filter(
+        (m) => m.userId !== userId,
+      );
       saveLocalMeasurements([...merged, ...otherUserMeasurements]);
       return merged;
     }
   } catch (err) {
-    console.warn('getMeasurementsByUserId note (serving local):', err);
+    console.warn("getMeasurementsByUserId note (serving local):", err);
   }
 
   return localList;
@@ -1624,7 +1831,7 @@ export const getMeasurementById = async (measurementId) => {
       return { id: snapshot.id, ...snapshot.data() };
     }
   } catch (err) {
-    console.warn('getMeasurementById note:', err);
+    console.warn("getMeasurementById note:", err);
   }
 
   return localFound || null;
@@ -1635,14 +1842,16 @@ export const getMeasurementById = async (measurementId) => {
  * @param {string} measurementId
  */
 export const deleteClientMeasurement = async (measurementId) => {
-  const localList = getLocalMeasurements().filter((m) => m.id !== measurementId);
+  const localList = getLocalMeasurements().filter(
+    (m) => m.id !== measurementId,
+  );
   saveLocalMeasurements(localList);
 
   try {
     const docRef = doc(db, COLLECTIONS.MEASUREMENTS, measurementId);
     await withTimeout(deleteDoc(docRef), 3000);
   } catch (err) {
-    console.warn('deleteClientMeasurement note:', err);
+    console.warn("deleteClientMeasurement note:", err);
   }
   return true;
 };
@@ -1654,7 +1863,11 @@ export const getAllMeasurements = async () => {
   const localList = getLocalMeasurements();
 
   try {
-    const snapshot = await withTimeout(getDocs(collection(db, COLLECTIONS.MEASUREMENTS)), 3000, null);
+    const snapshot = await withTimeout(
+      getDocs(collection(db, COLLECTIONS.MEASUREMENTS)),
+      3000,
+      null,
+    );
     if (snapshot) {
       const remote = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -1667,7 +1880,9 @@ export const getAllMeasurements = async () => {
           map.set(l.id, l);
           // Auto-sync local measurement to Firestore
           if (l.id) {
-            setDoc(doc(db, COLLECTIONS.MEASUREMENTS, l.id), l, { merge: true }).catch(() => {});
+            setDoc(doc(db, COLLECTIONS.MEASUREMENTS, l.id), l, {
+              merge: true,
+            }).catch(() => {});
           }
         }
       });
@@ -1676,7 +1891,10 @@ export const getAllMeasurements = async () => {
       return finalList;
     }
   } catch (err) {
-    console.warn('Firestore getAllMeasurements note (serving from local cache):', err.message || err);
+    console.warn(
+      "Firestore getAllMeasurements note (serving from local cache):",
+      err.message || err,
+    );
   }
 
   return localList;
@@ -1697,16 +1915,25 @@ export const getMeasurementsByBusiness = async (_businessId) => {
  */
 export const updateMeasurement = async (measurementId, measurementData) => {
   const payload = {};
-  if (measurementData.title !== undefined) payload.title = String(measurementData.title || '').trim();
-  if (measurementData.pallu !== undefined) payload.pallu = measurementData.pallu;
-  if (measurementData.shoulderToRightTight !== undefined) payload.shoulderToRightTight = measurementData.shoulderToRightTight;
-  if (measurementData.chest !== undefined) payload.chest = measurementData.chest;
+  if (measurementData.title !== undefined)
+    payload.title = String(measurementData.title || "").trim();
+  if (measurementData.pallu !== undefined)
+    payload.pallu = measurementData.pallu;
+  if (measurementData.shoulderToRightTight !== undefined)
+    payload.shoulderToRightTight = measurementData.shoulderToRightTight;
+  if (measurementData.chest !== undefined)
+    payload.chest = measurementData.chest;
   if (measurementData.hip !== undefined) payload.hip = measurementData.hip;
-  if (measurementData.firstPleatSize !== undefined) payload.firstPleatSize = measurementData.firstPleatSize;
-  if (measurementData.noOfChestPleats !== undefined) payload.noOfChestPleats = measurementData.noOfChestPleats;
-  if (measurementData.height !== undefined) payload.height = measurementData.height;
-  if (measurementData.dressSize !== undefined) payload.dressSize = measurementData.dressSize;
-  if (measurementData.notes !== undefined) payload.notes = String(measurementData.notes || '').trim();
+  if (measurementData.firstPleatSize !== undefined)
+    payload.firstPleatSize = measurementData.firstPleatSize;
+  if (measurementData.noOfChestPleats !== undefined)
+    payload.noOfChestPleats = measurementData.noOfChestPleats;
+  if (measurementData.height !== undefined)
+    payload.height = measurementData.height;
+  if (measurementData.dressSize !== undefined)
+    payload.dressSize = measurementData.dressSize;
+  if (measurementData.notes !== undefined)
+    payload.notes = String(measurementData.notes || "").trim();
 
   // Update in local cache first
   const localList = getLocalMeasurements();
@@ -1729,11 +1956,15 @@ export const updateMeasurement = async (measurementId, measurementData) => {
   try {
     const docRef = doc(db, COLLECTIONS.MEASUREMENTS, measurementId);
     await withTimeout(
-      setDoc(docRef, { ...payload, updatedAt: serverTimestamp() }, { merge: true }),
-      3500
+      setDoc(
+        docRef,
+        { ...payload, updatedAt: serverTimestamp() },
+        { merge: true },
+      ),
+      3500,
     );
   } catch (err) {
-    console.warn('updateMeasurement firestore note (saved locally):', err);
+    console.warn("updateMeasurement firestore note (saved locally):", err);
   }
 
   // Always return the updated record so callers can update UI state
@@ -1759,20 +1990,57 @@ export const saveOrUpdateUserMeasurements = async (userId, measurementData) => {
  * ============================================================================
  */
 
-const ORDERS_CACHE_KEY = 'aparna_orders_cache';
+const ORDERS_CACHE_KEY = "aparna_orders_cache";
+
+export const MOCK_ORDER_IDS = new Set([
+  "ORD-58392",
+  "ORD-71940",
+  "ORD-24915",
+  "ORD-83921",
+  "ORD-77770",
+]);
+
+export const MOCK_CLIENT_IDS = new Set([
+  "client_priya",
+  "client_ananya",
+  "client_kavitha",
+  "client_sneha",
+  "client_divya",
+  "client_meenakshi",
+]);
 
 export const getCachedOrders = () => {
   try {
     const raw = localStorage.getItem(ORDERS_CACHE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (o) =>
+        o &&
+        o.id &&
+        !MOCK_ORDER_IDS.has(o.id) &&
+        !MOCK_ORDER_IDS.has(o.orderId) &&
+        !MOCK_CLIENT_IDS.has(o.clientId) &&
+        !String(o.clientId || "").startsWith("client_mock"),
+    );
   } catch {
-    return null;
+    return [];
   }
 };
 
 export const setCachedOrders = (orders) => {
   try {
-    localStorage.setItem(ORDERS_CACHE_KEY, JSON.stringify(orders));
+    const cleaned = (Array.isArray(orders) ? orders : []).filter(
+      (o) =>
+        o &&
+        o.id &&
+        !MOCK_ORDER_IDS.has(o.id) &&
+        !MOCK_ORDER_IDS.has(o.orderId) &&
+        !MOCK_CLIENT_IDS.has(o.clientId) &&
+        !String(o.clientId || "").startsWith("client_mock"),
+    );
+    localStorage.setItem(ORDERS_CACHE_KEY, JSON.stringify(cleaned));
   } catch {}
 };
 
@@ -1821,12 +2089,16 @@ export const generateOrderId = () => {
  * Format order document object ensuring clean, persistent ID
  */
 const formatOrderDoc = (id, data) => {
-  const rawCreated = data.createdAt || data.orderDate || new Date().toISOString();
+  const rawCreated =
+    data.createdAt || data.orderDate || new Date().toISOString();
   const rawUpdated = data.updatedAt || null;
-  const status = String(data.status || data.orderStatus || 'pending').toLowerCase();
+  const status = String(
+    data.status || data.orderStatus || "pending",
+  ).toLowerCase();
 
   // Determine unique order ID - strictly preserve the actual Firestore document ID
-  const cleanId = String(id || data.id || data.orderId || '').trim() || generateOrderId();
+  const cleanId =
+    String(id || data.id || data.orderId || "").trim() || generateOrderId();
 
   if (cleanId) {
     assignedOrderIds.add(cleanId);
@@ -1837,58 +2109,82 @@ const formatOrderDoc = (id, data) => {
   }
 
   const client = data.client || {
-    clientId: data.clientId || '',
-    username: data.username || data.clientName || 'Client',
-    userMobile: data.userMobile || data.phone || '',
-    email: data.email || '',
-    userAddress: data.userAddress || data.address || '',
+    clientId: data.clientId || "",
+    username: data.username || data.clientName || "Client",
+    userMobile: data.userMobile || data.phone || "",
+    email: data.email || "",
+    userAddress: data.userAddress || data.address || "",
   };
 
-  const items = Array.isArray(data.items) ? data.items : [];
+  const rawItems = Array.isArray(data.items) ? data.items : [];
+  const items = rawItems.map((it) => ({
+    ...it,
+    serviceType: it.serviceType || data.serviceType || "Pleating Service",
+  }));
 
   return {
     id: cleanId,
     orderId: cleanId,
     ...data,
     client,
-    username: client.username || data.username || 'Client',
-    userMobile: client.userMobile || data.userMobile || '',
-    email: client.email || data.email || '',
-    userAddress: client.userAddress || data.userAddress || '',
+    serviceType: data.serviceType || items[0]?.serviceType || "Other Service",
+    username: client.username || data.username || "Client",
+    userMobile: client.userMobile || data.userMobile || "",
+    email: client.email || data.email || "",
+    userAddress: client.userAddress || data.userAddress || "",
     items,
     totalItems: items.length || data.totalItems || 1,
-    subtotal: Number(data.subtotal) || items.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0),
+    subtotal:
+      Number(data.subtotal) ||
+      items.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0),
     pickupDeliveryCharges: Number(data.pickupDeliveryCharges || 0),
     otherCharges: Number(data.otherCharges || 0),
     discount: Number(data.discount || 0),
     advancePayment: Number(data.advancePayment || data.paidAmount || 0),
     paidAmount: Number(data.paidAmount) || Number(data.advancePayment) || 0,
     balancePaid:
-      data.balancePaid !== undefined && data.balancePaid !== null && !isNaN(Number(data.balancePaid))
+      data.balancePaid !== undefined &&
+      data.balancePaid !== null &&
+      !isNaN(Number(data.balancePaid))
         ? Number(data.balancePaid)
-        : (status === 'paid' || String(data.paymentStatus).toLowerCase() === 'paid'
-            ? Math.max(0, (Number(data.totalAmount) || 0) - Number(data.advancePayment || 0))
-            : 0),
+        : status === "paid" ||
+            String(data.paymentStatus).toLowerCase() === "paid"
+          ? Math.max(
+              0,
+              (Number(data.totalAmount) || 0) -
+                Number(data.advancePayment || 0),
+            )
+          : 0,
     balanceDue:
-      data.balanceDue !== undefined && data.balanceDue !== null && !isNaN(Number(data.balanceDue))
+      data.balanceDue !== undefined &&
+      data.balanceDue !== null &&
+      !isNaN(Number(data.balanceDue))
         ? Number(data.balanceDue)
-        : (status === 'paid' || String(data.paymentStatus).toLowerCase() === 'paid'
-            ? 0
-            : Math.max(0, (Number(data.totalAmount) || 0) - Number(data.advancePayment || data.paidAmount || 0))),
-    totalAmount: Number(data.totalAmount) || items.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0) || 0,
+        : status === "paid" ||
+            String(data.paymentStatus).toLowerCase() === "paid"
+          ? 0
+          : Math.max(
+              0,
+              (Number(data.totalAmount) || 0) -
+                Number(data.advancePayment || data.paidAmount || 0),
+            ),
+    totalAmount:
+      Number(data.totalAmount) ||
+      items.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0) ||
+      0,
     status,
     orderStatus: status,
-    paymentStatus: String(data.paymentStatus || 'pending'),
-    paymentMethod: String(data.paymentMethod || 'UPI'),
-    occasion: data.occasion || '',
+    paymentStatus: String(data.paymentStatus || "pending"),
+    paymentMethod: String(data.paymentMethod || "UPI"),
+    occasion: data.occasion || "",
     orderDate: formatDateSafe(data.orderDate || rawCreated),
-    deliveryDate: data.deliveryDate ? formatDateSafe(data.deliveryDate) : '-',
+    deliveryDate: data.deliveryDate ? formatDateSafe(data.deliveryDate) : "-",
     createdAt: formatDateSafe(rawCreated),
     updatedAt: rawUpdated ? formatDateSafe(rawUpdated) : null,
     rawCreatedAt: rawCreated,
     rawUpdatedAt: rawUpdated,
-    createdBy: data.createdBy || '',
-    updatedBy: data.updatedBy || '',
+    createdBy: data.createdBy || "",
+    updatedBy: data.updatedBy || "",
   };
 };
 
@@ -1901,28 +2197,42 @@ const recentOrderCreations = new Map();
  */
 export const createOrder = async (orderData) => {
   // Deduplication check: construct signature to prevent double-booking within 3.5 seconds
-  const clientKey = orderData.clientId || orderData.userMobile || orderData.username || '';
-  const itemsKey = (orderData.items || []).map((it) => `${it.serviceId || it.serviceName}_${it.finalPrice || it.servicePrice}`).join('|');
-  const signature = `${clientKey}_${orderData.totalAmount}_${orderData.deliveryDate || ''}_${itemsKey}`;
+  const clientKey =
+    orderData.clientId || orderData.userMobile || orderData.username || "";
+  const itemsKey = (orderData.items || [])
+    .map(
+      (it) =>
+        `${it.serviceId || it.serviceName}_${it.finalPrice || it.servicePrice}`,
+    )
+    .join("|");
+  const signature = `${clientKey}_${orderData.totalAmount}_${orderData.deliveryDate || ""}_${itemsKey}`;
 
   const nowMs = Date.now();
   if (recentOrderCreations.has(signature)) {
     const existing = recentOrderCreations.get(signature);
     if (nowMs - existing.timestamp < 3500 && existing.result) {
-      console.warn('Duplicate createOrder call suppressed for signature:', signature);
+      console.warn(
+        "Duplicate createOrder call suppressed for signature:",
+        signature,
+      );
       return existing.result;
     }
   }
 
   const orderId = orderData.id || orderData.orderId || generateOrderId();
-  const currentUid = orderData.createdBy || auth?.currentUser?.uid || '';
-  const model = createOrderModel({ ...orderData, id: orderId, orderId, createdBy: currentUid });
+  const currentUid = orderData.createdBy || auth?.currentUser?.uid || "";
+  const model = createOrderModel({
+    ...orderData,
+    id: orderId,
+    orderId,
+    createdBy: currentUid,
+  });
 
   // On creation: pass only createdAt; strictly ensure updatedAt and updatedBy are not present
-  if ('updatedAt' in model) {
+  if ("updatedAt" in model) {
     delete model.updatedAt;
   }
-  if ('updatedBy' in model) {
+  if ("updatedBy" in model) {
     delete model.updatedBy;
   }
 
@@ -1931,10 +2241,13 @@ export const createOrder = async (orderData) => {
   try {
     await withTimeout(
       setDoc(doc(db, COLLECTIONS.ORDERS, orderId), model),
-      4500
+      4500,
     );
   } catch (err) {
-    console.warn('createOrder firestore note (using local ID):', err.message || err);
+    console.warn(
+      "createOrder firestore note (using local ID):",
+      err.message || err,
+    );
   }
 
   const now = new Date();
@@ -1951,7 +2264,10 @@ export const createOrder = async (orderData) => {
   setCachedOrders([formatted, ...cached.filter((o) => o.id !== createdId)]);
 
   // Cache created order signature to block duplicate calls
-  recentOrderCreations.set(signature, { result: formatted, timestamp: Date.now() });
+  recentOrderCreations.set(signature, {
+    result: formatted,
+    timestamp: Date.now(),
+  });
 
   // Cleanup old entries
   for (const [key, val] of recentOrderCreations.entries()) {
@@ -1971,11 +2287,21 @@ export const getAllOrders = async () => {
     const snapshot = await withTimeout(
       getDocs(collection(db, COLLECTIONS.ORDERS)),
       4500,
-      null
+      null,
     );
 
     if (snapshot && !snapshot.empty) {
-      const orders = snapshot.docs.map((d) => formatOrderDoc(d.id, d.data()));
+      const orders = snapshot.docs
+        .map((d) => formatOrderDoc(d.id, d.data()))
+        .filter(
+          (o) =>
+            o &&
+            o.id &&
+            !MOCK_ORDER_IDS.has(o.id) &&
+            !MOCK_ORDER_IDS.has(o.orderId) &&
+            !MOCK_CLIENT_IDS.has(o.clientId) &&
+            !String(o.clientId || "").startsWith("client_mock"),
+        );
       setCachedOrders(orders);
       return orders;
     }
@@ -1984,7 +2310,10 @@ export const getAllOrders = async () => {
     const cleanCached = (cached || []).filter((o) => o && o.id);
     return cleanCached;
   } catch (err) {
-    console.warn('getAllOrders firestore note (falling back to cache):', err.message || err);
+    console.warn(
+      "getAllOrders firestore note (falling back to cache):",
+      err.message || err,
+    );
     const cached = getCachedOrders();
     const cleanCached = (cached || []).filter((o) => o && o.id);
     return cleanCached;
@@ -2004,22 +2333,47 @@ export const getOrdersByBusiness = async (_businessId) => {
  * @param {string} [userEmail] - Optional email for fallback matching
  * @param {string} [userMobile] - Optional mobile for fallback matching
  */
-export const getOrdersByUserId = async (userId, userEmail = '', userMobile = '') => {
+export const getOrdersByUserId = async (
+  userId,
+  userEmail = "",
+  userMobile = "",
+) => {
   if (!userId && !userEmail && !userMobile) return [];
-  const cleanUid = String(userId || '').trim();
-  const cleanEmail = String(userEmail || '').trim().toLowerCase();
-  const cleanMobile = String(userMobile || '').replace(/\D/g, '').slice(-10);
+  const cleanUid = String(userId || "").trim();
+  const cleanEmail = String(userEmail || "")
+    .trim()
+    .toLowerCase();
+  const cleanMobile = String(userMobile || "")
+    .replace(/\D/g, "")
+    .slice(-10);
 
   const isMatchingOrder = (o) => {
     if (!o) return false;
-    if (cleanUid && (o.clientId === cleanUid || o.createdBy === cleanUid || o.client?.clientId === cleanUid)) {
+    if (
+      cleanUid &&
+      (o.clientId === cleanUid ||
+        o.createdBy === cleanUid ||
+        o.client?.clientId === cleanUid)
+    ) {
       return true;
     }
-    if (cleanEmail && (String(o.email || '').toLowerCase().trim() === cleanEmail || String(o.client?.email || '').toLowerCase().trim() === cleanEmail)) {
+    if (
+      cleanEmail &&
+      (String(o.email || "")
+        .toLowerCase()
+        .trim() === cleanEmail ||
+        String(o.client?.email || "")
+          .toLowerCase()
+          .trim() === cleanEmail)
+    ) {
       return true;
     }
     if (cleanMobile) {
-      const oMobile = String(o.userMobile || o.phone || o.client?.userMobile || '').replace(/\D/g, '').slice(-10);
+      const oMobile = String(
+        o.userMobile || o.phone || o.client?.userMobile || "",
+      )
+        .replace(/\D/g, "")
+        .slice(-10);
       if (oMobile && oMobile === cleanMobile) return true;
     }
     return false;
@@ -2033,15 +2387,25 @@ export const getOrdersByUserId = async (userId, userEmail = '', userMobile = '')
     if (cleanUid) {
       queries.push(
         withTimeout(
-          getDocs(query(collection(db, COLLECTIONS.ORDERS), where('clientId', '==', cleanUid))),
+          getDocs(
+            query(
+              collection(db, COLLECTIONS.ORDERS),
+              where("clientId", "==", cleanUid),
+            ),
+          ),
           4000,
-          null
+          null,
         ),
         withTimeout(
-          getDocs(query(collection(db, COLLECTIONS.ORDERS), where('createdBy', '==', cleanUid))),
+          getDocs(
+            query(
+              collection(db, COLLECTIONS.ORDERS),
+              where("createdBy", "==", cleanUid),
+            ),
+          ),
           4000,
-          null
-        )
+          null,
+        ),
       );
     }
 
@@ -2062,14 +2426,18 @@ export const getOrdersByUserId = async (userId, userEmail = '', userMobile = '')
 
     const result = Array.from(map.values());
     result.sort((a, b) => {
-      const timeA = new Date(a.rawCreatedAt || a.createdAt || a.orderDate || 0).getTime();
-      const timeB = new Date(b.rawCreatedAt || b.createdAt || b.orderDate || 0).getTime();
+      const timeA = new Date(
+        a.rawCreatedAt || a.createdAt || a.orderDate || 0,
+      ).getTime();
+      const timeB = new Date(
+        b.rawCreatedAt || b.createdAt || b.orderDate || 0,
+      ).getTime();
       return timeB - timeA;
     });
 
     return result;
   } catch (err) {
-    console.warn('getOrdersByUserId note (serving local):', err.message || err);
+    console.warn("getOrdersByUserId note (serving local):", err.message || err);
     return localMatched;
   }
 };
@@ -2081,11 +2449,11 @@ export const getOrdersByUserId = async (userId, userEmail = '', userMobile = '')
  */
 export const updateOrder = async (orderId, updates) => {
   if (!orderId) {
-    console.warn('updateOrder called without valid orderId');
+    console.warn("updateOrder called without valid orderId");
     return false;
   }
   const now = new Date();
-  const currentUid = updates.updatedBy || auth?.currentUser?.uid || '';
+  const currentUid = updates.updatedBy || auth?.currentUser?.uid || "";
   const updatePayload = {
     ...updates,
     updatedAt: serverTimestamp(),
@@ -2097,26 +2465,33 @@ export const updateOrder = async (orderId, updates) => {
   delete updatePayload.createdBy;
 
   const cached = getCachedOrders() || [];
-  const existingOrder = cached.find((o) => o.id === orderId || o.orderId === orderId);
+  const existingOrder = cached.find(
+    (o) => o.id === orderId || o.orderId === orderId,
+  );
 
   try {
     const docRef = doc(db, COLLECTIONS.ORDERS, orderId);
     // Use updateDoc to update existing document without creating hollow ghost docs
-    await withTimeout(updateDoc(docRef, updatePayload), 4000).catch(async () => {
-      // If doc does not exist yet (e.g. was offline/seed), create with FULL order model from cache
-      if (existingOrder && (existingOrder.client || existingOrder.items)) {
-        const fullPayload = createOrderModel({
-          ...existingOrder,
-          ...updates,
-          id: orderId,
-          orderId,
-          updatedBy: currentUid,
-        });
-        await setDoc(docRef, fullPayload, { merge: true });
-      }
-    });
+    await withTimeout(updateDoc(docRef, updatePayload), 4000).catch(
+      async () => {
+        // If doc does not exist yet (e.g. was offline/seed), create with FULL order model from cache
+        if (existingOrder && (existingOrder.client || existingOrder.items)) {
+          const fullPayload = createOrderModel({
+            ...existingOrder,
+            ...updates,
+            id: orderId,
+            orderId,
+            updatedBy: currentUid,
+          });
+          await setDoc(docRef, fullPayload, { merge: true });
+        }
+      },
+    );
   } catch (err) {
-    console.warn('updateOrder firestore note (cached locally):', err.message || err);
+    console.warn(
+      "updateOrder firestore note (cached locally):",
+      err.message || err,
+    );
   }
 
   // Update local cache
@@ -2131,7 +2506,7 @@ export const updateOrder = async (orderId, updates) => {
           rawUpdatedAt: now.toISOString(),
           updatedBy: currentUid,
         }
-      : ord
+      : ord,
   );
   setCachedOrders(updatedList);
 
@@ -2147,7 +2522,10 @@ export const deleteOrder = async (orderId) => {
     const docRef = doc(db, COLLECTIONS.ORDERS, orderId);
     await withTimeout(deleteDoc(docRef), 4000);
   } catch (err) {
-    console.warn('deleteOrder firestore note (removed locally):', err.message || err);
+    console.warn(
+      "deleteOrder firestore note (removed locally):",
+      err.message || err,
+    );
   }
 
   const cached = getCachedOrders() || [];
@@ -2160,25 +2538,25 @@ export const deleteOrder = async (orderId) => {
  * 7. Expenses Collection Operations (expenses/{expenseId})
  * ============================================================================
  */
-export const LOCAL_EXPENSES_KEY = 'aparna_local_expenses_v1';
+export const LOCAL_EXPENSES_KEY = "aparna_local_expenses_v1";
 
 export const getLocalExpenses = () => {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(LOCAL_EXPENSES_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch (err) {
-    console.warn('Failed to parse local expenses cache:', err);
+    console.warn("Failed to parse local expenses cache:", err);
     return [];
   }
 };
 
 export const saveLocalExpenses = (expenses) => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
     localStorage.setItem(LOCAL_EXPENSES_KEY, JSON.stringify(expenses));
   } catch (err) {
-    console.warn('Failed to save local expenses cache:', err);
+    console.warn("Failed to save local expenses cache:", err);
   }
 };
 
@@ -2187,7 +2565,7 @@ export const getAllExpenses = async () => {
   try {
     const q = query(
       collection(db, COLLECTIONS.EXPENSES),
-      orderBy('createdAt', 'desc')
+      orderBy("createdAt", "desc"),
     );
     const snapshot = await withTimeout(getDocs(q), 5000, null);
 
@@ -2205,7 +2583,10 @@ export const getAllExpenses = async () => {
       return [];
     }
   } catch (err) {
-    console.warn('getAllExpenses firestore note (using local cache):', err.message || err);
+    console.warn(
+      "getAllExpenses firestore note (using local cache):",
+      err.message || err,
+    );
   }
 
   return localList;
@@ -2223,7 +2604,7 @@ export const getExpenseById = async (expenseId) => {
       return { id: snapshot.id, ...snapshot.data() };
     }
   } catch (err) {
-    console.warn('getExpenseById firestore note:', err.message || err);
+    console.warn("getExpenseById firestore note:", err.message || err);
   }
 
   return foundLocal || null;
@@ -2238,7 +2619,10 @@ export const createExpense = async (expenseData) => {
     const docRef = await withTimeout(addDoc(collRef, model), 4000);
     newId = docRef.id;
   } catch (err) {
-    console.warn('createExpense firestore note (saved locally):', err.message || err);
+    console.warn(
+      "createExpense firestore note (saved locally):",
+      err.message || err,
+    );
     try {
       const customDocRef = doc(db, COLLECTIONS.EXPENSES, newId);
       await withTimeout(setDoc(customDocRef, model), 4000);
@@ -2268,7 +2652,10 @@ export const updateExpense = async (expenseId, updateData) => {
     const docRef = doc(db, COLLECTIONS.EXPENSES, expenseId);
     await withTimeout(updateDoc(docRef, sanitizeUpdate), 4000);
   } catch (err) {
-    console.warn('updateExpense firestore note (updated locally):', err.message || err);
+    console.warn(
+      "updateExpense firestore note (updated locally):",
+      err.message || err,
+    );
   }
 
   const localList = getLocalExpenses();
@@ -2279,7 +2666,7 @@ export const updateExpense = async (expenseId, updateData) => {
           ...updateData,
           updatedAt: new Date().toISOString(),
         }
-      : e
+      : e,
   );
   saveLocalExpenses(updatedList);
   return { id: expenseId, ...updateData };
@@ -2290,7 +2677,10 @@ export const deleteExpense = async (expenseId) => {
     const docRef = doc(db, COLLECTIONS.EXPENSES, expenseId);
     await withTimeout(deleteDoc(docRef), 4000);
   } catch (err) {
-    console.warn('deleteExpense firestore note (removed locally):', err.message || err);
+    console.warn(
+      "deleteExpense firestore note (removed locally):",
+      err.message || err,
+    );
   }
 
   const localList = getLocalExpenses();
@@ -2298,35 +2688,78 @@ export const deleteExpense = async (expenseId) => {
   return true;
 };
 
-
-
 // Immediate one-time purge of legacy mock data from client browser cache
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   try {
-    const MOCK_CLIENT_IDS = new Set(['client_priya', 'client_ananya', 'client_kavitha', 'client_sneha', 'client_divya', 'client_meenakshi']);
+    const MOCK_CLIENT_IDS = new Set([
+      "client_priya",
+      "client_ananya",
+      "client_kavitha",
+      "client_sneha",
+      "client_divya",
+      "client_meenakshi",
+    ]);
     const rawUsers = localStorage.getItem(LOCAL_USERS_KEY);
     if (rawUsers) {
       const parsed = JSON.parse(rawUsers);
       if (Array.isArray(parsed)) {
-        const cleaned = parsed.filter((u) => u && u.id && !MOCK_CLIENT_IDS.has(u.id));
+        const cleaned = parsed.filter(
+          (u) => u && u.id && !MOCK_CLIENT_IDS.has(u.id),
+        );
         localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(cleaned));
       }
     }
-    const MOCK_MEASURES = new Set(['measure_priya_1', 'measure_priya_2', 'measure_ananya_1', 'measure_kavitha_1', 'measure_sneha_1', 'measure_divya_1', 'measure_meenakshi_1', 'm-1', 'm-2', 'm-3', 'm-4', 'm-5', 'm-6', 'm-7', 'm-8', 'm-9', 'm-10']);
+    const MOCK_MEASURES = new Set([
+      "measure_priya_1",
+      "measure_priya_2",
+      "measure_ananya_1",
+      "measure_kavitha_1",
+      "measure_sneha_1",
+      "measure_divya_1",
+      "measure_meenakshi_1",
+      "m-1",
+      "m-2",
+      "m-3",
+      "m-4",
+      "m-5",
+      "m-6",
+      "m-7",
+      "m-8",
+      "m-9",
+      "m-10",
+    ]);
     const rawMeas = localStorage.getItem(LOCAL_MEASUREMENTS_KEY);
     if (rawMeas) {
       const parsed = JSON.parse(rawMeas);
       if (Array.isArray(parsed)) {
-        const cleaned = parsed.filter((m) => m && m.id && !MOCK_MEASURES.has(m.id) && !String(m.userId || '').startsWith('client_'));
+        const cleaned = parsed.filter(
+          (m) =>
+            m &&
+            m.id &&
+            !MOCK_MEASURES.has(m.id) &&
+            !String(m.userId || "").startsWith("client_"),
+        );
         localStorage.setItem(LOCAL_MEASUREMENTS_KEY, JSON.stringify(cleaned));
       }
     }
-    const MOCK_ORDERS = new Set(['ORD-58392', 'ORD-71940', 'ORD-24915', 'ORD-83921', 'ORD-77770']);
+    const MOCK_ORDERS = new Set([
+      "ORD-58392",
+      "ORD-71940",
+      "ORD-24915",
+      "ORD-83921",
+      "ORD-77770",
+    ]);
     const rawOrders = localStorage.getItem(ORDERS_CACHE_KEY);
     if (rawOrders) {
       const parsed = JSON.parse(rawOrders);
       if (Array.isArray(parsed)) {
-        const cleaned = parsed.filter((o) => o && o.id && !MOCK_ORDERS.has(o.id) && !MOCK_CLIENT_IDS.has(o.clientId));
+        const cleaned = parsed.filter(
+          (o) =>
+            o &&
+            o.id &&
+            !MOCK_ORDERS.has(o.id) &&
+            !MOCK_CLIENT_IDS.has(o.clientId),
+        );
         localStorage.setItem(ORDERS_CACHE_KEY, JSON.stringify(cleaned));
       }
     }

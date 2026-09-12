@@ -335,6 +335,44 @@ const Bookings = () => {
       .reduce((acc, o) => acc + getOrderPendingAmountNumeric(o), 0);
   }, [orders]);
 
+  // Service metrics breakdown across all booked orders
+  const serviceStats = useMemo(() => {
+    let pleating = 0;
+    let draping = 0;
+    let other = 0;
+    let total = 0;
+
+    orders.forEach((order) => {
+      const items = getOrderItems(order);
+      items.forEach((it) => {
+        total += 1;
+        const type = String(it.serviceType || order.serviceType || "").trim();
+        const typeLower = type.toLowerCase();
+        const nameLower = String(it.serviceName || "").toLowerCase();
+
+        if (
+          type === "Draping Service" ||
+          typeLower.includes("drap") ||
+          nameLower.includes("drap") ||
+          nameLower.includes("styling")
+        ) {
+          draping += 1;
+        } else if (
+          type === "Other Service" ||
+          typeLower.includes("other") ||
+          nameLower.includes("custom")
+        ) {
+          other += 1;
+        } else {
+          // Default to Pleating Service
+          pleating += 1;
+        }
+      });
+    });
+
+    return { total, pleating, draping, other };
+  }, [orders]);
+
   // Tabs configured strictly with { label, value } for AppTabs
   const orderTabs = useMemo(
     () => [
@@ -532,18 +570,32 @@ const Bookings = () => {
           icon={<ReceiptLongOutlinedIcon />}
         />
         <StatCard
-          title="In Progress + Pending"
-          value={String(inProgressCount + pendingCount)}
-          change="Under processing & pending"
-          trendType="pending"
-          icon={<PendingActionsOutlinedIcon />}
+          title="Order Status"
+          value={String(completedCount)}
+          subValue={`/ ${inProgressCount + pendingCount} Active`}
+          change={`${completedCount} Completed • ${inProgressCount + pendingCount} In Progress & Pending`}
+          trendType={inProgressCount + pendingCount > 0 ? "pending" : "completed"}
+          icon={<TaskAltOutlinedIcon />}
         />
         <StatCard
-          title="Completed"
-          value={String(completedCount)}
-          change="Ready & Dispatched"
-          trendType="completed"
-          icon={<TaskAltOutlinedIcon />}
+          title="Total Services"
+          value={String(serviceStats.total)}
+          icon={<DryCleaningOutlinedIcon />}
+          customFooter={
+            <div className="stat-card-breakdown-row">
+              <span className="breakdown-item">
+                Pleating: <strong>{serviceStats.pleating}</strong>
+              </span>
+              <span className="breakdown-divider">•</span>
+              <span className="breakdown-item">
+                Draping: <strong>{serviceStats.draping}</strong>
+              </span>
+              <span className="breakdown-divider">•</span>
+              <span className="breakdown-item">
+                Other: <strong>{serviceStats.other}</strong>
+              </span>
+            </div>
+          }
         />
         <StatCard
           title="Total Revenue"

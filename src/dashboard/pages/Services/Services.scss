@@ -289,6 +289,14 @@
           }
         }
 
+        .user-name-text-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-bottom: 2px;
+        }
+
         .user-name-text {
           font-weight: 700;
           color: $text-primary;
@@ -299,6 +307,19 @@
           }
         }
 
+        .service-type-tag {
+          font-size: 0.72rem;
+          font-weight: 600;
+          padding: 2px 7px;
+          border-radius: 6px;
+          background: rgba(212, 175, 55, 0.12);
+          border: 1px solid rgba(212, 175, 55, 0.28);
+          color: var(--color-gold, #d4af37);
+          letter-spacing: 0.2px;
+          white-space: nowrap;
+          line-height: 1.2;
+        }
+
         .user-email-text {
           color: $text-muted;
           font-size: 0.78rem;
@@ -307,6 +328,17 @@
             font-size: 0.72rem;
           }
         }
+      }
+
+      .service-type-tag-inline {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--color-gold, #d4af37);
+        background: var(--surface-gold-tint, rgba(212, 175, 55, 0.15));
+        border: 1px solid var(--border-gold-subtle, rgba(212, 175, 55, 0.3));
+        padding: 3px 10px;
+        border-radius: 6px;
+        display: inline-block;
       }
 
       .service-order-pill {
@@ -672,7 +704,7 @@
 
       .detailed-card-meta {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
         gap: 10px;
         margin-top: 4px;
 
@@ -726,7 +758,7 @@
           .offer-wrap {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
           }
         }
@@ -737,11 +769,16 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      flex-shrink: 0;
+      justify-content: center;
+      min-width: 120px;
 
       @media (max-width: 900px) {
         flex-direction: row;
-        justify-content: flex-end;
+        width: 100%;
+
+        .app-btn {
+          flex: 1;
+        }
       }
     }
   }
@@ -772,6 +809,22 @@
     @media (max-width: 520px) {
       grid-template-columns: 1fr;
       gap: 12px;
+    }
+  }
+
+  .service-form-bottom-row {
+    align-items: flex-start;
+
+    .service-status-card {
+      margin-top: 25px;
+      min-height: 48px;
+      padding: 10px 14px;
+      box-sizing: border-box;
+
+      @media (max-width: 520px) {
+        margin-top: 0;
+        min-height: auto;
+      }
     }
   }
 

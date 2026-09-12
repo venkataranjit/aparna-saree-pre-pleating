@@ -199,6 +199,7 @@ const createEmptyItem = (idx = 1) => ({
   itemId: `item_${Date.now()}_${idx}`,
   serviceId: "",
   serviceName: "",
+  serviceType: "Pleating Service",
   servicePrice: 0,
   serviceDiscountedPrice: 0,
   finalPrice: 0,
@@ -892,6 +893,7 @@ export default function CreateOrderModal({
           serviceId: foundSvc.id,
           serviceName:
             foundSvc.serviceName || foundSvc.name || foundSvc.title || "",
+          serviceType: foundSvc.serviceType || "Pleating Service",
           servicePrice: regPrice,
           serviceDiscountedPrice: offerPrice,
           serviceDescription: foundSvc.description || "",
@@ -902,6 +904,7 @@ export default function CreateOrderModal({
           ...next[index],
           serviceId: "",
           serviceName: "",
+          serviceType: "Pleating Service",
           servicePrice: "",
           serviceDiscountedPrice: "",
           serviceDescription: "",
@@ -1250,10 +1253,17 @@ export default function CreateOrderModal({
         };
       }
 
+      const matchingService = services.find((s) => s.id === it.serviceId);
+      const resolvedServiceType =
+        it.serviceType ||
+        matchingService?.serviceType ||
+        "Pleating Service";
+
       return {
         itemId: it.id || `item_${idx + 1}`,
         serviceId: it.serviceId || "",
         serviceName: it.serviceName || "Saree Pre-Pleating Service",
+        serviceType: resolvedServiceType,
         servicePrice: Number(it.servicePrice) || Number(it.finalPrice) || 0,
         serviceDiscountedPrice:
           Number(it.serviceDiscountedPrice) || Number(it.finalPrice) || 0,
@@ -1390,6 +1400,8 @@ export default function CreateOrderModal({
           email: (clientForm.email || "").trim().toLowerCase(),
           userAddress: (clientForm.userAddress || "").trim(),
         },
+        serviceType:
+          processedItems[0]?.serviceType || "Pleating Service",
         items: processedItems,
         totalItems: processedItems.length,
         subtotal: subtotalAmount,

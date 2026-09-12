@@ -1515,9 +1515,16 @@ export const updateClientLinks = async (clientId, linkData) => {
  * @param {Object} measurementData
  */
 export const createMeasurement = async (measurementData) => {
+  const now = new Date();
+  const nowIso = now.toISOString();
   const model = createMeasurementModel(measurementData);
   const tempId = 'm-' + Date.now();
-  const localRecord = { id: tempId, ...model };
+  const localRecord = {
+    ...model,
+    id: tempId,
+    createdAt: nowIso,
+    rawCreatedAt: now,
+  };
 
   // Save to local cache immediately
   const localList = getLocalMeasurements();
@@ -1542,7 +1549,12 @@ export const createMeasurement = async (measurementData) => {
       }
     }
 
-    return { id: docRef.id, ...model };
+    return {
+      ...model,
+      id: docRef.id,
+      createdAt: nowIso,
+      rawCreatedAt: now,
+    };
   } catch (err) {
     console.warn('Firestore measurement save note (saved locally):', err);
     return localRecord;

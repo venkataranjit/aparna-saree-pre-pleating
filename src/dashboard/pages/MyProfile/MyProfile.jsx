@@ -77,7 +77,7 @@ const profileValidationSchema = Yup.object({
     .notRequired(),
 });
 
-const DRESS_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "Custom"];
+const DRESS_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "Custom"];
 
 // Validation schema for adding/editing a measurement profile
 const measurementValidationSchema = Yup.object({
@@ -150,7 +150,7 @@ const measurementValidationSchema = Yup.object({
         if (!val) return true;
         const num = Number(val);
         return (
-          !Number.isNaN(num) && Number.isInteger(num) && num >= 1 && num <= 30
+          !Number.isNaN(num) && Number.isInteger(num) && num > 0 && num <= 30
         );
       },
     ),
@@ -165,9 +165,7 @@ const measurementValidationSchema = Yup.object({
         return !Number.isNaN(num) && num > 0 && num <= 300;
       },
     ),
-  dressSize: Yup.string()
-    .trim()
-    .oneOf(DRESS_SIZES, "Please select a valid dress size"),
+  dressSize: Yup.string().trim().nullable(),
   notes: Yup.string().trim().max(300, "Notes cannot exceed 300 characters"),
 });
 
@@ -556,7 +554,7 @@ const MyProfile = () => {
         selectedMeasureForEdit?.height != null
           ? String(selectedMeasureForEdit.height)
           : "",
-      dressSize: selectedMeasureForEdit?.dressSize || "M",
+      dressSize: selectedMeasureForEdit?.dressSize || "",
       notes: selectedMeasureForEdit?.notes || "",
     },
     validationSchema: measurementValidationSchema,
@@ -1129,9 +1127,14 @@ const MyProfile = () => {
                     <div className="measure-card-footer">
                       <span className="measure-footer-date">
                         <CalendarTodayOutlinedIcon />
-                        Recorded {formatDateSafe(measure.createdAt)}
-                        {formatTimeSafe(measure.createdAt)
-                          ? ` ${formatTimeSafe(measure.createdAt)}`
+                        Recorded{" "}
+                        {formatDateSafe(
+                          measure.rawCreatedAt || measure.createdAt,
+                        )}
+                        {formatTimeSafe(
+                          measure.rawCreatedAt || measure.createdAt,
+                        )
+                          ? ` ${formatTimeSafe(measure.rawCreatedAt || measure.createdAt)}`
                           : ""}
                       </span>
                     </div>
@@ -1318,7 +1321,14 @@ const MyProfile = () => {
             notes: values.notes.trim(),
           };
           const saved = await createClientMeasurement(measurementPayload);
-          setMeasurements((prev) => [saved, ...prev]);
+          const now = new Date();
+          const nowIso = now.toISOString();
+          const savedRecord = {
+            ...saved,
+            createdAt: saved?.createdAt || nowIso,
+            rawCreatedAt: saved?.rawCreatedAt || now,
+          };
+          setMeasurements((prev) => [savedRecord, ...prev]);
           toast.success(
             `Measurement profile "${values.title.trim()}" added successfully!`,
           );
@@ -1375,13 +1385,7 @@ const MyProfile = () => {
             disabled={editMeasureFormik.isSubmitting}
           />
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-              gap: "12px",
-            }}
-          >
+          <div className="measurement-modal-grid">
             <AppInput
               label="Pallu Length (Inches)"
               id="edit-measure-pallu"
@@ -1490,6 +1494,7 @@ const MyProfile = () => {
               label="Standard Dress Size"
               id="edit-measure-dress-size"
               name="dressSize"
+              placeholder="Select Size"
               value={editMeasureFormik.values.dressSize}
               onChange={editMeasureFormik.handleChange}
               onBlur={editMeasureFormik.handleBlur}
@@ -1499,6 +1504,7 @@ const MyProfile = () => {
               }
               disabled={editMeasureFormik.isSubmitting}
             >
+              <option value="">Select Size</option>
               {DRESS_SIZES.map((sz) => (
                 <option key={sz} value={sz}>
                   {sz}

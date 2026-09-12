@@ -229,6 +229,7 @@ export const createMeasurementModel = ({
   height = null,
   dressSize = "",
   notes = "",
+  createdAt = null,
 } = {}) => {
   const sanitizeMeasure = (val) => {
     if (val === null || val === undefined || val === "") return null;
@@ -248,7 +249,7 @@ export const createMeasurementModel = ({
     height: sanitizeMeasure(height),
     dressSize: String(dressSize || "").trim(),
     notes: String(notes || "").trim(),
-    createdAt: serverTimestamp(),
+    createdAt: createdAt || serverTimestamp(),
   };
 };
 
@@ -315,9 +316,10 @@ export const createOrderModel = ({
   const resolvedDiscount = Number(discount) || 0;
   const calculatedTotal = Math.max(0, resolvedSubtotal + resolvedDeliveryCharges + resolvedOtherCharges - resolvedDiscount);
   const finalTotal = totalAmount > 0 ? Number(totalAmount) : calculatedTotal;
-  const resolvedAdvance = Number(advancePayment) || 0;
+  const resolvedAdvance = Math.min(Number(advancePayment) || 0, finalTotal);
   const resolvedPaymentStatus = String(paymentStatus || PAYMENT_STATUS.PENDING);
-  const resolvedPaid = Number(paidAmount) || (resolvedAdvance > 0 ? resolvedAdvance : (resolvedPaymentStatus === "paid" ? finalTotal : 0));
+  const rawPaid = Number(paidAmount) || (resolvedAdvance > 0 ? resolvedAdvance : (resolvedPaymentStatus === "paid" ? finalTotal : 0));
+  const resolvedPaid = Math.min(rawPaid, finalTotal);
   const resolvedBalanceDue = balanceDue !== undefined && balanceDue !== null && !isNaN(Number(balanceDue))
     ? Number(balanceDue)
     : (resolvedPaymentStatus === "paid" ? 0 : Math.max(0, finalTotal - resolvedPaid));

@@ -4,7 +4,7 @@ import * as Yup from "yup";
 import { AppModal, AppButton, AppInput } from "../../../components/common";
 import "./MeasurementModal.scss";
 
-export const DRESS_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "Custom"];
+export const DRESS_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "Custom"];
 
 // Shared numeric validator — error is always "Enter a valid measurement"
 const numericField = (key) =>
@@ -29,9 +29,7 @@ export const measurementValidationSchema = Yup.object({
   firstPleatSize: numericField("pleat"),
   noOfChestPleats: numericField("chestPleats"),
   height: numericField("height"),
-  dressSize: Yup.string()
-    .trim()
-    .oneOf(DRESS_SIZES, "Please select a valid dress size"),
+  dressSize: Yup.string().trim().nullable(),
   notes: Yup.string().trim().max(300, "Notes cannot exceed 300 characters"),
 });
 
@@ -44,7 +42,7 @@ const DEFAULT_VALUES = {
   firstPleatSize: "",
   noOfChestPleats: "",
   height: "",
-  dressSize: "M",
+  dressSize: "",
   notes: "",
 };
 
@@ -223,12 +221,14 @@ export const MeasurementModal = ({
             label="Dress Size"
             id="mm-dressSize"
             name="dressSize"
+            placeholder="Select Size"
             value={formik.values.dressSize}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             error={formik.touched.dressSize && formik.errors.dressSize}
             disabled={formik.isSubmitting}
           >
+            <option value="">Select Size</option>
             {DRESS_SIZES.map((sz) => (
               <option key={sz} value={sz}>
                 {sz}

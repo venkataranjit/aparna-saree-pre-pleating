@@ -91,7 +91,7 @@ const clientValidationSchema = Yup.object({
     .max(150, "Address cannot exceed 150 characters"),
 });
 
-const DRESS_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "Custom"];
+const DRESS_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "Custom"];
 
 // Validation schema for adding/editing a measurement profile with strict validation
 const measurementValidationSchema = Yup.object({
@@ -108,64 +108,62 @@ const measurementValidationSchema = Yup.object({
       (val) => {
         if (!val) return true;
         const num = Number(val);
-        return !Number.isNaN(num) && num > 0 && num <= 200;
+        return !Number.isNaN(num) && num > 0 && num <= 300;
       },
     ),
   shoulderToRightTight: Yup.string()
     .trim()
     .test(
       "is-valid-shoulder",
-      "Shoulder measurement must be a valid positive number (e.g. 14)",
+      "Shoulder to Right Tight must be a valid positive number (e.g. 14 or 14.5)",
       (val) => {
         if (!val) return true;
         const num = Number(val);
-        return !Number.isNaN(num) && num > 0 && num <= 100;
+        return !Number.isNaN(num) && num > 0 && num <= 300;
       },
     ),
   chest: Yup.string()
     .trim()
     .test(
       "is-valid-chest",
-      "Chest size must be a valid positive number (e.g. 36)",
+      "Chest must be a valid positive number (e.g. 36 or 36.5)",
       (val) => {
         if (!val) return true;
         const num = Number(val);
-        return !Number.isNaN(num) && num > 0 && num <= 100;
+        return !Number.isNaN(num) && num > 0 && num <= 300;
       },
     ),
   hip: Yup.string()
     .trim()
     .test(
       "is-valid-hip",
-      "Hip size must be a valid positive number (e.g. 40)",
+      "Hip must be a valid positive number (e.g. 40 or 40.5)",
       (val) => {
         if (!val) return true;
         const num = Number(val);
-        return !Number.isNaN(num) && num > 0 && num <= 120;
+        return !Number.isNaN(num) && num > 0 && num <= 300;
       },
     ),
   firstPleatSize: Yup.string()
     .trim()
     .test(
-      "is-valid-pleat",
-      "First pleat size must be a valid positive number (e.g. 5.5)",
+      "is-valid-firstPleat",
+      "First Pleat Size must be a valid positive number (e.g. 5.5 or 6)",
       (val) => {
         if (!val) return true;
         const num = Number(val);
-        return !Number.isNaN(num) && num > 0 && num <= 50;
+        return !Number.isNaN(num) && num > 0 && num <= 300;
       },
     ),
   noOfChestPleats: Yup.string()
     .trim()
     .test(
-      "is-valid-pleats-count",
-      "Chest pleats count must be a positive integer (e.g. 5)",
+      "is-valid-noOfChestPleats",
+      "Number of Chest Pleats must be a valid positive number (e.g. 4 or 5)",
       (val) => {
         if (!val) return true;
         const num = Number(val);
-        return (
-          !Number.isNaN(num) && Number.isInteger(num) && num > 0 && num <= 30
-        );
+        return !Number.isNaN(num) && num > 0 && num <= 50;
       },
     ),
   height: Yup.string()
@@ -179,9 +177,7 @@ const measurementValidationSchema = Yup.object({
         return !Number.isNaN(num) && num > 0 && num <= 300;
       },
     ),
-  dressSize: Yup.string()
-    .trim()
-    .oneOf(DRESS_SIZES, "Please select a valid dress size"),
+  dressSize: Yup.string().trim().nullable(),
   notes: Yup.string().trim().max(300, "Notes cannot exceed 300 characters"),
 });
 
@@ -679,7 +675,7 @@ const Clients = () => {
         selectedMeasureForEdit?.height != null
           ? String(selectedMeasureForEdit.height)
           : "",
-      dressSize: selectedMeasureForEdit?.dressSize || "M",
+      dressSize: selectedMeasureForEdit?.dressSize || "",
       notes: selectedMeasureForEdit?.notes || "",
     },
     validationSchema: measurementValidationSchema,
@@ -2104,8 +2100,10 @@ const Clients = () => {
 
                       <div className="measure-actions">
                         <span className="measure-date">
-                          {measure.createdAt ? (
-                            <DateTimeCell value={measure.createdAt} />
+                          {measure.rawCreatedAt || measure.createdAt ? (
+                            <DateTimeCell
+                              value={measure.rawCreatedAt || measure.createdAt}
+                            />
                           ) : (
                             ""
                           )}
@@ -2251,10 +2249,17 @@ const Clients = () => {
           };
 
           const saved = await createClientMeasurement(measurementPayload);
+          const now = new Date();
+          const nowIso = now.toISOString();
+          const savedRecord = {
+            ...saved,
+            createdAt: saved?.createdAt || nowIso,
+            rawCreatedAt: saved?.rawCreatedAt || now,
+          };
 
           setMeasurementsMap((prev) => {
             const userList = prev[clientId] ? [...prev[clientId]] : [];
-            return { ...prev, [clientId]: [saved, ...userList] };
+            return { ...prev, [clientId]: [savedRecord, ...userList] };
           });
 
           const editNow = new Date();
@@ -2326,13 +2331,7 @@ const Clients = () => {
             disabled={editMeasureFormik.isSubmitting}
           />
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-              gap: "12px",
-            }}
-          >
+          <div className="measurement-modal-grid">
             <AppInput
               label="Pallu Length (inches)"
               id="edit-measure-pallu"
@@ -2435,6 +2434,7 @@ const Clients = () => {
               label="Dress Size"
               id="edit-measure-dressSize"
               name="dressSize"
+              placeholder="Select Size"
               value={editMeasureFormik.values.dressSize}
               onChange={editMeasureFormik.handleChange}
               onBlur={editMeasureFormik.handleBlur}
@@ -2444,6 +2444,7 @@ const Clients = () => {
               }
               disabled={editMeasureFormik.isSubmitting}
             >
+              <option value="">Select Size</option>
               {DRESS_SIZES.map((sz) => (
                 <option key={sz} value={sz}>
                   {sz}

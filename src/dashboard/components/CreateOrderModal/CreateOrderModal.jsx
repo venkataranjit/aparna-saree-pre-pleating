@@ -71,7 +71,7 @@ const SAREE_FABRICS = [
   "Other Fabric",
 ];
 
-export const DRESS_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "Custom"];
+export const DRESS_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "Custom"];
 
 // Strict numeric validator for custom measurements (numbers only, no characters or symbols)
 const numericMeasurementValidator = (label, isInteger = false) =>
@@ -143,14 +143,27 @@ const orderValidationSchema = Yup.object({
           .required("Service price is required")
           .min(1, "Service price must be greater than ₹0"),
         includeMeasurements: Yup.boolean(),
-        measurementProfile: Yup.mixed().when("includeMeasurements", {
-          is: (val) => val === true || val === undefined,
-          then: () =>
-            customMeasurementValidationSchema.required(
+        selectedMeasurementId: Yup.string(),
+        measurementProfile: Yup.mixed().when(
+          ["includeMeasurements", "selectedMeasurementId"],
+          ([includeMeasurements, selectedMeasurementId]) => {
+            if (includeMeasurements === false) {
+              return Yup.mixed().nullable().notRequired();
+            }
+            // If client has selected a saved profile, do not enforce strict 8-parameter requirement, allow as-is
+            if (
+              selectedMeasurementId &&
+              selectedMeasurementId !== "custom" &&
+              !String(selectedMeasurementId).startsWith("custom_")
+            ) {
+              return Yup.mixed().nullable().notRequired();
+            }
+            // Only if custom sizing is chosen, require full custom measurements
+            return customMeasurementValidationSchema.required(
               "Measurement profile is required",
-            ),
-          otherwise: () => Yup.mixed().nullable().notRequired(),
-        }),
+            );
+          },
+        ),
       }),
     )
     .min(1, "At least one service is required in the order"),
@@ -161,6 +174,24 @@ const orderValidationSchema = Yup.object({
   orderStatus: Yup.string().trim().required("Order status is required"),
   paymentStatus: Yup.string().trim().required("Payment status is required"),
   paymentMethod: Yup.string().trim().required("Payment method is required"),
+  paidAmount: Yup.number()
+    .typeError("Paid amount must be a number")
+    .min(0, "Paid amount cannot be negative")
+    .test(
+      "max-paid-amount",
+      "Paid amount cannot exceed total amount (Service price + Delivery + Other charges - Discount)",
+      function (value) {
+        const { totalAmount } = this.parent;
+        if (value === undefined || value === null || isNaN(value)) return true;
+        if (
+          totalAmount === undefined ||
+          totalAmount === null ||
+          isNaN(totalAmount)
+        )
+          return true;
+        return Number(value) <= Number(totalAmount);
+      },
+    ),
 });
 
 const createEmptyItem = (idx = 1) => ({
@@ -837,23 +868,29 @@ export default function CreateOrderModal({
     setItems((prev) => {
       const next = [...prev];
       if (foundSvc) {
-        const regPrice = Number(
-          foundSvc.servicePrice !== undefined && foundSvc.servicePrice !== null
-            ? foundSvc.servicePrice
-            : foundSvc.price !== undefined && foundSvc.price !== null
-              ? foundSvc.price
-              : foundSvc.amount || 0,
-        ) || 0;
-        const offerPrice = Number(
-          foundSvc.serviceDiscountedPrice !== undefined && foundSvc.serviceDiscountedPrice !== null && Number(foundSvc.serviceDiscountedPrice) > 0
-            ? foundSvc.serviceDiscountedPrice
-            : regPrice,
-        ) || regPrice;
+        const regPrice =
+          Number(
+            foundSvc.servicePrice !== undefined &&
+              foundSvc.servicePrice !== null
+              ? foundSvc.servicePrice
+              : foundSvc.price !== undefined && foundSvc.price !== null
+                ? foundSvc.price
+                : foundSvc.amount || 0,
+          ) || 0;
+        const offerPrice =
+          Number(
+            foundSvc.serviceDiscountedPrice !== undefined &&
+              foundSvc.serviceDiscountedPrice !== null &&
+              Number(foundSvc.serviceDiscountedPrice) > 0
+              ? foundSvc.serviceDiscountedPrice
+              : regPrice,
+          ) || regPrice;
 
         next[index] = {
           ...next[index],
           serviceId: foundSvc.id,
-          serviceName: foundSvc.serviceName || foundSvc.name || foundSvc.title || "",
+          serviceName:
+            foundSvc.serviceName || foundSvc.name || foundSvc.title || "",
           servicePrice: regPrice,
           serviceDiscountedPrice: offerPrice,
           serviceDescription: foundSvc.description || "",
@@ -1226,12 +1263,35 @@ export default function CreateOrderModal({
             : NaN,
         sareeType: it.sareeType || "Kanjeevaram Silk (Pure Zari)",
         includeMeasurements,
+        selectedMeasurementId: it.selectedMeasurementId || "custom",
         measurementProfile,
         itemNotes: it.itemNotes || "",
       };
     });
 
     const numPaid = Number(advancePayment) || 0;
+    if (numPaid > calculatedTotal) {
+      isSubmittingRef.current = false;
+      setSubmitting(false);
+      const errMsg = `Paid amount (₹${numPaid.toLocaleString("en-IN")}) cannot exceed the total payable amount (₹${calculatedTotal.toLocaleString("en-IN")}).`;
+      setValidationErrors((prev) => ({
+        ...prev,
+        advancePayment: errMsg,
+        paidAmount: errMsg,
+      }));
+      toast.error(errMsg);
+      setTimeout(() => {
+        const paidInput = document.querySelector(
+          "input[name='advancePayment'], .advance-payment-field input, #order-advance-payment, [aria-label*='Paid Amount']",
+        );
+        if (paidInput) {
+          paidInput.scrollIntoView({ behavior: "smooth", block: "center" });
+          paidInput.focus();
+        }
+      }, 80);
+      return;
+    }
+
     const resolvedPaymentStatus =
       numPaid >= calculatedTotal && calculatedTotal > 0
         ? "paid"
@@ -1240,7 +1300,9 @@ export default function CreateOrderModal({
           : "pending";
     const resolvedPaid =
       resolvedPaymentStatus === "paid"
-        ? (numPaid > 0 ? numPaid : calculatedTotal)
+        ? numPaid > 0
+          ? numPaid
+          : calculatedTotal
         : numPaid;
     const resolvedAdvance = numPaid;
     const resolvedBalanceDue =
@@ -1249,7 +1311,9 @@ export default function CreateOrderModal({
         : Math.max(0, calculatedTotal - numPaid);
     const resolvedBalancePaid =
       resolvedPaymentStatus === "paid"
-        ? (numPaid > 0 ? Math.max(0, calculatedTotal - numPaid) : calculatedTotal)
+        ? numPaid > 0
+          ? Math.max(0, calculatedTotal - numPaid)
+          : calculatedTotal
         : 0;
 
     // Yup Validation Execution on full order including all 8 measurement parameters
@@ -1268,6 +1332,8 @@ export default function CreateOrderModal({
           orderStatus,
           paymentStatus: resolvedPaymentStatus,
           paymentMethod,
+          totalAmount: calculatedTotal,
+          paidAmount: numPaid,
         },
         { abortEarly: false },
       );
@@ -1404,19 +1470,34 @@ export default function CreateOrderModal({
   // Options for Service Select
   const serviceSelectOptions = useMemo(() => {
     const sorted = [...services].sort((a, b) => {
-      const orderA = a.displayOrder && a.displayOrder > 0 ? Number(a.displayOrder) : 999999;
-      const orderB = b.displayOrder && b.displayOrder > 0 ? Number(b.displayOrder) : 999999;
+      const orderA =
+        a.displayOrder && a.displayOrder > 0 ? Number(a.displayOrder) : 999999;
+      const orderB =
+        b.displayOrder && b.displayOrder > 0 ? Number(b.displayOrder) : 999999;
       if (orderA !== orderB) return orderA - orderB;
       return (a.serviceName || "").localeCompare(b.serviceName || "");
     });
 
     return sorted.map((s) => {
-      const p = Number(s.servicePrice !== undefined && s.servicePrice !== null ? s.servicePrice : s.price || 0);
-      const dp = Number(s.serviceDiscountedPrice !== undefined && s.serviceDiscountedPrice !== null ? s.serviceDiscountedPrice : p);
+      const p = Number(
+        s.servicePrice !== undefined && s.servicePrice !== null
+          ? s.servicePrice
+          : s.price || 0,
+      );
+      const dp = Number(
+        s.serviceDiscountedPrice !== undefined &&
+          s.serviceDiscountedPrice !== null
+          ? s.serviceDiscountedPrice
+          : p,
+      );
       return {
         value: s.id,
-        label: s.displayOrder && s.displayOrder > 0 ? `#${s.displayOrder} - ${s.serviceName}` : s.serviceName,
-        subtitle: dp > 0 && dp < p ? `Offer: ₹${dp} (Reg: ₹${p})` : `Price: ₹${p}`,
+        label:
+          s.displayOrder && s.displayOrder > 0
+            ? `#${s.displayOrder} - ${s.serviceName}`
+            : s.serviceName,
+        subtitle:
+          dp > 0 && dp < p ? `Offer: ₹${dp} (Reg: ₹${p})` : `Price: ₹${p}`,
       };
     });
   }, [services]);
@@ -1524,8 +1605,8 @@ export default function CreateOrderModal({
             <div className="form-grid form-grid--2col">
               <div className="form-field-wrap">
                 <AppInput
-                  label="Client Full Name"
-                  placeholder="e.g. Priya Sharma"
+                  label="Client Name"
+                  placeholder="e.g. Aparna"
                   value={clientForm.username}
                   onChange={(e) => {
                     if (initialClient) return;
@@ -1686,7 +1767,7 @@ export default function CreateOrderModal({
                   <div className="item-card-header">
                     <div className="item-badge-wrap">
                       <span className="item-number-badge">
-                        Saree Service #{idx + 1}
+                        Service #{idx + 1}
                       </span>
                       {item.serviceName && (
                         <span className="item-service-title">
@@ -1899,71 +1980,53 @@ export default function CreateOrderModal({
                           (x) => x.id === item.selectedMeasurementId,
                         );
                         if (!m) return null;
-                        const missingAny =
-                          !m.pallu ||
-                          !m.shoulderToRightTight ||
-                          !m.chest ||
-                          !m.hip ||
-                          !m.firstPleatSize ||
-                          !m.noOfChestPleats ||
-                          !m.height ||
-                          !m.dressSize;
                         return (
-                          <>
-                            <div className="measure-summary-chips">
-                              <span className="measure-chip">
-                                <strong>Profile:</strong>{" "}
-                                {m.title || "Saved Profile"}
+                          <div className="measure-summary-chips">
+                            <span className="measure-chip">
+                              <strong>Profile:</strong>{" "}
+                              {m.title || "Saved Profile"}
+                            </span>
+                            <span className="measure-chip">
+                              <strong>Pallu:</strong>{" "}
+                              {m.pallu ? `${m.pallu}"` : "—"}
+                            </span>
+                            <span className="measure-chip">
+                              <strong>Shoulder to Tight:</strong>{" "}
+                              {m.shoulderToRightTight
+                                ? `${m.shoulderToRightTight}"`
+                                : "—"}
+                            </span>
+                            <span className="measure-chip">
+                              <strong>Chest:</strong>{" "}
+                              {m.chest ? `${m.chest}"` : "—"}
+                            </span>
+                            <span className="measure-chip">
+                              <strong>Hip:</strong>{" "}
+                              {m.hip ? `${m.hip}"` : "—"}
+                            </span>
+                            <span className="measure-chip">
+                              <strong>1st Pleat:</strong>{" "}
+                              {m.firstPleatSize
+                                ? `${m.firstPleatSize}"`
+                                : "—"}
+                            </span>
+                            <span className="measure-chip">
+                              <strong>Chest Pleats:</strong>{" "}
+                              {m.noOfChestPleats || "—"}
+                            </span>
+                            <span className="measure-chip">
+                              <strong>Height:</strong> {m.height || "—"}
+                            </span>
+                            <span className="measure-chip">
+                              <strong>Dress Size:</strong>{" "}
+                              {m.dressSize || "—"}
+                            </span>
+                            {m.notes && (
+                              <span className="measure-chip measure-chip--note">
+                                <strong>Note:</strong> {m.notes}
                               </span>
-                              <span className="measure-chip">
-                                <strong>Pallu:</strong>{" "}
-                                {m.pallu ? `${m.pallu}"` : "—"}
-                              </span>
-                              <span className="measure-chip">
-                                <strong>Shoulder to Tight:</strong>{" "}
-                                {m.shoulderToRightTight
-                                  ? `${m.shoulderToRightTight}"`
-                                  : "—"}
-                              </span>
-                              <span className="measure-chip">
-                                <strong>Chest:</strong>{" "}
-                                {m.chest ? `${m.chest}"` : "—"}
-                              </span>
-                              <span className="measure-chip">
-                                <strong>Hip:</strong>{" "}
-                                {m.hip ? `${m.hip}"` : "—"}
-                              </span>
-                              <span className="measure-chip">
-                                <strong>1st Pleat:</strong>{" "}
-                                {m.firstPleatSize
-                                  ? `${m.firstPleatSize}"`
-                                  : "—"}
-                              </span>
-                              <span className="measure-chip">
-                                <strong>Chest Pleats:</strong>{" "}
-                                {m.noOfChestPleats || "—"}
-                              </span>
-                              <span className="measure-chip">
-                                <strong>Height:</strong> {m.height || "—"}
-                              </span>
-                              <span className="measure-chip">
-                                <strong>Dress Size:</strong>{" "}
-                                {m.dressSize || "—"}
-                              </span>
-                              {m.notes && (
-                                <span className="measure-chip measure-chip--note">
-                                  <strong>Note:</strong> {m.notes}
-                                </span>
-                              )}
-                            </div>
-                            {missingAny && (
-                              <p className="measure-missing-warning">
-                                ⚠️ Some required measurements are not set in
-                                this profile. Switch to &quot;Custom
-                                Sizing&quot; to provide them.
-                              </p>
                             )}
-                          </>
+                          </div>
                         );
                       })()
                     ) : (
@@ -2399,25 +2462,50 @@ export default function CreateOrderModal({
                 />
               </div>
 
-              <div className="form-field-wrap">
+              <div className="form-field-wrap advance-payment-field">
                 <AppInput
                   label="Paid Amount (₹)"
+                  name="advancePayment"
+                  id="order-advance-payment"
                   placeholder="0"
                   value={advancePayment === 0 ? "" : advancePayment}
                   onChange={(e) => {
                     const cleanVal = e.target.value.replace(/[^0-9]/g, "");
                     const numVal = cleanVal === "" ? 0 : Number(cleanVal);
                     setAdvancePayment(numVal);
+                    if (numVal <= calculatedTotal) {
+                      setValidationErrors((prev) => ({
+                        ...prev,
+                        advancePayment: undefined,
+                        paidAmount: undefined,
+                      }));
+                    } else {
+                      setValidationErrors((prev) => ({
+                        ...prev,
+                        advancePayment: `Paid amount (₹${numVal.toLocaleString("en-IN")}) cannot exceed total payable amount (₹${calculatedTotal.toLocaleString("en-IN")}).`,
+                      }));
+                    }
                   }}
                   onKeyDown={(e) => handleNumericKeyDown(e, false)}
                   startAdornment={<CurrencyRupeeIcon />}
                   disabled={submitting}
+                  error={Boolean(
+                    validationErrors.advancePayment ||
+                    validationErrors.paidAmount ||
+                    (Number(advancePayment) > 0 &&
+                      Number(advancePayment) > calculatedTotal),
+                  )}
                   helperText={
-                    advancePayment > 0
-                      ? advancePayment >= calculatedTotal && calculatedTotal > 0
-                        ? `Paid in Full (₹${Number(advancePayment).toLocaleString("en-IN")})`
-                        : `Partial (Advance: ₹${Number(advancePayment).toLocaleString("en-IN")}, Balance Due: ₹${Math.max(0, calculatedTotal - Number(advancePayment)).toLocaleString("en-IN")})`
-                      : "Amount paid by client (0 = Pending, Partial = Advance, Full = Paid)"
+                    validationErrors.advancePayment ||
+                    validationErrors.paidAmount ||
+                    (Number(advancePayment) > calculatedTotal
+                      ? `⚠️ Paid amount (₹${Number(advancePayment).toLocaleString("en-IN")}) cannot exceed total payable amount (₹${calculatedTotal.toLocaleString("en-IN")}).`
+                      : Number(advancePayment) > 0
+                        ? Number(advancePayment) >= calculatedTotal &&
+                          calculatedTotal > 0
+                          ? `Paid in Full (₹${Number(advancePayment).toLocaleString("en-IN")})`
+                          : `Partial (Advance: ₹${Number(advancePayment).toLocaleString("en-IN")}, Balance Due: ₹${Math.max(0, calculatedTotal - Number(advancePayment)).toLocaleString("en-IN")})`
+                        : "Amount paid by client (0 = Pending, Partial = Advance, Full = Paid)")
                   }
                 />
               </div>

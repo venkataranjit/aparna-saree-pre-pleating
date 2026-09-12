@@ -360,7 +360,6 @@ const Sidebar = ({
                   <PersonOutlineIcon />
                 )}
               </div>
-              <span className="online-dot" />
             </div>
 
             <div className="user-details">

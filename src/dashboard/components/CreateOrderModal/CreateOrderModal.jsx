@@ -61,14 +61,12 @@ const OCCASIONS = [
 ];
 
 const SAREE_FABRICS = [
-  "Kanjeevaram Silk (Pure Zari)",
-  "Banarasi Silk / Georgette",
-  "Soft Silk / Tussar",
-  "Organza Designer Saree",
-  "Chiffon / Georgette",
-  "Gadwal / Pochampally Pattu",
-  "Cotton / Linen Handloom",
-  "Net / Shimmer / Velvet",
+  "Pattu Saree",
+  "Work Saree",
+  "Cotton Saree",
+  "Tissue Saree",
+  "Net Saree",
+  "Silk Saree",
   "Other Fabric",
 ];
 
@@ -1255,9 +1253,7 @@ export default function CreateOrderModal({
 
       const matchingService = services.find((s) => s.id === it.serviceId);
       const resolvedServiceType =
-        it.serviceType ||
-        matchingService?.serviceType ||
-        "Pleating Service";
+        it.serviceType || matchingService?.serviceType || "Pleating Service";
 
       return {
         itemId: it.id || `item_${idx + 1}`,
@@ -1400,8 +1396,7 @@ export default function CreateOrderModal({
           email: (clientForm.email || "").trim().toLowerCase(),
           userAddress: (clientForm.userAddress || "").trim(),
         },
-        serviceType:
-          processedItems[0]?.serviceType || "Pleating Service",
+        serviceType: processedItems[0]?.serviceType || "Pleating Service",
         items: processedItems,
         totalItems: processedItems.length,
         subtotal: subtotalAmount,
@@ -2014,14 +2009,11 @@ export default function CreateOrderModal({
                               {m.chest ? `${m.chest}"` : "—"}
                             </span>
                             <span className="measure-chip">
-                              <strong>Hip:</strong>{" "}
-                              {m.hip ? `${m.hip}"` : "—"}
+                              <strong>Hip:</strong> {m.hip ? `${m.hip}"` : "—"}
                             </span>
                             <span className="measure-chip">
                               <strong>1st Pleat:</strong>{" "}
-                              {m.firstPleatSize
-                                ? `${m.firstPleatSize}"`
-                                : "—"}
+                              {m.firstPleatSize ? `${m.firstPleatSize}"` : "—"}
                             </span>
                             <span className="measure-chip">
                               <strong>Chest Pleats:</strong>{" "}
@@ -2031,8 +2023,7 @@ export default function CreateOrderModal({
                               <strong>Height:</strong> {m.height || "—"}
                             </span>
                             <span className="measure-chip">
-                              <strong>Dress Size:</strong>{" "}
-                              {m.dressSize || "—"}
+                              <strong>Dress Size:</strong> {m.dressSize || "—"}
                             </span>
                             {m.notes && (
                               <span className="measure-chip measure-chip--note">

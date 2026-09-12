@@ -48,6 +48,7 @@ import { auth } from "../../../firebase/config";
 import "./CreateOrderModal.scss";
 
 const OCCASIONS = [
+  "Party",
   "Wedding / Muhurtham",
   "Reception",
   "Engagement",
@@ -260,7 +261,7 @@ export default function CreateOrderModal({
   }, []);
   const [orderDate, setOrderDate] = useState(todayStr);
   const [deliveryDate, setDeliveryDate] = useState(defaultDeliveryStr);
-  const [occasion, setOccasion] = useState("");
+  const [occasion, setOccasion] = useState("Party");
   const [customOccasion, setCustomOccasion] = useState("");
   const [orderStatus, setOrderStatus] = useState("in-progress");
   const [paymentStatus, setPaymentStatus] = useState("paid");
@@ -1151,7 +1152,7 @@ export default function CreateOrderModal({
     setItems([createEmptyItem(1)]);
     setOrderDate(todayStr);
     setDeliveryDate(defaultDeliveryStr);
-    setOccasion("");
+    setOccasion("Party");
     setCustomOccasion("");
     setOrderStatus(isClientMode ? "pending" : "in-progress");
     setPaymentStatus(isClientMode ? "pending" : "paid");

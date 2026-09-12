@@ -27,6 +27,10 @@ import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import InstagramIcon from "@mui/icons-material/Instagram";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import PhoneInTalkOutlinedIcon from "@mui/icons-material/PhoneInTalkOutlined";
 import { useAuth } from "../../auth/context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import Footer from "../components/Footer/Footer";
@@ -115,7 +119,7 @@ const SERVICES_LIST = [
 const LandingPageNew = () => {
   const { currentUser } = useAuth();
   const { currentTheme } = useTheme();
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const containerRef = useRef(null);
@@ -123,11 +127,6 @@ const LandingPageNew = () => {
   useEffect(() => {
     document.title =
       "Aparna Saree Pre-Pleating & Draping Studio Hyderabad | 2-Min Ready to Wear Sarees";
-    // Trigger dynamic moving entrance animations on page load
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 80);
-    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -137,21 +136,21 @@ const LandingPageNew = () => {
         (containerRef.current ? containerRef.current.scrollTop : 0);
       setIsScrolled(scrollPos > 40);
 
-      // Track active section for nav highlight
-      if (scrollPos < 350) {
-        setActiveSection("home");
-      } else {
-        const servicesEl = document.getElementById("services");
-        const aboutEl = document.getElementById("about");
-        const contactEl = document.getElementById("contact");
+      // Track active section for nav highlight (Check bottom-to-top: Contact -> Services -> About -> Home)
+      const contactEl = document.getElementById("contact");
+      const servicesEl = document.getElementById("services");
+      const aboutEl = document.getElementById("about");
 
-        if (contactEl && contactEl.getBoundingClientRect().top < 300) {
-          setActiveSection("contact");
-        } else if (aboutEl && aboutEl.getBoundingClientRect().top < 300) {
-          setActiveSection("about");
-        } else if (servicesEl && servicesEl.getBoundingClientRect().top < 300) {
-          setActiveSection("services");
-        }
+      const threshold = Math.min(window.innerHeight * 0.45, 360);
+
+      if (contactEl && contactEl.getBoundingClientRect().top <= threshold) {
+        setActiveSection("contact");
+      } else if (servicesEl && servicesEl.getBoundingClientRect().top <= threshold) {
+        setActiveSection("services");
+      } else if (aboutEl && aboutEl.getBoundingClientRect().top <= threshold) {
+        setActiveSection("about");
+      } else {
+        setActiveSection("home");
       }
     };
 
@@ -168,6 +167,31 @@ const LandingPageNew = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-revealed");
+          } else {
+            // Re-arm animation every time the element scrolls out of view
+            entry.target.classList.remove("is-revealed");
+          }
+        });
+      },
+      {
+        threshold: 0.1,
+        rootMargin: "0px 0px -40px 0px",
+      }
+    );
+
+    const elements = document.querySelectorAll(".reveal-on-scroll");
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [isLoaded]);
 
   const getLogo = () => {
     if (currentTheme === "light") return logoLight || brandLogo;
@@ -207,6 +231,43 @@ const LandingPageNew = () => {
       ref={containerRef}
       className={`aparna-luxury-landing ${isLoaded ? "page-is-loaded" : ""} ${isScrolled ? "is-scrolled" : ""}`}
     >
+      {/* =========================================================================
+          DYNAMIC LUXURY BACKGROUND ANIMATION SYSTEM
+          (Fluid Gold Auroras, Shimmering Zari Mesh, Floating Stardust Particles & Silk Light Beams)
+          ========================================================================= */}
+      <div className="luxury-global-bg-canvas" aria-hidden="true">
+        {/* Dynamic Fluid Ambient Auroras */}
+        <div className="bg-aurora bg-aurora--1" />
+        <div className="bg-aurora bg-aurora--2" />
+        <div className="bg-aurora bg-aurora--3" />
+        <div className="bg-aurora bg-aurora--4" />
+
+        {/* Shimmering Zari Weave Lattice Mesh */}
+        <div className="bg-zari-mesh" />
+
+        {/* Floating Golden Stardust Particles */}
+        <div className="bg-particle-field">
+          <span className="gold-particle gold-particle--1" />
+          <span className="gold-particle gold-particle--2" />
+          <span className="gold-particle gold-particle--3" />
+          <span className="gold-particle gold-particle--4" />
+          <span className="gold-particle gold-particle--5" />
+          <span className="gold-particle gold-particle--6" />
+          <span className="gold-particle gold-particle--7" />
+          <span className="gold-particle gold-particle--8" />
+          <span className="gold-particle gold-particle--9" />
+          <span className="gold-particle gold-particle--10" />
+          <span className="gold-particle gold-particle--11" />
+          <span className="gold-particle gold-particle--12" />
+          <span className="gold-particle gold-particle--13" />
+          <span className="gold-particle gold-particle--14" />
+        </div>
+
+        {/* Diagonal Silk Shimmer Light Beams */}
+        <div className="bg-silk-light-beam" />
+        <div className="bg-silk-light-beam bg-silk-light-beam--reverse" />
+      </div>
+
       {/* =========================================================================
           HERO SECTION: Background + Centered Hero Brand Logo + Editorial Copy
           ========================================================================= */}
@@ -317,9 +378,11 @@ const LandingPageNew = () => {
           ABOUT US & ATELIER STORY SECTION (Follows Home)
           ========================================================================= */}
       <section id="about" className="luxury-about-section">
+        {/* Animated Background Aura for About Us */}
+        <div className="section-ambient-aura section-ambient-aura--about" />
         <div className="section-container">
           {/* Section Header */}
-          <div className="about-section-header">
+          <div className="about-section-header reveal-on-scroll">
             <span className="section-eyebrow">About Us</span>
             <h2 className="section-heading">
               Where Heritage Weaves Meet Flawless Precision
@@ -331,7 +394,7 @@ const LandingPageNew = () => {
           </div>
 
           {/* Stats & Trust Metrics Strip */}
-          <div className="about-stats-strip">
+          <div className="about-stats-strip reveal-on-scroll">
             <div className="stat-card">
               <div className="stat-number">10,000+</div>
               <div className="stat-label">Sarees Pre-Pleated</div>
@@ -352,7 +415,7 @@ const LandingPageNew = () => {
 
           {/* Main Content Grid: Story & Pillars (Left) + Founder Showcase (Right) */}
           <div className="about-main-grid">
-            <div className="about-story-col">
+            <div className="about-story-col reveal-on-scroll reveal-from-left">
               <div className="story-card">
                 <h3 className="story-heading">
                   The Story Behind the Perfection
@@ -431,7 +494,7 @@ const LandingPageNew = () => {
             </div>
 
             {/* Founder Showcase & Studio Atelier Card */}
-            <div className="about-founder-col">
+            <div className="about-founder-col reveal-on-scroll reveal-from-right">
               <div className="founder-card">
                 <div className="founder-card__glow" />
                 <div className="founder-card__emblem-wrap">
@@ -482,7 +545,9 @@ const LandingPageNew = () => {
           SERVICES SECTION: Mastercraft Pre-Pleating Styles (Follows About Us)
           ========================================================================= */}
       <section id="services" className="services-section">
-        <div className="services-section__header">
+        {/* Animated Background Aura for Services */}
+        <div className="section-ambient-aura section-ambient-aura--services" />
+        <div className="services-section__header reveal-on-scroll">
           <span className="section-eyebrow">Our Services</span>
           <h2 className="section-heading">
             Mastercraft Pre-Pleating &amp; Styling
@@ -495,7 +560,11 @@ const LandingPageNew = () => {
 
         <div className="services-grid">
           {SERVICES_LIST.map((item, index) => (
-            <div key={index} className="service-card">
+            <div
+              key={index}
+              className="service-card reveal-on-scroll"
+              style={{ transitionDelay: `${(index % 6) * 0.05}s` }}
+            >
               <div className="service-card__top">
                 <div className="service-icon-box">{item.icon}</div>
                 <span className="service-badge">{item.badge}</span>
@@ -511,9 +580,11 @@ const LandingPageNew = () => {
           CONTACT US SECTION: Address, Google Maps, Phone, Timings & Concierge
           ========================================================================= */}
       <section id="contact" className="luxury-contact-section">
+        {/* Animated Background Aura for Contact Us */}
+        <div className="section-ambient-aura section-ambient-aura--contact" />
         <div className="section-container">
           {/* Section Header matching Services */}
-          <div className="contact-header">
+          <div className="contact-header reveal-on-scroll">
             <span className="section-eyebrow">
               Studio Concierge &amp; Visit
             </span>
@@ -528,7 +599,7 @@ const LandingPageNew = () => {
 
           <div className="contact-main-grid">
             {/* Contact Details Column */}
-            <div className="contact-details-col">
+            <div className="contact-details-col reveal-on-scroll reveal-from-left">
               {/* Studio Location Card */}
               <div className="contact-info-card">
                 <div className="contact-info-card__icon-box">
@@ -596,7 +667,7 @@ const LandingPageNew = () => {
             </div>
 
             {/* Google Maps Column */}
-            <div className="contact-map-col">
+            <div className="contact-map-col reveal-on-scroll reveal-from-right">
               <div className="map-frame-card">
                 <div className="map-frame-card__header">
                   <div className="map-header-left">
@@ -652,8 +723,10 @@ const LandingPageNew = () => {
             className={`dock-nav-item ${activeSection === "home" ? "active" : ""}`}
             onClick={scrollToTop}
             title="Home"
+            aria-label="Home"
           >
-            <span>Home</span>
+            <HomeOutlinedIcon className="dock-icon" />
+            <span className="dock-nav-label">Home</span>
           </button>
 
           <button
@@ -661,8 +734,10 @@ const LandingPageNew = () => {
             className={`dock-nav-item ${activeSection === "about" ? "active" : ""}`}
             onClick={() => scrollToSection("about")}
             title="About Us"
+            aria-label="About Us"
           >
-            <span>About Us</span>
+            <InfoOutlinedIcon className="dock-icon" />
+            <span className="dock-nav-label">About Us</span>
           </button>
 
           <button
@@ -670,8 +745,10 @@ const LandingPageNew = () => {
             className={`dock-nav-item ${activeSection === "services" ? "active" : ""}`}
             onClick={() => scrollToSection("services")}
             title="Services"
+            aria-label="Services"
           >
-            <span>Services</span>
+            <AutoAwesomeOutlinedIcon className="dock-icon" />
+            <span className="dock-nav-label">Services</span>
           </button>
 
           <button
@@ -679,8 +756,10 @@ const LandingPageNew = () => {
             className={`dock-nav-item ${activeSection === "contact" ? "active" : ""}`}
             onClick={() => scrollToSection("contact")}
             title="Contact Us"
+            aria-label="Contact Us"
           >
-            <span>Contact Us</span>
+            <PhoneInTalkOutlinedIcon className="dock-icon" />
+            <span className="dock-nav-label">Contact Us</span>
           </button>
 
           {/* Android App Download Link */}
@@ -689,6 +768,7 @@ const LandingPageNew = () => {
             download="Aparna-Saree-Pre-Pleating.apk"
             className="dock-nav-item dock-nav-item--android"
             title="Download Android App"
+            aria-label="Download Android App"
           >
             <AndroidIcon className="dock-icon" />
           </a>
@@ -700,6 +780,7 @@ const LandingPageNew = () => {
             rel="noopener noreferrer"
             className="dock-nav-item dock-nav-item--whatsapp"
             title="WhatsApp Booking"
+            aria-label="WhatsApp Booking"
           >
             <WhatsAppIcon className="dock-icon" />
           </a>
@@ -711,6 +792,7 @@ const LandingPageNew = () => {
             rel="noopener noreferrer"
             className="dock-nav-item dock-nav-item--instagram"
             title="Instagram Profile"
+            aria-label="Instagram Profile"
           >
             <InstagramIcon className="dock-icon" />
           </a>
@@ -720,9 +802,10 @@ const LandingPageNew = () => {
             to={currentUser ? "/dashboard" : "/login"}
             className="dock-nav-item dock-nav-item--auth"
             title="Login"
+            aria-label="Login"
           >
             <LoginIcon className="dock-icon" />
-            <span>Login</span>
+            <span className="dock-nav-label">Login</span>
           </Link>
         </div>
       </nav>

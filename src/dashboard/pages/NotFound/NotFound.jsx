@@ -2,14 +2,34 @@ import React from 'react';
 import { Box, Typography, Button, Container, Stack } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
+import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import SparklesIcon from '@mui/icons-material/AutoAwesome';
 import logo from '../../../assets/logo.png';
+import logoDark from '../../../assets/logo-dark.png';
+import logoLight from '../../../assets/logo-light.png';
+import { useTheme } from '../../../context/ThemeContext';
+import { useAuth } from '../../../auth/context/AuthContext';
+import { ThemeToggle } from '../../../components/common/ThemeToggle/ThemeToggle';
 import './NotFound.scss';
 
 const NotFound = () => {
+  const { theme, isLight, isDark } = useTheme();
+  const { currentUser } = useAuth();
+
+  // Dynamic logo selection:
+  // - Light theme -> logoLight (charcoal logo for light background)
+  // - Dark theme  -> logoDark (silver/white logo for dark background)
+  // - Default     -> logo (gold logo for black obsidian background)
+  const currentLogo = isLight ? logoLight : isDark ? logoDark : logo;
+
   return (
-    <Box className="not-found-page">
+    <Box className="not-found-page" data-theme={theme}>
+      {/* Top right theme toggle */}
+      <div className="not-found-page__top-nav">
+        <ThemeToggle />
+      </div>
+
       {/* Background ambient lighting decorations */}
       <div className="not-found-page__ambient-glow" />
       <div className="not-found-page__top-accent-bar" />
@@ -19,9 +39,10 @@ const NotFound = () => {
         <Box className="not-found-page__logo-wrap">
           <div className="logo-halo" />
           <img
-            src={logo}
+            src={currentLogo}
             alt="Aparna Saree Pre-Pleating"
             className="not-found-page__brand-logo"
+            key={theme}
           />
         </Box>
 
@@ -60,21 +81,32 @@ const NotFound = () => {
             justifyContent="center"
             className="not-found-card__actions"
           >
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              component={RouterLink}
-              to="/dashboard"
-              startIcon={<DashboardOutlinedIcon />}
-              className="primary-btn"
-            >
-              Back to Dashboard
-            </Button>
+            {currentUser ? (
+              <Button
+                variant="contained"
+                size="large"
+                component={RouterLink}
+                to="/dashboard"
+                startIcon={<DashboardOutlinedIcon />}
+                className="primary-btn"
+              >
+                Back to Dashboard
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                size="large"
+                component={RouterLink}
+                to="/login"
+                startIcon={<LoginOutlinedIcon />}
+                className="primary-btn"
+              >
+                Go to Login
+              </Button>
+            )}
 
             <Button
               variant="outlined"
-              color="primary"
               size="large"
               component={RouterLink}
               to="/landing"

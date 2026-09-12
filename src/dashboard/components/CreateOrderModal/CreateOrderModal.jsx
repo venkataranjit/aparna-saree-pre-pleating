@@ -54,9 +54,10 @@ const OCCASIONS = [
   "Engagement",
   "Sangeet / Mehendi",
   "Temple / Puja Ceremony",
-  "Festival (Diwali/Navratri)",
+  "Festival",
   "Party / Anniversary",
   "College Farewell",
+  "Office / Corporate Event",
   "Other Occasion",
 ];
 

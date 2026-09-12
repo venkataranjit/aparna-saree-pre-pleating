@@ -739,24 +739,22 @@ const Services = () => {
                         </AppTableCell>
                         <AppTableCell>
                           <div className="service-name-cell">
-                            <div className="user-avatar-circle service-icon-circle">
-                              {getServiceIcon(service.serviceName)}
-                            </div>
-                            <div>
-                              <div className="user-name-text-row">
-                                <span className="user-name-text">
-                                  {service.serviceName}
-                                </span>
+                            <div className="service-info-col">
+                              <span className="user-name-text">
+                                {service.serviceName}
+                              </span>
+                              <div className="service-type-row">
                                 <span className="service-type-tag">
                                   {service.serviceType || "Pleating Service"}
                                 </span>
                               </div>
-                              <div className="user-email-text">
-                                {service.description &&
-                                service.description.length > 50
-                                  ? service.description.substring(0, 50) + "..."
-                                  : service.description}
-                              </div>
+                              {service.description && (
+                                <div className="user-email-text">
+                                  {service.description.length > 50
+                                    ? service.description.substring(0, 50) + "..."
+                                    : service.description}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </AppTableCell>

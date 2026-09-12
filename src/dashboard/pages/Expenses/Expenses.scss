@@ -130,35 +130,19 @@
       align-items: center;
       gap: 8px;
       padding: 7px 14px;
-      background: var(--bg-card);
-      border: 1px solid var(--surface-border);
+      background: var(--bg-card, #0f0f0f);
+      border: 1px solid var(--surface-border, rgba(212, 175, 55, 0.22));
       border-radius: 8px;
-      color: var(--text-primary);
+      color: var(--text-primary, #e6d8a3);
       font-size: 0.85rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
 
       &:hover {
-        background: var(--surface-gold-tint);
-        border-color: var(--surface-border-hover);
-        color: var(--text-primary);
-      }
-
-      &.is-active {
-        background: var(--btn-primary-bg);
-        border-color: var(--btn-primary-bg);
-        color: var(--btn-primary-text);
-
-        .filter-icon,
-        .chevron-icon {
-          color: var(--btn-primary-text);
-        }
-
-        .filter-badge-count {
-          background: var(--btn-primary-text);
-          color: var(--btn-primary-bg);
-        }
+        background: var(--surface-gold-tint, rgba(212, 175, 55, 0.12));
+        border-color: var(--surface-border-hover, rgba(212, 175, 55, 0.5));
+        color: var(--text-primary, #e6d8a3);
       }
 
       .filter-icon {
@@ -166,12 +150,20 @@
       }
 
       .filter-badge-count {
-        background: var(--btn-primary-bg);
-        color: var(--btn-primary-text);
+        background: rgba(212, 175, 55, 0.18);
+        color: var(--color-gold, #d4af37);
+        border: 1px solid rgba(212, 175, 55, 0.35);
         font-size: 0.72rem;
         font-weight: 700;
-        padding: 1px 6px;
-        border-radius: 999px;
+        min-width: 19px;
+        height: 19px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        padding: 0 5px;
+        line-height: 1;
+        box-sizing: border-box;
       }
 
       .chevron-icon {
@@ -180,6 +172,25 @@
 
         &.is-rotated {
           transform: rotate(180deg);
+        }
+      }
+
+      // Active state for Royal Obsidian Gold Theme
+      &.is-active {
+        background: var(--btn-primary-bg, linear-gradient(135deg, #d4af37 0%, #b89324 100%));
+        border-color: var(--color-gold, #d4af37);
+        color: #000000;
+
+        .filter-icon,
+        .chevron-icon {
+          color: #000000;
+        }
+
+        .filter-badge-count {
+          background: #000000;
+          color: #d4af37;
+          border: 1px solid rgba(212, 175, 55, 0.6);
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
         }
       }
     }
@@ -876,5 +887,60 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+// Theme Specific Overrides for Filter Button Badge
+[data-theme="dark"] {
+  .expenses-page__toolbar .filter-accordion-toggle-btn {
+    .filter-badge-count {
+      background: rgba(241, 245, 249, 0.15);
+      color: #f1f5f9;
+      border: 1px solid rgba(241, 245, 249, 0.25);
+    }
+
+    &.is-active {
+      background: #f1f5f9;
+      border-color: #f1f5f9;
+      color: #0f1117;
+
+      .filter-icon,
+      .chevron-icon {
+        color: #0f1117;
+      }
+
+      .filter-badge-count {
+        background: #0f1117;
+        color: #f1f5f9;
+        border: 1px solid rgba(15, 17, 23, 0.4);
+      }
+    }
+  }
+}
+
+[data-theme="light"] {
+  .expenses-page__toolbar .filter-accordion-toggle-btn {
+    .filter-badge-count {
+      background: rgba(15, 23, 42, 0.08);
+      color: #0f172a;
+      border: 1px solid rgba(15, 23, 42, 0.15);
+    }
+
+    &.is-active {
+      background: #0f172a;
+      border-color: #0f172a;
+      color: #ffffff;
+
+      .filter-icon,
+      .chevron-icon {
+        color: #ffffff;
+      }
+
+      .filter-badge-count {
+        background: #ffffff;
+        color: #0f172a;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+      }
+    }
   }
 }

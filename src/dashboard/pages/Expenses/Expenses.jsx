@@ -117,10 +117,7 @@ const getPaymentBadgeVariant = (method) => {
  */
 const formatINR = (val) => {
   const num = Number(val) || 0;
-  return `₹ ${num.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  return `₹${num.toLocaleString()}`;
 };
 
 /**
@@ -495,8 +492,25 @@ const Expenses = () => {
           } else if (timeFilter === "THIS_WEEK") {
             const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
             const diffToMonday = (dayOfWeek + 6) % 7; // days since Monday
-            const startOfWeek = new Date(currentYear, currentMonth, currentDay - diffToMonday, 0, 0, 0, 0).getTime();
-            const endOfWeek = new Date(currentYear, currentMonth, currentDay - diffToMonday + 7, 0, 0, 0, 0).getTime() - 1;
+            const startOfWeek = new Date(
+              currentYear,
+              currentMonth,
+              currentDay - diffToMonday,
+              0,
+              0,
+              0,
+              0,
+            ).getTime();
+            const endOfWeek =
+              new Date(
+                currentYear,
+                currentMonth,
+                currentDay - diffToMonday + 7,
+                0,
+                0,
+                0,
+                0,
+              ).getTime() - 1;
             if (millis < startOfWeek || millis > endOfWeek) {
               return false;
             }
@@ -508,9 +522,26 @@ const Expenses = () => {
               return false;
             }
           } else if (timeFilter === "CURRENT_FY") {
-            const fyStartYear = currentMonth >= 3 ? currentYear : currentYear - 1;
-            const fyStartMillis = new Date(fyStartYear, 3, 1, 0, 0, 0, 0).getTime();
-            const fyEndMillis = new Date(fyStartYear + 1, 2, 31, 23, 59, 59, 999).getTime();
+            const fyStartYear =
+              currentMonth >= 3 ? currentYear : currentYear - 1;
+            const fyStartMillis = new Date(
+              fyStartYear,
+              3,
+              1,
+              0,
+              0,
+              0,
+              0,
+            ).getTime();
+            const fyEndMillis = new Date(
+              fyStartYear + 1,
+              2,
+              31,
+              23,
+              59,
+              59,
+              999,
+            ).getTime();
             if (millis < fyStartMillis || millis > fyEndMillis) {
               return false;
             }
@@ -691,7 +722,10 @@ const Expenses = () => {
       { value: "TODAY", label: "Today" },
       { value: "THIS_WEEK", label: "This Week" },
       { value: "THIS_MONTH", label: "This Month" },
-      { value: "CURRENT_FY", label: `Current FY (${fyStartYear}-${fyEndShort})` },
+      {
+        value: "CURRENT_FY",
+        label: `Current FY (${fyStartYear}-${fyEndShort})`,
+      },
     ];
   }, []);
 

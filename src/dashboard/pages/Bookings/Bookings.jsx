@@ -723,7 +723,7 @@ const Bookings = () => {
                       direction={sortField === "amount" ? sortDirection : "asc"}
                       onClick={() => handleRequestSort("amount")}
                     >
-                      TOTAL AMOUNT
+                      AMOUNT
                     </AppTableSortLabel>
                   </AppTableCell>
                   <AppTableCell head style={{ textAlign: "center" }}>
@@ -831,11 +831,21 @@ const Bookings = () => {
                         />
                       </AppTableCell> */}
 
-                      {/* Total Amount */}
+                      {/* Amount & Balance Due */}
                       <AppTableCell>
-                        <span className="amount-cell-text">
-                          {getOrderTotalAmount(order)}
-                        </span>
+                        <div className="amount-cell-stack">
+                          <span className="amount-cell-text">
+                            {getOrderTotalAmount(order)}
+                          </span>
+                          {(() => {
+                            const balanceDue = getOrderPendingAmountNumeric(order);
+                            return balanceDue > 0 ? (
+                              <span className="amount-cell-due">
+                                Due: ₹{balanceDue.toLocaleString("en-IN")}
+                              </span>
+                            ) : null;
+                          })()}
+                        </div>
                       </AppTableCell>
 
                       {/* Status */}
@@ -992,14 +1002,20 @@ const Bookings = () => {
                   </div>
 
                   <div className="card-pricing-row">
-                    <span className="amount-label">
-                      {items.length > 1
-                        ? `Total (${items.length} Items)`
-                        : "Total Amount"}
-                    </span>
-                    <span className="amount-val">
-                      {getOrderTotalAmount(order)}
-                    </span>
+                    <span className="amount-label">Amount</span>
+                    <div className="card-pricing-val-stack">
+                      <span className="amount-val">
+                        {getOrderTotalAmount(order)}
+                      </span>
+                      {(() => {
+                        const balanceDue = getOrderPendingAmountNumeric(order);
+                        return balanceDue > 0 ? (
+                          <span className="card-pricing-due">
+                            Due: ₹{balanceDue.toLocaleString("en-IN")}
+                          </span>
+                        ) : null;
+                      })()}
+                    </div>
                   </div>
 
                   <div className="card-footer">
@@ -1170,10 +1186,18 @@ const Bookings = () => {
                         </span>
                       </div>
                       <div className="meta-tile highlight-gold">
-                        <span className="meta-label">Total Amount</span>
+                        <span className="meta-label">Amount</span>
                         <span className="meta-value gold-amount">
                           {getOrderTotalAmount(order)}
                         </span>
+                        {(() => {
+                          const balanceDue = getOrderPendingAmountNumeric(order);
+                          return balanceDue > 0 ? (
+                            <span className="dossier-due-text">
+                              Due: ₹{balanceDue.toLocaleString("en-IN")}
+                            </span>
+                          ) : null;
+                        })()}
                       </div>
                     </div>
                   </div>

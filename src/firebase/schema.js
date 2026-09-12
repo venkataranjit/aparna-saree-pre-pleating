@@ -260,6 +260,8 @@ export const createMeasurementModel = ({
  * @param {Object} data
  */
 export const createOrderModel = ({
+  id = "",
+  orderId = "",
   clientId = "",
   username = "",
   userMobile = "",
@@ -286,6 +288,7 @@ export const createOrderModel = ({
   notes = "",
   createdBy = "",
 } = {}) => {
+  const resolvedOrderId = String(orderId || id || "").trim();
   const cleanStatus = String(status || orderStatus || ORDER_STATUS.PENDING).toLowerCase();
   const clientObj = client || {
     clientId: String(clientId || "").trim(),
@@ -328,6 +331,8 @@ export const createOrderModel = ({
     : (resolvedPaymentStatus === "paid" ? (resolvedAdvance > 0 ? Math.max(0, finalTotal - resolvedAdvance) : finalTotal) : 0);
 
   return {
+    id: resolvedOrderId || undefined,
+    orderId: resolvedOrderId || undefined,
     clientId: String(clientObj.clientId || clientId || "").trim(),
     username: String(clientObj.username || username || "").trim(),
     userMobile: String(clientObj.userMobile || userMobile || "").trim(),

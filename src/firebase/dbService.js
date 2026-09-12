@@ -1780,8 +1780,6 @@ export const INITIAL_ORDERS = [];
 
 // Registry of assigned order IDs to guarantee 100% uniqueness
 const assignedOrderIds = new Set();
-// Initialized empty - order IDs are tracked dynamically
-
 
 // Map docId/key to order ID so re-renders keep consistent ID
 const docIdToOrderId = new Map();
@@ -1790,13 +1788,31 @@ const docIdToOrderId = new Map();
  * Generate a unique 5-digit Order ID: ORD-***** (e.g. ORD-48291)
  */
 export const generateOrderId = () => {
+  // Prime assignedOrderIds from cache
+  try {
+    const cached = getCachedOrders();
+    if (Array.isArray(cached)) {
+      cached.forEach((o) => {
+        if (o?.id) assignedOrderIds.add(String(o.id).trim());
+        if (o?.orderId) assignedOrderIds.add(String(o.orderId).trim());
+      });
+    }
+  } catch {}
+
   let candidate;
   let attempts = 0;
   do {
     const random5 = Math.floor(10000 + Math.random() * 90000);
     candidate = `ORD-${random5}`;
     attempts++;
-  } while (assignedOrderIds.has(candidate) && attempts < 5000);
+  } while (assignedOrderIds.has(candidate) && attempts < 10000);
+
+  // If high-density collisions occur, use high-entropy random
+  if (assignedOrderIds.has(candidate)) {
+    const random6 = Math.floor(100000 + Math.random() * 900000);
+    candidate = `ORD-${random6}`;
+  }
+
   assignedOrderIds.add(candidate);
   return candidate;
 };
@@ -1811,6 +1827,10 @@ const formatOrderDoc = (id, data) => {
 
   // Determine unique order ID - strictly preserve the actual Firestore document ID
   const cleanId = String(id || data.id || data.orderId || '').trim() || generateOrderId();
+
+  if (cleanId) {
+    assignedOrderIds.add(cleanId);
+  }
 
   if (id && cleanId) {
     docIdToOrderId.set(id, cleanId);

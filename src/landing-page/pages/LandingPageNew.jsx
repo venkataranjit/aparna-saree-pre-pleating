@@ -31,6 +31,9 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import PhoneInTalkOutlinedIcon from "@mui/icons-material/PhoneInTalkOutlined";
+import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
+import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
+import GetAppOutlinedIcon from "@mui/icons-material/GetAppOutlined";
 import { useAuth } from "../../auth/context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import Footer from "../components/Footer/Footer";
@@ -39,6 +42,7 @@ import logoLight from "../../assets/logo-light.png";
 import logoDark from "../../assets/logo-dark.png";
 import heroBg from "../../assets/hero1.png";
 import ladyLogo from "../../assets/lady-logo.png";
+import appIconImg from "../../assets/app-icon.png";
 import "./LandingPageNew.scss";
 
 const SERVICES_LIST = [
@@ -116,13 +120,46 @@ const SERVICES_LIST = [
   },
 ];
 
+const FOUNDER_QUOTES = [
+  {
+    quote:
+      "A beautifully draped saree shouldn't take an hour of struggle. When every pleat falls into place with ease, you can truly immerse yourself in the celebration.",
+  },
+  {
+    quote:
+      "Wore my bridal Kanchipuram in under 2 minutes! Every pleat stayed razor-sharp through 8 hours of muhurtham rituals.",
+  },
+  {
+    quote:
+      "Archival box packaging was a lifesaver for our destination wedding in Udaipur. Unpacked and wore it wrinkle-free.",
+  },
+  {
+    quote:
+      "Zero damage to my heirloom Banarasi zari. Aparna's atelier handles precious silks with true reverence.",
+  },
+  {
+    quote:
+      "Effortless elegance is real. Draping used to be exhausting with pins; now it is pure royal luxury.",
+  },
+];
+
 const LandingPageNew = () => {
   const { currentUser } = useAuth();
   const { currentTheme } = useTheme();
   const [isLoaded, setIsLoaded] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
+  const [isQuotePaused, setIsQuotePaused] = useState(false);
   const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (isQuotePaused) return;
+    const timer = setInterval(() => {
+      setCurrentQuoteIndex((prev) => (prev + 1) % FOUNDER_QUOTES.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [isQuotePaused]);
 
   useEffect(() => {
     document.title =
@@ -145,7 +182,10 @@ const LandingPageNew = () => {
 
       if (contactEl && contactEl.getBoundingClientRect().top <= threshold) {
         setActiveSection("contact");
-      } else if (servicesEl && servicesEl.getBoundingClientRect().top <= threshold) {
+      } else if (
+        servicesEl &&
+        servicesEl.getBoundingClientRect().top <= threshold
+      ) {
         setActiveSection("services");
       } else if (aboutEl && aboutEl.getBoundingClientRect().top <= threshold) {
         setActiveSection("about");
@@ -184,7 +224,7 @@ const LandingPageNew = () => {
       {
         threshold: 0.1,
         rootMargin: "0px 0px -40px 0px",
-      }
+      },
     );
 
     const elements = document.querySelectorAll(".reveal-on-scroll");
@@ -505,13 +545,38 @@ const LandingPageNew = () => {
                   />
                 </div>
 
-                <div className="founder-quote-box">
+                <div
+                  className="founder-quote-box"
+                  onMouseEnter={() => setIsQuotePaused(true)}
+                  onMouseLeave={() => setIsQuotePaused(false)}
+                >
                   <span className="quote-mark">“</span>
-                  <p className="quote-text">
-                    A beautifully draped saree shouldn't take an hour of
-                    struggle. When every pleat falls into place with ease, you
-                    can truly immerse yourself in the celebration.
-                  </p>
+                  <div className="quote-carousel-viewport">
+                    <div
+                      className="quote-slider-track"
+                      style={{
+                        transform: `translateX(-${currentQuoteIndex * 100}%)`,
+                      }}
+                    >
+                      {FOUNDER_QUOTES.map((item, idx) => (
+                        <div key={idx} className="quote-slide-item">
+                          <p className="quote-text">{item.quote}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="quote-dots-nav">
+                    {FOUNDER_QUOTES.map((_, qIdx) => (
+                      <span
+                        key={qIdx}
+                        className={`quote-dot ${qIdx === currentQuoteIndex ? "active" : ""}`}
+                        onClick={() => setCurrentQuoteIndex(qIdx)}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Slide ${qIdx + 1}`}
+                      />
+                    ))}
+                  </div>
                 </div>
 
                 <div className="founder-info-wrap">
@@ -573,6 +638,228 @@ const LandingPageNew = () => {
               <p className="service-card__desc">{item.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* =========================================================================
+          ANDROID APP DOWNLOAD SECTION: Official Android App & Tracking Experience
+          ========================================================================= */}
+      <section id="app" className="luxury-app-download-section">
+        {/* Animated Background Aura for App Section */}
+        <div className="section-ambient-aura section-ambient-aura--app" />
+        <div className="section-container">
+          {/* Standard Section Header matching Services, About & Contact */}
+          <div className="app-download-header reveal-on-scroll">
+            <span className="section-eyebrow">Official Mobile App</span>
+            <h2 className="section-heading">Manage &amp; Track Your Sarees</h2>
+            <p className="section-subtext">
+              Download the official Android app to book pre-pleating services,
+              get live order tracking, and schedule doorstep pickup across
+              Hyderabad.
+            </p>
+          </div>
+
+          <div className="app-main-grid">
+            {/* Left Column: App Feature Card */}
+            <div className="app-info-col reveal-on-scroll reveal-from-left">
+              <div className="app-feature-card">
+                <h3 className="card-heading">
+                  Seamless Saree Styling in Your Pocket
+                </h3>
+                <p className="card-desc">
+                  Enjoy the complete <strong>Aparna Saree Pre-Pleating</strong>{" "}
+                  studio experience right on your Android device. Book
+                  appointments, track pressing status, and manage your wardrobe
+                  with effortless convenience.
+                </p>
+
+                {/* 4 App Highlights Grid */}
+                <div className="app-pillars-grid">
+                  <div className="app-pillar-item">
+                    <div className="pillar-icon-box">
+                      <NotificationsActiveOutlinedIcon className="p-icon" />
+                    </div>
+                    <div className="pillar-content">
+                      <h4>Live Order Tracking</h4>
+                      <p>
+                        Real-time updates from doorstep pickup to steaming &amp;
+                        dispatch.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="app-pillar-item">
+                    <div className="pillar-icon-box">
+                      <LocalShippingOutlinedIcon className="p-icon" />
+                    </div>
+                    <div className="pillar-content">
+                      <h4>Doorstep Pickup</h4>
+                      <p>
+                        Schedule home pickup &amp; delivery with one tap across
+                        Hyderabad.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="app-pillar-item">
+                    <div className="pillar-icon-box">
+                      <ShieldOutlinedIcon className="p-icon" />
+                    </div>
+                    <div className="pillar-content">
+                      <h4>Digital Wardrobe</h4>
+                      <p>
+                        Archival records of your pleating styles &amp; GST tax
+                        invoices.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="app-pillar-item">
+                    <div className="pillar-icon-box">
+                      <WorkspacePremiumOutlinedIcon className="p-icon" />
+                    </div>
+                    <div className="pillar-content">
+                      <h4>VIP Priority Slots</h4>
+                      <p>
+                        Direct priority access for festive and bridal wedding
+                        rushes.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Download CTA Row */}
+                <div className="app-card-cta-row">
+                  <a
+                    href="/aparna-saree-pre-pleating.apk"
+                    download="Aparna-Saree-Pre-Pleating.apk"
+                    className="luxury-cta-gold app-download-btn"
+                  >
+                    <AndroidIcon className="cta-icon-android" />
+                    <div className="btn-text-wrap">
+                      <span className="btn-sub">Direct APK Download</span>
+                      <span className="btn-main">Download Android App</span>
+                    </div>
+                    <GetAppOutlinedIcon className="cta-icon-download" />
+                  </a>
+
+                  <div className="app-verified-badge">
+                    <VerifiedOutlinedIcon className="v-icon" />
+                    <span>v1.0 • 100% Virus-Free &amp; Verified APK</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Smartphone Mockup with Login Page UI */}
+            <div className="app-showcase-col reveal-on-scroll reveal-from-right">
+              <div className="app-phone-card">
+                <div className="app-phone-card__glow" />
+
+                <div className="phone-device-frame">
+                  {/* Speaker & Camera Notch */}
+                  <div className="phone-notch-bar">
+                    <span className="phone-speaker" />
+                    <span className="phone-lens" />
+                  </div>
+
+                  {/* Phone Screen: Login Page Mobile UI */}
+                  <div className="phone-screen-content">
+                    {/* Status Bar */}
+                    <div className="phone-status-row">
+                      <span className="status-time">9:41</span>
+                      <div className="status-icons">
+                        <span className="sig-bar" />
+                        <span className="wifi-dot" />
+                        <span className="battery-pill" />
+                      </div>
+                    </div>
+
+                    {/* App Brand Header */}
+                    <div className="phone-brand-header">
+                      <img
+                        src={ladyLogo}
+                        alt="Aparna Atelier"
+                        className="phone-brand-logo"
+                      />
+                      <h4 className="phone-brand-title">Aparna Pleats</h4>
+                      <span className="phone-brand-tag">
+                        Studio Atelier • Hyderabad
+                      </span>
+                    </div>
+
+                    {/* Mobile Login Form Box */}
+                    <div className="phone-login-box">
+                      <div className="phone-login-heading">
+                        <h5>Welcome Back</h5>
+                        <p>Sign in to track your saree orders</p>
+                      </div>
+
+                      {/* Auth Mode Tabs */}
+                      <div className="phone-auth-tabs">
+                        <span className="auth-tab active">Phone OTP</span>
+                        <span className="auth-tab">Email</span>
+                      </div>
+
+                      {/* Phone Number Input Mockup */}
+                      <div className="phone-input-mock">
+                        <span className="flag-code">🇮🇳 +91</span>
+                        <span className="phone-digits">95539 00003</span>
+                      </div>
+
+                      {/* Get OTP Button */}
+                      <button type="button" className="phone-submit-btn">
+                        <span>Get Verification Code</span>
+                      </button>
+
+                      {/* Social Divider */}
+                      <div className="phone-social-divider">
+                        <span className="div-line" />
+                        <span className="div-text">or continue with</span>
+                        <span className="div-line" />
+                      </div>
+
+                      {/* Social Icons Row */}
+                      <div className="phone-social-row">
+                        <div className="social-pill">
+                          <svg width="14" height="14" viewBox="0 0 24 24">
+                            <path
+                              fill="#4285F4"
+                              d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                            />
+                            <path
+                              fill="#34A853"
+                              d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"
+                            />
+                            <path
+                              fill="#FBBC05"
+                              d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.16 0 9.97 0 12s.45 3.84 1.25 5.42l4.03-3.15z"
+                            />
+                            <path
+                              fill="#EA4335"
+                              d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                            />
+                          </svg>
+                          <span>Google</span>
+                        </div>
+                        <div className="social-pill">
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="#1877F2"
+                          >
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                          </svg>
+                          <span>Facebook</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -764,7 +1051,7 @@ const LandingPageNew = () => {
 
           {/* Android App Download Link */}
           <a
-            href="/app-release.apk"
+            href="/aparna-saree-pre-pleating.apk"
             download="Aparna-Saree-Pre-Pleating.apk"
             className="dock-nav-item dock-nav-item--android"
             title="Download Android App"

@@ -12,6 +12,8 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import StatCard from "../../components/StatCard/StatCard";
 import { AppButton, AppSpinner, AppBadge } from "../../../components/common";
 import CreateOrderModal from "../../components/CreateOrderModal/CreateOrderModal";
@@ -53,6 +55,19 @@ const Overview = () => {
   const [clientMeasurements, setClientMeasurements] = useState([]);
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [selectedOrderForView, setSelectedOrderForView] = useState(null);
+  const deckScrollRef = React.useRef(null);
+
+  const scrollDeckLeft = () => {
+    if (deckScrollRef.current) {
+      deckScrollRef.current.scrollBy({ left: -320, behavior: "smooth" });
+    }
+  };
+
+  const scrollDeckRight = () => {
+    if (deckScrollRef.current) {
+      deckScrollRef.current.scrollBy({ left: 320, behavior: "smooth" });
+    }
+  };
 
   const loadOverviewData = useCallback(async () => {
     setLoading(true);
@@ -113,7 +128,9 @@ const Overview = () => {
   const totalOrders = orders.length;
   const totalServices = services.length;
   const totalReceivedRevenue = orders
-    .filter((o) => (o.status || o.orderStatus || "").toLowerCase() !== "cancelled")
+    .filter(
+      (o) => (o.status || o.orderStatus || "").toLowerCase() !== "cancelled",
+    )
     .reduce((sum, ord) => {
       const paymentStatus = String(ord.paymentStatus || "").toLowerCase();
       const total =
@@ -121,14 +138,23 @@ const Overview = () => {
         Number(String(ord.amount || 0).replace(/[^0-9]/g, "")) ||
         0;
       if (paymentStatus === "paid") {
-        return sum + (ord.paidAmount !== undefined && ord.paidAmount !== null && ord.paidAmount !== "" ? Number(ord.paidAmount) || total : total);
+        return (
+          sum +
+          (ord.paidAmount !== undefined &&
+          ord.paidAmount !== null &&
+          ord.paidAmount !== ""
+            ? Number(ord.paidAmount) || total
+            : total)
+        );
       }
       const paid = Number(ord.paidAmount) || Number(ord.advancePayment) || 0;
       return sum + paid;
     }, 0);
 
   const totalPendingRevenue = orders
-    .filter((o) => (o.status || o.orderStatus || "").toLowerCase() !== "cancelled")
+    .filter(
+      (o) => (o.status || o.orderStatus || "").toLowerCase() !== "cancelled",
+    )
     .reduce((sum, ord) => {
       const paymentStatus = String(ord.paymentStatus || "").toLowerCase();
       if (paymentStatus === "paid") return sum;
@@ -137,9 +163,12 @@ const Overview = () => {
         Number(String(ord.amount || 0).replace(/[^0-9]/g, "")) ||
         0;
       const paid = Number(ord.paidAmount) || Number(ord.advancePayment) || 0;
-      const pending = ord.balanceDue !== undefined && ord.balanceDue !== null && ord.balanceDue !== ""
-        ? Math.max(0, Number(ord.balanceDue) || 0)
-        : Math.max(0, total - paid);
+      const pending =
+        ord.balanceDue !== undefined &&
+        ord.balanceDue !== null &&
+        ord.balanceDue !== ""
+          ? Math.max(0, Number(ord.balanceDue) || 0)
+          : Math.max(0, total - paid);
       return sum + pending;
     }, 0);
 
@@ -251,55 +280,142 @@ const Overview = () => {
             <StatCard
               title="Total Revenue"
               value={`₹${totalReceivedRevenue.toLocaleString("en-IN")}`}
-              change={totalPendingRevenue > 0 ? `Pending: ₹${totalPendingRevenue.toLocaleString("en-IN")}` : "All Paid"}
+              change={
+                totalPendingRevenue > 0
+                  ? `Pending: ₹${totalPendingRevenue.toLocaleString("en-IN")}`
+                  : "All Paid"
+              }
               trendType={totalPendingRevenue > 0 ? "pending" : "completed"}
               icon={<CurrencyRupeeIcon />}
             />
           </div>
 
-          {/* Quick Admin Actions Row */}
-          <div className="overview-admin-quick-row">
-            <div
-              className="quick-nav-card"
-              onClick={() => navigate("/dashboard/bookings")}
-            >
-              <div className="quick-nav-card__icon">
-                <ReceiptLongOutlinedIcon />
+          {/* Saree Lookbook Horizontal Overlapping Zigzag Deck (Frameless) */}
+          <div className="overview-horizontal-deck-wrapper" ref={deckScrollRef}>
+            <div className="wrapper">
+              <div>
+                <img
+                  src="https://picsum.photos/id/660/1200/1200"
+                  alt="sparkler"
+                />
               </div>
-              <div className="quick-nav-card__info">
-                <h4>Manage Orders</h4>
-                <p>View workflow statuses, payments and delivery dates</p>
+              <div>
+                <img src="https://picsum.photos/id/669/1200/1200" alt="hat" />
               </div>
-              <ArrowForwardIcon className="quick-nav-card__arrow" />
+              <div>
+                <img
+                  src="https://picsum.photos/id/823/1200/1200"
+                  alt="camera"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/64/1200/1200"
+                  alt="flowers"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/836/1200/1200"
+                  alt="guitar"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/1027/1200/1200"
+                  alt="pensive"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/646/1200/1200"
+                  alt="sunlight"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/634/1200/1200"
+                  alt="misty morning"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/228/1200/1200"
+                  alt="harvest"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/661/1200/1200"
+                  alt="waiting"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/380/1200/1200"
+                  alt="time"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/392/1200/1200"
+                  alt="crossover"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/238/1200/1200"
+                  alt="city"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/469/1200/1200"
+                  alt="boat trip"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/311/1200/1200"
+                  alt="stories"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/515/1200/1200"
+                  alt="portrait"
+                />
+              </div>
+              <div>
+                <img
+                  src="https://picsum.photos/id/521/1200/1200"
+                  alt="perfect day"
+                />
+              </div>
             </div>
+          </div>
 
-            <div
-              className="quick-nav-card"
-              onClick={() => navigate("/dashboard/services")}
+          {/* Centered Prev & Next Navigation Buttons */}
+          <div className="deck-bottom-nav-controls">
+            <button
+              type="button"
+              className="deck-nav-btn"
+              onClick={scrollDeckLeft}
+              aria-label="Previous image"
             >
-              <div className="quick-nav-card__icon">
-                <DryCleaningOutlinedIcon />
-              </div>
-              <div className="quick-nav-card__info">
-                <h4>Services Catalog</h4>
-                <p>Update pricing, discounts and pre-pleating options</p>
-              </div>
-              <ArrowForwardIcon className="quick-nav-card__arrow" />
-            </div>
+              <ChevronLeftIcon />
+              <span>Prev</span>
+            </button>
 
-            <div
-              className="quick-nav-card"
-              onClick={() => navigate("/dashboard/clients")}
+            <button
+              type="button"
+              className="deck-nav-btn"
+              onClick={scrollDeckRight}
+              aria-label="Next image"
             >
-              <div className="quick-nav-card__icon">
-                <PeopleOutlineIcon />
-              </div>
-              <div className="quick-nav-card__info">
-                <h4>Client Profiles</h4>
-                <p>Manage client contacts and tailored measurement profiles</p>
-              </div>
-              <ArrowForwardIcon className="quick-nav-card__arrow" />
-            </div>
+              <span>Next</span>
+              <ChevronRightIcon />
+            </button>
           </div>
         </>
       )}

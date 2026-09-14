@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar/Sidebar';
 import CurvedBottomBar from '../components/CurvedBottomBar/CurvedBottomBar';
+import BiometricAuthGuard from '../components/BiometricAuthGuard/BiometricAuthGuard';
 import { useAuth } from '../../auth/context/AuthContext';
 import DashboardFooter from '../components/Footer/DashboardFooter';
 import './DashboardLayout.scss';
@@ -38,7 +39,8 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className={`dashboard-layout ${collapsed ? 'is-collapsed' : ''}`}>
+    <BiometricAuthGuard>
+      <div className={`dashboard-layout ${collapsed ? 'is-collapsed' : ''}`}>
       {/* Sidebar with desktop collapse and mobile drawer support */}
       <Sidebar
         collapsed={collapsed}
@@ -68,6 +70,7 @@ const DashboardLayout = () => {
         onOpenSidebar={openSidebar}
       />
     </div>
+    </BiometricAuthGuard>
   );
 };
 

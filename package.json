@@ -19,6 +19,7 @@
     "cap:open": "cap open android"
   },
   "dependencies": {
+    "@aparajita/capacitor-biometric-auth": "^7.0.0",
     "@capacitor/android": "^7.0.0",
     "@capacitor/app": "^7.0.0",
     "@capacitor/cli": "^7.0.0",

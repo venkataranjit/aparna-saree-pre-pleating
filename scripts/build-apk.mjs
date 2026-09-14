@@ -52,6 +52,30 @@ try {
     console.warn(`[Google Services] Note: src/${mode}/google-services.json not found, using existing file.\n`);
   }
 
+  // Step 0: Completely clean dist and assets to prevent recursive asset bloat
+  const distDir = path.join(rootDir, 'dist');
+  const publicDir = path.join(rootDir, 'public');
+  const androidAssetsPublic = path.join(rootDir, 'android', 'app', 'src', 'main', 'assets', 'public');
+
+  if (fs.existsSync(distDir)) {
+    fs.rmSync(distDir, { recursive: true, force: true });
+    console.log('[Clean] Wiped dist directory');
+  }
+
+  [publicDir, androidAssetsPublic].forEach((dir) => {
+    if (fs.existsSync(dir)) {
+      const files = fs.readdirSync(dir);
+      files.forEach((file) => {
+        if (file.endsWith('.apk')) {
+          try {
+            fs.unlinkSync(path.join(dir, file));
+            console.log(`[Clean] Removed APK from ${path.basename(dir)}: ${file}`);
+          } catch (e) {}
+        }
+      });
+    }
+  });
+
   console.log(`--- 1. Building web application for [${mode}] ---`);
   run(`npx vite build --mode ${mode}`);
 
@@ -69,6 +93,7 @@ try {
   if (fs.existsSync(srcApk)) {
     fs.copyFileSync(srcApk, envApk);
     fs.copyFileSync(srcApk, standardApk);
+
     const stats = fs.statSync(envApk);
     const sizeMb = (stats.size / (1024 * 1024)).toFixed(2);
     console.log('\n======================================================');

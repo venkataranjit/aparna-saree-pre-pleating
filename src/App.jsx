@@ -10,6 +10,7 @@ import NotFound from './dashboard/pages/NotFound/NotFound';
 import { AuthProvider, useAuth } from './auth/context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { PageLoader } from './components/common';
+import BackButtonHandler from './components/common/BackButtonHandler';
 import { PublicRoute } from './components/routes/ProtectedRoute';
 import './App.scss';
 
@@ -42,6 +43,7 @@ function AppContent() {
 
   return (
     <div className="app-root">
+      <BackButtonHandler />
       <Routes>
         {/* Landing page module routes (Root / serves LandingPageNew) */}
         {landingRoutes.map((route) => (

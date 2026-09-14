@@ -1,20 +1,20 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Capacitor } from '@capacitor/core';
-import { BiometricAuth } from '@aparajita/capacitor-biometric-auth';
-import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined';
-import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
-import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { useAuth } from '../../../auth/context/AuthContext';
-import ladyLogo from '../../../assets/lady-logo.png';
-import './BiometricAuthGuard.scss';
+import React, { useState, useEffect, useCallback } from "react";
+import { Capacitor } from "@capacitor/core";
+import { BiometricAuth } from "@aparajita/capacitor-biometric-auth";
+import FingerprintOutlinedIcon from "@mui/icons-material/FingerprintOutlined";
+import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import { useAuth } from "../../../auth/context/AuthContext";
+import ladyLogo from "../../../assets/lady-logo.png";
+import "./BiometricAuthGuard.scss";
 
-const SESSION_KEY = 'aparna_dashboard_biometric_unlocked';
+const SESSION_KEY = "aparna_dashboard_biometric_unlocked";
 
 export default function BiometricAuthGuard({ children }) {
   const { currentUser, logout } = useAuth();
   const [isUnlocked, setIsUnlocked] = useState(() => {
-    return sessionStorage.getItem(SESSION_KEY) === 'true';
+    return sessionStorage.getItem(SESSION_KEY) === "true";
   });
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authError, setAuthError] = useState(null);
@@ -33,27 +33,31 @@ export default function BiometricAuthGuard({ children }) {
 
         if (info.isAvailable) {
           await BiometricAuth.authenticate({
-            reason: 'Scan your fingerprint or enter device PIN to unlock the Dashboard',
-            cancelTitle: 'Cancel',
+            reason:
+              "Scan your fingerprint or enter device PIN to unlock the Dashboard",
+            cancelTitle: "Cancel",
             allowDeviceCredential: true,
-            iosFallbackTitle: 'Use Passcode',
+            iosFallbackTitle: "Use Passcode",
           });
 
           // Authentication Successful
-          sessionStorage.setItem(SESSION_KEY, 'true');
+          sessionStorage.setItem(SESSION_KEY, "true");
           setIsUnlocked(true);
           setAuthError(null);
         } else {
           // Device has no enrolled biometrics, allow access with device credentials or fallback
-          sessionStorage.setItem(SESSION_KEY, 'true');
+          sessionStorage.setItem(SESSION_KEY, "true");
           setIsUnlocked(true);
         }
       } catch (err) {
-        console.warn('[BiometricAuthGuard] Biometric auth rejected or failed:', err);
+        console.warn(
+          "[BiometricAuthGuard] Biometric auth rejected or failed:",
+          err,
+        );
         setAuthError(
-          err.message?.includes('cancel') || err.code === 10
-            ? 'Authentication cancelled. Tap below to scan fingerprint.'
-            : 'Fingerprint not recognized. Tap below to retry or use device PIN.'
+          err.message?.includes("cancel") || err.code === 10
+            ? "Authentication cancelled. Tap below to scan fingerprint."
+            : "Fingerprint not recognized. Tap below to retry or use device PIN.",
         );
       } finally {
         setIsAuthenticating(false);
@@ -61,7 +65,7 @@ export default function BiometricAuthGuard({ children }) {
     } else {
       // 2. Web Browser Environment
       // On web, if WebAuthn is supported or simple admin confirmation
-      sessionStorage.setItem(SESSION_KEY, 'true');
+      sessionStorage.setItem(SESSION_KEY, "true");
       setIsUnlocked(true);
       setIsAuthenticating(false);
     }
@@ -86,9 +90,13 @@ export default function BiometricAuthGuard({ children }) {
         {/* Brand Header */}
         <div className="biometric-brand-wrap">
           <div className="biometric-logo-ring">
-            <img src={ladyLogo} alt="Aparna Saree Atelier" className="biometric-brand-logo" />
+            <img
+              src={ladyLogo}
+              alt="Aparna Saree Atelier"
+              className="biometric-brand-logo"
+            />
           </div>
-          <h2 className="biometric-portal-title">Aparna Saree Atelier</h2>
+          <h2 className="biometric-portal-title">Aparna Saree Pre-Pleating</h2>
           <span className="biometric-portal-badge">
             <SecurityOutlinedIcon className="badge-icon" />
             Protected Management Portal
@@ -97,8 +105,8 @@ export default function BiometricAuthGuard({ children }) {
 
         {/* Animated Scanner Visual */}
         <div
-          className={`biometric-scanner-ring ${isAuthenticating ? 'is-scanning' : ''} ${
-            authError ? 'has-error' : ''
+          className={`biometric-scanner-ring ${isAuthenticating ? "is-scanning" : ""} ${
+            authError ? "has-error" : ""
           }`}
           onClick={performBiometricAuth}
           role="button"
@@ -118,7 +126,7 @@ export default function BiometricAuthGuard({ children }) {
           </h3>
           <p className="biometric-subtext">
             {authError ||
-              'Place your registered finger on the sensor or tap below to authenticate.'}
+              "Place your registered finger on the sensor or tap below to authenticate."}
           </p>
         </div>
 
@@ -131,7 +139,11 @@ export default function BiometricAuthGuard({ children }) {
             disabled={isAuthenticating}
           >
             <FingerprintOutlinedIcon className="btn-ico" />
-            <span>{isAuthenticating ? 'Scanning Sensor...' : 'Scan Fingerprint to Unlock'}</span>
+            <span>
+              {isAuthenticating
+                ? "Scanning Sensor..."
+                : "Scan Fingerprint to Unlock"}
+            </span>
           </button>
 
           <button

@@ -14,6 +14,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import com.getcapacitor.BridgeActivity;
 import ee.forgr.capacitor.social.login.ModifiedMainActivityForSocialLoginPlugin;
 
@@ -22,18 +23,7 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Ensure system status bar does NOT overlap or clip app content
-        Window window = getWindow();
-        if (window != null) {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.setStatusBarColor(Color.parseColor("#080706"));
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                window.setNavigationBarColor(Color.parseColor("#080706"));
-            }
-            WindowCompat.setDecorFitsSystemWindows(window, true);
-        }
+        applySystemBarsBlackTheme();
 
         // Apply WindowInsetsListener so the view never renders under system status bar
         View contentView = findViewById(android.R.id.content);
@@ -60,6 +50,32 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
                 settings.setDomStorageEnabled(true);
                 settings.setDatabaseEnabled(true);
                 settings.setJavaScriptEnabled(true);
+            }
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        applySystemBarsBlackTheme();
+    }
+
+    private void applySystemBarsBlackTheme() {
+        Window window = getWindow();
+        if (window != null) {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(Color.BLACK);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                window.setNavigationBarColor(Color.BLACK);
+            }
+            WindowCompat.setDecorFitsSystemWindows(window, true);
+
+            WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(window, window.getDecorView());
+            if (controller != null) {
+                controller.setAppearanceLightStatusBars(false);
+                controller.setAppearanceLightNavigationBars(false);
             }
         }
     }

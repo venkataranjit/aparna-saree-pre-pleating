@@ -48,10 +48,14 @@ import Footer from "../components/Footer/Footer";
 import brandLogo from "../../assets/logo.png";
 import logoLight from "../../assets/logo-light.png";
 import logoDark from "../../assets/logo-dark.png";
-import heroBg from "../../assets/hero1.png";
+import hero1 from "../../assets/hero1.jpg";
+import hero2 from "../../assets/hero2.jpg";
+import hero3 from "../../assets/hero3.jpg";
 import ladyLogo from "../../assets/lady-logo.png";
 import appIconImg from "../../assets/app-icon.png";
 import "./LandingPageNew.scss";
+
+const HERO_SLIDES = [hero1, hero2, hero3];
 
 const SERVICES_LIST = [
   {
@@ -398,8 +402,17 @@ const LandingPageNew = () => {
   const [activeGalleryIdx, setActiveGalleryIdx] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [selectedGalleryItem, setSelectedGalleryItem] = useState(null);
+  const [heroSlideIdx, setHeroSlideIdx] = useState(0);
   const containerRef = useRef(null);
   const touchStartRef = useRef(null);
+
+  // Hero Background Slideshow Interval (Transitions across hero1.png, hero2.png, hero3.png)
+  useEffect(() => {
+    const heroTimer = setInterval(() => {
+      setHeroSlideIdx((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 5000);
+    return () => clearInterval(heroTimer);
+  }, []);
 
   // Filtered gallery items based on activeCategory
   const filteredGalleryItems =
@@ -616,14 +629,22 @@ const LandingPageNew = () => {
           HERO SECTION: Background + Centered Hero Brand Logo + Editorial Copy
           ========================================================================= */}
       <section className="luxury-hero-section">
-        {/* Background Canvas with Horizontally Flipped hero1.png (Model on Left) */}
+        {/* Multi-Image Hero Background Slideshow (hero1.png -> hero2.png -> hero3.png) */}
         <div className="luxury-hero-backdrop">
-          <div
-            className="luxury-hero-bg-flipped"
-            style={{ backgroundImage: `url(${heroBg})` }}
-          />
-          {/* Soft right-aligned vignette gradient to protect text legibility on the right */}
+          {/* Deep dark base layer behind images */}
+          <div className="luxury-hero-dark-base" />
+
+          {HERO_SLIDES.map((slideImg, idx) => (
+            <div
+              key={idx}
+              className={`luxury-hero-bg-slide ${idx === heroSlideIdx ? "is-active" : ""}`}
+              style={{ backgroundImage: `url(${slideImg})` }}
+            />
+          ))}
+
+          {/* Dual-layer dark gradient overlay: Clear on left for lady, deep dark on right for text */}
           <div className="luxury-hero-overlay" />
+          <div className="luxury-hero-right-dark-layer" />
 
           {/* Animated Floating Gold Particles */}
           <div className="ambient-sparkle ambient-sparkle--1" />
@@ -707,6 +728,19 @@ const LandingPageNew = () => {
             </div>
           </div>
         </main>
+
+        {/* Hero Background Slide Pagination Indicators */}
+        <div className="hero-slide-indicators anim-hero-scroll">
+          {HERO_SLIDES.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              className={`hero-slide-dot ${idx === heroSlideIdx ? "is-active" : ""}`}
+              onClick={() => setHeroSlideIdx(idx)}
+              aria-label={`Slide ${idx + 1}`}
+            />
+          ))}
+        </div>
 
         {/* Small Bottom Indicator: Scroll to discover */}
         <div
@@ -953,7 +987,7 @@ const LandingPageNew = () => {
 
         <div className="section-container">
           {/* Section Header */}
-          <div className="gallery-header-wrap">
+          <div className="gallery-header-wrap reveal-on-scroll">
             <span className="section-eyebrow">Our Gallery</span>
             <h2 className="section-heading">
               Couture Saree Draping &amp; Pleating
@@ -965,7 +999,7 @@ const LandingPageNew = () => {
           </div>
 
           {/* Category Filter Tabs Bar */}
-          <div className="gallery-category-tabs">
+          <div className="gallery-category-tabs reveal-on-scroll">
             <div className="category-tabs-track">
               {GALLERY_CATEGORIES.map((cat) => {
                 const isActive = activeCategory === cat.id;
@@ -986,7 +1020,7 @@ const LandingPageNew = () => {
 
           {/* 3D Runway Stage Container */}
           <div
-            className="luxury-runway-stage-container"
+            className="luxury-runway-stage-container reveal-on-scroll reveal-pop"
             onMouseEnter={() => setIsAutoPlaying(false)}
             onMouseLeave={() => setIsAutoPlaying(true)}
             onTouchStart={handleTouchStart}
@@ -1303,7 +1337,7 @@ const LandingPageNew = () => {
         <div className="section-ambient-aura section-ambient-aura--app" />
         <div className="section-container">
           {/* Section Header */}
-          <div className="app-download-header">
+          <div className="app-download-header reveal-on-scroll">
             <span className="section-eyebrow">Official Mobile App</span>
             <h2 className="section-heading">Download Our Android App</h2>
             <p className="section-subtext">
@@ -1312,7 +1346,7 @@ const LandingPageNew = () => {
           </div>
 
           <div className="app-single-card-wrap">
-            <div className="app-feature-card">
+            <div className="app-feature-card reveal-on-scroll reveal-pop">
               {/* App Brand Identity Badge */}
               <div className="app-badge-identity">
                 <div className="app-icon-glow-wrap">

@@ -293,6 +293,25 @@ const Bookings = () => {
 
   // Metrics calculations
   const totalOrdersCount = orders.length;
+
+  const requestedCount = useMemo(() => {
+    return orders.filter(
+      (o) => (o.status || o.orderStatus || "").toLowerCase() === "requested",
+    ).length;
+  }, [orders]);
+
+  const acceptedCount = useMemo(() => {
+    return orders.filter(
+      (o) => (o.status || o.orderStatus || "").toLowerCase() === "accepted",
+    ).length;
+  }, [orders]);
+
+  const pendingCount = useMemo(() => {
+    return orders.filter(
+      (o) => (o.status || o.orderStatus || "").toLowerCase() === "pending",
+    ).length;
+  }, [orders]);
+
   const inProgressCount = useMemo(() => {
     return orders.filter(
       (o) =>
@@ -307,9 +326,9 @@ const Bookings = () => {
     ).length;
   }, [orders]);
 
-  const pendingCount = useMemo(() => {
+  const deliveredCount = useMemo(() => {
     return orders.filter(
-      (o) => (o.status || o.orderStatus || "").toLowerCase() === "pending",
+      (o) => (o.status || o.orderStatus || "").toLowerCase() === "delivered",
     ).length;
   }, [orders]);
 
@@ -377,16 +396,22 @@ const Bookings = () => {
   const orderTabs = useMemo(
     () => [
       { label: `All Orders (${totalOrdersCount})`, value: "ALL" },
+      { label: `Requested (${requestedCount})`, value: "REQUESTED" },
+      { label: `Accepted (${acceptedCount})`, value: "ACCEPTED" },
+      { label: `Pending (${pendingCount})`, value: "PENDING" },
       { label: `In Progress (${inProgressCount})`, value: "IN-PROGRESS" },
       { label: `Completed (${completedCount})`, value: "COMPLETED" },
-      { label: `Pending (${pendingCount})`, value: "PENDING" },
+      { label: `Delivered (${deliveredCount})`, value: "DELIVERED" },
       { label: `Cancelled (${cancelledCount})`, value: "CANCELLED" },
     ],
     [
       totalOrdersCount,
+      requestedCount,
+      acceptedCount,
+      pendingCount,
       inProgressCount,
       completedCount,
-      pendingCount,
+      deliveredCount,
       cancelledCount,
     ],
   );

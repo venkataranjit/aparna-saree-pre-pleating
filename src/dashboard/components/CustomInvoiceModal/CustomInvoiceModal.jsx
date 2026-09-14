@@ -211,13 +211,31 @@ export const mapOrderToInvoiceData = (order) => {
 
 export const getOrderStatusMeta = (status) => {
   const s = String(status || "").toLowerCase();
+  if (s === "requested") {
+    return {
+      label: "Requested",
+      style: "background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;",
+    };
+  }
+  if (s === "accepted") {
+    return {
+      label: "Accepted",
+      style: "background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff;",
+    };
+  }
   if (s === "completed") {
     return {
       label: "Completed",
       style: "background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;",
     };
   }
-  if (s === "in-progress") {
+  if (s === "delivered") {
+    return {
+      label: "Delivered",
+      style: "background: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4;",
+    };
+  }
+  if (s === "in-progress" || s === "inprogress") {
     return {
       label: "In-Progress",
       style: "background: #ffedd5; color: #ea580c; border: 1px solid #fed7aa;",
@@ -1324,14 +1342,35 @@ export const buildDossierGridHtml = (data = {}) => {
 
   let orderStatusPillHtml = "";
   const sStatus = String(data.orderStatus || "in-progress").toLowerCase();
-  if (sStatus === "completed") {
+  if (sStatus === "requested") {
+    orderStatusPillHtml = `
+      <span class="pay-pill" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">
+        <span class="pill-dot-icon">●</span>
+        <span>REQUESTED</span>
+      </span>
+    `;
+  } else if (sStatus === "accepted") {
+    orderStatusPillHtml = `
+      <span class="pay-pill" style="background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff;">
+        <span class="pill-dot-icon">●</span>
+        <span>ACCEPTED</span>
+      </span>
+    `;
+  } else if (sStatus === "completed") {
     orderStatusPillHtml = `
       <span class="pay-pill pay-pill-paid">
         <span class="pill-check-icon">✓</span>
         <span>COMPLETED</span>
       </span>
     `;
-  } else if (sStatus === "in-progress") {
+  } else if (sStatus === "delivered") {
+    orderStatusPillHtml = `
+      <span class="pay-pill" style="background: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4;">
+        <span class="pill-check-icon">✓</span>
+        <span>DELIVERED</span>
+      </span>
+    `;
+  } else if (sStatus === "in-progress" || sStatus === "inprogress") {
     orderStatusPillHtml = `
       <span class="pay-pill pay-pill-partial">
         <span class="pill-dot-icon">●</span>

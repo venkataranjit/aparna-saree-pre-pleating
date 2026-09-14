@@ -40,9 +40,12 @@ export const PAYMENT_STATUS = {
 };
 
 export const ORDER_STATUS = {
+  REQUESTED: "Requested",
+  ACCEPTED: "Accepted",
   PENDING: "Pending",
   IN_PROGRESS: "In Progress",
   COMPLETED: "Completed",
+  DELIVERED: "Delivered",
   CANCELLED: "Cancelled",
 };
 

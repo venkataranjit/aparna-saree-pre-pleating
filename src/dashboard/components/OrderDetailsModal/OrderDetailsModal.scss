@@ -613,25 +613,40 @@
         }
 
         .status-buttons {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+          width: 100%;
+
+          &.payment-buttons {
+            grid-template-columns: repeat(3, 1fr);
+
+            @media (max-width: 600px) {
+              grid-template-columns: repeat(2, 1fr);
+
+              .btn-pay--pending {
+                grid-column: span 2;
+              }
+            }
+          }
 
           .btn-status {
-            padding: 6px 12px;
+            width: 100%;
+            padding: 8px 10px;
             border-radius: 8px;
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
             border: 1px solid var(--surface-border);
-            background: var(--surface-gold-tint);
-            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-muted, #e6d8a3);
             transition: all 0.2s ease;
             touch-action: manipulation;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-height: 34px;
+            min-height: 38px;
+            text-align: center;
 
             &:hover:not(:disabled) {
               background: var(--surface-border-hover);
@@ -645,53 +660,176 @@
               cursor: not-allowed;
             }
 
-            &--in-progress.active {
-              background: rgba(249, 115, 22, 0.15);
-              border-color: #f97316;
-              color: #ea580c;
-              box-shadow: 0 0 10px rgba(249, 115, 22, 0.2);
+            // Status Buttons Dark Mode Active States
+            &--requested.active {
+              background: rgba(56, 189, 248, 0.22);
+              border-color: #38bdf8;
+              color: #38bdf8;
+              box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+              font-weight: 700;
             }
 
-            &--completed.active {
-              background: rgba(34, 197, 94, 0.15);
-              border-color: #22c55e;
-              color: #16a34a;
-              box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+            &--accepted.active {
+              background: rgba(168, 85, 247, 0.22);
+              border-color: #c084fc;
+              color: #c084fc;
+              box-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
+              font-weight: 700;
             }
 
             &--pending.active {
-              background: rgba(239, 68, 68, 0.15);
-              border-color: #ef4444;
-              color: #dc2626;
-              box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+              background: rgba(239, 68, 68, 0.22);
+              border-color: #f87171;
+              color: #f87171;
+              box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
+              font-weight: 700;
             }
 
-            &--cancelled.active {
-              background: rgba(156, 163, 175, 0.15);
-              border-color: #9ca3af;
-              color: #4b5563;
-              box-shadow: 0 0 10px rgba(156, 163, 175, 0.15);
+            &--in-progress.active,
+            &--inprogress.active {
+              background: rgba(249, 115, 22, 0.22);
+              border-color: #fb923c;
+              color: #fb923c;
+              box-shadow: 0 0 12px rgba(249, 115, 22, 0.35);
+              font-weight: 700;
             }
 
+            &--completed.active {
+              background: rgba(34, 197, 94, 0.22);
+              border-color: #4ade80;
+              color: #4ade80;
+              box-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
+              font-weight: 700;
+            }
+
+            &--delivered.active {
+              background: rgba(45, 212, 191, 0.22);
+              border-color: #2dd4bf;
+              color: #2dd4bf;
+              box-shadow: 0 0 12px rgba(45, 212, 191, 0.35);
+              font-weight: 700;
+            }
+
+            &--cancelled {
+              grid-column: span 2;
+
+              &.active {
+                background: rgba(148, 163, 184, 0.22);
+                border-color: #94a3b8;
+                color: #cbd5e1;
+                box-shadow: 0 0 12px rgba(148, 163, 184, 0.25);
+                font-weight: 700;
+              }
+            }
+
+            // Payment Buttons Dark Mode Active States
             &.btn-pay--paid.active {
-              background: rgba(34, 197, 94, 0.15);
-              border-color: #22c55e;
-              color: #16a34a;
-              box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+              background: rgba(34, 197, 94, 0.22);
+              border-color: #4ade80;
+              color: #4ade80;
+              box-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
+              font-weight: 700;
             }
 
             &.btn-pay--partial.active {
-              background: rgba(234, 179, 8, 0.15);
-              border-color: #eab308;
-              color: #ca8a04;
-              box-shadow: 0 0 10px rgba(234, 179, 8, 0.2);
+              background: rgba(234, 179, 8, 0.22);
+              border-color: #facc15;
+              color: #facc15;
+              box-shadow: 0 0 12px rgba(234, 179, 8, 0.35);
+              font-weight: 700;
             }
 
             &.btn-pay--pending.active {
-              background: rgba(239, 68, 68, 0.15);
-              border-color: #ef4444;
-              color: #dc2626;
-              box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+              background: rgba(239, 68, 68, 0.22);
+              border-color: #f87171;
+              color: #f87171;
+              box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
+              font-weight: 700;
+            }
+          }
+        }
+
+        // ==========================================================
+        // LIGHT MODE OVERRIDES
+        // ==========================================================
+        [data-theme="light"] & {
+          .status-buttons .btn-status {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+
+            &:hover:not(:disabled) {
+              background: #f1f5f9;
+              color: #0f172a;
+              border-color: #94a3b8;
+            }
+
+            &--requested.active {
+              background: #0284c7 !important;
+              border-color: #0369a1 !important;
+              color: #ffffff !important;
+              box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35) !important;
+            }
+
+            &--accepted.active {
+              background: #9333ea !important;
+              border-color: #7e22ce !important;
+              color: #ffffff !important;
+              box-shadow: 0 2px 8px rgba(147, 51, 234, 0.35) !important;
+            }
+
+            &--pending.active {
+              background: #dc2626 !important;
+              border-color: #b91c1c !important;
+              color: #ffffff !important;
+              box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35) !important;
+            }
+
+            &--in-progress.active,
+            &--inprogress.active {
+              background: #ea580c !important;
+              border-color: #c2410c !important;
+              color: #ffffff !important;
+              box-shadow: 0 2px 8px rgba(234, 88, 12, 0.35) !important;
+            }
+
+            &--completed.active {
+              background: #16a34a !important;
+              border-color: #15803d !important;
+              color: #ffffff !important;
+              box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35) !important;
+            }
+
+            &--delivered.active {
+              background: #0d9488 !important;
+              border-color: #0f766e !important;
+              color: #ffffff !important;
+              box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35) !important;
+            }
+
+            &--cancelled.active {
+              background: #475569 !important;
+              border-color: #334155 !important;
+              color: #ffffff !important;
+              box-shadow: 0 2px 8px rgba(71, 85, 105, 0.35) !important;
+            }
+
+            &.btn-pay--paid.active {
+              background: #16a34a !important;
+              border-color: #15803d !important;
+              color: #ffffff !important;
+            }
+
+            &.btn-pay--partial.active {
+              background: #d97706 !important;
+              border-color: #b45309 !important;
+              color: #ffffff !important;
+            }
+
+            &.btn-pay--pending.active {
+              background: #dc2626 !important;
+              border-color: #b91c1c !important;
+              color: #ffffff !important;
             }
           }
         }

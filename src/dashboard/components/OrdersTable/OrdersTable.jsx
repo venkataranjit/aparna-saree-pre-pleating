@@ -120,7 +120,16 @@ export const getOrderAmountNumeric = (order) => {
   return items.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0);
 };
 
-const filterOptions = ["All", "in-progress", "completed", "pending", "cancelled"];
+const filterOptions = [
+  "All",
+  "requested",
+  "accepted",
+  "pending",
+  "in-progress",
+  "completed",
+  "delivered",
+  "cancelled",
+];
 
 const OrdersTable = ({
   orders: propOrders,

@@ -263,7 +263,7 @@ export default function CreateOrderModal({
   const [deliveryDate, setDeliveryDate] = useState(defaultDeliveryStr);
   const [occasion, setOccasion] = useState("Party");
   const [customOccasion, setCustomOccasion] = useState("");
-  const [orderStatus, setOrderStatus] = useState("in-progress");
+  const [orderStatus, setOrderStatus] = useState("delivered");
   const [paymentStatus, setPaymentStatus] = useState("paid");
   const [paymentMethod, setPaymentMethod] = useState("UPI");
   const [pickupDeliveryCharges, setPickupDeliveryCharges] = useState(0);
@@ -922,22 +922,8 @@ export default function CreateOrderModal({
   };
 
   const handlePriceChange = (index, newPrice) => {
-    const numVal = newPrice === "" ? "" : Number(newPrice);
-    const finalVal = numVal === "" ? 0 : numVal;
-    setItems((prev) => {
-      const next = [...prev];
-      next[index] = {
-        ...next[index],
-        finalPrice: numVal,
-        serviceDiscountedPrice: finalVal,
-      };
-      return next;
-    });
-    setValidationErrors((prev) => ({
-      ...prev,
-      [`items[${index}].servicePrice`]: undefined,
-      [`items[${index}].finalPrice`]: undefined,
-    }));
+    // Service price is strictly read-only and locked to catalog pricing
+    return;
   };
 
   const handleItemFieldChange = (index, field, value) => {
@@ -1847,23 +1833,19 @@ export default function CreateOrderModal({
 
                     <div className="form-field-wrap">
                       <AppInput
-                        label="Service Price (₹)"
-                        type="number"
-                        placeholder="e.g. 1000"
+                        label="Service Price (₹) [Fixed]"
+                        type="text"
+                        placeholder="Select service..."
                         value={
-                          item.finalPrice === "" ||
-                          item.finalPrice === undefined
-                            ? ""
-                            : item.finalPrice
+                          item.finalPrice !== "" &&
+                          item.finalPrice !== undefined &&
+                          item.finalPrice !== null
+                            ? String(item.finalPrice)
+                            : item.servicePrice
+                              ? String(item.servicePrice)
+                              : ""
                         }
-                        onChange={(e) => {
-                          const cleanVal = e.target.value.replace(
-                            /[^0-9]/g,
-                            "",
-                          );
-                          handlePriceChange(idx, cleanVal);
-                        }}
-                        disabled={submitting}
+                        disabled={true}
                         startAdornment={<CurrencyRupeeIcon />}
                         required
                         error={Boolean(
@@ -1873,9 +1855,14 @@ export default function CreateOrderModal({
                         helperText={
                           validationErrors[`items[${idx}].servicePrice`] ||
                           validationErrors[`items[${idx}].finalPrice`] ||
-                          (Number(item.servicePrice) > 0
-                            ? `Reg. Price: ₹${item.servicePrice}`
-                            : "")
+                          (Number(item.servicePrice) > 0 &&
+                          Number(item.serviceDiscountedPrice) > 0 &&
+                          Number(item.serviceDiscountedPrice) <
+                            Number(item.servicePrice)
+                            ? `Catalog Price: ₹${item.servicePrice} (Offer: ₹${item.finalPrice})`
+                            : Number(item.servicePrice) > 0
+                              ? `Catalog Price: ₹${item.servicePrice} (Protected)`
+                              : "Auto-set from service catalog")
                         }
                       />
                     </div>
@@ -2380,12 +2367,12 @@ export default function CreateOrderModal({
                     value={orderStatus}
                     onChange={(e) => setOrderStatus(e.target.value)}
                     options={[
-                      { value: "in-progress", label: "In-Progress (Pleating)" },
-                      { value: "pending", label: "Pending (Received)" },
-                      {
-                        value: "completed",
-                        label: "Completed (Ready / Delivered)",
-                      },
+                      { value: "requested", label: "Requested" },
+                      { value: "accepted", label: "Accepted" },
+                      { value: "pending", label: "Pending" },
+                      { value: "in-progress", label: "In Progress" },
+                      { value: "completed", label: "Completed" },
+                      { value: "delivered", label: "Delivered" },
                       { value: "cancelled", label: "Cancelled" },
                     ]}
                     startAdornment={<CheckCircleOutlineIcon />}

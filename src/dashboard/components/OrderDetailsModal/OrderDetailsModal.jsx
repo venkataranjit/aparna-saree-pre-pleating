@@ -614,7 +614,52 @@ const OrderDetailsModal = ({
                   <div className="status-buttons">
                     <button
                       type="button"
-                      className={`btn-status btn-status--in-progress ${currentStatus === "in-progress" ? "active" : ""}`}
+                      className={`btn-status btn-status--requested ${currentStatus === "requested" ? "active" : ""}`}
+                      onClick={() => handleStatusChange("requested")}
+                      disabled={updatingStatus}
+                    >
+                      {updatingTarget === "order-requested" && (
+                        <AppSpinner
+                          size="xs"
+                          color="inherit"
+                          style={{ marginRight: 6 }}
+                        />
+                      )}
+                      <span>Requested</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn-status btn-status--accepted ${currentStatus === "accepted" ? "active" : ""}`}
+                      onClick={() => handleStatusChange("accepted")}
+                      disabled={updatingStatus}
+                    >
+                      {updatingTarget === "order-accepted" && (
+                        <AppSpinner
+                          size="xs"
+                          color="inherit"
+                          style={{ marginRight: 6 }}
+                        />
+                      )}
+                      <span>Accepted</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn-status btn-status--pending ${currentStatus === "pending" ? "active" : ""}`}
+                      onClick={() => handleStatusChange("pending")}
+                      disabled={updatingStatus}
+                    >
+                      {updatingTarget === "order-pending" && (
+                        <AppSpinner
+                          size="xs"
+                          color="inherit"
+                          style={{ marginRight: 6 }}
+                        />
+                      )}
+                      <span>Pending</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn-status btn-status--in-progress ${currentStatus === "in-progress" || currentStatus === "inprogress" ? "active" : ""}`}
                       onClick={() => handleStatusChange("in-progress")}
                       disabled={updatingStatus}
                     >
@@ -644,18 +689,18 @@ const OrderDetailsModal = ({
                     </button>
                     <button
                       type="button"
-                      className={`btn-status btn-status--pending ${currentStatus === "pending" ? "active" : ""}`}
-                      onClick={() => handleStatusChange("pending")}
+                      className={`btn-status btn-status--delivered ${currentStatus === "delivered" ? "active" : ""}`}
+                      onClick={() => handleStatusChange("delivered")}
                       disabled={updatingStatus}
                     >
-                      {updatingTarget === "order-pending" && (
+                      {updatingTarget === "order-delivered" && (
                         <AppSpinner
                           size="xs"
                           color="inherit"
                           style={{ marginRight: 6 }}
                         />
                       )}
-                      <span>Pending</span>
+                      <span>Delivered</span>
                     </button>
                     <button
                       type="button"
@@ -700,7 +745,7 @@ const OrderDetailsModal = ({
                       <span>Paid in Full (Locked)</span>
                     </div>
                   ) : (
-                    <div className="status-buttons">
+                    <div className="status-buttons payment-buttons">
                       <button
                         type="button"
                         className={`btn-status btn-pay--paid ${currentPaymentStatus === "paid" ? "active" : ""}`}

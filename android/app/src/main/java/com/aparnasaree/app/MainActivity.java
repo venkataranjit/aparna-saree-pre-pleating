@@ -2,6 +2,7 @@ package com.aparnasaree.app;
 
 import android.annotation.SuppressLint;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -28,6 +29,7 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
         // Apply WindowInsetsListener so the view never renders under system status bar
         View contentView = findViewById(android.R.id.content);
         if (contentView != null) {
+            contentView.setBackgroundColor(Color.BLACK);
             ViewCompat.setOnApplyWindowInsetsListener(contentView, (v, windowInsets) -> {
                 Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
                 v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
@@ -37,6 +39,7 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
 
         WebView webView = getBridge().getWebView();
         if (webView != null) {
+            webView.setBackgroundColor(Color.BLACK);
             webView.setVerticalScrollBarEnabled(false);
             webView.setHorizontalScrollBarEnabled(false);
             webView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
@@ -66,10 +69,15 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
             window.setStatusBarColor(Color.BLACK);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 window.setNavigationBarColor(Color.BLACK);
             }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                window.setNavigationBarDividerColor(Color.BLACK);
+            }
+            window.getDecorView().setBackgroundColor(Color.BLACK);
             WindowCompat.setDecorFitsSystemWindows(window, true);
 
             WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(window, window.getDecorView());

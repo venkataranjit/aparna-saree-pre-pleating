@@ -53,6 +53,26 @@ import hero2 from "../../assets/hero2.jpg";
 import hero3 from "../../assets/hero3.jpg";
 import ladyLogo from "../../assets/lady-logo.png";
 import appIconImg from "../../assets/app-icon.png";
+import g1 from "../../assets/g1.jpg";
+import g2 from "../../assets/g2.jpg";
+import g3 from "../../assets/g3.jpg";
+import g4 from "../../assets/g4.jpg";
+import g5 from "../../assets/g5.jpg";
+import g6 from "../../assets/g6.jpg";
+import g7 from "../../assets/g7.jpg";
+import g8 from "../../assets/g8.jpg";
+import g9 from "../../assets/g9.jpg";
+import g10 from "../../assets/g10.jpg";
+import g11 from "../../assets/g11.jpg";
+import g12 from "../../assets/g12.jpg";
+import g13 from "../../assets/g13.jpg";
+import g14 from "../../assets/g14.jpg";
+import g15 from "../../assets/g15.jpg";
+import g16 from "../../assets/g16.jpg";
+import g17 from "../../assets/g17.jpg";
+import g18 from "../../assets/g18.jpg";
+import g19 from "../../assets/g19.jpg";
+import g20 from "../../assets/g20.jpg";
 import "./LandingPageNew.scss";
 
 const HERO_SLIDES = [hero1, hero2, hero3];
@@ -156,10 +176,10 @@ const FOUNDER_QUOTES = [
 ];
 
 const GALLERY_CATEGORIES = [
-  { id: "all", label: "All Drapes", count: "16" },
-  { id: "bridal", label: "Bridal Couture", count: "3" },
-  { id: "heritage", label: "Heritage Weaves", count: "6" },
-  { id: "contemporary", label: "Contemporary & Party", count: "4" },
+  { id: "all", label: "All Drapes", count: "20" },
+  { id: "bridal", label: "Bridal Couture", count: "5" },
+  { id: "heritage", label: "Heritage Weaves", count: "7" },
+  { id: "contemporary", label: "Contemporary & Party", count: "5" },
   { id: "mastercraft", label: "Mastercraft & 2-Min Fit", count: "3" },
 ];
 
@@ -174,7 +194,7 @@ const GALLERY_ITEMS = [
     fabric: "Pure Mulberry Kanchipuram Silk",
     pleatStyle: "Calibrated Knife Pleats with Micro-Steam Hold",
     wearTime: "Under 120 Seconds",
-    img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=900&q=80",
+    img: g1,
     desc: "Exquisite temple border with heavy golden zari pallu, hand-pleated with precision razor symmetry that stays intact through 8+ hours of muhurtham rituals.",
     highlights: ["Pure Gold Zari Protection", "Razor-Sharp Symmetrical Folds", "Pre-Pinned Pallu Drop"],
   },
@@ -188,13 +208,13 @@ const GALLERY_ITEMS = [
     fabric: "Katan Silk with Real Silver & Gold Brocade",
     pleatStyle: "Flat Calibrated Pressing",
     wearTime: "2 Minutes",
-    img: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=900&q=80",
+    img: g2,
     desc: "Regal Varanasi gold floral weave crafted with flat calibrated folds that drape cleanly without puffing around the hip.",
     highlights: ["Non-Bulky Waist Line", "Thermal Steam Preserved Zari", "Seamless Fall & Movement"],
   },
   {
     id: "img-3",
-    title: "Modern Organza Puff",
+    title: "Modern Organza Silk",
     subtitle: "Featherlight Drape with Crisp Fluff",
     category: "Contemporary & Party",
     categoryKey: "contemporary",
@@ -202,7 +222,7 @@ const GALLERY_ITEMS = [
     fabric: "Sheer Silk Organza",
     pleatStyle: "Semi-Fluffy Sculpted Pleats",
     wearTime: "90 Seconds",
-    img: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=900&q=80",
+    img: g3,
     desc: "Voluminous dreamy pleats engineered to hold their shape comfortably from dawn till dusk without flattening or crumpling.",
     highlights: ["Featherlight Cloud Feel", "Sculpted Shape Retention", "Zero Sagging Guarantee"],
   },
@@ -216,7 +236,7 @@ const GALLERY_ITEMS = [
     fabric: "Bridal Raw Silk & Tissue Dupatta",
     pleatStyle: "Dual Tier Pallu with Fitted Chest Fan",
     wearTime: "Under 3 Minutes",
-    img: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=900&q=80",
+    img: g4,
     desc: "Double-dupatta layering with structured chest pleats and sweeping cathedral-length pallu for regal wedding receptions.",
     highlights: ["Symmetrical Double-Drape", "Secure Pin-Free Feel", "Grand Photographic Impact"],
   },
@@ -230,7 +250,7 @@ const GALLERY_ITEMS = [
     fabric: "All Pure Silks & Blends",
     pleatStyle: "Archival Crease-Lock Box Fold",
     wearTime: "Ready to Slip On",
-    img: "https://images.unsplash.com/photo-1610030469668-93530c17b58f?auto=format&fit=crop&w=900&q=80",
+    img: g5,
     desc: "Compact travel-safe box folding preserving pristine crease lines for flight travel and destination weddings across India.",
     highlights: ["Suitcase & Flight Friendly", "Zero Crushed Pleats", "Dust-Proof Archival Packaging"],
   },
@@ -244,7 +264,7 @@ const GALLERY_ITEMS = [
     fabric: "Pure Metallic Tissue Silk",
     pleatStyle: "Ultra-Flat Sleek Press",
     wearTime: "2 Minutes",
-    img: "https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&w=900&q=80",
+    img: g6,
     desc: "Gleaming tissue silk pressed with zero heat damage to highlight shimmering metallic highlights and body-hugging lines.",
     highlights: ["Liquid Metal Shimmer", "Zero Scratch or Fraying", "Perfect Body Posture Line"],
   },
@@ -258,7 +278,7 @@ const GALLERY_ITEMS = [
     fabric: "Pure Yeola Paithani Silk",
     pleatStyle: "Traditional Pleat Fan",
     wearTime: "2 Minutes",
-    img: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=900&q=80",
+    img: g7,
     desc: "Heavy kaleidoscopic peacock pallu balanced with structured shoulder pin-points for zero slipping during rituals.",
     highlights: ["Heavy Pallu Weight Distribution", "Vibrant Tapestry Reveal", "Zero Slip Shoulder Hold"],
   },
@@ -272,7 +292,7 @@ const GALLERY_ITEMS = [
     fabric: "Fine Georgette & Gharchola Silk",
     pleatStyle: "Micro-Pleat Swirl",
     wearTime: "2 Minutes",
-    img: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=900&q=80",
+    img: g8,
     desc: "Fine Georgette bandhej with micro-pleats that swirl naturally with every dance step at Sangeet celebrations.",
     highlights: ["Dynamic Swirl Flow", "Dance & Walk Ease", "Rich Texture Definition"],
   },
@@ -286,7 +306,7 @@ const GALLERY_ITEMS = [
     fabric: "Pattu Lehenga with Silk Voni",
     pleatStyle: "Cross-Body Pleated Voni",
     wearTime: "2 Minutes",
-    img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=900&q=80",
+    img: g9,
     desc: "South Indian traditional half-saree draping with fitted waist pleats and neat cross-body voni for half-saree functions.",
     highlights: ["Snug Waistband Fit", "Graceful Voni Drop", "Youthful Traditional Look"],
   },
@@ -300,7 +320,7 @@ const GALLERY_ITEMS = [
     fabric: "60-Gram Pure Silk Georgette",
     pleatStyle: "Flowing Waterfall Pleats",
     wearTime: "90 Seconds",
-    img: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=900&q=80",
+    img: g10,
     desc: "Ultra-slimming silhouette designed to accentuate body posture with zero bulkiness around the waist.",
     highlights: ["Hourglass Contour Drape", "Fluid Motion", "Red Carpet Evening Look"],
   },
@@ -314,7 +334,7 @@ const GALLERY_ITEMS = [
     fabric: "Original Mysore Silk (100% Pure Zari)",
     pleatStyle: "Soft-Pressed Natural Folds",
     wearTime: "2 Minutes",
-    img: "https://images.unsplash.com/photo-1610030469668-93530c17b58f?auto=format&fit=crop&w=900&q=80",
+    img: g11,
     desc: "Pure zari gold border with supple drape, customized to height for an effortless 2-minute wear.",
     highlights: ["Butter-Soft Touch", "Featherweight Draping", "Effortless All-Day Wear"],
   },
@@ -328,7 +348,7 @@ const GALLERY_ITEMS = [
     fabric: "Silk-Cotton Chanderi with Zari Buttis",
     pleatStyle: "Delicate Steamed Micro-Pleats",
     wearTime: "2 Minutes",
-    img: "https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&w=900&q=80",
+    img: g12,
     desc: "Lightweight handloom weave pleated with delicate care to preserve fine gold and silver buttis.",
     highlights: ["Breathable & Light", "Preserved Handwoven Motifs", "Crisp Summer Finish"],
   },
@@ -342,7 +362,7 @@ const GALLERY_ITEMS = [
     fabric: "Micro-Velvet with Zardozi Work",
     pleatStyle: "Structured Micro-Steamed Folds",
     wearTime: "Under 3 Minutes",
-    img: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=900&q=80",
+    img: g13,
     desc: "Structured micro-steamed pleating for dense velvet fabrics, reducing heaviness and improving drape flow.",
     highlights: ["Reduced Heavy Bulk", "Zardozi Thread Protection", "Opulent Royal Silhouette"],
   },
@@ -356,7 +376,7 @@ const GALLERY_ITEMS = [
     fabric: "Bridal Pattu & Designer Silks",
     pleatStyle: "Hook & Zip Quick-Snap Band",
     wearTime: "120 Seconds Flat",
-    img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=900&q=80",
+    img: g14,
     desc: "Pre-measured waistband and calibrated pleats — wear in under 120 seconds with zero pins or assistance required.",
     highlights: ["Zero Safety Pins Needed", "Fits Perfectly in 2 Minutes", "Ideal for NRI & Busy Brides"],
   },
@@ -370,7 +390,7 @@ const GALLERY_ITEMS = [
     fabric: "Traditional Korvai Handloom Silk",
     pleatStyle: "Evenly Staggered Temple Folds",
     wearTime: "2 Minutes",
-    img: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=900&q=80",
+    img: g15,
     desc: "Evenly staggered pleats highlighting each architectural temple motif with crisp visual cadence.",
     highlights: ["Aligned Temple Motifs", "Crisp Symmetrical Steaming", "Classic South Indian Charm"],
   },
@@ -384,9 +404,65 @@ const GALLERY_ITEMS = [
     fabric: "Metallic Lurex Shimmer Crepe",
     pleatStyle: "Contemporary Dynamic Flares",
     wearTime: "2 Minutes",
-    img: "https://images.unsplash.com/photo-1610030469668-93530c17b58f?auto=format&fit=crop&w=900&q=80",
+    img: g16,
     desc: "Contemporary pleating geometry creating striking silhouettes for evening receptions and red carpet events.",
     highlights: ["Striking Modern Silhouette", "Fluid Twirl Dynamics", "Glamorous Gold Accents"],
+  },
+  {
+    id: "img-17",
+    title: "Royal Uppada Silk",
+    subtitle: "Jamdani Floral Border Masterpiece",
+    category: "Heritage Weaves",
+    categoryKey: "heritage",
+    badge: "Uppada Jamdani",
+    fabric: "Pure Uppada Handloom Silk",
+    pleatStyle: "Fine Pressed Symmetrical Pleats",
+    wearTime: "2 Minutes",
+    img: g17,
+    desc: "Delicate Uppada weave styled with feather-soft folds that accentuate intricate Jamdani zari motifs.",
+    highlights: ["Feather-light Feel", "Intricate Zari Alignment", "Graceful Traditional Fall"],
+  },
+  {
+    id: "img-18",
+    title: "Gadwal Zari Contrast",
+    subtitle: "Handloom Cotton-Silk Fusion",
+    category: "Heritage Weaves",
+    categoryKey: "heritage",
+    badge: "Gadwal Pure",
+    fabric: "Gadwal Silk-Cotton Blend",
+    pleatStyle: "Crisp Knife Folds",
+    wearTime: "2 Minutes",
+    img: g18,
+    desc: "Classic Gadwal with pure silk borders structured cleanly with zero sagging during long poojas and rituals.",
+    highlights: ["Crisp Cotton-Silk Hold", "Contrast Border Focus", "Comfort All-Day Wear"],
+  },
+  {
+    id: "img-19",
+    title: "Tussar Handloom Saree",
+    subtitle: "Organic Golden Sheen with Floral Pallu",
+    category: "Contemporary & Party",
+    categoryKey: "contemporary",
+    badge: "Raw Texture",
+    fabric: "Wild Tussar Silk",
+    pleatStyle: "Textured Natural Pleats",
+    wearTime: "90 Seconds",
+    img: g19,
+    desc: "Rich textured organic wild silk pleated with thermal steam to maintain natural rustic lustre.",
+    highlights: ["Natural Gold Sheen", "Breathable Texture", "Contemporary Chic Look"],
+  },
+  {
+    id: "img-20",
+    title: "Grand Reception Silhouette",
+    subtitle: "Designer Bridal Drape with Shimmer Trail",
+    category: "Bridal Couture",
+    categoryKey: "bridal",
+    badge: "Grand Finale",
+    fabric: "Heavy Embroidered Bridal Pattu",
+    pleatStyle: "Cathedral Trail & Sculpted Waist",
+    wearTime: "Under 3 Minutes",
+    img: g20,
+    desc: "Showstopper bridal drape with structured waist pleats and sweeping red carpet pallu for unforgettable grand entrances.",
+    highlights: ["Showstopper Trail", "Ultra Secure Fit", "Royal Photographic Allure"],
   },
 ];
 
@@ -495,13 +571,14 @@ const LandingPageNew = () => {
 
   useEffect(() => {
     if (!isLoaded) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("is-revealed");
           } else {
-            // Re-arm animation every time the element scrolls out of view
+            // Re-arm animation when scrolled out
             entry.target.classList.remove("is-revealed");
           }
         });
@@ -998,8 +1075,8 @@ const LandingPageNew = () => {
             </p>
           </div>
 
-          {/* Category Filter Tabs Bar */}
-          <div className="gallery-category-tabs reveal-on-scroll">
+          {/* Category Filter Tabs Bar (Commented out as requested) */}
+          {/* <div className="gallery-category-tabs reveal-on-scroll">
             <div className="category-tabs-track">
               {GALLERY_CATEGORIES.map((cat) => {
                 const isActive = activeCategory === cat.id;
@@ -1016,7 +1093,7 @@ const LandingPageNew = () => {
                 );
               })}
             </div>
-          </div>
+          </div> */}
 
           {/* 3D Runway Stage Container */}
           <div
@@ -1066,63 +1143,12 @@ const LandingPageNew = () => {
                     aria-label={`View ${item.title}`}
                   >
                     <div className="runway-card-inner">
-                      <div className="runway-card-media">
-                        <img
-                          src={item.img}
-                          alt={item.title}
-                          loading="lazy"
-                          className="runway-card-img"
-                        />
-                        <div className="card-gradient-scrim" />
-                        <span className="runway-badge">
-                          {item.badge || item.category}
-                        </span>
-
-                        {/* Center Card Active Crown */}
-                        {isActive && (
-                          <div className="active-spotlight-tag">
-                            <AutoAwesomeIcon className="spark-ico" />
-                            <span>Spotlight Look</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Card Information Panel */}
-                      <div className="runway-card-content">
-                        <span className="card-cat-label">{item.category}</span>
-                        <h3 className="card-heading-title">{item.title}</h3>
-                        <p className="card-desc-snippet">{item.subtitle}</p>
-
-                        {/* Interactive Actions for Active Card */}
-                        {isActive && (
-                          <div className="card-quick-actions">
-                            <button
-                              type="button"
-                              className="quick-inspect-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedGalleryItem(item);
-                              }}
-                            >
-                              <FullscreenIcon className="btn-icon" />
-                              <span>Inspect Drape</span>
-                            </button>
-                            <a
-                              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-                                `Hello Aparna ji, I would like to book the ${item.title} (${item.category}) pre-pleating service.`,
-                              )}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="quick-wa-btn"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <WhatsAppIcon className="btn-icon" />
-                              <span>Book</span>
-                            </a>
-                          </div>
-                        )}
-                      </div>
-
+                      <img
+                        src={item.img}
+                        alt={item.title || "Aparna Saree Pre-Pleating"}
+                        loading="lazy"
+                        className="runway-card-img"
+                      />
                       <div className="card-gold-sheen-border" />
                     </div>
                   </div>
@@ -1162,7 +1188,7 @@ const LandingPageNew = () => {
               <ChevronLeftIcon />
             </button>
 
-            {/* Slide Counter & Active Item Title */}
+            {/* Slide Counter */}
             <div className="ctrl-info-pill">
               <span className="ctrl-current">
                 {String(activeGalleryIdx + 1).padStart(2, "0")}
@@ -1171,10 +1197,10 @@ const LandingPageNew = () => {
               <span className="ctrl-total">
                 {String(filteredGalleryItems.length).padStart(2, "0")}
               </span>
-              <span className="ctrl-divider">|</span>
+              {/* <span className="ctrl-divider">|</span>
               <span className="ctrl-active-title">
                 {filteredGalleryItems[activeGalleryIdx]?.title || "Haute Saree"}
-              </span>
+              </span> */}
             </div>
 
             {/* Next Button */}
@@ -1258,14 +1284,14 @@ const LandingPageNew = () => {
                   alt={selectedGalleryItem.title}
                   className="lightbox-main-img"
                 />
-                <div className="lightbox-img-overlay">
+                {/* <div className="lightbox-img-overlay">
                   <span className="lightbox-badge">
                     {selectedGalleryItem.badge || selectedGalleryItem.category}
                   </span>
                   <span className="lightbox-time-badge">
                     ⏱ {selectedGalleryItem.wearTime || "2 Minutes Wear"}
                   </span>
-                </div>
+                </div> */}
               </div>
 
               <div className="lightbox-details-panel">

@@ -31,6 +31,49 @@ import {
   formatDateSafe,
 } from "../../../firebase/dbService";
 import "./Overview.scss";
+import g1 from "../../../assets/g1.jpg";
+import g2 from "../../../assets/g2.jpg";
+import g3 from "../../../assets/g3.jpg";
+import g4 from "../../../assets/g4.jpg";
+import g5 from "../../../assets/g5.jpg";
+import g6 from "../../../assets/g6.jpg";
+import g7 from "../../../assets/g7.jpg";
+import g8 from "../../../assets/g8.jpg";
+import g9 from "../../../assets/g9.jpg";
+import g10 from "../../../assets/g10.jpg";
+import g11 from "../../../assets/g11.jpg";
+import g12 from "../../../assets/g12.jpg";
+import g13 from "../../../assets/g13.jpg";
+import g14 from "../../../assets/g14.jpg";
+import g15 from "../../../assets/g15.jpg";
+import g16 from "../../../assets/g16.jpg";
+import g17 from "../../../assets/g17.jpg";
+import g18 from "../../../assets/g18.jpg";
+import g19 from "../../../assets/g19.jpg";
+import g20 from "../../../assets/g20.jpg";
+
+const GALLERY_IMAGES = [
+  { src: g1, alt: "Aparna Saree Pre-Pleating 1" },
+  { src: g2, alt: "Aparna Saree Pre-Pleating 2" },
+  { src: g3, alt: "Aparna Saree Pre-Pleating 3" },
+  { src: g4, alt: "Aparna Saree Pre-Pleating 4" },
+  { src: g5, alt: "Aparna Saree Pre-Pleating 5" },
+  { src: g6, alt: "Aparna Saree Pre-Pleating 6" },
+  { src: g7, alt: "Aparna Saree Pre-Pleating 7" },
+  { src: g8, alt: "Aparna Saree Pre-Pleating 8" },
+  { src: g9, alt: "Aparna Saree Pre-Pleating 9" },
+  { src: g10, alt: "Aparna Saree Pre-Pleating 10" },
+  { src: g11, alt: "Aparna Saree Pre-Pleating 11" },
+  { src: g12, alt: "Aparna Saree Pre-Pleating 12" },
+  { src: g13, alt: "Aparna Saree Pre-Pleating 13" },
+  { src: g14, alt: "Aparna Saree Pre-Pleating 14" },
+  { src: g15, alt: "Aparna Saree Pre-Pleating 15" },
+  { src: g16, alt: "Aparna Saree Pre-Pleating 16" },
+  { src: g17, alt: "Aparna Saree Pre-Pleating 17" },
+  { src: g18, alt: "Aparna Saree Pre-Pleating 18" },
+  { src: g19, alt: "Aparna Saree Pre-Pleating 19" },
+  { src: g20, alt: "Aparna Saree Pre-Pleating 20" },
+];
 
 const Overview = () => {
   const navigate = useNavigate();
@@ -293,105 +336,15 @@ const Overview = () => {
           {/* Saree Lookbook Horizontal Overlapping Zigzag Deck (Frameless) */}
           <div className="overview-horizontal-deck-wrapper" ref={deckScrollRef}>
             <div className="wrapper">
-              <div>
-                <img
-                  src="https://picsum.photos/id/660/1200/1200"
-                  alt="sparkler"
-                />
-              </div>
-              <div>
-                <img src="https://picsum.photos/id/669/1200/1200" alt="hat" />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/823/1200/1200"
-                  alt="camera"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/64/1200/1200"
-                  alt="flowers"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/836/1200/1200"
-                  alt="guitar"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/1027/1200/1200"
-                  alt="pensive"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/646/1200/1200"
-                  alt="sunlight"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/634/1200/1200"
-                  alt="misty morning"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/228/1200/1200"
-                  alt="harvest"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/661/1200/1200"
-                  alt="waiting"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/380/1200/1200"
-                  alt="time"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/392/1200/1200"
-                  alt="crossover"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/238/1200/1200"
-                  alt="city"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/469/1200/1200"
-                  alt="boat trip"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/311/1200/1200"
-                  alt="stories"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/515/1200/1200"
-                  alt="portrait"
-                />
-              </div>
-              <div>
-                <img
-                  src="https://picsum.photos/id/521/1200/1200"
-                  alt="perfect day"
-                />
-              </div>
+              {GALLERY_IMAGES.map((item, idx) => (
+                <div key={idx}>
+                  <img
+                    src={item.src}
+                    alt={item.alt}
+                    loading="lazy"
+                  />
+                </div>
+              ))}
             </div>
           </div>
 

@@ -34,6 +34,14 @@ import PhoneInTalkOutlinedIcon from "@mui/icons-material/PhoneInTalkOutlined";
 import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import GetAppOutlinedIcon from "@mui/icons-material/GetAppOutlined";
+import CollectionsOutlinedIcon from "@mui/icons-material/CollectionsOutlined";
+import CloseIcon from "@mui/icons-material/Close";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
+import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import { useAuth } from "../../auth/context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import Footer from "../components/Footer/Footer";
@@ -143,6 +151,241 @@ const FOUNDER_QUOTES = [
   },
 ];
 
+const GALLERY_CATEGORIES = [
+  { id: "all", label: "All Drapes", count: "16" },
+  { id: "bridal", label: "Bridal Couture", count: "3" },
+  { id: "heritage", label: "Heritage Weaves", count: "6" },
+  { id: "contemporary", label: "Contemporary & Party", count: "4" },
+  { id: "mastercraft", label: "Mastercraft & 2-Min Fit", count: "3" },
+];
+
+const GALLERY_ITEMS = [
+  {
+    id: "img-1",
+    title: "Bridal Kanchipuram",
+    subtitle: "Pure Mulberry Silk & Real Gold Zari",
+    category: "Bridal Couture",
+    categoryKey: "bridal",
+    badge: "Royal Pattu",
+    fabric: "Pure Mulberry Kanchipuram Silk",
+    pleatStyle: "Calibrated Knife Pleats with Micro-Steam Hold",
+    wearTime: "Under 120 Seconds",
+    img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=900&q=80",
+    desc: "Exquisite temple border with heavy golden zari pallu, hand-pleated with precision razor symmetry that stays intact through 8+ hours of muhurtham rituals.",
+    highlights: ["Pure Gold Zari Protection", "Razor-Sharp Symmetrical Folds", "Pre-Pinned Pallu Drop"],
+  },
+  {
+    id: "img-2",
+    title: "Banarasi Royal Brocade",
+    subtitle: "Intricate Floral Kadwa Weave",
+    category: "Heritage Weaves",
+    categoryKey: "heritage",
+    badge: "Handloom Kadwa",
+    fabric: "Katan Silk with Real Silver & Gold Brocade",
+    pleatStyle: "Flat Calibrated Pressing",
+    wearTime: "2 Minutes",
+    img: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=900&q=80",
+    desc: "Regal Varanasi gold floral weave crafted with flat calibrated folds that drape cleanly without puffing around the hip.",
+    highlights: ["Non-Bulky Waist Line", "Thermal Steam Preserved Zari", "Seamless Fall & Movement"],
+  },
+  {
+    id: "img-3",
+    title: "Modern Organza Puff",
+    subtitle: "Featherlight Drape with Crisp Fluff",
+    category: "Contemporary & Party",
+    categoryKey: "contemporary",
+    badge: "Trending Volume",
+    fabric: "Sheer Silk Organza",
+    pleatStyle: "Semi-Fluffy Sculpted Pleats",
+    wearTime: "90 Seconds",
+    img: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=900&q=80",
+    desc: "Voluminous dreamy pleats engineered to hold their shape comfortably from dawn till dusk without flattening or crumpling.",
+    highlights: ["Featherlight Cloud Feel", "Sculpted Shape Retention", "Zero Sagging Guarantee"],
+  },
+  {
+    id: "img-4",
+    title: "Maharani Double Pallu",
+    subtitle: "Royal Court Muhurtham Silhouette",
+    category: "Bridal Couture",
+    categoryKey: "bridal",
+    badge: "Atelier Bespoke",
+    fabric: "Bridal Raw Silk & Tissue Dupatta",
+    pleatStyle: "Dual Tier Pallu with Fitted Chest Fan",
+    wearTime: "Under 3 Minutes",
+    img: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=900&q=80",
+    desc: "Double-dupatta layering with structured chest pleats and sweeping cathedral-length pallu for regal wedding receptions.",
+    highlights: ["Symmetrical Double-Drape", "Secure Pin-Free Feel", "Grand Photographic Impact"],
+  },
+  {
+    id: "img-5",
+    title: "Archival Box Pleats",
+    subtitle: "Geometric Precision & Travel Pack",
+    category: "Mastercraft & 2-Min Fit",
+    categoryKey: "mastercraft",
+    badge: "Destination Ready",
+    fabric: "All Pure Silks & Blends",
+    pleatStyle: "Archival Crease-Lock Box Fold",
+    wearTime: "Ready to Slip On",
+    img: "https://images.unsplash.com/photo-1610030469668-93530c17b58f?auto=format&fit=crop&w=900&q=80",
+    desc: "Compact travel-safe box folding preserving pristine crease lines for flight travel and destination weddings across India.",
+    highlights: ["Suitcase & Flight Friendly", "Zero Crushed Pleats", "Dust-Proof Archival Packaging"],
+  },
+  {
+    id: "img-6",
+    title: "Tissue Silk Radiance",
+    subtitle: "Liquid Metallic Shimmer & Sleek Lines",
+    category: "Contemporary & Party",
+    categoryKey: "contemporary",
+    badge: "Ultra Glam",
+    fabric: "Pure Metallic Tissue Silk",
+    pleatStyle: "Ultra-Flat Sleek Press",
+    wearTime: "2 Minutes",
+    img: "https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&w=900&q=80",
+    desc: "Gleaming tissue silk pressed with zero heat damage to highlight shimmering metallic highlights and body-hugging lines.",
+    highlights: ["Liquid Metal Shimmer", "Zero Scratch or Fraying", "Perfect Body Posture Line"],
+  },
+  {
+    id: "img-7",
+    title: "Paithani Peacock Pallu",
+    subtitle: "Maharashtrian Tapestry Heritage",
+    category: "Heritage Weaves",
+    categoryKey: "heritage",
+    badge: "Vintage Gold",
+    fabric: "Pure Yeola Paithani Silk",
+    pleatStyle: "Traditional Pleat Fan",
+    wearTime: "2 Minutes",
+    img: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=900&q=80",
+    desc: "Heavy kaleidoscopic peacock pallu balanced with structured shoulder pin-points for zero slipping during rituals.",
+    highlights: ["Heavy Pallu Weight Distribution", "Vibrant Tapestry Reveal", "Zero Slip Shoulder Hold"],
+  },
+  {
+    id: "img-8",
+    title: "Bandhani Silk Drapes",
+    subtitle: "Traditional Tie-Dye with Clean Pleats",
+    category: "Heritage Weaves",
+    categoryKey: "heritage",
+    badge: "Sangeet Favorite",
+    fabric: "Fine Georgette & Gharchola Silk",
+    pleatStyle: "Micro-Pleat Swirl",
+    wearTime: "2 Minutes",
+    img: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=900&q=80",
+    desc: "Fine Georgette bandhej with micro-pleats that swirl naturally with every dance step at Sangeet celebrations.",
+    highlights: ["Dynamic Swirl Flow", "Dance & Walk Ease", "Rich Texture Definition"],
+  },
+  {
+    id: "img-9",
+    title: "Half Saree Langa Voni",
+    subtitle: "Youthful Grace with Fitted Waist Pleats",
+    category: "Mastercraft & 2-Min Fit",
+    categoryKey: "mastercraft",
+    badge: "Half Saree",
+    fabric: "Pattu Lehenga with Silk Voni",
+    pleatStyle: "Cross-Body Pleated Voni",
+    wearTime: "2 Minutes",
+    img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=900&q=80",
+    desc: "South Indian traditional half-saree draping with fitted waist pleats and neat cross-body voni for half-saree functions.",
+    highlights: ["Snug Waistband Fit", "Graceful Voni Drop", "Youthful Traditional Look"],
+  },
+  {
+    id: "img-10",
+    title: "Pure Georgette Cascade",
+    subtitle: "Fluid Cascading Drapes for Evening Gala",
+    category: "Contemporary & Party",
+    categoryKey: "contemporary",
+    badge: "Slimming Fit",
+    fabric: "60-Gram Pure Silk Georgette",
+    pleatStyle: "Flowing Waterfall Pleats",
+    wearTime: "90 Seconds",
+    img: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=900&q=80",
+    desc: "Ultra-slimming silhouette designed to accentuate body posture with zero bulkiness around the waist.",
+    highlights: ["Hourglass Contour Drape", "Fluid Motion", "Red Carpet Evening Look"],
+  },
+  {
+    id: "img-11",
+    title: "Mysore Crepe Silk",
+    subtitle: "Butter-Soft Drape with Minimalist Grace",
+    category: "Heritage Weaves",
+    categoryKey: "heritage",
+    badge: "Pure Crepe",
+    fabric: "Original Mysore Silk (100% Pure Zari)",
+    pleatStyle: "Soft-Pressed Natural Folds",
+    wearTime: "2 Minutes",
+    img: "https://images.unsplash.com/photo-1610030469668-93530c17b58f?auto=format&fit=crop&w=900&q=80",
+    desc: "Pure zari gold border with supple drape, customized to height for an effortless 2-minute wear.",
+    highlights: ["Butter-Soft Touch", "Featherweight Draping", "Effortless All-Day Wear"],
+  },
+  {
+    id: "img-12",
+    title: "Chanderi Gold Motif",
+    subtitle: "Sheer Elegance with Handwoven Buttis",
+    category: "Heritage Weaves",
+    categoryKey: "heritage",
+    badge: "Handloom Heritage",
+    fabric: "Silk-Cotton Chanderi with Zari Buttis",
+    pleatStyle: "Delicate Steamed Micro-Pleats",
+    wearTime: "2 Minutes",
+    img: "https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&w=900&q=80",
+    desc: "Lightweight handloom weave pleated with delicate care to preserve fine gold and silver buttis.",
+    highlights: ["Breathable & Light", "Preserved Handwoven Motifs", "Crisp Summer Finish"],
+  },
+  {
+    id: "img-13",
+    title: "Velvet Embroidered Saree",
+    subtitle: "Rich Texture for Winter Weddings",
+    category: "Bridal Couture",
+    categoryKey: "bridal",
+    badge: "Winter Royal",
+    fabric: "Micro-Velvet with Zardozi Work",
+    pleatStyle: "Structured Micro-Steamed Folds",
+    wearTime: "Under 3 Minutes",
+    img: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=900&q=80",
+    desc: "Structured micro-steamed pleating for dense velvet fabrics, reducing heaviness and improving drape flow.",
+    highlights: ["Reduced Heavy Bulk", "Zardozi Thread Protection", "Opulent Royal Silhouette"],
+  },
+  {
+    id: "img-14",
+    title: "Ready-to-Wear Pattu",
+    subtitle: "Instant 2-Minute Pre-Stitched Perfection",
+    category: "Mastercraft & 2-Min Fit",
+    categoryKey: "mastercraft",
+    badge: "Ready-in-120s",
+    fabric: "Bridal Pattu & Designer Silks",
+    pleatStyle: "Hook & Zip Quick-Snap Band",
+    wearTime: "120 Seconds Flat",
+    img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=900&q=80",
+    desc: "Pre-measured waistband and calibrated pleats — wear in under 120 seconds with zero pins or assistance required.",
+    highlights: ["Zero Safety Pins Needed", "Fits Perfectly in 2 Minutes", "Ideal for NRI & Busy Brides"],
+  },
+  {
+    id: "img-15",
+    title: "Temple Border Silk",
+    subtitle: "Architectural Korvai Pleated Borders",
+    category: "Heritage Weaves",
+    categoryKey: "heritage",
+    badge: "Korvai Weave",
+    fabric: "Traditional Korvai Handloom Silk",
+    pleatStyle: "Evenly Staggered Temple Folds",
+    wearTime: "2 Minutes",
+    img: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=900&q=80",
+    desc: "Evenly staggered pleats highlighting each architectural temple motif with crisp visual cadence.",
+    highlights: ["Aligned Temple Motifs", "Crisp Symmetrical Steaming", "Classic South Indian Charm"],
+  },
+  {
+    id: "img-16",
+    title: "Cocktail Pleat Flurry",
+    subtitle: "Modern Silhouette for Sangeet & Reception",
+    category: "Contemporary & Party",
+    categoryKey: "contemporary",
+    badge: "Party Glam",
+    fabric: "Metallic Lurex Shimmer Crepe",
+    pleatStyle: "Contemporary Dynamic Flares",
+    wearTime: "2 Minutes",
+    img: "https://images.unsplash.com/photo-1610030469668-93530c17b58f?auto=format&fit=crop&w=900&q=80",
+    desc: "Contemporary pleating geometry creating striking silhouettes for evening receptions and red carpet events.",
+    highlights: ["Striking Modern Silhouette", "Fluid Twirl Dynamics", "Glamorous Gold Accents"],
+  },
+];
+
 const LandingPageNew = () => {
   const { currentUser } = useAuth();
   const { currentTheme } = useTheme();
@@ -151,7 +394,18 @@ const LandingPageNew = () => {
   const [activeSection, setActiveSection] = useState("home");
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isQuotePaused, setIsQuotePaused] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeGalleryIdx, setActiveGalleryIdx] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [selectedGalleryItem, setSelectedGalleryItem] = useState(null);
   const containerRef = useRef(null);
+  const touchStartRef = useRef(null);
+
+  // Filtered gallery items based on activeCategory
+  const filteredGalleryItems =
+    activeCategory === "all"
+      ? GALLERY_ITEMS
+      : GALLERY_ITEMS.filter((item) => item.categoryKey === activeCategory);
 
   useEffect(() => {
     if (isQuotePaused) return;
@@ -160,6 +414,15 @@ const LandingPageNew = () => {
     }, 4500);
     return () => clearInterval(timer);
   }, [isQuotePaused]);
+
+  // Gallery Auto-Slide Interval
+  useEffect(() => {
+    if (!isAutoPlaying || selectedGalleryItem) return;
+    const interval = setInterval(() => {
+      setActiveGalleryIdx((prev) => (prev + 1) % filteredGalleryItems.length);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, selectedGalleryItem, filteredGalleryItems.length]);
 
   useEffect(() => {
     document.title =
@@ -173,8 +436,10 @@ const LandingPageNew = () => {
         (containerRef.current ? containerRef.current.scrollTop : 0);
       setIsScrolled(scrollPos > 40);
 
-      // Track active section for nav highlight (Check bottom-to-top: Contact -> Services -> About -> Home)
+      // Track active section for nav highlight (Check bottom-to-top: Contact -> App -> Gallery -> Services -> About -> Home)
       const contactEl = document.getElementById("contact");
+      const appEl = document.getElementById("app");
+      const galleryEl = document.getElementById("gallery");
       const servicesEl = document.getElementById("services");
       const aboutEl = document.getElementById("about");
 
@@ -182,6 +447,13 @@ const LandingPageNew = () => {
 
       if (contactEl && contactEl.getBoundingClientRect().top <= threshold) {
         setActiveSection("contact");
+      } else if (appEl && appEl.getBoundingClientRect().top <= threshold) {
+        setActiveSection("app");
+      } else if (
+        galleryEl &&
+        galleryEl.getBoundingClientRect().top <= threshold
+      ) {
+        setActiveSection("gallery");
       } else if (
         servicesEl &&
         servicesEl.getBoundingClientRect().top <= threshold
@@ -264,6 +536,38 @@ const LandingPageNew = () => {
       containerRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCategoryChange = (catId) => {
+    setActiveCategory(catId);
+    setActiveGalleryIdx(0);
+  };
+
+  const handlePrevGallery = () => {
+    setActiveGalleryIdx((prev) => {
+      return (prev - 1 + filteredGalleryItems.length) % filteredGalleryItems.length;
+    });
+  };
+
+  const handleNextGallery = () => {
+    setActiveGalleryIdx((prev) => {
+      return (prev + 1) % filteredGalleryItems.length;
+    });
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartRef.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartRef.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartRef.current;
+    if (deltaX > 45) {
+      handlePrevGallery();
+    } else if (deltaX < -45) {
+      handleNextGallery();
+    }
+    touchStartRef.current = null;
   };
 
   return (
@@ -642,220 +946,434 @@ const LandingPageNew = () => {
       </section>
 
       {/* =========================================================================
+          GALLERY SECTION: 3D Perspective Runway Stage & Haute Lookbook Carousel
+          ========================================================================= */}
+      <section id="gallery" className="luxury-runway-gallery-section">
+        <div className="section-ambient-aura section-ambient-aura--gallery" />
+
+        <div className="section-container">
+          {/* Section Header */}
+          <div className="gallery-header-wrap">
+            <span className="section-eyebrow">Our Gallery</span>
+            <h2 className="section-heading">
+              Couture Saree Draping &amp; Pleating
+            </h2>
+            <p className="section-subtext">
+              Explore our mastercrafted silhouettes, bridal pattu folds, and
+              2-minute ready-to-wear saree perfection.
+            </p>
+          </div>
+
+          {/* Category Filter Tabs Bar */}
+          <div className="gallery-category-tabs">
+            <div className="category-tabs-track">
+              {GALLERY_CATEGORIES.map((cat) => {
+                const isActive = activeCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    className={`cat-pill-btn ${isActive ? "active" : ""}`}
+                    onClick={() => handleCategoryChange(cat.id)}
+                  >
+                    <span className="cat-label">{cat.label}</span>
+                    <span className="cat-count">{cat.count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 3D Runway Stage Container */}
+          <div
+            className="luxury-runway-stage-container"
+            onMouseEnter={() => setIsAutoPlaying(false)}
+            onMouseLeave={() => setIsAutoPlaying(true)}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* Ambient Spotlight Auras */}
+            <div className="stage-spotlight-beam" />
+
+            {/* 3D Cards Track */}
+            <div className="runway-3d-track">
+              {filteredGalleryItems.map((item, idx) => {
+                const total = filteredGalleryItems.length;
+                let offset = idx - activeGalleryIdx;
+                if (offset > total / 2) offset -= total;
+                if (offset < -total / 2) offset += total;
+
+                const isActive = offset === 0;
+
+                let cardClass = "runway-card";
+                if (isActive) cardClass += " card--active";
+                else if (offset === 1) cardClass += " card--next-1";
+                else if (offset === -1) cardClass += " card--prev-1";
+                else if (offset === 2) cardClass += " card--next-2";
+                else if (offset === -2) cardClass += " card--prev-2";
+                else cardClass += " card--hidden";
+
+                return (
+                  <div
+                    key={item.id}
+                    className={cardClass}
+                    style={{
+                      "--offset": offset,
+                    }}
+                    onClick={() => {
+                      if (isActive) {
+                        setSelectedGalleryItem(item);
+                      } else {
+                        setActiveGalleryIdx(idx);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`View ${item.title}`}
+                  >
+                    <div className="runway-card-inner">
+                      <div className="runway-card-media">
+                        <img
+                          src={item.img}
+                          alt={item.title}
+                          loading="lazy"
+                          className="runway-card-img"
+                        />
+                        <div className="card-gradient-scrim" />
+                        <span className="runway-badge">
+                          {item.badge || item.category}
+                        </span>
+
+                        {/* Center Card Active Crown */}
+                        {isActive && (
+                          <div className="active-spotlight-tag">
+                            <AutoAwesomeIcon className="spark-ico" />
+                            <span>Spotlight Look</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Card Information Panel */}
+                      <div className="runway-card-content">
+                        <span className="card-cat-label">{item.category}</span>
+                        <h3 className="card-heading-title">{item.title}</h3>
+                        <p className="card-desc-snippet">{item.subtitle}</p>
+
+                        {/* Interactive Actions for Active Card */}
+                        {isActive && (
+                          <div className="card-quick-actions">
+                            <button
+                              type="button"
+                              className="quick-inspect-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedGalleryItem(item);
+                              }}
+                            >
+                              <FullscreenIcon className="btn-icon" />
+                              <span>Inspect Drape</span>
+                            </button>
+                            <a
+                              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                                `Hello Aparna ji, I would like to book the ${item.title} (${item.category}) pre-pleating service.`,
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="quick-wa-btn"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <WhatsAppIcon className="btn-icon" />
+                              <span>Book</span>
+                            </a>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="card-gold-sheen-border" />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Floating Left & Right Navigation Arrows */}
+            <button
+              type="button"
+              className="runway-arrow-btn runway-arrow-btn--prev"
+              onClick={handlePrevGallery}
+              aria-label="Previous Saree"
+            >
+              <ChevronLeftIcon />
+            </button>
+
+            <button
+              type="button"
+              className="runway-arrow-btn runway-arrow-btn--next"
+              onClick={handleNextGallery}
+              aria-label="Next Saree"
+            >
+              <ChevronRightIcon />
+            </button>
+          </div>
+
+          {/* Navigation Controls Bar */}
+          <div className="runway-controls-bar">
+            {/* Prev Button */}
+            <button
+              type="button"
+              className="ctrl-nav-btn"
+              onClick={handlePrevGallery}
+              aria-label="Previous Drape"
+            >
+              <ChevronLeftIcon />
+            </button>
+
+            {/* Slide Counter & Active Item Title */}
+            <div className="ctrl-info-pill">
+              <span className="ctrl-current">
+                {String(activeGalleryIdx + 1).padStart(2, "0")}
+              </span>
+              <span className="ctrl-sep">/</span>
+              <span className="ctrl-total">
+                {String(filteredGalleryItems.length).padStart(2, "0")}
+              </span>
+              <span className="ctrl-divider">|</span>
+              <span className="ctrl-active-title">
+                {filteredGalleryItems[activeGalleryIdx]?.title || "Haute Saree"}
+              </span>
+            </div>
+
+            {/* Next Button */}
+            <button
+              type="button"
+              className="ctrl-nav-btn"
+              onClick={handleNextGallery}
+              aria-label="Next Drape"
+            >
+              <ChevronRightIcon />
+            </button>
+
+            {/* Auto-Play Toggle */}
+            <button
+              type="button"
+              className={`ctrl-autoplay-btn ${isAutoPlaying ? "is-playing" : ""}`}
+              onClick={() => setIsAutoPlaying(!isAutoPlaying)}
+              title={isAutoPlaying ? "Pause Autoplay" : "Resume Autoplay"}
+              aria-label="Toggle Autoplay"
+            >
+              {isAutoPlaying ? (
+                <PauseIcon className="play-ico" />
+              ) : (
+                <PlayArrowIcon className="play-ico" />
+              )}
+              <span className="autoplay-label">
+                {isAutoPlaying ? "Auto" : "Paused"}
+              </span>
+            </button>
+          </div>
+
+          {/* Interactive Miniature Thumbnail Strip */}
+          <div className="runway-thumbnail-strip">
+            <div className="thumb-track">
+              {filteredGalleryItems.map((item, idx) => {
+                const isActive = idx === activeGalleryIdx;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`thumb-item ${isActive ? "active" : ""}`}
+                    onClick={() => setActiveGalleryIdx(idx)}
+                    aria-label={`Go to ${item.title}`}
+                  >
+                    <img
+                      src={item.img}
+                      alt={item.title}
+                      loading="lazy"
+                      className="thumb-img"
+                    />
+                    <span className="thumb-idx">{idx + 1}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Fullscreen High-Res Lightbox Modal */}
+        {selectedGalleryItem && (
+          <div
+            className="luxury-lightbox-backdrop"
+            onClick={() => setSelectedGalleryItem(null)}
+          >
+            <div
+              className="luxury-lightbox-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                className="lightbox-close-btn"
+                onClick={() => setSelectedGalleryItem(null)}
+                aria-label="Close Preview"
+              >
+                <CloseIcon />
+              </button>
+
+              <div className="lightbox-image-wrap">
+                <img
+                  src={selectedGalleryItem.img}
+                  alt={selectedGalleryItem.title}
+                  className="lightbox-main-img"
+                />
+                <div className="lightbox-img-overlay">
+                  <span className="lightbox-badge">
+                    {selectedGalleryItem.badge || selectedGalleryItem.category}
+                  </span>
+                  <span className="lightbox-time-badge">
+                    ⏱ {selectedGalleryItem.wearTime || "2 Minutes Wear"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="lightbox-details-panel">
+                <span className="lightbox-category">
+                  {selectedGalleryItem.category}
+                </span>
+                <h3 className="lightbox-title">{selectedGalleryItem.title}</h3>
+                <p className="lightbox-subtitle">
+                  {selectedGalleryItem.subtitle}
+                </p>
+                <p className="lightbox-desc">{selectedGalleryItem.desc}</p>
+
+                {/* Mastercraft Specs Grid */}
+                <div className="lightbox-specs-grid">
+                  <div className="spec-item">
+                    <span className="spec-label">Fabric Care</span>
+                    <span className="spec-val">
+                      {selectedGalleryItem.fabric || "Pure Handloom Silk"}
+                    </span>
+                  </div>
+                  <div className="spec-item">
+                    <span className="spec-label">Pleat Geometry</span>
+                    <span className="spec-val">
+                      {selectedGalleryItem.pleatStyle || "Calibrated Precision"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Highlights List */}
+                {selectedGalleryItem.highlights && (
+                  <div className="lightbox-features">
+                    {selectedGalleryItem.highlights.map((feat, fIdx) => (
+                      <div key={fIdx} className="l-feat">
+                        <span className="l-star">✦</span>
+                        <span>{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Booking Action */}
+                <div className="lightbox-cta-wrap">
+                  <a
+                    href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                      `Hello Aparna ji, I would like to book the ${selectedGalleryItem.title} (${selectedGalleryItem.category}) pre-pleating and draping service.`,
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="luxury-cta-gold"
+                  >
+                    <WhatsAppIcon className="cta-icon-wa" />
+                    <span>Book This Drape on WhatsApp</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* =========================================================================
+          ANDROID APP DOWNLOAD SECTION: Official Android App & Tracking Experience
+          ========================================================================= */}
+      {/* =========================================================================
           ANDROID APP DOWNLOAD SECTION: Official Android App & Tracking Experience
           ========================================================================= */}
       <section id="app" className="luxury-app-download-section">
         {/* Animated Background Aura for App Section */}
         <div className="section-ambient-aura section-ambient-aura--app" />
         <div className="section-container">
-          {/* Standard Section Header matching Services, About & Contact */}
-          <div className="app-download-header reveal-on-scroll">
+          {/* Section Header */}
+          <div className="app-download-header">
             <span className="section-eyebrow">Official Mobile App</span>
-            <h2 className="section-heading">Manage &amp; Track Your Sarees</h2>
+            <h2 className="section-heading">Download Our Android App</h2>
             <p className="section-subtext">
-              Download the official Android app to book pre-pleating services,
-              get live order tracking, and schedule doorstep pickup across
-              Hyderabad.
+              Direct booking, live order tracking &amp; doorstep pickup across Hyderabad.
             </p>
           </div>
 
-          <div className="app-main-grid">
-            {/* Left Column: App Feature Card */}
-            <div className="app-info-col reveal-on-scroll reveal-from-left">
-              <div className="app-feature-card">
-                <h3 className="card-heading">
-                  Seamless Saree Styling in Your Pocket
-                </h3>
-                <p className="card-desc">
-                  Enjoy the complete <strong>Aparna Saree Pre-Pleating</strong>{" "}
-                  studio experience right on your Android device. Book
-                  appointments, track pressing status, and manage your wardrobe
-                  with effortless convenience.
-                </p>
+          <div className="app-single-card-wrap">
+            <div className="app-feature-card">
+              {/* App Brand Identity Badge */}
+              <div className="app-badge-identity">
+                <div className="app-icon-glow-wrap">
+                  <img
+                    src={appIconImg || ladyLogo}
+                    alt="Aparna Saree App"
+                    className="app-icon-img"
+                  />
+                </div>
+                <div className="app-identity-text">
+                  <h3 className="app-name-title">Aparna Saree Pre-Pleating</h3>
+                  <span className="app-version-pill">
+                    <VerifiedOutlinedIcon className="v-pill-icon" />
+                    Official Android App • v1.0.0 (Production)
+                  </span>
+                </div>
+              </div>
 
-                {/* 4 App Highlights Grid */}
-                <div className="app-pillars-grid">
-                  <div className="app-pillar-item">
-                    <div className="pillar-icon-box">
-                      <NotificationsActiveOutlinedIcon className="p-icon" />
-                    </div>
-                    <div className="pillar-content">
-                      <h4>Live Order Tracking</h4>
-                      <p>
-                        Real-time updates from doorstep pickup to steaming &amp;
-                        dispatch.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="app-pillar-item">
-                    <div className="pillar-icon-box">
-                      <LocalShippingOutlinedIcon className="p-icon" />
-                    </div>
-                    <div className="pillar-content">
-                      <h4>Doorstep Pickup</h4>
-                      <p>
-                        Schedule home pickup &amp; delivery with one tap across
-                        Hyderabad.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="app-pillar-item">
-                    <div className="pillar-icon-box">
-                      <ShieldOutlinedIcon className="p-icon" />
-                    </div>
-                    <div className="pillar-content">
-                      <h4>Digital Wardrobe</h4>
-                      <p>
-                        Archival records of your pleating styles &amp; GST tax
-                        invoices.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="app-pillar-item">
-                    <div className="pillar-icon-box">
-                      <WorkspacePremiumOutlinedIcon className="p-icon" />
-                    </div>
-                    <div className="pillar-content">
-                      <h4>VIP Priority Slots</h4>
-                      <p>
-                        Direct priority access for festive and bridal wedding
-                        rushes.
-                      </p>
-                    </div>
+              {/* 3 Direct Feature Highlights */}
+              <div className="app-quick-highlights">
+                <div className="app-highlight-chip">
+                  <span className="chip-ico">🚀</span>
+                  <div className="chip-text">
+                    <strong>Instant Saree Booking</strong>
+                    <span>Select flat, fluffy or box pleats in seconds</span>
                   </div>
                 </div>
-
-                {/* Download CTA Row */}
-                <div className="app-card-cta-row">
-                  <a
-                    href="/aparna-saree-pre-pleating.apk"
-                    download="Aparna-Saree-Pre-Pleating.apk"
-                    className="luxury-cta-gold app-download-btn"
-                  >
-                    <AndroidIcon className="cta-icon-android" />
-                    <div className="btn-text-wrap">
-                      <span className="btn-sub">Direct APK Download</span>
-                      <span className="btn-main">Download Android App</span>
-                    </div>
-                    <GetAppOutlinedIcon className="cta-icon-download" />
-                  </a>
-
-                  <div className="app-verified-badge">
-                    <VerifiedOutlinedIcon className="v-icon" />
-                    <span>v1.0 • 100% Virus-Free &amp; Verified APK</span>
+                <div className="app-highlight-chip">
+                  <span className="chip-ico">📍</span>
+                  <div className="chip-text">
+                    <strong>Live Steaming Milestones</strong>
+                    <span>Real-time updates from pickup to dispatch</span>
+                  </div>
+                </div>
+                <div className="app-highlight-chip">
+                  <span className="chip-ico">🚚</span>
+                  <div className="chip-text">
+                    <strong>Doorstep Pickup &amp; Delivery</strong>
+                    <span>Seamless home valet across Hyderabad</span>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Right Column: Smartphone Mockup with Login Page UI */}
-            <div className="app-showcase-col reveal-on-scroll reveal-from-right">
-              <div className="app-phone-card">
-                <div className="app-phone-card__glow" />
-
-                <div className="phone-device-frame">
-                  {/* Speaker & Camera Notch */}
-                  <div className="phone-notch-bar">
-                    <span className="phone-speaker" />
-                    <span className="phone-lens" />
+              {/* Big Prominent Download CTA */}
+              <div className="app-card-cta-row">
+                <a
+                  href="/aparna-saree-pre-pleating-prod.apk"
+                  download="Aparna-Saree-Pre-Pleating.apk"
+                  className="luxury-cta-gold app-download-btn"
+                >
+                  <AndroidIcon className="cta-icon-android" />
+                  <div className="btn-text-wrap">
+                    <span className="btn-sub">Direct APK Download</span>
+                    <span className="btn-main">Download Android App</span>
                   </div>
+                  <GetAppOutlinedIcon className="cta-icon-download" />
+                </a>
 
-                  {/* Phone Screen: Login Page Mobile UI */}
-                  <div className="phone-screen-content">
-                    {/* Status Bar */}
-                    <div className="phone-status-row">
-                      <span className="status-time">9:41</span>
-                      <div className="status-icons">
-                        <span className="sig-bar" />
-                        <span className="wifi-dot" />
-                        <span className="battery-pill" />
-                      </div>
-                    </div>
-
-                    {/* App Brand Header */}
-                    <div className="phone-brand-header">
-                      <img
-                        src={ladyLogo}
-                        alt="Aparna Atelier"
-                        className="phone-brand-logo"
-                      />
-                      <h4 className="phone-brand-title">Aparna Pleats</h4>
-                      <span className="phone-brand-tag">
-                        Studio Atelier • Hyderabad
-                      </span>
-                    </div>
-
-                    {/* Mobile Login Form Box */}
-                    <div className="phone-login-box">
-                      <div className="phone-login-heading">
-                        <h5>Welcome Back</h5>
-                        <p>Sign in to track your saree orders</p>
-                      </div>
-
-                      {/* Auth Mode Tabs */}
-                      <div className="phone-auth-tabs">
-                        <span className="auth-tab active">Phone OTP</span>
-                        <span className="auth-tab">Email</span>
-                      </div>
-
-                      {/* Phone Number Input Mockup */}
-                      <div className="phone-input-mock">
-                        <span className="flag-code">🇮🇳 +91</span>
-                        <span className="phone-digits">95539 00003</span>
-                      </div>
-
-                      {/* Get OTP Button */}
-                      <button type="button" className="phone-submit-btn">
-                        <span>Get Verification Code</span>
-                      </button>
-
-                      {/* Social Divider */}
-                      <div className="phone-social-divider">
-                        <span className="div-line" />
-                        <span className="div-text">or continue with</span>
-                        <span className="div-line" />
-                      </div>
-
-                      {/* Social Icons Row */}
-                      <div className="phone-social-row">
-                        <div className="social-pill">
-                          <svg width="14" height="14" viewBox="0 0 24 24">
-                            <path
-                              fill="#4285F4"
-                              d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-                            />
-                            <path
-                              fill="#34A853"
-                              d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"
-                            />
-                            <path
-                              fill="#FBBC05"
-                              d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.16 0 9.97 0 12s.45 3.84 1.25 5.42l4.03-3.15z"
-                            />
-                            <path
-                              fill="#EA4335"
-                              d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                            />
-                          </svg>
-                          <span>Google</span>
-                        </div>
-                        <div className="social-pill">
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="#1877F2"
-                          >
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                          </svg>
-                          <span>Facebook</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <div className="app-verified-badge">
+                  <ShieldOutlinedIcon className="v-icon" />
+                  <span>100% Virus-Free &amp; Verified APK • 30MB • Safe Install</span>
                 </div>
               </div>
             </div>
@@ -1023,7 +1541,7 @@ const LandingPageNew = () => {
             title="About Us"
             aria-label="About Us"
           >
-            <InfoOutlinedIcon className="dock-icon" />
+            <WomanOutlinedIcon className="dock-icon" />
             <span className="dock-nav-label">About Us</span>
           </button>
 
@@ -1034,8 +1552,30 @@ const LandingPageNew = () => {
             title="Services"
             aria-label="Services"
           >
-            <AutoAwesomeOutlinedIcon className="dock-icon" />
+            <IronOutlinedIcon className="dock-icon" />
             <span className="dock-nav-label">Services</span>
+          </button>
+
+          <button
+            type="button"
+            className={`dock-nav-item ${activeSection === "gallery" ? "active" : ""}`}
+            onClick={() => scrollToSection("gallery")}
+            title="Gallery"
+            aria-label="Gallery"
+          >
+            <CollectionsOutlinedIcon className="dock-icon" />
+            <span className="dock-nav-label">Gallery</span>
+          </button>
+
+          <button
+            type="button"
+            className={`dock-nav-item ${activeSection === "app" ? "active" : ""}`}
+            onClick={() => scrollToSection("app")}
+            title="App"
+            aria-label="App"
+          >
+            <AndroidIcon className="dock-icon" />
+            <span className="dock-nav-label">App</span>
           </button>
 
           <button
@@ -1048,17 +1588,6 @@ const LandingPageNew = () => {
             <PhoneInTalkOutlinedIcon className="dock-icon" />
             <span className="dock-nav-label">Contact Us</span>
           </button>
-
-          {/* Android App Download Link */}
-          <a
-            href="/aparna-saree-pre-pleating.apk"
-            download="Aparna-Saree-Pre-Pleating.apk"
-            className="dock-nav-item dock-nav-item--android"
-            title="Download Android App"
-            aria-label="Download Android App"
-          >
-            <AndroidIcon className="dock-icon" />
-          </a>
 
           {/* WhatsApp Concierge */}
           <a

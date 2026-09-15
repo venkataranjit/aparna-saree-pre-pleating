@@ -83,24 +83,39 @@ try {
   run('npx cap sync android');
 
   console.log('\n--- 3. Compiling Android APK with Gradle ---');
-  const gradleCmd = process.platform === 'win32' ? '.\\gradlew.bat assembleDebug' : './gradlew assembleDebug';
+  const targetTask = mode === 'prod' ? 'assembleRelease' : 'assembleDebug';
+  const gradleCmd = process.platform === 'win32' ? `.\\gradlew.bat ${targetTask}` : `./gradlew ${targetTask}`;
   run(gradleCmd, androidDir);
 
-  const srcApk = path.join(androidDir, 'app', 'build', 'outputs', 'apk', 'debug', 'app-debug.apk');
+  const apkSubFolder = mode === 'prod' ? 'release' : 'debug';
+  const apkFileName = mode === 'prod' ? 'app-release.apk' : 'app-debug.apk';
+  const srcApk = path.join(androidDir, 'app', 'build', 'outputs', 'apk', apkSubFolder, apkFileName);
   const envApk = path.join(rootDir, `aparna-saree-pre-pleating-${mode}.apk`);
   const standardApk = path.join(rootDir, 'aparna-saree-pre-pleating.apk');
 
   if (fs.existsSync(srcApk)) {
+    // Copy to root directory
     fs.copyFileSync(srcApk, envApk);
     fs.copyFileSync(srcApk, standardApk);
+
+    // Also copy to public folder for direct landing page web downloads
+    if (!fs.existsSync(publicDir)) {
+      fs.mkdirSync(publicDir, { recursive: true });
+    }
+    const publicEnvApk = path.join(publicDir, `aparna-saree-pre-pleating-${mode}.apk`);
+    const publicStandardApk = path.join(publicDir, 'aparna-saree-pre-pleating.apk');
+    fs.copyFileSync(srcApk, publicEnvApk);
+    fs.copyFileSync(srcApk, publicStandardApk);
 
     const stats = fs.statSync(envApk);
     const sizeMb = (stats.size / (1024 * 1024)).toFixed(2);
     console.log('\n======================================================');
     console.log(` BUILD SUCCESSFUL! [${mode.toUpperCase()}]`);
-    console.log(` Environment APK: ${envApk}`);
-    console.log(` Standard APK:    ${standardApk}`);
-    console.log(` APK Size:        ${sizeMb} MB`);
+    console.log(` Root Environment APK:   ${envApk}`);
+    console.log(` Root Standard APK:      ${standardApk}`);
+    console.log(` Public Environment APK: ${publicEnvApk}`);
+    console.log(` Public Standard APK:    ${publicStandardApk}`);
+    console.log(` APK Size:               ${sizeMb} MB`);
     console.log('======================================================\n');
   } else {
     console.warn('\nWarning: Build finished but APK was not found at expected location:', srcApk);

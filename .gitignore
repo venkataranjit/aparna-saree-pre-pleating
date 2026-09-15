@@ -25,10 +25,12 @@ dist-ssr
 
 # Environment variables
 .env
+.env.*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+!.env.example
 
 # Capacitor / Android
 android/.gradle/
@@ -37,6 +39,8 @@ android/app/build/
 android/.idea/
 android/local.properties
 
-# Java / Android project files
+# Java / Android project files & Keystores
 *.iml
 *.apk
+*.jks
+*.keystore

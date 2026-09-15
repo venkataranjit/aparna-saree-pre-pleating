@@ -6,9 +6,11 @@ let isSocialAuthInitialized = false;
 
 export const initSocialAuth = async () => {
   if (isSocialAuthInitialized) return;
-  const webClientId =
-    import.meta.env.VITE_FIREBASE_GOOGLE_CLIENT_ID ||
-    '860946669549-u6it5slpgn4k4ek87i9eag28sfpv7htc.apps.googleusercontent.com';
+  const webClientId = import.meta.env.VITE_FIREBASE_GOOGLE_CLIENT_ID;
+  if (!webClientId) {
+    console.error('VITE_FIREBASE_GOOGLE_CLIENT_ID is not defined in environment variables.');
+    return;
+  }
   try {
     if (Capacitor.isNativePlatform()) {
       await SocialLogin.initialize({

@@ -1065,32 +1065,8 @@ export const getAllUsers = async () => {
         };
       });
 
-      // Merge remote documents with local cache to preserve any local edits
-      const mergedMap = new Map();
-      remoteUsers.forEach((u) => {
-        const key = (u.email || u.id || "").toLowerCase();
-        mergedMap.set(key, u);
-      });
-
-      localList.forEach((u) => {
-        const key = (u.email || u.id || "").toLowerCase();
-        if (!mergedMap.has(key)) {
-          mergedMap.set(key, u);
-          // Auto-sync local user to Firestore if missing remotely
-          if (u.id) {
-            setDoc(doc(db, COLLECTIONS.USERS, u.id), u, { merge: true }).catch(
-              () => {},
-            );
-          }
-        } else {
-          const remoteItem = mergedMap.get(key);
-          mergedMap.set(key, { ...u, ...remoteItem });
-        }
-      });
-
-      const finalList = Array.from(mergedMap.values());
-      saveLocalUsers(finalList);
-      return finalList;
+      saveLocalUsers(remoteUsers);
+      return remoteUsers;
     }
   } catch (err) {
     console.warn(

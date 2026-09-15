@@ -507,7 +507,7 @@
     width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 36px 12px 36px 12px;
+    padding: 48px 12px 28px 12px;
     margin-top: $spacing-md;
     position: relative;
     scroll-behavior: smooth;
@@ -518,7 +518,7 @@
     scrollbar-color: rgba(212, 175, 55, 0.35) transparent;
 
     @media (max-width: 600px) {
-      padding: 26px 8px 26px 8px;
+      padding: 42px 8px 24px 8px;
       margin-top: $spacing-sm;
     }
 
@@ -564,13 +564,13 @@
       flex-direction: row;
       align-items: center;
       min-width: max-content;
-      padding: 10px 40px 10px 10px;
+      padding: 24px 40px 16px 10px;
 
       @media (max-width: 600px) {
         --card-width: 130px;
         --card-height: 190px;
         --card-overlap: -48px;
-        padding: 10px 24px 10px 6px;
+        padding: 20px 24px 12px 6px;
       }
 
       & > div {
@@ -624,8 +624,15 @@
             0 0 32px rgba(212, 175, 55, 0.6);
           z-index: 100 !important;
 
+          @media (max-width: 600px) {
+            transform: translateY(-16px) scale(1.08) rotate(0deg) !important;
+          }
+
           & ~ div {
             margin-left: calc(var(--card-overlap) + 48px);
+            @media (max-width: 600px) {
+              margin-left: calc(var(--card-overlap) + 32px);
+            }
           }
         }
 
@@ -633,7 +640,7 @@
           width: 100%;
           height: 100%;
           object-fit: cover;
-          object-position: center;
+          object-position: center top;
           background: #080706;
           display: block;
           border-radius: inherit;

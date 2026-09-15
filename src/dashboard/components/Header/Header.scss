@@ -26,9 +26,8 @@
 
     @media (max-width: 899px) {
       justify-content: space-between;
-      min-height: calc(58px + env(safe-area-inset-top, 0px));
-      padding: max(8px, env(safe-area-inset-top, 0px)) $spacing-md 8px
-        $spacing-md;
+      min-height: 56px;
+      padding: 8px $spacing-md 8px $spacing-md;
     }
   }
 

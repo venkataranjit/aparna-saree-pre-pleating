@@ -172,7 +172,7 @@
   background: var(--bg-secondary, #090909);
 
   @include mobile {
-    padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px;
+    padding: 12px 14px 12px 14px;
     gap: 8px;
     flex-wrap: wrap;
 

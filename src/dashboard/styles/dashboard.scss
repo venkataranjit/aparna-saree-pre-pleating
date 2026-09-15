@@ -385,7 +385,7 @@ body,
     &--bottom-center,
     &--bottom-right {
       position: fixed !important;
-      top: max(12px, calc(env(safe-area-inset-top, 0px) + 10px)) !important;
+      top: 10px !important;
       left: 12px !important;
       right: 12px !important;
       bottom: auto !important;
@@ -408,13 +408,13 @@ body,
   }
 }
 
-// Capacitor Native Platform: Clear Android/iOS Status Bar
+// Capacitor Native Platform: Snug top position without safe area offset
 .capacitor-native {
   .Toastify__toast-container,
   .Toastify__toast-container--top-left,
   .Toastify__toast-container--top-center,
   .Toastify__toast-container--top-right {
-    top: calc(env(safe-area-inset-top, 24px) + 14px) !important;
+    top: 10px !important;
   }
 }
 

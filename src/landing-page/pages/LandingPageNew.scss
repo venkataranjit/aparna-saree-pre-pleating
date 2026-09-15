@@ -77,25 +77,25 @@
       box-shadow 0.3s ease,
       background 0.3s ease;
 
-    /* Initial Hero State: Sits gracefully at bottom with safe-area support */
+    /* Initial Hero State: Sits gracefully at bottom without excess env gap */
     &.dock-at-bottom {
-      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      bottom: 14px;
       top: auto;
       animation: dockSlideUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
 
       @media (max-width: 768px) {
-        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        bottom: 8px;
         max-width: calc(100vw - 16px);
       }
     }
 
     /* Scrolled State: Glides up to become the top luxury floating bar */
     &.dock-scrolled-top {
-      top: calc(14px + env(safe-area-inset-top, 0px));
+      top: 10px;
       bottom: auto;
 
       @media (max-width: 768px) {
-        top: calc(10px + env(safe-area-inset-top, 0px));
+        top: 6px;
         max-width: calc(100vw - 16px);
       }
 
@@ -541,6 +541,11 @@
     align-items: center;
     padding-top: clamp(10px, 1.8vh, 24px);
     padding-bottom: clamp(8px, 1.5vh, 18px);
+
+    @media (max-width: 768px) {
+      padding-top: 4px;
+      padding-bottom: 2px;
+    }
   }
 
   /* Centered Grand Hero Brand Logo across Complete Page */

@@ -68,7 +68,7 @@
     margin: 0 auto;
     height: 62px;
     padding: 0 $spacing-sm;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: 0px;
     display: flex;
     align-items: center;
     justify-content: space-around;

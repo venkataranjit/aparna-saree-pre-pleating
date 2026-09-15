@@ -8,7 +8,7 @@ export const initSocialAuth = async () => {
   if (isSocialAuthInitialized) return;
   const webClientId =
     import.meta.env.VITE_FIREBASE_GOOGLE_CLIENT_ID ||
-    '912871579095-angrtbrl9t2ct1edcufb5kfn607uts5s.apps.googleusercontent.com';
+    '860946669549-u6it5slpgn4k4ek87i9eag28sfpv7htc.apps.googleusercontent.com';
   try {
     if (Capacitor.isNativePlatform()) {
       await SocialLogin.initialize({

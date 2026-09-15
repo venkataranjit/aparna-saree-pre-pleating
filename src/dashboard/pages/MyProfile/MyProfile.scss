@@ -737,7 +737,102 @@
             border: 1px solid rgba(148, 163, 184, 0.35);
             color: #94a3b8;
             .dot {
-              background: #94a3b8;
+              background: #64748b;
+              box-shadow: 0 0 6px rgba(148, 163, 184, 0.7);
+            }
+          }
+
+          [data-theme="dark"] & {
+            &.requested {
+              background-color: rgba(56, 189, 248, 0.16) !important;
+              border-color: rgba(56, 189, 248, 0.4) !important;
+              color: #38bdf8 !important;
+              .dot { background-color: #0ea5e9 !important; box-shadow: 0 0 6px rgba(56, 189, 248, 0.7) !important; }
+            }
+            &.accepted {
+              background-color: rgba(168, 85, 247, 0.16) !important;
+              border-color: rgba(168, 85, 247, 0.4) !important;
+              color: #c084fc !important;
+              .dot { background-color: #a855f7 !important; box-shadow: 0 0 6px rgba(168, 85, 247, 0.7) !important; }
+            }
+            &.completed {
+              background-color: rgba(34, 197, 94, 0.16) !important;
+              border-color: rgba(34, 197, 94, 0.4) !important;
+              color: #4ade80 !important;
+              .dot { background-color: #22c55e !important; box-shadow: 0 0 6px rgba(34, 197, 94, 0.7) !important; }
+            }
+            &.delivered {
+              background-color: rgba(45, 212, 191, 0.16) !important;
+              border-color: rgba(45, 212, 191, 0.4) !important;
+              color: #2dd4bf !important;
+              .dot { background-color: #14b8a6 !important; box-shadow: 0 0 6px rgba(45, 212, 191, 0.7) !important; }
+            }
+            &.in-progress,
+            &.inprogress {
+              background-color: rgba(249, 115, 22, 0.16) !important;
+              border-color: rgba(249, 115, 22, 0.4) !important;
+              color: #fb923c !important;
+              .dot { background-color: #f97316 !important; box-shadow: 0 0 6px rgba(249, 115, 22, 0.7) !important; }
+            }
+            &.pending {
+              background-color: rgba(239, 68, 68, 0.16) !important;
+              border-color: rgba(239, 68, 68, 0.4) !important;
+              color: #f87171 !important;
+              .dot { background-color: #ef4444 !important; box-shadow: 0 0 6px rgba(239, 68, 68, 0.7) !important; }
+            }
+            &.cancelled {
+              background-color: rgba(148, 163, 184, 0.16) !important;
+              border-color: rgba(148, 163, 184, 0.4) !important;
+              color: #cbd5e1 !important;
+              .dot { background-color: #94a3b8 !important; box-shadow: 0 0 6px rgba(148, 163, 184, 0.7) !important; }
+            }
+          }
+
+          [data-theme="light"] & {
+            font-weight: 700 !important;
+
+            &.requested {
+              background-color: #e0f2fe !important;
+              border-color: rgba(14, 165, 233, 0.35) !important;
+              color: #0369a1 !important;
+              .dot { background-color: #0284c7 !important; box-shadow: 0 0 4px rgba(14, 165, 233, 0.5) !important; }
+            }
+            &.accepted {
+              background-color: #f3e8ff !important;
+              border-color: rgba(168, 85, 247, 0.35) !important;
+              color: #7e22ce !important;
+              .dot { background-color: #9333ea !important; box-shadow: 0 0 4px rgba(168, 85, 247, 0.5) !important; }
+            }
+            &.completed {
+              background-color: #dcfce7 !important;
+              border-color: rgba(22, 163, 74, 0.35) !important;
+              color: #15803d !important;
+              .dot { background-color: #16a34a !important; box-shadow: 0 0 4px rgba(22, 163, 74, 0.5) !important; }
+            }
+            &.delivered {
+              background-color: #ccfbf1 !important;
+              border-color: rgba(20, 184, 166, 0.35) !important;
+              color: #0f766e !important;
+              .dot { background-color: #0d9488 !important; box-shadow: 0 0 4px rgba(20, 184, 166, 0.5) !important; }
+            }
+            &.in-progress,
+            &.inprogress {
+              background-color: #ffedd5 !important;
+              border-color: rgba(234, 88, 12, 0.35) !important;
+              color: #c2410c !important;
+              .dot { background-color: #ea580c !important; box-shadow: 0 0 4px rgba(234, 88, 12, 0.5) !important; }
+            }
+            &.pending {
+              background-color: #fee2e2 !important;
+              border-color: rgba(220, 38, 38, 0.35) !important;
+              color: #b91c1c !important;
+              .dot { background-color: #dc2626 !important; box-shadow: 0 0 4px rgba(220, 38, 38, 0.5) !important; }
+            }
+            &.cancelled {
+              background-color: #f1f5f9 !important;
+              border-color: rgba(51, 65, 85, 0.25) !important;
+              color: #334155 !important;
+              .dot { background-color: #475569 !important; box-shadow: 0 0 4px rgba(71, 85, 105, 0.4) !important; }
             }
           }
         }
@@ -779,9 +874,17 @@
         .order-main-info {
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
+          align-items: center;
+          flex-wrap: wrap;
           gap: 8px;
           margin-bottom: 10px;
+
+          .service-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+          }
 
           .service-headline {
             font-size: 1.05rem;
@@ -789,6 +892,25 @@
             color: $text-primary;
             margin: 0;
             line-height: 1.3;
+          }
+
+          .order-occasion-chip {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: $color-gold;
+            background: $surface-gold-tint;
+            border: 1px solid $surface-border;
+            padding: 2px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.2px;
+
+            [data-theme="light"] & {
+              background: #f1f5f9;
+              border-color: rgba(15, 23, 42, 0.12);
+              color: #0f172a;
+            }
           }
         }
 

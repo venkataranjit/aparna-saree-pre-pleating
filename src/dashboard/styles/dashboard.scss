@@ -728,10 +728,219 @@ body,
   }
 }
 
-// Global High Contrast Overrides for Status Pills across All Pages
+// ============================================================================
+// Global 3-Mode Status Pill Styling Matrix across All Dashboard Pages
+// ============================================================================
+
+// Base / Default Mode (Royal Obsidian Gold) Status Pills
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.3px;
+  user-select: none;
+  white-space: nowrap;
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    flex-shrink: 0;
+  }
+
+  &.requested {
+    background-color: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    color: #38bdf8;
+
+    .dot {
+      background-color: #0ea5e9;
+      box-shadow: 0 0 6px rgba(56, 189, 248, 0.7);
+    }
+  }
+
+  &.accepted {
+    background-color: rgba(168, 85, 247, 0.12);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    color: #c084fc;
+
+    .dot {
+      background-color: #a855f7;
+      box-shadow: 0 0 6px rgba(168, 85, 247, 0.7);
+    }
+  }
+
+  &.pending {
+    background-color: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #f87171;
+
+    .dot {
+      background-color: #ef4444;
+      box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+    }
+  }
+
+  &.in-progress,
+  &.inprogress {
+    background-color: rgba(249, 115, 22, 0.12);
+    border: 1px solid rgba(249, 115, 22, 0.35);
+    color: #fb923c;
+
+    .dot {
+      background-color: #f97316;
+      box-shadow: 0 0 6px rgba(249, 115, 22, 0.7);
+    }
+  }
+
+  &.completed {
+    background-color: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.35);
+    color: #4ade80;
+
+    .dot {
+      background-color: #22c55e;
+      box-shadow: 0 0 6px rgba(34, 197, 94, 0.7);
+    }
+  }
+
+  &.delivered {
+    background-color: rgba(45, 212, 191, 0.12);
+    border: 1px solid rgba(45, 212, 191, 0.35);
+    color: #2dd4bf;
+
+    .dot {
+      background-color: #14b8a6;
+      box-shadow: 0 0 6px rgba(45, 212, 191, 0.7);
+    }
+  }
+
+  &.cancelled {
+    background-color: rgba(148, 163, 184, 0.12);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    color: #94a3b8;
+
+    .dot {
+      background-color: #64748b;
+      box-shadow: 0 0 6px rgba(148, 163, 184, 0.7);
+    }
+  }
+}
+
+// Dark Mode (Midnight Slate) Status Pills
+[data-theme="dark"] {
+  .status-pill {
+    &.requested {
+      background-color: rgba(56, 189, 248, 0.16) !important;
+      border: 1px solid rgba(56, 189, 248, 0.4) !important;
+      color: #38bdf8 !important;
+
+      .dot {
+        background-color: #0ea5e9 !important;
+        box-shadow: 0 0 6px rgba(56, 189, 248, 0.7) !important;
+      }
+    }
+
+    &.accepted {
+      background-color: rgba(168, 85, 247, 0.16) !important;
+      border: 1px solid rgba(168, 85, 247, 0.4) !important;
+      color: #c084fc !important;
+
+      .dot {
+        background-color: #a855f7 !important;
+        box-shadow: 0 0 6px rgba(168, 85, 247, 0.7) !important;
+      }
+    }
+
+    &.pending {
+      background-color: rgba(239, 68, 68, 0.16) !important;
+      border: 1px solid rgba(239, 68, 68, 0.4) !important;
+      color: #f87171 !important;
+
+      .dot {
+        background-color: #ef4444 !important;
+        box-shadow: 0 0 6px rgba(239, 68, 68, 0.7) !important;
+      }
+    }
+
+    &.in-progress,
+    &.inprogress {
+      background-color: rgba(249, 115, 22, 0.16) !important;
+      border: 1px solid rgba(249, 115, 22, 0.4) !important;
+      color: #fb923c !important;
+
+      .dot {
+        background-color: #f97316 !important;
+        box-shadow: 0 0 6px rgba(249, 115, 22, 0.7) !important;
+      }
+    }
+
+    &.completed {
+      background-color: rgba(34, 197, 94, 0.16) !important;
+      border: 1px solid rgba(34, 197, 94, 0.4) !important;
+      color: #4ade80 !important;
+
+      .dot {
+        background-color: #22c55e !important;
+        box-shadow: 0 0 6px rgba(34, 197, 94, 0.7) !important;
+      }
+    }
+
+    &.delivered {
+      background-color: rgba(45, 212, 191, 0.16) !important;
+      border: 1px solid rgba(45, 212, 191, 0.4) !important;
+      color: #2dd4bf !important;
+
+      .dot {
+        background-color: #14b8a6 !important;
+        box-shadow: 0 0 6px rgba(45, 212, 191, 0.7) !important;
+      }
+    }
+
+    &.cancelled {
+      background-color: rgba(148, 163, 184, 0.16) !important;
+      border: 1px solid rgba(148, 163, 184, 0.4) !important;
+      color: #cbd5e1 !important;
+
+      .dot {
+        background-color: #94a3b8 !important;
+        box-shadow: 0 0 6px rgba(148, 163, 184, 0.7) !important;
+      }
+    }
+  }
+}
+
+// Light Mode (Soft Slate Mist) Status Pills (Crisp high-contrast pastel styling)
 [data-theme="light"] {
   .status-pill {
     font-weight: 700 !important;
+
+    &.requested {
+      background-color: #e0f2fe !important;
+      border: 1px solid rgba(14, 165, 233, 0.35) !important;
+      color: #0369a1 !important;
+
+      .dot {
+        background-color: #0284c7 !important;
+        box-shadow: 0 0 4px rgba(14, 165, 233, 0.5) !important;
+      }
+    }
+
+    &.accepted {
+      background-color: #f3e8ff !important;
+      border: 1px solid rgba(168, 85, 247, 0.35) !important;
+      color: #7e22ce !important;
+
+      .dot {
+        background-color: #9333ea !important;
+        box-shadow: 0 0 4px rgba(168, 85, 247, 0.5) !important;
+      }
+    }
 
     &.completed {
       background-color: #dcfce7 !important;
@@ -744,7 +953,19 @@ body,
       }
     }
 
-    &.in-progress {
+    &.delivered {
+      background-color: #ccfbf1 !important;
+      border: 1px solid rgba(20, 184, 166, 0.35) !important;
+      color: #0f766e !important;
+
+      .dot {
+        background-color: #0d9488 !important;
+        box-shadow: 0 0 4px rgba(20, 184, 166, 0.5) !important;
+      }
+    }
+
+    &.in-progress,
+    &.inprogress {
       background-color: #ffedd5 !important;
       border: 1px solid rgba(234, 88, 12, 0.35) !important;
       color: #c2410c !important;

@@ -852,17 +852,6 @@ const MyProfile = () => {
                     <div className="profile-order-card__header">
                       <div className="order-id-badge-wrap">
                         <span className="order-id-pill">{order.id}</span>
-                        {order.occasion && (
-                          <span
-                            className="order-occasion-chip"
-                            title={order.occasion}
-                          >
-                            <CelebrationOutlinedIcon
-                              style={{ fontSize: 13, marginRight: 4 }}
-                            />
-                            {order.occasion}
-                          </span>
-                        )}
                       </div>
 
                       <div className="order-badges-wrap">
@@ -881,11 +870,24 @@ const MyProfile = () => {
 
                     <div className="profile-order-card__body">
                       <div className="order-main-info">
-                        <h4 className="service-headline">
-                          {items.length > 1
-                            ? `${items.length} Services Booked`
-                            : items[0]?.serviceName || "Saree Pre-Pleating"}
-                        </h4>
+                        <div className="service-title-wrap">
+                          <h4 className="service-headline">
+                            {items.length > 1
+                              ? `${items.length} Services Booked`
+                              : items[0]?.serviceName || "Saree Pre-Pleating"}
+                          </h4>
+                          {order.occasion && (
+                            <span
+                              className="order-occasion-chip"
+                              title={order.occasion}
+                            >
+                              <CelebrationOutlinedIcon
+                                style={{ fontSize: 13, marginRight: 4 }}
+                              />
+                              {order.occasion}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {items.length > 1 && (

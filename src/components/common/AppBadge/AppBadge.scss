@@ -20,48 +20,119 @@
     padding: 2px 7px;
   }
 
+  &--requested {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.35);
+  }
+
+  &--accepted {
+    background: rgba(168, 85, 247, 0.12);
+    color: #c084fc;
+    border-color: rgba(168, 85, 247, 0.35);
+  }
+
   &--completed,
-  &--success,
-  &--delivered {
+  &--success {
     background: rgba(34, 197, 94, 0.12);
     color: #4ade80;
-    border-color: rgba(34, 197, 94, 0.3);
+    border-color: rgba(34, 197, 94, 0.35);
+  }
+
+  &--delivered {
+    background: rgba(45, 212, 191, 0.12);
+    color: #2dd4bf;
+    border-color: rgba(45, 212, 191, 0.35);
   }
 
   &--in_progress,
   &--in-progress,
+  &--inprogress,
   &--processing,
   &--active {
-    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.15));
-    color: $color-gold;
-    border-color: $surface-border;
+    background: rgba(249, 115, 22, 0.12);
+    color: #fb923c;
+    border-color: rgba(249, 115, 22, 0.35);
   }
 
   &--pending,
   &--warning {
-    background: rgba(234, 179, 8, 0.12);
-    color: #facc15;
-    border-color: rgba(234, 179, 8, 0.3);
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.35);
+  }
+
+  [data-theme="dark"] &--requested {
+    background: rgba(56, 189, 248, 0.16) !important;
+    color: #38bdf8 !important;
+    border-color: rgba(56, 189, 248, 0.4) !important;
+  }
+
+  [data-theme="dark"] &--accepted {
+    background: rgba(168, 85, 247, 0.16) !important;
+    color: #c084fc !important;
+    border-color: rgba(168, 85, 247, 0.4) !important;
+  }
+
+  [data-theme="dark"] &--delivered {
+    background: rgba(45, 212, 191, 0.16) !important;
+    color: #2dd4bf !important;
+    border-color: rgba(45, 212, 191, 0.4) !important;
+  }
+
+  [data-theme="dark"] &--completed,
+  [data-theme="dark"] &--success {
+    background: rgba(34, 197, 94, 0.16) !important;
+    color: #4ade80 !important;
+    border-color: rgba(34, 197, 94, 0.4) !important;
+  }
+
+  [data-theme="dark"] &--in_progress,
+  [data-theme="dark"] &--in-progress,
+  [data-theme="dark"] &--inprogress,
+  [data-theme="dark"] &--processing,
+  [data-theme="dark"] &--active {
+    background: rgba(249, 115, 22, 0.16) !important;
+    color: #fb923c !important;
+    border-color: rgba(249, 115, 22, 0.4) !important;
   }
 
   [data-theme="dark"] &--pending,
   [data-theme="dark"] &--warning {
-    background: rgba(255, 255, 255, 0.08) !important;
-    color: #ffffff !important;
-    border-color: rgba(255, 255, 255, 0.22) !important;
+    background: rgba(239, 68, 68, 0.16) !important;
+    color: #f87171 !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
   }
 
-  [data-theme="light"] &--pending,
-  [data-theme="light"] &--warning {
-    background: rgba(0, 0, 0, 0.06) !important;
-    color: #000000 !important;
-    border-color: rgba(0, 0, 0, 0.2) !important;
+  [data-theme="dark"] &--cancelled,
+  [data-theme="dark"] &--danger,
+  [data-theme="dark"] &--error,
+  [data-theme="dark"] &--failed {
+    background: rgba(148, 163, 184, 0.16) !important;
+    color: #cbd5e1 !important;
+    border-color: rgba(148, 163, 184, 0.4) !important;
   }
 
-  
-  [data-theme="light"] &--completed,
-  [data-theme="light"] &--success,
+  [data-theme="light"] &--requested {
+    background: #e0f2fe !important;
+    color: #0369a1 !important;
+    border-color: rgba(14, 165, 233, 0.35) !important;
+  }
+
+  [data-theme="light"] &--accepted {
+    background: #f3e8ff !important;
+    color: #7e22ce !important;
+    border-color: rgba(168, 85, 247, 0.35) !important;
+  }
+
   [data-theme="light"] &--delivered {
+    background: #ccfbf1 !important;
+    color: #0f766e !important;
+    border-color: rgba(20, 184, 166, 0.35) !important;
+  }
+
+  [data-theme="light"] &--completed,
+  [data-theme="light"] &--success {
     background: #dcfce7 !important;
     color: #15803d !important;
     border-color: rgba(22, 163, 74, 0.35) !important;
@@ -69,11 +140,19 @@
 
   [data-theme="light"] &--in_progress,
   [data-theme="light"] &--in-progress,
+  [data-theme="light"] &--inprogress,
   [data-theme="light"] &--processing,
   [data-theme="light"] &--active {
     background: #ffedd5 !important;
     color: #c2410c !important;
     border-color: rgba(234, 88, 12, 0.35) !important;
+  }
+
+  [data-theme="light"] &--pending,
+  [data-theme="light"] &--warning {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+    border-color: rgba(220, 38, 38, 0.35) !important;
   }
 
   [data-theme="light"] &--admin {
@@ -100,9 +179,9 @@
   &--cancelled,
   &--error,
   &--failed {
-    background: rgba(239, 68, 68, 0.14);
-    color: #f87171;
-    border-color: rgba(239, 68, 68, 0.35);
+    background: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
+    border-color: rgba(148, 163, 184, 0.35);
   }
 
   [data-theme="light"] &--danger,
@@ -111,9 +190,9 @@
   [data-theme="light"] &--cancelled,
   [data-theme="light"] &--error,
   [data-theme="light"] &--failed {
-    background: rgba(239, 68, 68, 0.12) !important;
-    color: #dc2626 !important;
-    border-color: rgba(239, 68, 68, 0.3) !important;
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border-color: rgba(51, 65, 85, 0.25) !important;
   }
 
   &--admin {

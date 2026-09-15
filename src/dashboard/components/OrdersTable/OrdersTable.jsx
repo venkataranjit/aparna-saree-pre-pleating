@@ -7,6 +7,7 @@ import PhoneIphoneOutlinedIcon from "@mui/icons-material/PhoneIphoneOutlined";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import CelebrationOutlinedIcon from "@mui/icons-material/CelebrationOutlined";
+import PaymentOutlinedIcon from "@mui/icons-material/PaymentOutlined";
 import OrderDetailsModal from "../OrderDetailsModal/OrderDetailsModal";
 import {
   AppButton,
@@ -576,6 +577,7 @@ const OrdersTable = ({
               const clientName = getOrderClientName(order);
               const clientMobile = getOrderClientMobile(order);
               const statusVal = order.status || order.orderStatus || "in-progress";
+              const paymentVal = (order.paymentStatus || "paid").toLowerCase();
 
               return (
                 <div
@@ -587,10 +589,18 @@ const OrdersTable = ({
                   <div className="card-top-accent" />
                   <div className="card-header">
                     <span className="order-id-badge">{order.id}</span>
-                    <span className={`status-pill ${statusVal}`}>
-                      <span className="dot" />
-                      {statusVal.replace("-", " ")}
-                    </span>
+                    <div className="card-header-badges">
+                      <span className={`status-pill ${statusVal}`}>
+                        <span className="dot" />
+                        {statusVal.replace("-", " ")}
+                      </span>
+                      <span className={`payment-pill ${paymentVal}`}>
+                        <PaymentOutlinedIcon
+                          style={{ fontSize: 12, marginRight: 3 }}
+                        />
+                        {paymentVal}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="card-body">
@@ -603,6 +613,17 @@ const OrdersTable = ({
                       <span className="service-tag">
                         {items[0]?.serviceName || "Service"}
                       </span>
+                      {order.occasion && (
+                        <span
+                          className="order-occasion-chip"
+                          title={order.occasion}
+                        >
+                          <CelebrationOutlinedIcon
+                            style={{ fontSize: 12, marginRight: 3 }}
+                          />
+                          {order.occasion}
+                        </span>
+                      )}
                       {items.length > 1 && (
                         <span className="items-count-badge">
                           +{items.length - 1} extra service{items.length > 2 ? "s" : ""}

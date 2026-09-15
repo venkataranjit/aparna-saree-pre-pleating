@@ -43,6 +43,9 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
             webView.setVerticalScrollBarEnabled(false);
             webView.setHorizontalScrollBarEnabled(false);
             webView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
+            webView.setLongClickable(false);
+            webView.setOnLongClickListener(v -> true);
+            webView.setHapticFeedbackEnabled(false);
 
             CookieManager cookieManager = CookieManager.getInstance();
             cookieManager.setAcceptCookie(true);

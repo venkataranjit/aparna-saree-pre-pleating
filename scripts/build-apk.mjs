@@ -52,6 +52,20 @@ try {
     console.warn(`[Google Services] Note: src/${mode}/google-services.json not found, using existing file.\n`);
   }
 
+  // Set App Name: "Aparna Dev" for dev build, "Aparna" for prod build
+  const stringsPath = path.join(androidAppDir, 'src', 'main', 'res', 'values', 'strings.xml');
+  const appDisplayName = mode === 'dev' ? 'Aparna Dev' : 'Aparna';
+  const stringsXml = `<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">${appDisplayName}</string>
+    <string name="title_activity_main">${appDisplayName}</string>
+    <string name="package_name">com.aparnasaree.app</string>
+    <string name="custom_url_scheme">com.aparnasaree.app</string>
+</resources>
+`;
+  fs.writeFileSync(stringsPath, stringsXml, 'utf-8');
+  console.log(`[App Name] Configured launcher app name as "${appDisplayName}" for [${mode.toUpperCase()}]\n`);
+
   // Step 0: Completely clean dist and assets to prevent recursive asset bloat
   const distDir = path.join(rootDir, 'dist');
   const publicDir = path.join(rootDir, 'public');

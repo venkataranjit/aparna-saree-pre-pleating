@@ -1,33 +1,41 @@
 {
   "project_info": {
-    "project_number": "860946669549",
-    "project_id": "aparna-saree-pre-pleatin-3de8c",
-    "storage_bucket": "aparna-saree-pre-pleatin-3de8c.firebasestorage.app"
+    "project_number": "912871579095",
+    "project_id": "aparna-saree-pre-pleating",
+    "storage_bucket": "aparna-saree-pre-pleating.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:860946669549:android:777f30d49e9fc3147cd1e4",
+        "mobilesdk_app_id": "1:912871579095:android:533ace8a1342546a0bff92",
         "android_client_info": {
           "package_name": "com.aparnasaree.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "860946669549-u6it5slpgn4k4ek87i9eag28sfpv7htc.apps.googleusercontent.com",
+          "client_id": "912871579095-8737pp3pg3evgm5rjsq2okt2ae6bdvqo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aparnasaree.app",
+            "certificate_hash": "4acabe4e378245e9e005c4f9839a457d30a2244f"
+          }
+        },
+        {
+          "client_id": "912871579095-angrtbrl9t2ct1edcufb5kfn607uts5s.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBkJDHMi_Wj_9DL3MpVgMm2WSMNTsfUToo"
+          "current_key": "AIzaSyBYb_xK0XZWc2JQFTBqA3npT7PkeJLXxxw"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "860946669549-u6it5slpgn4k4ek87i9eag28sfpv7htc.apps.googleusercontent.com",
+              "client_id": "912871579095-angrtbrl9t2ct1edcufb5kfn607uts5s.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

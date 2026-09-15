@@ -13,6 +13,21 @@ import { Capacitor } from '@capacitor/core';
 if (Capacitor.isNativePlatform()) {
   document.documentElement.classList.add('capacitor-native');
   document.body.classList.add('capacitor-native');
+
+  // Prevent native text selection callouts and white context box on long-press
+  document.addEventListener('contextmenu', (e) => {
+    const target = e.target;
+    if (target && target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+      e.preventDefault();
+    }
+  });
+
+  document.addEventListener('selectstart', (e) => {
+    const target = e.target;
+    if (target && target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+      e.preventDefault();
+    }
+  });
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(

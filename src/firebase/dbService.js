@@ -1774,7 +1774,6 @@ export const createClientMeasurement = createMeasurement;
  */
 export const getMeasurementsByUserId = async (userId) => {
   if (!userId) return [];
-  const localList = getLocalMeasurements().filter((m) => m.userId === userId);
 
   try {
     const q = query(
@@ -1784,27 +1783,13 @@ export const getMeasurementsByUserId = async (userId) => {
     const snapshot = await withTimeout(getDocs(q), 3000, null);
     if (snapshot && !snapshot.empty) {
       const remote = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-      // Merge remote with local records by ID
-      const map = new Map();
-      remote.forEach((r) => map.set(r.id, r));
-      localList.forEach((l) => {
-        if (!map.has(l.id)) map.set(l.id, l);
-      });
-      const merged = Array.from(map.values());
-
-      // Update local storage
-      const otherUserMeasurements = getLocalMeasurements().filter(
-        (m) => m.userId !== userId,
-      );
-      saveLocalMeasurements([...merged, ...otherUserMeasurements]);
-      return merged;
+      return remote;
     }
   } catch (err) {
     console.warn("getMeasurementsByUserId note (serving local):", err);
   }
 
-  return localList;
+  return getLocalMeasurements().filter((m) => m.userId === userId);
 };
 
 /**
@@ -1821,9 +1806,6 @@ export const getMeasurementByUserId = async (userId) => {
  * @param {string} measurementId
  */
 export const getMeasurementById = async (measurementId) => {
-  const localList = getLocalMeasurements();
-  const localFound = localList.find((m) => m.id === measurementId);
-
   try {
     const docRef = doc(db, COLLECTIONS.MEASUREMENTS, measurementId);
     const snapshot = await withTimeout(getDoc(docRef), 2500, null);
@@ -1834,6 +1816,8 @@ export const getMeasurementById = async (measurementId) => {
     console.warn("getMeasurementById note:", err);
   }
 
+  const localList = getLocalMeasurements();
+  const localFound = localList.find((m) => m.id === measurementId);
   return localFound || null;
 };
 
@@ -1860,8 +1844,6 @@ export const deleteClientMeasurement = async (measurementId) => {
  * Get all client measurements across the measurements collection
  */
 export const getAllMeasurements = async () => {
-  const localList = getLocalMeasurements();
-
   try {
     const snapshot = await withTimeout(
       getDocs(collection(db, COLLECTIONS.MEASUREMENTS)),
@@ -1873,22 +1855,8 @@ export const getAllMeasurements = async () => {
         id: doc.id,
         ...doc.data(),
       }));
-      const map = new Map();
-      remote.forEach((r) => map.set(r.id, r));
-      localList.forEach((l) => {
-        if (!map.has(l.id)) {
-          map.set(l.id, l);
-          // Auto-sync local measurement to Firestore
-          if (l.id) {
-            setDoc(doc(db, COLLECTIONS.MEASUREMENTS, l.id), l, {
-              merge: true,
-            }).catch(() => {});
-          }
-        }
-      });
-      const finalList = Array.from(map.values());
-      saveLocalMeasurements(finalList);
-      return finalList;
+      saveLocalMeasurements(remote);
+      return remote;
     }
   } catch (err) {
     console.warn(
@@ -1897,7 +1865,7 @@ export const getAllMeasurements = async () => {
     );
   }
 
-  return localList;
+  return getLocalMeasurements();
 };
 
 /**

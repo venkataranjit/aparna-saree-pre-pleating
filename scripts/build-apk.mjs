@@ -66,7 +66,7 @@ try {
   fs.writeFileSync(stringsPath, stringsXml, 'utf-8');
   console.log(`[App Name] Configured launcher app name as "${appDisplayName}" for [${mode.toUpperCase()}]\n`);
 
-  // Step 0: Completely clean dist and assets to prevent recursive asset bloat
+  // Step 0: Completely clean dist directory to prevent stale web builds
   const distDir = path.join(rootDir, 'dist');
   const publicDir = path.join(rootDir, 'public');
   const androidAssetsPublic = path.join(rootDir, 'android', 'app', 'src', 'main', 'assets', 'public');
@@ -76,25 +76,37 @@ try {
     console.log('[Clean] Wiped dist directory');
   }
 
-  [publicDir, androidAssetsPublic].forEach((dir) => {
-    if (fs.existsSync(dir)) {
-      const files = fs.readdirSync(dir);
-      files.forEach((file) => {
-        if (file.endsWith('.apk')) {
-          try {
-            fs.unlinkSync(path.join(dir, file));
-            console.log(`[Clean] Removed APK from ${path.basename(dir)}: ${file}`);
-          } catch (e) {}
-        }
-      });
+  // Manage APKs in public folder:
+  // - NEVER delete prod APKs (aparna-saree-pre-pleating-prod.apk, aparna-saree-pre-pleating.apk) because they are linked to the download button
+  // - When building PROD, delete dev APK (aparna-saree-pre-pleating-dev.apk) from public
+  if (fs.existsSync(publicDir)) {
+    const devApkInPublic = path.join(publicDir, 'aparna-saree-pre-pleating-dev.apk');
+    if (mode === 'prod' && fs.existsSync(devApkInPublic)) {
+      try {
+        fs.unlinkSync(devApkInPublic);
+        console.log('[Clean] Removed dev APK from public folder');
+      } catch (e) {}
     }
-  });
+  }
 
   console.log(`--- 1. Building web application for [${mode}] ---`);
   run(`npx vite build --mode ${mode}`);
 
   console.log('\n--- 2. Syncing Capacitor Android ---');
   run('npx cap sync android');
+
+  // Strip all APK files from Android assets to prevent recursive asset bloat in the compiled APK
+  if (fs.existsSync(androidAssetsPublic)) {
+    const assetFiles = fs.readdirSync(androidAssetsPublic);
+    assetFiles.forEach((file) => {
+      if (file.endsWith('.apk')) {
+        try {
+          fs.unlinkSync(path.join(androidAssetsPublic, file));
+          console.log(`[Clean] Stripped APK from android assets: ${file}`);
+        } catch (e) {}
+      }
+    });
+  }
 
   console.log('\n--- 3. Compiling Android APK with Gradle ---');
   const targetTask = mode === 'prod' ? 'assembleRelease' : 'assembleDebug';
@@ -105,30 +117,37 @@ try {
   const apkFileName = mode === 'prod' ? 'app-release.apk' : 'app-debug.apk';
   const srcApk = path.join(androidDir, 'app', 'build', 'outputs', 'apk', apkSubFolder, apkFileName);
   const envApk = path.join(rootDir, `aparna-saree-pre-pleating-${mode}.apk`);
-  const standardApk = path.join(rootDir, 'aparna-saree-pre-pleating.apk');
 
   if (fs.existsSync(srcApk)) {
-    // Copy to root directory
-    fs.copyFileSync(srcApk, envApk);
-    fs.copyFileSync(srcApk, standardApk);
-
-    // Also copy to public folder for direct landing page web downloads
     if (!fs.existsSync(publicDir)) {
       fs.mkdirSync(publicDir, { recursive: true });
     }
+
+    // Copy to root directory
+    fs.copyFileSync(srcApk, envApk);
+
+    // Copy to public directory
     const publicEnvApk = path.join(publicDir, `aparna-saree-pre-pleating-${mode}.apk`);
-    const publicStandardApk = path.join(publicDir, 'aparna-saree-pre-pleating.apk');
     fs.copyFileSync(srcApk, publicEnvApk);
-    fs.copyFileSync(srcApk, publicStandardApk);
+
+    // If PROD build, also update standard root and public APKs
+    let standardApk = null;
+    let publicStandardApk = null;
+    if (mode === 'prod') {
+      standardApk = path.join(rootDir, 'aparna-saree-pre-pleating.apk');
+      publicStandardApk = path.join(publicDir, 'aparna-saree-pre-pleating.apk');
+      fs.copyFileSync(srcApk, standardApk);
+      fs.copyFileSync(srcApk, publicStandardApk);
+    }
 
     const stats = fs.statSync(envApk);
     const sizeMb = (stats.size / (1024 * 1024)).toFixed(2);
     console.log('\n======================================================');
     console.log(` BUILD SUCCESSFUL! [${mode.toUpperCase()}]`);
     console.log(` Root Environment APK:   ${envApk}`);
-    console.log(` Root Standard APK:      ${standardApk}`);
+    if (standardApk) console.log(` Root Standard APK:      ${standardApk}`);
     console.log(` Public Environment APK: ${publicEnvApk}`);
-    console.log(` Public Standard APK:    ${publicStandardApk}`);
+    if (publicStandardApk) console.log(` Public Standard APK:    ${publicStandardApk}`);
     console.log(` APK Size:               ${sizeMb} MB`);
     console.log('======================================================\n');
   } else {

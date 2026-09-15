@@ -377,6 +377,7 @@
         background-size: cover;
         background-position: left 12% center;
         background-repeat: no-repeat;
+        background-image: var(--hero-bg-desktop);
         transform: scale(1.04);
         transform-origin: center center;
         opacity: 0;
@@ -395,20 +396,22 @@
         }
 
         @media (max-width: 900px) {
+          background-image: var(--hero-bg-mobile);
           background-position: center top;
           opacity: 0;
 
           &.is-active {
-            opacity: 0.58;
+            opacity: 0.85;
           }
         }
 
         @media (max-width: 680px) {
+          background-image: var(--hero-bg-mobile);
           background-position: center top;
           opacity: 0;
 
           &.is-active {
-            opacity: 0.48;
+            opacity: 0.88;
           }
         }
       }
@@ -2939,10 +2942,10 @@
 
           .app-highlight-chip {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             text-align: left;
-            gap: 12px;
-            padding: 12px 14px;
+            gap: 14px;
+            padding: 12px 16px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(212, 175, 55, 0.2);
             border-radius: 14px;
@@ -2952,13 +2955,32 @@
               background: rgba(212, 175, 55, 0.08);
               border-color: rgba(212, 175, 55, 0.45);
               transform: translateY(-2px);
+
+              .chip-ico-box {
+                background: #d4af37;
+                color: #080706;
+                box-shadow: 0 0 16px rgba(212, 175, 55, 0.5);
+                transform: scale(1.06);
+              }
             }
 
-            .chip-ico {
-              font-size: 1.25rem;
-              line-height: 1;
+            .chip-ico-box {
+              width: 38px;
+              height: 38px;
+              border-radius: 10px;
+              background: rgba(212, 175, 55, 0.12);
+              border: 1px solid rgba(212, 175, 55, 0.3);
+              display: flex;
+              align-items: center;
+              justify-content: center;
               flex-shrink: 0;
-              margin-top: 2px;
+              color: #d4af37;
+              box-shadow: 0 0 12px rgba(212, 175, 55, 0.15);
+              transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+              .chip-mui-icon {
+                font-size: 1.25rem;
+              }
             }
 
             .chip-text {

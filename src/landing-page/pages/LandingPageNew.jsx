@@ -22,7 +22,7 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import LaunchOutlinedIcon from "@mui/icons-material/LaunchOutlined";
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
-import VerifiedOutlinedIcon from "@mui/icons-material/VerifiedOutlined";
+import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
@@ -33,6 +33,7 @@ import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import PhoneInTalkOutlinedIcon from "@mui/icons-material/PhoneInTalkOutlined";
 import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
+import TouchAppOutlinedIcon from "@mui/icons-material/TouchAppOutlined";
 import GetAppOutlinedIcon from "@mui/icons-material/GetAppOutlined";
 import CollectionsOutlinedIcon from "@mui/icons-material/CollectionsOutlined";
 import CloseIcon from "@mui/icons-material/Close";
@@ -48,6 +49,9 @@ import brandLogo from "../../assets/logo.png";
 import hero1 from "../../assets/hero1.jpg";
 import hero2 from "../../assets/hero2.jpg";
 import hero3 from "../../assets/hero3.jpg";
+import mhero1 from "../../assets/mhero1.jpg";
+import mhero2 from "../../assets/mhero2.jpg";
+import mhero3 from "../../assets/mhero3.jpg";
 import ladyLogo from "../../assets/lady-logo.png";
 import appIconImg from "../../assets/app-icon.png";
 import g1 from "../../assets/g1.jpg";
@@ -72,7 +76,11 @@ import g19 from "../../assets/g19.jpg";
 import g20 from "../../assets/g20.jpg";
 import "./LandingPageNew.scss";
 
-const HERO_SLIDES = [hero1, hero2, hero3];
+const HERO_SLIDES = [
+  { desktop: hero1, mobile: mhero1 },
+  { desktop: hero2, mobile: mhero2 },
+  { desktop: hero3, mobile: mhero3 },
+];
 
 const SERVICES_LIST = [
   {
@@ -193,7 +201,11 @@ const GALLERY_ITEMS = [
     wearTime: "Under 120 Seconds",
     img: g1,
     desc: "Exquisite temple border with heavy golden zari pallu, hand-pleated with precision razor symmetry that stays intact through 8+ hours of muhurtham rituals.",
-    highlights: ["Pure Gold Zari Protection", "Razor-Sharp Symmetrical Folds", "Pre-Pinned Pallu Drop"],
+    highlights: [
+      "Pure Gold Zari Protection",
+      "Razor-Sharp Symmetrical Folds",
+      "Pre-Pinned Pallu Drop",
+    ],
   },
   {
     id: "img-2",
@@ -207,7 +219,11 @@ const GALLERY_ITEMS = [
     wearTime: "2 Minutes",
     img: g2,
     desc: "Regal Varanasi gold floral weave crafted with flat calibrated folds that drape cleanly without puffing around the hip.",
-    highlights: ["Non-Bulky Waist Line", "Thermal Steam Preserved Zari", "Seamless Fall & Movement"],
+    highlights: [
+      "Non-Bulky Waist Line",
+      "Thermal Steam Preserved Zari",
+      "Seamless Fall & Movement",
+    ],
   },
   {
     id: "img-3",
@@ -221,7 +237,11 @@ const GALLERY_ITEMS = [
     wearTime: "90 Seconds",
     img: g3,
     desc: "Voluminous dreamy pleats engineered to hold their shape comfortably from dawn till dusk without flattening or crumpling.",
-    highlights: ["Featherlight Cloud Feel", "Sculpted Shape Retention", "Zero Sagging Guarantee"],
+    highlights: [
+      "Featherlight Cloud Feel",
+      "Sculpted Shape Retention",
+      "Zero Sagging Guarantee",
+    ],
   },
   {
     id: "img-4",
@@ -235,7 +255,11 @@ const GALLERY_ITEMS = [
     wearTime: "Under 3 Minutes",
     img: g4,
     desc: "Double-dupatta layering with structured chest pleats and sweeping cathedral-length pallu for regal wedding receptions.",
-    highlights: ["Symmetrical Double-Drape", "Secure Pin-Free Feel", "Grand Photographic Impact"],
+    highlights: [
+      "Symmetrical Double-Drape",
+      "Secure Pin-Free Feel",
+      "Grand Photographic Impact",
+    ],
   },
   {
     id: "img-5",
@@ -249,7 +273,11 @@ const GALLERY_ITEMS = [
     wearTime: "Ready to Slip On",
     img: g5,
     desc: "Compact travel-safe box folding preserving pristine crease lines for flight travel and destination weddings across India.",
-    highlights: ["Suitcase & Flight Friendly", "Zero Crushed Pleats", "Dust-Proof Archival Packaging"],
+    highlights: [
+      "Suitcase & Flight Friendly",
+      "Zero Crushed Pleats",
+      "Dust-Proof Archival Packaging",
+    ],
   },
   {
     id: "img-6",
@@ -263,7 +291,11 @@ const GALLERY_ITEMS = [
     wearTime: "2 Minutes",
     img: g6,
     desc: "Gleaming tissue silk pressed with zero heat damage to highlight shimmering metallic highlights and body-hugging lines.",
-    highlights: ["Liquid Metal Shimmer", "Zero Scratch or Fraying", "Perfect Body Posture Line"],
+    highlights: [
+      "Liquid Metal Shimmer",
+      "Zero Scratch or Fraying",
+      "Perfect Body Posture Line",
+    ],
   },
   {
     id: "img-7",
@@ -277,7 +309,11 @@ const GALLERY_ITEMS = [
     wearTime: "2 Minutes",
     img: g7,
     desc: "Heavy kaleidoscopic peacock pallu balanced with structured shoulder pin-points for zero slipping during rituals.",
-    highlights: ["Heavy Pallu Weight Distribution", "Vibrant Tapestry Reveal", "Zero Slip Shoulder Hold"],
+    highlights: [
+      "Heavy Pallu Weight Distribution",
+      "Vibrant Tapestry Reveal",
+      "Zero Slip Shoulder Hold",
+    ],
   },
   {
     id: "img-8",
@@ -291,7 +327,11 @@ const GALLERY_ITEMS = [
     wearTime: "2 Minutes",
     img: g8,
     desc: "Fine Georgette bandhej with micro-pleats that swirl naturally with every dance step at Sangeet celebrations.",
-    highlights: ["Dynamic Swirl Flow", "Dance & Walk Ease", "Rich Texture Definition"],
+    highlights: [
+      "Dynamic Swirl Flow",
+      "Dance & Walk Ease",
+      "Rich Texture Definition",
+    ],
   },
   {
     id: "img-9",
@@ -305,7 +345,11 @@ const GALLERY_ITEMS = [
     wearTime: "2 Minutes",
     img: g9,
     desc: "South Indian traditional half-saree draping with fitted waist pleats and neat cross-body voni for half-saree functions.",
-    highlights: ["Snug Waistband Fit", "Graceful Voni Drop", "Youthful Traditional Look"],
+    highlights: [
+      "Snug Waistband Fit",
+      "Graceful Voni Drop",
+      "Youthful Traditional Look",
+    ],
   },
   {
     id: "img-10",
@@ -319,7 +363,11 @@ const GALLERY_ITEMS = [
     wearTime: "90 Seconds",
     img: g10,
     desc: "Ultra-slimming silhouette designed to accentuate body posture with zero bulkiness around the waist.",
-    highlights: ["Hourglass Contour Drape", "Fluid Motion", "Red Carpet Evening Look"],
+    highlights: [
+      "Hourglass Contour Drape",
+      "Fluid Motion",
+      "Red Carpet Evening Look",
+    ],
   },
   {
     id: "img-11",
@@ -333,7 +381,11 @@ const GALLERY_ITEMS = [
     wearTime: "2 Minutes",
     img: g11,
     desc: "Pure zari gold border with supple drape, customized to height for an effortless 2-minute wear.",
-    highlights: ["Butter-Soft Touch", "Featherweight Draping", "Effortless All-Day Wear"],
+    highlights: [
+      "Butter-Soft Touch",
+      "Featherweight Draping",
+      "Effortless All-Day Wear",
+    ],
   },
   {
     id: "img-12",
@@ -347,7 +399,11 @@ const GALLERY_ITEMS = [
     wearTime: "2 Minutes",
     img: g12,
     desc: "Lightweight handloom weave pleated with delicate care to preserve fine gold and silver buttis.",
-    highlights: ["Breathable & Light", "Preserved Handwoven Motifs", "Crisp Summer Finish"],
+    highlights: [
+      "Breathable & Light",
+      "Preserved Handwoven Motifs",
+      "Crisp Summer Finish",
+    ],
   },
   {
     id: "img-13",
@@ -361,7 +417,11 @@ const GALLERY_ITEMS = [
     wearTime: "Under 3 Minutes",
     img: g13,
     desc: "Structured micro-steamed pleating for dense velvet fabrics, reducing heaviness and improving drape flow.",
-    highlights: ["Reduced Heavy Bulk", "Zardozi Thread Protection", "Opulent Royal Silhouette"],
+    highlights: [
+      "Reduced Heavy Bulk",
+      "Zardozi Thread Protection",
+      "Opulent Royal Silhouette",
+    ],
   },
   {
     id: "img-14",
@@ -375,7 +435,11 @@ const GALLERY_ITEMS = [
     wearTime: "120 Seconds Flat",
     img: g14,
     desc: "Pre-measured waistband and calibrated pleats — wear in under 120 seconds with zero pins or assistance required.",
-    highlights: ["Zero Safety Pins Needed", "Fits Perfectly in 2 Minutes", "Ideal for NRI & Busy Brides"],
+    highlights: [
+      "Zero Safety Pins Needed",
+      "Fits Perfectly in 2 Minutes",
+      "Ideal for NRI & Busy Brides",
+    ],
   },
   {
     id: "img-15",
@@ -389,7 +453,11 @@ const GALLERY_ITEMS = [
     wearTime: "2 Minutes",
     img: g15,
     desc: "Evenly staggered pleats highlighting each architectural temple motif with crisp visual cadence.",
-    highlights: ["Aligned Temple Motifs", "Crisp Symmetrical Steaming", "Classic South Indian Charm"],
+    highlights: [
+      "Aligned Temple Motifs",
+      "Crisp Symmetrical Steaming",
+      "Classic South Indian Charm",
+    ],
   },
   {
     id: "img-16",
@@ -403,7 +471,11 @@ const GALLERY_ITEMS = [
     wearTime: "2 Minutes",
     img: g16,
     desc: "Contemporary pleating geometry creating striking silhouettes for evening receptions and red carpet events.",
-    highlights: ["Striking Modern Silhouette", "Fluid Twirl Dynamics", "Glamorous Gold Accents"],
+    highlights: [
+      "Striking Modern Silhouette",
+      "Fluid Twirl Dynamics",
+      "Glamorous Gold Accents",
+    ],
   },
   {
     id: "img-17",
@@ -417,7 +489,11 @@ const GALLERY_ITEMS = [
     wearTime: "2 Minutes",
     img: g17,
     desc: "Delicate Uppada weave styled with feather-soft folds that accentuate intricate Jamdani zari motifs.",
-    highlights: ["Feather-light Feel", "Intricate Zari Alignment", "Graceful Traditional Fall"],
+    highlights: [
+      "Feather-light Feel",
+      "Intricate Zari Alignment",
+      "Graceful Traditional Fall",
+    ],
   },
   {
     id: "img-18",
@@ -431,7 +507,11 @@ const GALLERY_ITEMS = [
     wearTime: "2 Minutes",
     img: g18,
     desc: "Classic Gadwal with pure silk borders structured cleanly with zero sagging during long poojas and rituals.",
-    highlights: ["Crisp Cotton-Silk Hold", "Contrast Border Focus", "Comfort All-Day Wear"],
+    highlights: [
+      "Crisp Cotton-Silk Hold",
+      "Contrast Border Focus",
+      "Comfort All-Day Wear",
+    ],
   },
   {
     id: "img-19",
@@ -445,7 +525,11 @@ const GALLERY_ITEMS = [
     wearTime: "90 Seconds",
     img: g19,
     desc: "Rich textured organic wild silk pleated with thermal steam to maintain natural rustic lustre.",
-    highlights: ["Natural Gold Sheen", "Breathable Texture", "Contemporary Chic Look"],
+    highlights: [
+      "Natural Gold Sheen",
+      "Breathable Texture",
+      "Contemporary Chic Look",
+    ],
   },
   {
     id: "img-20",
@@ -459,7 +543,11 @@ const GALLERY_ITEMS = [
     wearTime: "Under 3 Minutes",
     img: g20,
     desc: "Showstopper bridal drape with structured waist pleats and sweeping red carpet pallu for unforgettable grand entrances.",
-    highlights: ["Showstopper Trail", "Ultra Secure Fit", "Royal Photographic Allure"],
+    highlights: [
+      "Showstopper Trail",
+      "Ultra Secure Fit",
+      "Royal Photographic Allure",
+    ],
   },
 ];
 
@@ -477,7 +565,8 @@ const LandingPageNew = () => {
     return () => {
       // Restore dashboard theme when navigating away
       try {
-        const savedTheme = localStorage.getItem("aparna_app_theme") || "default";
+        const savedTheme =
+          localStorage.getItem("aparna_app_theme") || "default";
         root.setAttribute("data-theme", savedTheme);
       } catch {
         // Ignore storage errors
@@ -643,7 +732,9 @@ const LandingPageNew = () => {
 
   const handlePrevGallery = () => {
     setActiveGalleryIdx((prev) => {
-      return (prev - 1 + filteredGalleryItems.length) % filteredGalleryItems.length;
+      return (
+        (prev - 1 + filteredGalleryItems.length) % filteredGalleryItems.length
+      );
     });
   };
 
@@ -719,11 +810,14 @@ const LandingPageNew = () => {
           {/* Deep dark base layer behind images */}
           <div className="luxury-hero-dark-base" />
 
-          {HERO_SLIDES.map((slideImg, idx) => (
+          {HERO_SLIDES.map((slide, idx) => (
             <div
               key={idx}
               className={`luxury-hero-bg-slide ${idx === heroSlideIdx ? "is-active" : ""}`}
-              style={{ backgroundImage: `url(${slideImg})` }}
+              style={{
+                "--hero-bg-desktop": `url(${slide.desktop})`,
+                "--hero-bg-mobile": `url(${slide.mobile})`,
+              }}
             />
           ))}
 
@@ -1375,7 +1469,8 @@ const LandingPageNew = () => {
             <span className="section-eyebrow">Official Mobile App</span>
             <h2 className="section-heading">Download Our Android App</h2>
             <p className="section-subtext">
-              Direct booking, live order tracking &amp; doorstep pickup across Hyderabad.
+              Direct booking, live order tracking &amp; doorstep pickup across
+              Hyderabad.
             </p>
           </div>
 
@@ -1393,7 +1488,7 @@ const LandingPageNew = () => {
                 <div className="app-identity-text">
                   <h3 className="app-name-title">Aparna Saree Pre-Pleating</h3>
                   <span className="app-version-pill">
-                    <VerifiedOutlinedIcon className="v-pill-icon" />
+                    <VerifiedUserOutlinedIcon className="v-pill-icon" />
                     Official Android App • v1.0.0 (Production)
                   </span>
                 </div>
@@ -1402,21 +1497,27 @@ const LandingPageNew = () => {
               {/* 3 Direct Feature Highlights */}
               <div className="app-quick-highlights">
                 <div className="app-highlight-chip">
-                  <span className="chip-ico">🚀</span>
+                  <div className="chip-ico-box">
+                    <TouchAppOutlinedIcon className="chip-mui-icon" />
+                  </div>
                   <div className="chip-text">
                     <strong>Instant Saree Booking</strong>
                     <span>Select flat, fluffy or box pleats in seconds</span>
                   </div>
                 </div>
                 <div className="app-highlight-chip">
-                  <span className="chip-ico">📍</span>
+                  <div className="chip-ico-box">
+                    <NotificationsActiveOutlinedIcon className="chip-mui-icon" />
+                  </div>
                   <div className="chip-text">
                     <strong>Live Steaming Milestones</strong>
                     <span>Real-time updates from pickup to dispatch</span>
                   </div>
                 </div>
                 <div className="app-highlight-chip">
-                  <span className="chip-ico">🚚</span>
+                  <div className="chip-ico-box">
+                    <LocalShippingOutlinedIcon className="chip-mui-icon" />
+                  </div>
                   <div className="chip-text">
                     <strong>Doorstep Pickup &amp; Delivery</strong>
                     <span>Seamless home valet across Hyderabad</span>
@@ -1440,8 +1541,10 @@ const LandingPageNew = () => {
                 </a>
 
                 <div className="app-verified-badge">
-                  <ShieldOutlinedIcon className="v-icon" />
-                  <span>100% Virus-Free &amp; Verified APK • 30MB • Safe Install</span>
+                  <VerifiedUserOutlinedIcon className="v-icon" />
+                  <span>
+                    100% Virus-Free &amp; Verified APK • 30MB • Safe Install
+                  </span>
                 </div>
               </div>
             </div>

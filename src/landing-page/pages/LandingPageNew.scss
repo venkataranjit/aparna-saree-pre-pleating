@@ -26,6 +26,39 @@
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
 
+  // Strict Luxury Obsidian Gold Scrollbars (Immune to any dashboard light/dark theme)
+  --scrollbar-thumb-color: #d4af37 !important;
+  --scrollbar-thumb-bg: linear-gradient(180deg, #e6d8a3 0%, #d4af37 50%, #9a7b1c 100%) !important;
+  --scrollbar-thumb-hover: #f3e8c0 !important;
+  --scrollbar-track: #050505 !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #d4af37 #050505 !important;
+
+  &::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+
+  &::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-track {
+    background: #050505 !important;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb,
+  *::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #e6d8a3 0%, #d4af37 50%, #9a7b1c 100%) !important;
+    background-color: #d4af37 !important;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.2) !important;
+
+    &:hover {
+      background: #f3e8c0 !important;
+      background-color: #f3e8c0 !important;
+    }
+  }
+
   /* ========================================================================
      1. FLOATING NAVIGATION DOCK: Bottom at rest -> Moves to top on scroll
      ======================================================================== */

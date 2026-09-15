@@ -12,6 +12,7 @@ const PageLoader = ({
   message = '',
   onComplete,
   fullscreen = true,
+  theme = null,
   className = '',
 }) => {
   const [internalProgress, setInternalProgress] = useState(progress !== undefined ? progress : 0);
@@ -25,11 +26,23 @@ const PageLoader = ({
   } catch {
     // Gracefully handle if mounted outside ThemeProvider
   }
+
+  const isLanding = typeof window !== 'undefined' && (
+    window.location.pathname === '/' ||
+    window.location.pathname.toLowerCase() === '/landing' ||
+    window.location.pathname.toLowerCase() === '/landing-new' ||
+    window.location.pathname.toLowerCase() === '/landingpage' ||
+    window.location.pathname.toLowerCase() === '/coming-soon'
+  );
+
   const currentTheme =
-    themeContext?.theme ||
-    (typeof document !== 'undefined'
-      ? document.documentElement.getAttribute('data-theme') || 'default'
-      : 'default');
+    theme ||
+    (isLanding ? 'default' : (
+      themeContext?.theme ||
+      (typeof document !== 'undefined'
+        ? document.documentElement.getAttribute('data-theme') || 'default'
+        : 'default')
+    ));
 
   useEffect(() => {
     if (progress !== undefined) {

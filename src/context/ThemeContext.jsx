@@ -31,9 +31,16 @@ const getStoredTheme = () => {
   return THEMES.DEFAULT;
 };
 
-// Apply initial data-theme synchronously before first paint
+const isLandingRoute = (pathname) => {
+  if (!pathname) return false;
+  const p = pathname.toLowerCase();
+  return p === '/' || p === '/landing' || p === '/landing-new' || p === '/landingpage' || p === '/coming-soon';
+};
+
+// Apply initial data-theme synchronously before first paint (strictly 'default' for landing page)
 if (typeof document !== 'undefined') {
-  const initial = getStoredTheme();
+  const isLanding = typeof window !== 'undefined' && isLandingRoute(window.location.pathname);
+  const initial = isLanding ? THEMES.DEFAULT : getStoredTheme();
   document.documentElement.setAttribute('data-theme', initial);
 }
 
@@ -53,19 +60,23 @@ export const ThemeProvider = ({ children }) => {
   const setTheme = (newTheme) => {
     if (!Object.values(THEMES).includes(newTheme)) return;
 
-    // 1. Synchronously update data-theme and add transition class BEFORE state change
+    const isLanding = typeof window !== 'undefined' && isLandingRoute(window.location.pathname);
     const root = document.documentElement;
-    root.classList.add('theme-transition');
-    root.setAttribute('data-theme', newTheme);
 
-    // Clear any previous transition cleanup timer
-    if (transitionTimerRef.current) {
-      clearTimeout(transitionTimerRef.current);
+    if (!isLanding) {
+      // 1. Synchronously update data-theme and add transition class BEFORE state change
+      root.classList.add('theme-transition');
+      root.setAttribute('data-theme', newTheme);
+
+      // Clear any previous transition cleanup timer
+      if (transitionTimerRef.current) {
+        clearTimeout(transitionTimerRef.current);
+      }
+      // Remove transition class after 320ms so it doesn't affect regular component hovers
+      transitionTimerRef.current = setTimeout(() => {
+        root.classList.remove('theme-transition');
+      }, 320);
     }
-    // Remove transition class after 320ms so it doesn't affect regular component hovers
-    transitionTimerRef.current = setTimeout(() => {
-      root.classList.remove('theme-transition');
-    }, 320);
 
     // 2. Persist to localStorage
     try {
@@ -90,8 +101,13 @@ export const ThemeProvider = ({ children }) => {
 
   // Sync data-theme attribute on document.documentElement
   useEffect(() => {
+    const isLanding = typeof window !== 'undefined' && isLandingRoute(window.location.pathname);
     const root = document.documentElement;
-    root.setAttribute('data-theme', theme);
+    if (isLanding) {
+      root.setAttribute('data-theme', THEMES.DEFAULT);
+    } else {
+      root.setAttribute('data-theme', theme);
+    }
     return () => {
       if (transitionTimerRef.current) {
         clearTimeout(transitionTimerRef.current);

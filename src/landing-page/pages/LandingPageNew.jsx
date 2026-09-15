@@ -43,11 +43,8 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import { useAuth } from "../../auth/context/AuthContext";
-import { useTheme } from "../../context/ThemeContext";
 import Footer from "../components/Footer/Footer";
 import brandLogo from "../../assets/logo.png";
-import logoLight from "../../assets/logo-light.png";
-import logoDark from "../../assets/logo-dark.png";
 import hero1 from "../../assets/hero1.jpg";
 import hero2 from "../../assets/hero2.jpg";
 import hero3 from "../../assets/hero3.jpg";
@@ -468,10 +465,25 @@ const GALLERY_ITEMS = [
 
 const LandingPageNew = () => {
   const { currentUser } = useAuth();
-  const { currentTheme } = useTheme();
   const [isLoaded, setIsLoaded] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+
+  // Ensure landing page is strictly isolated in default luxury obsidian gold theme
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute("data-theme", "default");
+
+    return () => {
+      // Restore dashboard theme when navigating away
+      try {
+        const savedTheme = localStorage.getItem("aparna_app_theme") || "default";
+        root.setAttribute("data-theme", savedTheme);
+      } catch {
+        // Ignore storage errors
+      }
+    };
+  }, []);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isQuotePaused, setIsQuotePaused] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -595,11 +607,7 @@ const LandingPageNew = () => {
     return () => observer.disconnect();
   }, [isLoaded]);
 
-  const getLogo = () => {
-    if (currentTheme === "light") return logoLight || brandLogo;
-    if (currentTheme === "dark") return logoDark || brandLogo;
-    return brandLogo;
-  };
+  const getLogo = () => brandLogo;
 
   const WHATSAPP_NUMBER = "919553900003";
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(

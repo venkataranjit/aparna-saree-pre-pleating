@@ -105,6 +105,20 @@ const LandingPage = () => {
   const [notified, setNotified] = useState(false);
   const [emailError, setEmailError] = useState("");
 
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute("data-theme", "default");
+
+    return () => {
+      try {
+        const savedTheme = localStorage.getItem("aparna_app_theme") || "default";
+        root.setAttribute("data-theme", savedTheme);
+      } catch {
+        // Ignore storage errors
+      }
+    };
+  }, []);
+
   // Target Launch Date countdown
   const [timeLeft, setTimeLeft] = useState({
     days: 24,

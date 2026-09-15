@@ -31,15 +31,15 @@ import { AppButton, AppInput, AppTabs } from "../../../components/common";
 import "./HelpSupport.scss";
 
 // Studio Contact & Location Constants
-const STUDIO_PHONE = "+91 98490 12345";
-const STUDIO_PHONE_RAW = "919849012345";
-const STUDIO_WHATSAPP = "+91 98490 12345";
-const STUDIO_WHATSAPP_RAW = "919849012345";
-const STUDIO_EMAIL = "support@aparnasaree.com";
-const STUDIO_ADDRESS = "Plot No. 42, Road No. 10, Banjara Hills, Hyderabad, Telangana 500034";
-const STUDIO_MAPS_SEARCH_URL = "https://maps.google.com/?q=Banjara+Hills,+Hyderabad,+Telangana+500034";
-const STUDIO_MAPS_DIRECTIONS_URL = "https://www.google.com/maps/dir/?api=1&destination=Banjara+Hills,+Hyderabad,+Telangana+500034";
-const STUDIO_MAPS_EMBED_URL = "https://maps.google.com/maps?q=Banjara+Hills,+Hyderabad,+Telangana+500034&t=&z=15&ie=UTF8&iwloc=&output=embed";
+const STUDIO_PHONE = import.meta.env.VITE_STUDIO_PHONE || "+91 95539 00003";
+const STUDIO_PHONE_RAW = import.meta.env.VITE_STUDIO_PHONE_RAW || "919553900003";
+const STUDIO_WHATSAPP = import.meta.env.VITE_STUDIO_WHATSAPP || "+91 95539 00003";
+const STUDIO_WHATSAPP_RAW = import.meta.env.VITE_STUDIO_WHATSAPP_RAW || "919553900003";
+const STUDIO_EMAIL = import.meta.env.VITE_STUDIO_EMAIL || "aparnaaarvi@gmail.com";
+const STUDIO_ADDRESS = import.meta.env.VITE_STUDIO_ADDRESS || "H.No. 4715, 1st Floor, Road No. 17, New MIG, BHEL, Hyderabad - 502032";
+const STUDIO_MAPS_SEARCH_URL = import.meta.env.VITE_STUDIO_MAPS_URL || "https://maps.app.goo.gl/MbEPdnL6Am9kcfdc8";
+const STUDIO_MAPS_DIRECTIONS_URL = import.meta.env.VITE_STUDIO_MAPS_DIRECTIONS_URL || "https://maps.app.goo.gl/MbEPdnL6Am9kcfdc8";
+const STUDIO_MAPS_EMBED_URL = import.meta.env.VITE_STUDIO_MAPS_EMBED_URL || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3805.614959005629!2d78.2830474!3d17.478133799999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcbed005220c969%3A0x752f34793b2e37f4!2sAparna%20Saree%20Pre%20Pleating!5e0!3m2!1sen!2sin!4v1789224855541!5m2!1sen!2sin";
 
 // FAQ Database
 const FAQ_CATEGORIES = [

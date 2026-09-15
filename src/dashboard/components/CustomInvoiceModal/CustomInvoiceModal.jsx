@@ -1772,8 +1772,8 @@ export const buildLuxuryFooterHtml = () => {
           <div class="footer-icon-wrap">${emailIcon}</div>
           <div class="footer-text-block">
             <div class="footer-col-title">ONLINE ASSISTANCE</div>
-            <div class="email-text">aparnaaarvi@gmail.com</div>
-            <div class="web-text">https://aparnapleats-dev.vercel.app/landing</div>
+            <div class="email-text">${import.meta.env.VITE_STUDIO_EMAIL || 'aparnaaarvi@gmail.com'}</div>
+            <div class="web-text">${import.meta.env.VITE_APP_URL ? `${import.meta.env.VITE_APP_URL}/landing` : 'https://aparnasaree.com/landing'}</div>
           </div>
         </div>
       </div>

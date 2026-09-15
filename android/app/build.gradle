@@ -20,9 +20,9 @@ android {
         release {
             if (file('aparna-release-key.jks').exists()) {
                 storeFile file('aparna-release-key.jks')
-                storePassword 'aparnaprod2026'
-                keyAlias 'aparna-release'
-                keyPassword 'aparnaprod2026'
+                storePassword System.getenv("KEYSTORE_PASSWORD") ?: 'aparnaprod2026'
+                keyAlias System.getenv("KEY_ALIAS") ?: 'aparna-release'
+                keyPassword System.getenv("KEY_PASSWORD") ?: 'aparnaprod2026'
             }
         }
     }

@@ -698,11 +698,11 @@ const LandingPageNew = () => {
 
   const getLogo = () => brandLogo;
 
-  const WHATSAPP_NUMBER = "919553900003";
+  const WHATSAPP_NUMBER = import.meta.env.VITE_STUDIO_WHATSAPP_RAW || "919553900003";
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
     "Hello Aparna ji, I would like to book a saree pre-pleating and draping service with you.",
   )}`;
-  const instagramUrl = "https://www.instagram.com/aparna_saree_prepleating/";
+  const instagramUrl = import.meta.env.VITE_STUDIO_INSTAGRAM_URL || "https://www.instagram.com/aparna_saree_prepleating/";
 
   const scrollToSection = (id) => {
     setActiveSection(id);

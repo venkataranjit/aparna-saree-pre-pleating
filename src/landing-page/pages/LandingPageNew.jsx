@@ -1457,12 +1457,16 @@ const LandingPageNew = () => {
       {/* =========================================================================
           ANDROID APP DOWNLOAD SECTION: Official Android App & Tracking Experience
           ========================================================================= */}
-      {/* =========================================================================
-          ANDROID APP DOWNLOAD SECTION: Official Android App & Tracking Experience
-          ========================================================================= */}
       <section id="app" className="luxury-app-download-section">
         {/* Animated Background Aura for App Section */}
         <div className="section-ambient-aura section-ambient-aura--app" />
+
+        {/* Glowing & Floating Ambient Sparkles */}
+        <div className="ambient-sparkle ambient-sparkle--1" />
+        <div className="ambient-sparkle ambient-sparkle--2" />
+        <div className="ambient-sparkle ambient-sparkle--3" />
+        <div className="ambient-sparkle ambient-sparkle--4" />
+
         <div className="section-container">
           {/* Section Header */}
           <div className="app-download-header reveal-on-scroll">

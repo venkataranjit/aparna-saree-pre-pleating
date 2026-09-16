@@ -1313,7 +1313,6 @@
         transparent 65%
       ),
       #080706;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
 
     .section-container {
       max-width: 1240px;
@@ -1933,7 +1932,6 @@
         transparent 65%
       ),
       #080706;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
     box-sizing: border-box;
 
     .section-ambient-aura--gallery {
@@ -2750,18 +2748,56 @@
      ======================================================================== */
   .luxury-app-download-section {
     position: relative;
-    z-index: 10;
     padding: clamp(60px, 8vw, 100px) clamp(16px, 3vw, 24px);
-    background:
-      radial-gradient(
-        circle at 50% 50%,
-        rgba(212, 175, 55, 0.08) 0%,
+    background: transparent;
+
+
+    /* Ambient Sparkles for App Section */
+    .ambient-sparkle {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      background: radial-gradient(
+        circle,
+        rgba(212, 175, 55, 0.95) 0%,
         transparent 70%
-      ),
-      #080706;
-    border-top: 1px solid rgba(212, 175, 55, 0.15);
+      );
+      filter: blur(1px);
+      z-index: 1;
+
+      &--1 {
+        top: 18%;
+        left: 10%;
+        width: 7px;
+        height: 7px;
+        animation: floatSparkle 4s ease-in-out infinite alternate;
+      }
+      &--2 {
+        top: 32%;
+        right: 12%;
+        width: 9px;
+        height: 9px;
+        animation: floatSparkle 5.5s ease-in-out infinite 1s alternate;
+      }
+      &--3 {
+        bottom: 22%;
+        left: 15%;
+        width: 6px;
+        height: 6px;
+        animation: floatSparkle 4.5s ease-in-out infinite 2s alternate;
+      }
+      &--4 {
+        bottom: 18%;
+        right: 18%;
+        width: 8px;
+        height: 8px;
+        animation: floatSparkle 6s ease-in-out infinite 0.5s alternate;
+      }
+    }
 
     .section-container {
+      position: relative;
+      z-index: 2;
       max-width: 1240px;
       margin: 0 auto;
       display: flex;
@@ -3125,7 +3161,6 @@
       transparent 70%
     ),
     #080706;
-  border-top: 1px solid rgba(212, 175, 55, 0.15);
 
   .section-container {
     max-width: 1240px;
@@ -4195,6 +4230,34 @@
       transparent 70%
     );
     animation-delay: 2s;
+  }
+
+  &--gallery {
+    top: 25%;
+    right: 12%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(
+      circle,
+      rgba(212, 175, 55, 0.15) 0%,
+      rgba(180, 130, 20, 0.05) 50%,
+      transparent 70%
+    );
+    animation-delay: 1.5s;
+  }
+
+  &--app {
+    top: 20%;
+    left: 10%;
+    width: 520px;
+    height: 520px;
+    background: radial-gradient(
+      circle,
+      rgba(254, 240, 138, 0.16) 0%,
+      rgba(212, 175, 55, 0.08) 50%,
+      transparent 70%
+    );
+    animation-delay: 3s;
   }
 
   &--contact {

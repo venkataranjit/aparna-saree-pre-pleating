@@ -82,11 +82,11 @@
     }
 
     @media (max-width: 899px) {
-      padding: 16px $spacing-md 54px $spacing-md;
+      padding: 16px $spacing-md calc(82px + env(safe-area-inset-bottom, 0px)) $spacing-md;
     }
 
     @media (max-width: 480px) {
-      padding: 10px 12px 52px 12px;
+      padding: 10px 12px calc(86px + env(safe-area-inset-bottom, 0px)) 12px;
     }
   }
 }

@@ -4,10 +4,16 @@
   width: 100%;
   margin-top: 36px;
   padding-top: 18px;
-  padding-bottom: 6px;
+  padding-bottom: 10px;
   border-top: 1px solid $surface-border;
   position: relative;
   box-sizing: border-box;
+
+  @media (max-width: 899px) {
+    margin-top: 24px;
+    padding-top: 16px;
+    padding-bottom: 12px;
+  }
 
   &::before {
     content: "";
@@ -62,6 +68,8 @@
       font-size: 0.75rem;
       flex-wrap: wrap;
       justify-content: center;
+      gap: 4px 6px;
+      line-height: 1.4;
     }
   }
 

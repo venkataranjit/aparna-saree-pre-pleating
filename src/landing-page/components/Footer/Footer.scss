@@ -8,6 +8,10 @@
   margin-top: auto;
   position: relative;
 
+  @media (max-width: 899px) {
+    padding: $spacing-md 0 calc(70px + env(safe-area-inset-bottom, 0px));
+  }
+
   &::before {
     content: "";
     position: absolute;

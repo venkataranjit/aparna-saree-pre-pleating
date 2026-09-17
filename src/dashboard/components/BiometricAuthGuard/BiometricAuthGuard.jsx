@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
 import { BiometricAuth } from "@aparajita/capacitor-biometric-auth";
 import FingerprintOutlinedIcon from "@mui/icons-material/FingerprintOutlined";
@@ -20,8 +20,14 @@ export default function BiometricAuthGuard({ children }) {
   const [authError, setAuthError] = useState(null);
   const [biometryInfo, setBiometryInfo] = useState(null);
 
+  // Mutex lock to strictly prevent concurrent / overlapping biometric prompts
+  const isAuthenticatingRef = useRef(false);
+  const hasAutoPromptedRef = useRef(false);
+
   const performBiometricAuth = useCallback(async () => {
-    if (!currentUser) return;
+    if (!currentUser || isUnlocked || isAuthenticatingRef.current) return;
+
+    isAuthenticatingRef.current = true;
     setIsAuthenticating(true);
     setAuthError(null);
 
@@ -61,20 +67,27 @@ export default function BiometricAuthGuard({ children }) {
         );
       } finally {
         setIsAuthenticating(false);
+        isAuthenticatingRef.current = false;
       }
     } else {
       // 2. Web Browser Environment
-      // On web, if WebAuthn is supported or simple admin confirmation
       sessionStorage.setItem(SESSION_KEY, "true");
       setIsUnlocked(true);
       setIsAuthenticating(false);
+      isAuthenticatingRef.current = false;
     }
-  }, [currentUser]);
+  }, [currentUser, isUnlocked]);
 
+  // Trigger auto-prompt exactly ONCE per session on mount when user is authenticated
   useEffect(() => {
-    if (!isUnlocked && currentUser) {
+    if (isUnlocked || !currentUser || hasAutoPromptedRef.current) return;
+
+    hasAutoPromptedRef.current = true;
+    const timer = setTimeout(() => {
       performBiometricAuth();
-    }
+    }, 250);
+
+    return () => clearTimeout(timer);
   }, [isUnlocked, currentUser, performBiometricAuth]);
 
   // If unlocked, render dashboard immediately

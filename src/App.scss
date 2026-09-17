@@ -71,6 +71,18 @@ textarea,
   -ms-user-select: text !important;
   user-select: text !important;
   -webkit-touch-callout: default !important;
+  caret-color: var(--color-gold, #d4af37) !important;
+  accent-color: var(--color-gold, #d4af37) !important;
+}
+
+::selection {
+  background-color: rgba(212, 175, 55, 0.35) !important;
+  color: #ffffff !important;
+}
+
+::-moz-selection {
+  background-color: rgba(212, 175, 55, 0.35) !important;
+  color: #ffffff !important;
 }
 
 // Mobile responsive typography scale

@@ -12,6 +12,7 @@ import {
   orderBy,
   serverTimestamp,
   writeBatch,
+  runTransaction,
 } from "firebase/firestore";
 import { initializeApp, getApps } from "firebase/app";
 import {
@@ -2022,6 +2023,7 @@ export const saveOrUpdateUserMeasurements = async (userId, measurementData) => {
  */
 
 const ORDERS_CACHE_KEY = "aparna_orders_cache";
+const OFFLINE_ORDERS_QUEUE_KEY = "aparna_offline_orders_queue";
 
 export const MOCK_ORDER_IDS = new Set([
   "ORD-58392",
@@ -2029,6 +2031,11 @@ export const MOCK_ORDER_IDS = new Set([
   "ORD-24915",
   "ORD-83921",
   "ORD-77770",
+  "ASPP-58392",
+  "ASPP-71940",
+  "ASPP-24915",
+  "ASPP-83921",
+  "ASPP-77770",
 ]);
 
 export const MOCK_CLIENT_IDS = new Set([
@@ -2039,6 +2046,44 @@ export const MOCK_CLIENT_IDS = new Set([
   "client_divya",
   "client_meenakshi",
 ]);
+
+/**
+ * Get offline orders queue from localStorage
+ */
+export const getOfflineOrdersQueue = () => {
+  try {
+    const raw = localStorage.getItem(OFFLINE_ORDERS_QUEUE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+/**
+ * Set offline orders queue to localStorage
+ */
+export const setOfflineOrdersQueue = (queue) => {
+  try {
+    localStorage.setItem(
+      OFFLINE_ORDERS_QUEUE_KEY,
+      JSON.stringify(Array.isArray(queue) ? queue : []),
+    );
+  } catch {}
+};
+
+/**
+ * Generate a collision-proof temporary offline order ID
+ * e.g. ASPP-TEMP-LM8X9-K4F2
+ */
+export const generateOfflineTempOrderId = () => {
+  const timePart = Date.now().toString(36).toUpperCase();
+  const randPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const tempId = `ASPP-TEMP-${timePart}-${randPart}`;
+  assignedOrderIds.add(tempId);
+  return tempId;
+};
 
 export const getCachedOrders = () => {
   try {
@@ -2084,37 +2129,187 @@ const assignedOrderIds = new Set();
 const docIdToOrderId = new Map();
 
 /**
- * Generate a unique 5-digit Order ID: ORD-***** (e.g. ORD-48291)
+ * Helper to get the highest existing sequential order number in the system (10001 - 19999)
+ * Strictly starts at 10000 and ignores any legacy random numbers (>20000) from previous testing.
  */
-export const generateOrderId = () => {
-  // Prime assignedOrderIds from cache
+export const getHighestOrderSequence = () => {
+  let highest = 10000;
   try {
-    const cached = getCachedOrders();
-    if (Array.isArray(cached)) {
-      cached.forEach((o) => {
-        if (o?.id) assignedOrderIds.add(String(o.id).trim());
-        if (o?.orderId) assignedOrderIds.add(String(o.orderId).trim());
-      });
+    const savedSeq = parseInt(
+      localStorage.getItem("aparna_last_order_seq"),
+      10,
+    );
+    if (!isNaN(savedSeq) && savedSeq >= 10001 && savedSeq < 20000) {
+      highest = Math.max(highest, savedSeq);
     }
-  } catch {}
+  } catch (err) {
+    console.warn("getHighestOrderSequence error:", err);
+  }
+  return highest;
+};
 
-  let candidate;
-  let attempts = 0;
-  do {
-    const random5 = Math.floor(10000 + Math.random() * 90000);
-    candidate = `ORD-${random5}`;
-    attempts++;
-  } while (assignedOrderIds.has(candidate) && attempts < 10000);
+/**
+ * Get next atomic sequential Order ID: ASPP-10001, ASPP-10002, ASPP-10003...
+ * Uses a Firestore transaction on the `counters/orders` document to guarantee
+ * unique sequential numbers across multiple concurrent users/devices starting at 10001.
+ */
+export const getNextSequentialOrderId = async () => {
+  try {
+    const counterRef = doc(db, COLLECTIONS.COUNTERS, "orders");
+    const nextNumber = await withTimeout(
+      runTransaction(db, async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        let current = 10000;
+        if (counterDoc.exists()) {
+          const data = counterDoc.data();
+          if (
+            typeof data.lastOrderNumber === "number" &&
+            data.lastOrderNumber >= 10000 &&
+            data.lastOrderNumber < 20000
+          ) {
+            current = data.lastOrderNumber;
+          } else {
+            current = getHighestOrderSequence();
+          }
+        } else {
+          current = 10000;
+        }
+        const next = current + 1;
+        transaction.set(
+          counterRef,
+          {
+            lastOrderNumber: next,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+        return next;
+      }),
+      8000,
+    );
 
-  // If high-density collisions occur, use high-entropy random
-  if (assignedOrderIds.has(candidate)) {
-    const random6 = Math.floor(100000 + Math.random() * 900000);
-    candidate = `ORD-${random6}`;
+    if (nextNumber && nextNumber >= 10001) {
+      localStorage.setItem("aparna_last_order_seq", String(nextNumber));
+      const orderIdStr = `ASPP-${nextNumber}`;
+      assignedOrderIds.add(orderIdStr);
+      return orderIdStr;
+    }
+  } catch (err) {
+    console.warn(
+      "Firestore counter transaction note (falling back to local generator):",
+      err.message || err,
+    );
   }
 
+  // Fallback sequential generation
+  return generateOrderId();
+};
+
+/**
+ * Synchronous sequential Order ID generator starting from 10001 (ASPP-10001, ASPP-10002, ...)
+ */
+export const generateOrderId = () => {
+  const currentMax = getHighestOrderSequence();
+  const nextSeq = currentMax + 1;
+  localStorage.setItem("aparna_last_order_seq", String(nextSeq));
+  const candidate = `ASPP-${nextSeq}`;
   assignedOrderIds.add(candidate);
   return candidate;
 };
+
+/**
+ * Synchronize all pending offline orders to Cloud Firestore with atomic official serial IDs
+ */
+export const syncOfflineOrders = async () => {
+  const queue = getOfflineOrdersQueue();
+  if (!queue || queue.length === 0) return 0;
+
+  let syncedCount = 0;
+  const remainingQueue = [];
+  const cachedOrders = getCachedOrders() || [];
+
+  for (const item of queue) {
+    try {
+      const tempId = item.id || item.orderId;
+      const isTemporary = String(tempId).startsWith("ASPP-TEMP-");
+
+      let officialOrderId = tempId;
+      if (isTemporary) {
+        officialOrderId = await getNextSequentialOrderId();
+      }
+
+      const updatedModel = createOrderModel({
+        ...item,
+        id: officialOrderId,
+        orderId: officialOrderId,
+        isOfflinePending: false,
+        tempOrderId: isTemporary ? tempId : null,
+        syncedAt: new Date().toISOString(),
+      });
+
+      if ("updatedAt" in updatedModel) delete updatedModel.updatedAt;
+      if ("updatedBy" in updatedModel) delete updatedModel.updatedBy;
+
+      // Save to Firestore with official ID
+      await withTimeout(
+        setDoc(doc(db, COLLECTIONS.ORDERS, officialOrderId), updatedModel),
+        8000,
+      );
+
+      // If it was a temporary draft, remove temp doc from Firestore
+      if (isTemporary && tempId !== officialOrderId) {
+        try {
+          await deleteDoc(doc(db, COLLECTIONS.ORDERS, tempId));
+        } catch {}
+      }
+
+      // Update cached order entry
+      const formatted = formatOrderDoc(officialOrderId, {
+        ...updatedModel,
+        createdAt: item.createdAt || new Date().toISOString(),
+        rawCreatedAt: item.rawCreatedAt || new Date().toISOString(),
+        orderDate: item.orderDate || new Date().toISOString(),
+      });
+
+      const idx = cachedOrders.findIndex(
+        (o) =>
+          o.id === tempId ||
+          o.orderId === tempId ||
+          o.id === officialOrderId,
+      );
+      if (idx >= 0) {
+        cachedOrders[idx] = formatted;
+      } else {
+        cachedOrders.unshift(formatted);
+      }
+
+      syncedCount++;
+    } catch (syncErr) {
+      console.warn("Failed to sync offline order, retaining in queue:", syncErr);
+      remainingQueue.push(item);
+    }
+  }
+
+  setOfflineOrdersQueue(remainingQueue);
+  setCachedOrders(cachedOrders);
+
+  if (syncedCount > 0 && typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent("aspp_orders_synced", {
+        detail: { count: syncedCount },
+      }),
+    );
+  }
+
+  return syncedCount;
+};
+
+// Automatic listener to trigger sync as soon as internet connection is restored
+if (typeof window !== "undefined") {
+  window.addEventListener("online", () => {
+    syncOfflineOrders().catch(() => {});
+  });
+}
 
 /**
  * Format order document object ensuring clean, persistent ID
@@ -2216,6 +2411,8 @@ const formatOrderDoc = (id, data) => {
     rawUpdatedAt: rawUpdated,
     createdBy: data.createdBy || "",
     updatedBy: data.updatedBy || "",
+    isOfflinePending: Boolean(data.isOfflinePending),
+    tempOrderId: data.tempOrderId || null,
   };
 };
 
@@ -2223,7 +2420,8 @@ const formatOrderDoc = (id, data) => {
 const recentOrderCreations = new Map();
 
 /**
- * Create a new order with 5-digit Order ID: ORD-*****
+ * Create a new order with sequential serial Order ID: ASPP-10001, ASPP-10002, ASPP-10003...
+ * (Or temporary offline ID ASPP-TEMP-... if disconnected, auto-promoted to official serial upon sync)
  * @param {Object} orderData
  */
 export const createOrder = async (orderData) => {
@@ -2250,16 +2448,46 @@ export const createOrder = async (orderData) => {
     }
   }
 
-  const orderId = orderData.id || orderData.orderId || generateOrderId();
+  const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
+
+  let orderId = String(orderData.id || orderData.orderId || "").trim();
+  let isOfflineOrder = false;
+
+  if (
+    !orderId ||
+    orderId === "ASPP-NEW" ||
+    orderId === "ORD-NEW" ||
+    orderId === "NEW"
+  ) {
+    if (isOnline) {
+      try {
+        orderId = await getNextSequentialOrderId();
+      } catch (err) {
+        console.warn(
+          "Could not get online sequential order ID, generating offline temp ID:",
+          err,
+        );
+        orderId = generateOfflineTempOrderId();
+        isOfflineOrder = true;
+      }
+    } else {
+      orderId = generateOfflineTempOrderId();
+      isOfflineOrder = true;
+    }
+  } else {
+    assignedOrderIds.add(orderId);
+  }
+
   const currentUid = orderData.createdBy || auth?.currentUser?.uid || "";
   const model = createOrderModel({
     ...orderData,
     id: orderId,
     orderId,
     createdBy: currentUid,
+    isOfflinePending: isOfflineOrder,
+    tempOrderId: isOfflineOrder ? orderId : null,
   });
 
-  // On creation: pass only createdAt; strictly ensure updatedAt and updatedBy are not present
   if ("updatedAt" in model) {
     delete model.updatedAt;
   }
@@ -2269,16 +2497,18 @@ export const createOrder = async (orderData) => {
 
   let createdId = orderId;
 
-  try {
-    await withTimeout(
-      setDoc(doc(db, COLLECTIONS.ORDERS, orderId), model),
-      4500,
-    );
-  } catch (err) {
-    console.warn(
-      "createOrder firestore note (using local ID):",
-      err.message || err,
-    );
+  if (!isOfflineOrder && isOnline) {
+    try {
+      await withTimeout(
+        setDoc(doc(db, COLLECTIONS.ORDERS, orderId), model),
+        8000,
+      );
+    } catch (err) {
+      console.warn(
+        "createOrder firestore note (setDoc failed):",
+        err.message || err,
+      );
+    }
   }
 
   const now = new Date();
@@ -2293,6 +2523,15 @@ export const createOrder = async (orderData) => {
   // Update local cache
   const cached = getCachedOrders() || [];
   setCachedOrders([formatted, ...cached.filter((o) => o.id !== createdId)]);
+
+  // If this was an offline temporary order, queue for background sync
+  if (isOfflineOrder && orderId.startsWith("ASPP-TEMP-")) {
+    const queue = getOfflineOrdersQueue();
+    setOfflineOrdersQueue([
+      ...queue.filter((q) => q.id !== createdId),
+      formatted,
+    ]);
+  }
 
   // Cache created order signature to block duplicate calls
   recentOrderCreations.set(signature, {
@@ -2311,18 +2550,22 @@ export const createOrder = async (orderData) => {
 };
 
 /**
- * Get all orders across the orders collection (with cache and initial seeds)
+ * Get all orders across the orders collection (with deduplication and atomic sync)
  */
 export const getAllOrders = async () => {
+  // Trigger background sync for any queued offline orders
+  if (typeof navigator === "undefined" || navigator.onLine) {
+    syncOfflineOrders().catch(() => {});
+  }
   try {
     const snapshot = await withTimeout(
       getDocs(collection(db, COLLECTIONS.ORDERS)),
-      4500,
+      6000,
       null,
     );
 
     if (snapshot && !snapshot.empty) {
-      const orders = snapshot.docs
+      const rawOrders = snapshot.docs
         .map((d) => formatOrderDoc(d.id, d.data()))
         .filter(
           (o) =>
@@ -2333,8 +2576,38 @@ export const getAllOrders = async () => {
             !MOCK_CLIENT_IDS.has(o.clientId) &&
             !String(o.clientId || "").startsWith("client_mock"),
         );
-      setCachedOrders(orders);
-      return orders;
+
+      // Deduplicate orders by ID and unique signature (same client + amount + orderDate within 30s)
+      const seenIds = new Set();
+      const seenSignatures = new Map();
+      const uniqueOrders = [];
+
+      for (const ord of rawOrders) {
+        if (seenIds.has(ord.id)) continue;
+        seenIds.add(ord.id);
+
+        const sig = `${ord.clientId || ord.userMobile || ord.username}_${ord.totalAmount}_${ord.orderDate || ord.deliveryDate}`;
+        const existing = seenSignatures.get(sig);
+        if (existing) {
+          const timeDiff = Math.abs(
+            new Date(ord.rawCreatedAt || ord.createdAt).getTime() -
+              new Date(existing.rawCreatedAt || existing.createdAt).getTime(),
+          );
+          if (timeDiff < 30000) {
+            // Redundant duplicate detected! Skip it and delete from Firestore in background
+            try {
+              deleteDoc(doc(db, COLLECTIONS.ORDERS, ord.id));
+            } catch {}
+            continue;
+          }
+        }
+
+        seenSignatures.set(sig, ord);
+        uniqueOrders.push(ord);
+      }
+
+      setCachedOrders(uniqueOrders);
+      return uniqueOrders;
     }
 
     const cached = getCachedOrders();
@@ -2779,6 +3052,11 @@ if (typeof window !== "undefined") {
       "ORD-24915",
       "ORD-83921",
       "ORD-77770",
+      "ASPP-58392",
+      "ASPP-71940",
+      "ASPP-24915",
+      "ASPP-83921",
+      "ASPP-77770",
     ]);
     const rawOrders = localStorage.getItem(ORDERS_CACHE_KEY);
     if (rawOrders) {
@@ -2791,8 +3069,29 @@ if (typeof window !== "undefined") {
             !MOCK_ORDERS.has(o.id) &&
             !MOCK_CLIENT_IDS.has(o.clientId),
         );
-        localStorage.setItem(ORDERS_CACHE_KEY, JSON.stringify(cleaned));
+
+        // Deduplicate identical orders created within same minute
+        const seen = new Map();
+        const deduplicated = [];
+        for (const o of cleaned) {
+          const sig = `${o.clientId || o.userMobile || o.username}_${o.totalAmount}_${o.orderDate || o.deliveryDate}`;
+          if (!seen.has(sig)) {
+            seen.set(sig, o);
+            deduplicated.push(o);
+          }
+        }
+
+        localStorage.setItem(ORDERS_CACHE_KEY, JSON.stringify(deduplicated));
       }
+    }
+
+    // Reset any legacy random sequence number in localStorage from previous testing
+    const currentStoredSeq = parseInt(
+      localStorage.getItem("aparna_last_order_seq"),
+      10,
+    );
+    if (!isNaN(currentStoredSeq) && currentStoredSeq > 19999) {
+      localStorage.removeItem("aparna_last_order_seq");
     }
   } catch {}
 }

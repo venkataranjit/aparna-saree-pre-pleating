@@ -252,6 +252,15 @@ const Bookings = () => {
 
   useEffect(() => {
     fetchOrders();
+
+    const handleSynced = () => {
+      fetchOrders(false);
+    };
+
+    window.addEventListener("aspp_orders_synced", handleSynced);
+    return () => {
+      window.removeEventListener("aspp_orders_synced", handleSynced);
+    };
   }, [fetchOrders]);
 
   const handleOrderCreated = (newOrder) => {

@@ -1426,7 +1426,7 @@ export default function CreateOrderModal({
       }
 
       toast.success(
-        `Order ${created.id || "ORD-NEW"} booked successfully for ${cleanName}!`,
+        `Order ${created.id || "ASPP-NEW"} booked successfully for ${cleanName}!`,
       );
 
       if (onOrderCreated) {

@@ -306,7 +306,7 @@ const Overview = () => {
               change={
                 totalOrders === 1
                   ? "1 Active Job"
-                  : `${totalOrders} Orders Total`
+                  : `Total Orders ${totalOrders}`
               }
               trendType="completed"
               icon={<ReceiptLongOutlinedIcon />}
@@ -318,7 +318,7 @@ const Overview = () => {
               change={
                 totalServices === 1
                   ? "1 Active Offering"
-                  : `${totalServices} Services`
+                  : `Total Services ${totalServices}`
               }
               trendType="completed"
               icon={<DryCleaningOutlinedIcon />}
@@ -330,7 +330,7 @@ const Overview = () => {
               change={
                 clientsCount === 1
                   ? "1 Registered Client"
-                  : `${clientsCount} Registered Clients`
+                  : `Total Clients ${clientsCount}`
               }
               trendType="completed"
               icon={<PeopleOutlineIcon />}

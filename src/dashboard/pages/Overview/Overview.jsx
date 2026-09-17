@@ -318,7 +318,7 @@ const Overview = () => {
               change={
                 totalServices === 1
                   ? "1 Active Offering"
-                  : `${totalServices} Saree Offerings`
+                  : `${totalServices} Services`
               }
               trendType="completed"
               icon={<DryCleaningOutlinedIcon />}
@@ -354,11 +354,7 @@ const Overview = () => {
             <div className="wrapper">
               {GALLERY_IMAGES.map((item, idx) => (
                 <div key={idx}>
-                  <img
-                    src={item.src}
-                    alt={item.alt}
-                    loading="lazy"
-                  />
+                  <img src={item.src} alt={item.alt} loading="lazy" />
                 </div>
               ))}
             </div>

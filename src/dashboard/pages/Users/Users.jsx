@@ -793,7 +793,21 @@ const Users = () => {
                             }}
                           >
                             <div className="user-avatar-circle">
-                              {u.username?.charAt(0).toUpperCase()}
+                              {u.photoURL ? (
+                                <img
+                                  src={u.photoURL}
+                                  alt={u.username}
+                                  className="user-avatar-img"
+                                  referrerPolicy="no-referrer"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = "none";
+                                  }}
+                                />
+                              ) : null}
+                              {!u.photoURL &&
+                                (u.username?.charAt(0).toUpperCase() || (
+                                  <PersonOutlineIcon style={{ fontSize: 16 }} />
+                                ))}
                             </div>
                             <div>
                               <div className="user-name-text">
@@ -994,7 +1008,21 @@ const Users = () => {
                 <div key={u.id} className={`user-grid-card ${u.disabled ? "user-grid-card--disabled" : ""}`}>
                   <div className="card-top-accent" />
                   <div className="card-header">
-                    <div className="user-avatar-circle">{initial}</div>
+                    <div className="user-avatar-circle">
+                      {u.photoURL ? (
+                        <img
+                          src={u.photoURL}
+                          alt={u.username}
+                          className="user-avatar-img"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        initial
+                      )}
+                    </div>
                     <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
                       {renderRoleBadge(u)}
                       <AppBadge variant={u.disabled ? "danger" : "completed"}>
@@ -1104,7 +1132,19 @@ const Users = () => {
                 <div key={u.id} className={`user-detailed-card ${u.disabled ? "user-detailed-card--disabled" : ""}`}>
                   <div className="detailed-card-left">
                     <div className="user-avatar-circle user-avatar-circle-lg">
-                      {initial}
+                      {u.photoURL ? (
+                        <img
+                          src={u.photoURL}
+                          alt={u.username}
+                          className="user-avatar-img"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        initial
+                      )}
                     </div>
                   </div>
 

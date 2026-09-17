@@ -252,6 +252,7 @@ const MyProfile = () => {
     userProfile?.userMobile || currentUser?.phoneNumber || "";
   const displayAddress = userProfile?.userAddress || "";
   const avatarChar = displayName ? displayName.charAt(0).toUpperCase() : "";
+  const userPhoto = userProfile?.photoURL || currentUser?.photoURL || null;
 
   const roleLabel =
     isSuperAdmin || role === "superadmin"
@@ -652,7 +653,21 @@ const MyProfile = () => {
         <div className="hero-main-row">
           <div className="hero-identity">
             <div className="profile-avatar-large">
-              {avatarChar || <PersonOutlineIcon />}
+              {userPhoto ? (
+                <img
+                  src={userPhoto}
+                  alt={displayName}
+                  className="profile-avatar-img"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              ) : avatarChar ? (
+                <span>{avatarChar}</span>
+              ) : (
+                <PersonOutlineIcon />
+              )}
             </div>
             <div>
               <h2 className="user-display-name">

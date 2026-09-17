@@ -142,6 +142,7 @@ const Sidebar = ({
             : "";
 
   const avatarChar = displayName ? displayName.charAt(0).toUpperCase() : "";
+  const userPhoto = userProfile?.photoURL || currentUser?.photoURL || null;
 
   const handleItemClick = async (item, e) => {
     if (item.label === "Logout") {
@@ -354,7 +355,17 @@ const Sidebar = ({
           <div className="profile-inner-row">
             <div className="avatar-wrapper">
               <div className="user-avatar-squircle">
-                {avatarChar ? (
+                {userPhoto ? (
+                  <img
+                    src={userPhoto}
+                    alt={displayName}
+                    className="user-avatar-img"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                ) : avatarChar ? (
                   <span className="avatar-char">{avatarChar}</span>
                 ) : (
                   <PersonOutlineIcon />

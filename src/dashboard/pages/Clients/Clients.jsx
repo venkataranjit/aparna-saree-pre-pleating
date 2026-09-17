@@ -1100,7 +1100,23 @@ const Clients = () => {
                               gap: 12,
                             }}
                           >
-                            <div className="user-avatar-circle">{initial}</div>
+                            <div className="user-avatar-circle">
+                              {user.photoURL ? (
+                                <img
+                                  src={user.photoURL}
+                                  alt={user.username}
+                                  className="user-avatar-img"
+                                  referrerPolicy="no-referrer"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = "none";
+                                  }}
+                                />
+                              ) : null}
+                              {!user.photoURL &&
+                                (initial || (
+                                  <PersonOutlineIcon style={{ fontSize: 16 }} />
+                                ))}
+                            </div>
                             <div>
                               <div className="user-name-text">
                                 {user.username || "Client"}
@@ -1406,7 +1422,21 @@ const Clients = () => {
                   <div key={user.id} className={`client-grid-card ${user.disabled ? "client-grid-card--disabled" : ""}`}>
                   <div className="card-top-accent" />
                   <div className="card-header">
-                    <div className="user-avatar-circle">{initial}</div>
+                    <div className="user-avatar-circle">
+                      {user.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt={user.username}
+                          className="user-avatar-img"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        initial
+                      )}
+                    </div>
                     <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
                       <span
                         onClick={() =>
@@ -1575,7 +1605,19 @@ const Clients = () => {
                 <div key={user.id} className={`client-detailed-card ${user.disabled ? "client-detailed-card--disabled" : ""}`}>
                   <div className="detailed-card-left">
                     <div className="user-avatar-circle user-avatar-circle-lg">
-                      {initial}
+                      {user.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt={user.username}
+                          className="user-avatar-img"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        initial
+                      )}
                     </div>
                   </div>
 

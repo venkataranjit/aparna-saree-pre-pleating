@@ -2017,12 +2017,12 @@ export const setOfflineOrdersQueue = (queue) => {
 
 /**
  * Generate a collision-proof temporary offline order ID
- * e.g. ASPP-TEMP-LM8X9-K4F2
+ * e.g. A-TEMP-LM8X9-K4F2-SPP
  */
 export const generateOfflineTempOrderId = () => {
   const timePart = Date.now().toString(36).toUpperCase();
   const randPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-  const tempId = `ASPP-TEMP-${timePart}-${randPart}`;
+  const tempId = `A-TEMP-${timePart}-${randPart}-SPP`;
   assignedOrderIds.add(tempId);
   return tempId;
 };
@@ -2075,7 +2075,7 @@ export const getHighestOrderSequence = () => {
 };
 
 /**
- * Get next atomic sequential Order ID: ASPP-10001, ASPP-10002, ASPP-10003...
+ * Get next atomic sequential Order ID: A-10001-SPP, A-10002-SPP, A-10003-SPP...
  * Uses a Firestore transaction on the `counters/orders` document to guarantee
  * unique sequential numbers across multiple concurrent users/devices starting at 10001.
  */
@@ -2116,7 +2116,7 @@ export const getNextSequentialOrderId = async () => {
 
     if (nextNumber && nextNumber >= 10001) {
       localStorage.setItem("aparna_last_order_seq", String(nextNumber));
-      const orderIdStr = `ASPP-${nextNumber}`;
+      const orderIdStr = `A-${nextNumber}-SPP`;
       assignedOrderIds.add(orderIdStr);
       return orderIdStr;
     }
@@ -2132,13 +2132,13 @@ export const getNextSequentialOrderId = async () => {
 };
 
 /**
- * Synchronous sequential Order ID generator starting from 10001 (ASPP-10001, ASPP-10002, ...)
+ * Synchronous sequential Order ID generator starting from 10001 (A-10001-SPP, A-10002-SPP, ...)
  */
 export const generateOrderId = () => {
   const currentMax = getHighestOrderSequence();
   const nextSeq = currentMax + 1;
   localStorage.setItem("aparna_last_order_seq", String(nextSeq));
-  const candidate = `ASPP-${nextSeq}`;
+  const candidate = `A-${nextSeq}-SPP`;
   assignedOrderIds.add(candidate);
   return candidate;
 };
@@ -2157,7 +2157,9 @@ export const syncOfflineOrders = async () => {
   for (const item of queue) {
     try {
       const tempId = item.id || item.orderId;
-      const isTemporary = String(tempId).startsWith("ASPP-TEMP-");
+      const isTemporary =
+        String(tempId).startsWith("A-TEMP-") ||
+        String(tempId).startsWith("ASPP-TEMP-");
 
       let officialOrderId = tempId;
       if (isTemporary) {
@@ -2381,6 +2383,8 @@ export const createOrder = async (orderData) => {
 
   if (
     !orderId ||
+    orderId === "A-NEW-SPP" ||
+    orderId === "A-NEW" ||
     orderId === "ASPP-NEW" ||
     orderId === "ORD-NEW" ||
     orderId === "NEW"
@@ -2451,7 +2455,10 @@ export const createOrder = async (orderData) => {
   setCachedOrders([formatted, ...cached.filter((o) => o.id !== createdId)]);
 
   // If this was an offline temporary order, queue for background sync
-  if (isOfflineOrder && orderId.startsWith("ASPP-TEMP-")) {
+  if (
+    isOfflineOrder &&
+    (orderId.startsWith("A-TEMP-") || orderId.startsWith("ASPP-TEMP-"))
+  ) {
     const queue = getOfflineOrdersQueue();
     setOfflineOrdersQueue([
       ...queue.filter((q) => q.id !== createdId),

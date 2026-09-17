@@ -328,72 +328,13 @@ const MyProfile = () => {
   // Determine if logged in user is coming from Gmail/Google, Facebook, or Mobile OTP:
   // If so, do not show the Change Password option in the Edit My Profile Details popup
   const canChangePassword = useMemo(() => {
-    // 1. Check direct session / local storage login provider flag
-    try {
-      const sessionProvider = (
-        sessionStorage.getItem("aparna_login_provider") || ""
-      ).toLowerCase();
-      const localProvider = (
-        localStorage.getItem("aparna_auth_provider") || ""
-      ).toLowerCase();
-      const directProvider = sessionProvider || localProvider;
-      if (
-        directProvider === "google" ||
-        directProvider === "gmail" ||
-        directProvider === "facebook" ||
-        directProvider === "phone_otp" ||
-        directProvider === "phone"
-      ) {
-        return false;
-      }
-    } catch {}
-
-    // 2. Check profile metadata in Firestore / Local Storage
-    const profileProvider = (
-      userProfile?.authProvider ||
-      userProfile?.loginMethod ||
-      userProfile?.provider ||
+    // Any account with an email can set or update their account password to enable dual login
+    const email = (
+      currentUser?.email ||
+      userProfile?.email ||
       ""
-    ).toLowerCase();
-    if (
-      profileProvider.includes("google") ||
-      profileProvider.includes("gmail") ||
-      profileProvider.includes("facebook") ||
-      profileProvider.includes("phone") ||
-      profileProvider.includes("otp")
-    ) {
-      return false;
-    }
-
-    // 3. Check Firebase Auth user provider data
-    const liveUser = auth?.currentUser;
-    const allProviders = [
-      ...(liveUser?.providerData || []).map((p) => p?.providerId || ""),
-      ...(currentUser?.providerData || []).map((p) => p?.providerId || ""),
-      ...(currentUser?.providerIds || []),
-      liveUser?.providerId || "",
-      currentUser?.providerId || "",
-    ].map((p) => String(p).toLowerCase());
-
-    const isGoogle = allProviders.some((p) => p.includes("google"));
-    const isFacebook = allProviders.some((p) => p.includes("facebook"));
-    const isPhone =
-      allProviders.some((p) => p.includes("phone")) ||
-      Boolean(currentUser?.phoneNumber && !currentUser?.email);
-
-    if (isGoogle || isFacebook || isPhone) {
-      return false;
-    }
-
-    // 4. Check if phone-only login (no email registered, only phone)
-    if (
-      !currentUser?.email &&
-      (currentUser?.phoneNumber || userProfile?.userMobile)
-    ) {
-      return false;
-    }
-
-    return true;
+    ).trim();
+    return Boolean(email && email.length > 0 && email.includes("@"));
   }, [currentUser, userProfile]);
 
   // Edit Profile Formik

@@ -586,73 +586,160 @@ export const saveLocalMeasurements = (measurements) => {
  * @param {string} uid - Firebase Auth UID
  * @param {Object} userData
  */
-export const createUserProfile = async (uid, userData) => {
+export const createUserProfile = async (uid, userData = {}) => {
   const docRef = doc(db, COLLECTIONS.USERS, uid);
-  let resolvedRole = userData.role;
+  let existingData = null;
+  const cleanEmail = (userData.email || "").trim().toLowerCase();
 
   try {
     const existingSnap = await withTimeout(getDoc(docRef), 3000, null);
     if (existingSnap && existingSnap.exists()) {
-      const existingData = existingSnap.data();
-      if (
-        existingData?.role &&
-        (!userData.role || userData.role === USER_ROLES.CLIENT)
-      ) {
-        resolvedRole = existingData.role;
-      }
-    } else if (userData.email) {
-      const cleanEmail = userData.email.trim().toLowerCase();
+      existingData = existingSnap.data();
+    } else if (cleanEmail) {
       const q = query(
         collection(db, COLLECTIONS.USERS),
         where("email", "==", cleanEmail),
       );
       const emailSnap = await withTimeout(getDocs(q), 3000, null);
       if (emailSnap && !emailSnap.empty) {
-        const existingData = emailSnap.docs[0].data();
-        if (
-          existingData?.role &&
-          (!userData.role || userData.role === USER_ROLES.CLIENT)
-        ) {
-          resolvedRole = existingData.role;
-        }
+        existingData = emailSnap.docs[0].data();
       }
     }
   } catch {}
 
-  // Also check local cache for any registered role
-  if (!resolvedRole || resolvedRole === USER_ROLES.CLIENT) {
-    const localList = getLocalUsers();
-    const localMatch = localList.find(
-      (u) =>
-        (u.id && u.id === uid) ||
-        (u.email &&
-          userData.email &&
-          (u.email || "").trim().toLowerCase() ===
-            userData.email.trim().toLowerCase()),
-    );
-    if (localMatch?.role && localMatch.role !== USER_ROLES.CLIENT) {
-      resolvedRole = localMatch.role;
-    }
-  }
+  // Also check local cache for existing user data
+  const localList = getLocalUsers();
+  const localMatch = localList.find(
+    (u) =>
+      (u.id && u.id === uid) ||
+      (u.email &&
+        cleanEmail &&
+        (u.email || "").trim().toLowerCase() === cleanEmail),
+  );
 
-  // SuperAdmin override
+  // Determine role safely
+  let resolvedRole = userData.role;
   if (
-    userData.email &&
-    userData.email.trim().toLowerCase() === SUPERADMIN_EMAIL.toLowerCase()
+    cleanEmail === SUPERADMIN_EMAIL.toLowerCase() ||
+    userData.role === USER_ROLES.SUPERADMIN
   ) {
     resolvedRole = USER_ROLES.SUPERADMIN;
+  } else if (
+    existingData?.role &&
+    (!userData.role || userData.role === USER_ROLES.CLIENT)
+  ) {
+    resolvedRole = existingData.role;
+  } else if (
+    localMatch?.role &&
+    (!userData.role || userData.role === USER_ROLES.CLIENT)
+  ) {
+    resolvedRole = localMatch.role;
+  }
+  if (!resolvedRole) resolvedRole = USER_ROLES.CLIENT;
+
+  // Intelligently merge username, userMobile, userAddress, etc.
+  // NEVER overwrite existing non-empty address/phone with empty string!
+  const isGenericName = (name) =>
+    !name ||
+    ["User", "Google User", "Facebook User", "Client"].includes(name.trim());
+
+  let finalUsername = "";
+  if (
+    userData.username &&
+    userData.username.trim() &&
+    !isGenericName(userData.username)
+  ) {
+    finalUsername = userData.username.trim();
+  } else if (existingData?.username && !isGenericName(existingData.username)) {
+    finalUsername = existingData.username.trim();
+  } else if (localMatch?.username && !isGenericName(localMatch.username)) {
+    finalUsername = localMatch.username.trim();
+  } else {
+    finalUsername = (
+      userData.username ||
+      existingData?.username ||
+      localMatch?.username ||
+      (resolvedRole === USER_ROLES.SUPERADMIN ? "Victory Ranjit" : "User")
+    ).trim();
   }
 
-  const model = createUserModel({
+  const finalMobile =
+    (userData.userMobile && userData.userMobile.trim()) ||
+    existingData?.userMobile ||
+    localMatch?.userMobile ||
+    "";
+
+  const finalAddress =
+    (userData.userAddress && userData.userAddress.trim()) ||
+    existingData?.userAddress ||
+    localMatch?.userAddress ||
+    "";
+
+  const finalMeasurementId =
+    userData.measurementId ||
+    existingData?.measurementId ||
+    localMatch?.measurementId ||
+    null;
+
+  const finalAuthProvider =
+    userData.authProvider ||
+    existingData?.authProvider ||
+    localMatch?.authProvider ||
+    null;
+
+  const finalPhotoURL =
+    userData.photoURL ||
+    existingData?.photoURL ||
+    localMatch?.photoURL ||
+    null;
+
+  const finalIsActive =
+    typeof userData.isActive === "boolean"
+      ? userData.isActive
+      : typeof existingData?.isActive === "boolean"
+        ? existingData.isActive
+        : true;
+
+  const model = {
+    ...(existingData || {}),
     ...userData,
-    role: resolvedRole || USER_ROLES.CLIENT,
-  });
+    username: String(finalUsername).trim(),
+    email: cleanEmail,
+    userMobile: String(finalMobile).trim(),
+    userAddress: String(finalAddress).trim(),
+    role: resolvedRole,
+    measurementId: finalMeasurementId ? String(finalMeasurementId).trim() : null,
+    authProvider: finalAuthProvider,
+    photoURL: finalPhotoURL,
+    isActive: finalIsActive,
+    createdAt: existingData?.createdAt || serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
 
   try {
     await withTimeout(setDoc(docRef, model, { merge: true }), 3500);
   } catch (err) {
     console.warn("createUserProfile firestore note:", err.message || err);
   }
+
+  // Also sync to local cache
+  const updatedLocal = localList.map((u) =>
+    (u.id && u.id === uid) ||
+    (cleanEmail && (u.email || "").trim().toLowerCase() === cleanEmail)
+      ? { ...u, ...model, id: uid }
+      : u,
+  );
+  if (
+    !updatedLocal.some(
+      (u) =>
+        (u.id && u.id === uid) ||
+        (cleanEmail && (u.email || "").trim().toLowerCase() === cleanEmail),
+    )
+  ) {
+    updatedLocal.push({ ...model, id: uid });
+  }
+  saveLocalUsers(updatedLocal);
+
   return { id: uid, ...model };
 };
 

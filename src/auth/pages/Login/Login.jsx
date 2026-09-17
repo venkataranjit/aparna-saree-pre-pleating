@@ -147,7 +147,8 @@ const Login = () => {
             username: user.displayName || (isSuper ? "Victory Ranjit" : "User"),
             email: userEmail,
             userMobile: user.phoneNumber || "",
-            userAddress: "",
+            photoURL: user.photoURL || null,
+            authProvider: "google",
           });
         } catch (dbErr) {
           console.warn("Firestore user sync after redirect note:", dbErr);
@@ -308,7 +309,8 @@ const Login = () => {
         err.code === "auth/wrong-password" ||
         err.code === "auth/invalid-credential"
       ) {
-        message = "Invalid email or password.";
+        message =
+          "Invalid email or password. If you signed in with Google, you can continue with Google or use 'Forgot Password' to set your account password.";
       } else if (err.code === "auth/invalid-email") {
         message = "Please enter a valid email address.";
       } else if (err.code === "auth/user-disabled") {
@@ -523,7 +525,7 @@ const Login = () => {
           username: user.displayName || (isSuper ? "Victory Ranjit" : "Client"),
           email: userEmail,
           userMobile: user.phoneNumber || `+91${phone.trim()}`,
-          userAddress: "",
+          photoURL: user.photoURL || null,
           authProvider: "phone_otp",
         });
       } catch (dbErr) {
@@ -587,7 +589,7 @@ const Login = () => {
             user.displayName || (isSuper ? "Victory Ranjit" : "Google User"),
           email: userEmail,
           userMobile: user.phoneNumber || "",
-          userAddress: "",
+          photoURL: user.photoURL || null,
           authProvider: "google",
         });
       } catch (dbErr) {
@@ -671,7 +673,7 @@ const Login = () => {
             user.displayName || (isSuper ? "Victory Ranjit" : "Facebook User"),
           email: userEmail,
           userMobile: user.phoneNumber || "",
-          userAddress: "",
+          photoURL: user.photoURL || null,
           authProvider: "facebook",
         });
       } catch (dbErr) {

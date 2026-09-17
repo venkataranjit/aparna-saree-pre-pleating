@@ -186,7 +186,8 @@ const Register = () => {
             username: user.displayName || (isSuper ? "Victory Ranjit" : "User"),
             email: userEmail,
             userMobile: user.phoneNumber || "",
-            userAddress: "",
+            photoURL: user.photoURL || null,
+            authProvider: "google",
           });
         } catch (dbErr) {
           console.warn("Firestore user sync after redirect note:", dbErr);
@@ -255,7 +256,7 @@ const Register = () => {
             user.displayName || (isSuper ? "Victory Ranjit" : "Google User"),
           email: userEmail,
           userMobile: user.phoneNumber || "",
-          userAddress: "",
+          photoURL: user.photoURL || null,
           authProvider: "google",
         });
       } catch (dbErr) {
@@ -336,7 +337,7 @@ const Register = () => {
             user.displayName || (isSuper ? "Victory Ranjit" : "Facebook User"),
           email: userEmail,
           userMobile: user.phoneNumber || "",
-          userAddress: "",
+          photoURL: user.photoURL || null,
           authProvider: "facebook",
         });
       } catch (dbErr) {

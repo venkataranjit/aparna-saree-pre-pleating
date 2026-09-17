@@ -30,6 +30,7 @@
         letter-spacing: -0.3px;
         line-height: 1.2;
         margin: 0;
+        text-transform: capitalize;
 
         @media (max-width: 600px) {
           font-size: 1.45rem !important;

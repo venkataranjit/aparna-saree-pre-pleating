@@ -1,4 +1,4 @@
-@use '../../styles/variables' as *;
+@use "../../styles/variables" as *;
 
 .landing-footer {
   background-color: #080808;
@@ -9,7 +9,7 @@
   position: relative;
 
   @media (max-width: 899px) {
-    padding: $spacing-md 0 85px;
+    padding: $spacing-md 0 60px;
   }
 
   &::before {
@@ -91,7 +91,9 @@
       .ext-icon {
         font-size: 0.85rem;
         color: rgba(212, 175, 55, 0.75);
-        transition: transform 0.2s ease, color 0.2s ease;
+        transition:
+          transform 0.2s ease,
+          color 0.2s ease;
       }
 
       &:hover {

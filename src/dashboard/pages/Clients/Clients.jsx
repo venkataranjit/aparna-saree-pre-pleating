@@ -311,9 +311,12 @@ const Clients = () => {
     }
   };
 
+  const [refreshing, setRefreshing] = useState(false);
+
   // Fetch only Client details and their measurements
-  const fetchClients = async () => {
+  const fetchClients = async (isManualRefresh = false) => {
     setLoading(true);
+    if (isManualRefresh) setRefreshing(true);
     try {
       let records = await getAllUsers();
       if (!records || records.length === 0) {
@@ -358,6 +361,9 @@ const Clients = () => {
       } else {
         setClients([]);
       }
+      if (isManualRefresh) {
+        toast.success("Clients directory refreshed from database.");
+      }
     } catch (err) {
       console.warn("Error fetching clients from Firebase:", err);
       const cached = getLocalUsers()
@@ -381,13 +387,17 @@ const Clients = () => {
           rawUpdatedAt: u.rawUpdatedAt || u.updatedAt,
         }));
       setClients(cached || []);
+      if (isManualRefresh) {
+        toast.error("Failed to refresh clients from database.");
+      }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchClients();
+    fetchClients(false);
   }, [currentUser, userProfile, role]);
 
   // Handle opening Edit Modal
@@ -883,13 +893,15 @@ const Clients = () => {
             variant="secondary"
             size="md"
             startIcon={
-              <RefreshOutlinedIcon className={loading ? "spin-icon" : ""} />
+              <RefreshOutlinedIcon
+                className={loading || refreshing ? "spin-icon" : ""}
+              />
             }
-            onClick={fetchClients}
-            disabled={loading}
+            onClick={() => fetchClients(true)}
+            disabled={loading || refreshing}
             className="refresh-btn"
           >
-            {loading ? "Refreshing..." : "Refresh"}
+            {loading || refreshing ? "Refreshing..." : "Refresh"}
           </AppButton>
 
           <AppButton

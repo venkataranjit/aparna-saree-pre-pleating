@@ -30,6 +30,7 @@ import {
   getMeasurementsByUserId,
   formatDateSafe,
 } from "../../../firebase/dbService";
+import { toast } from "react-toastify";
 import "./Overview.scss";
 import g1 from "../../../assets/g1.jpg";
 import g2 from "../../../assets/g2.jpg";
@@ -112,59 +113,72 @@ const Overview = () => {
     }
   };
 
-  const loadOverviewData = useCallback(async () => {
-    setLoading(true);
-    try {
-      if (isClient) {
-        // Strictly isolated client loader: fetch only current client's data
-        if (currentUid) {
-          const [myOrdersData, myMeasuresData, activeServicesData] =
-            await Promise.all([
-              getOrdersByUserId(currentUid).catch(() => []),
-              getMeasurementsByUserId(currentUid).catch(() => []),
-              getAllServices(true).catch(() => []),
-            ]);
-          setOrders(myOrdersData || []);
-          setClientMeasurements(myMeasuresData || []);
-          setServices(activeServicesData || []);
-        } else {
-          setOrders([]);
-          setClientMeasurements([]);
-          setServices([]);
-        }
-      } else {
-        // Standard Admin / Staff Loader
-        const [ordersData, servicesData, clientsData, usersData] =
-          await Promise.all([
-            getAllOrders().catch(() => []),
-            getAllServices(false).catch(() => []),
-            getAllClients().catch(() => []),
-            getAllUsers().catch(() => []),
-          ]);
+  const [refreshing, setRefreshing] = useState(false);
 
-        setOrders(ordersData || []);
-        setServices(servicesData || []);
-
-        const clientIds = new Set();
-        (clientsData || []).forEach((c) => {
-          if (c && c.id) clientIds.add(c.id);
-        });
-        (usersData || []).forEach((u) => {
-          if (u && (u.role === USER_ROLES.CLIENT || !u.role)) {
-            clientIds.add(u.id || u.email);
+  const loadOverviewData = useCallback(
+    async (isManualRefresh = false) => {
+      setLoading(true);
+      if (isManualRefresh) setRefreshing(true);
+      try {
+        if (isClient) {
+          // Strictly isolated client loader: fetch only current client's data
+          if (currentUid) {
+            const [myOrdersData, myMeasuresData, activeServicesData] =
+              await Promise.all([
+                getOrdersByUserId(currentUid).catch(() => []),
+                getMeasurementsByUserId(currentUid).catch(() => []),
+                getAllServices(true).catch(() => []),
+              ]);
+            setOrders(myOrdersData || []);
+            setClientMeasurements(myMeasuresData || []);
+            setServices(activeServicesData || []);
+          } else {
+            setOrders([]);
+            setClientMeasurements([]);
+            setServices([]);
           }
-        });
-        setClientsCount(clientIds.size);
+        } else {
+          // Standard Admin / Staff Loader
+          const [ordersData, servicesData, clientsData, usersData] =
+            await Promise.all([
+              getAllOrders().catch(() => []),
+              getAllServices(false).catch(() => []),
+              getAllClients().catch(() => []),
+              getAllUsers().catch(() => []),
+            ]);
+
+          setOrders(ordersData || []);
+          setServices(servicesData || []);
+
+          const clientIds = new Set();
+          (clientsData || []).forEach((c) => {
+            if (c && c.id) clientIds.add(c.id);
+          });
+          (usersData || []).forEach((u) => {
+            if (u && (u.role === USER_ROLES.CLIENT || !u.role)) {
+              clientIds.add(u.id || u.email);
+            }
+          });
+          setClientsCount(clientIds.size);
+        }
+        if (isManualRefresh) {
+          toast.success("Dashboard overview refreshed from database.");
+        }
+      } catch (err) {
+        console.error("Failed to load overview metrics:", err);
+        if (isManualRefresh) {
+          toast.error("Failed to refresh dashboard overview.");
+        }
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-    } catch (err) {
-      console.error("Failed to load overview metrics:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [isClient, currentUid]);
+    },
+    [isClient, currentUid],
+  );
 
   useEffect(() => {
-    loadOverviewData();
+    loadOverviewData(false);
   }, [loadOverviewData]);
 
   // Admin calculations
@@ -247,13 +261,15 @@ const Overview = () => {
           <AppButton
             variant="secondary"
             startIcon={
-              <RefreshOutlinedIcon className={loading ? "spin-icon" : ""} />
+              <RefreshOutlinedIcon
+                className={loading || refreshing ? "spin-icon" : ""}
+              />
             }
             className="refresh-btn"
-            onClick={loadOverviewData}
-            disabled={loading}
+            onClick={() => loadOverviewData(true)}
+            disabled={loading || refreshing}
           >
-            {loading ? "Refreshing..." : "Refresh"}
+            {loading || refreshing ? "Refreshing..." : "Refresh"}
           </AppButton>
           <AppButton
             variant="primary"

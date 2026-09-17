@@ -264,6 +264,8 @@ const MyProfile = () => {
             ? "Client"
             : "";
 
+  const [refreshing, setRefreshing] = useState(false);
+
   // Fetch measurements for the logged-in user (strictly isolated: never fetch other users' measurements)
   const fetchMyMeasurements = async () => {
     setLoading(true);
@@ -315,9 +317,22 @@ const MyProfile = () => {
     }
   };
 
-  const handleRefreshAll = () => {
-    fetchMyMeasurements();
-    fetchMyOrders();
+  const handleRefreshAll = async () => {
+    setRefreshing(true);
+    try {
+      if (refreshProfile) {
+        try {
+          await refreshProfile();
+        } catch {}
+      }
+      await Promise.all([fetchMyMeasurements(), fetchMyOrders()]);
+      toast.success("Profile details refreshed from database.");
+    } catch (err) {
+      console.error("Failed to refresh profile:", err);
+      toast.error("Failed to refresh profile details.");
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   useEffect(() => {
@@ -597,13 +612,17 @@ const MyProfile = () => {
             className="refresh-btn"
             startIcon={
               <RefreshOutlinedIcon
-                className={loading || loadingOrders ? "spin-icon" : ""}
+                className={
+                  loading || loadingOrders || refreshing ? "spin-icon" : ""
+                }
               />
             }
             onClick={handleRefreshAll}
-            disabled={loading || loadingOrders}
+            disabled={loading || loadingOrders || refreshing}
           >
-            {loading || loadingOrders ? "Refreshing..." : "Refresh"}
+            {loading || loadingOrders || refreshing
+              ? "Refreshing..."
+              : "Refresh"}
           </AppButton>
 
           {activeTab === "orders" ? (

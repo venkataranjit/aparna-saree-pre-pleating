@@ -244,13 +244,16 @@ const Users = () => {
     });
   };
 
+  const [refreshing, setRefreshing] = useState(false);
+
   // Load all users from Firestore with local cache fallback
-  const fetchUsers = async () => {
+  const fetchUsers = async (isManualRefresh = false) => {
     if (!hasAccessToUsers) {
       setLoading(false);
       return;
     }
     setLoading(true);
+    if (isManualRefresh) setRefreshing(true);
     try {
       const data = await getAllUsers();
       if (data && data.length > 0) {
@@ -259,19 +262,27 @@ const Users = () => {
         const local = getLocalUsers();
         setUsers(local);
       }
+      if (isManualRefresh) {
+        toast.success("Users directory refreshed from database.");
+      }
     } catch (err) {
       console.warn("Could not fetch remote users, using cached users:", err);
       const local = getLocalUsers();
       setUsers(local);
-      toast.error("Using offline cached users. Check Firebase connection.");
+      if (isManualRefresh) {
+        toast.error("Failed to refresh users from database.");
+      } else {
+        toast.error("Using offline cached users. Check Firebase connection.");
+      }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
     if (hasAccessToUsers) {
-      fetchUsers();
+      fetchUsers(false);
     }
   }, [hasAccessToUsers]);
 
@@ -636,12 +647,14 @@ const Users = () => {
             variant="secondary"
             size="md"
             startIcon={
-              <RefreshOutlinedIcon className={loading ? "spin-icon" : ""} />
+              <RefreshOutlinedIcon
+                className={loading || refreshing ? "spin-icon" : ""}
+              />
             }
-            onClick={fetchUsers}
-            disabled={loading}
+            onClick={() => fetchUsers(true)}
+            disabled={loading || refreshing}
           >
-            {loading ? "Refreshing..." : "Refresh"}
+            {loading || refreshing ? "Refreshing..." : "Refresh"}
           </AppButton>
           <AppButton
             variant="primary"

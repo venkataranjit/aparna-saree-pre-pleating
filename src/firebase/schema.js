@@ -67,10 +67,7 @@ export const EXPENSE_PAYMENT_METHODS = {
   CARD: "Card",
 };
 
-/**
- * Initial Services Catalog (Default empty array, services are loaded from Firestore)
- */
-export const INITIAL_SERVICES = [];
+
 
 /**
  * Measurement Fields (Client-provided, no hardcoded defaults)

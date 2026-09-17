@@ -29,7 +29,6 @@ import {
   COLLECTIONS,
   USER_ROLES,
   SUPERADMIN_EMAIL,
-  INITIAL_SERVICES,
   createBusinessModel,
   createUserModel,
   createServiceModel,
@@ -480,15 +479,6 @@ export const withTimeout = (promise, ms = 3500, fallbackVal = null) => {
 
 const LOCAL_USERS_KEY = "aparna_users_data";
 
-// Registered Firebase Authentication users from Firebase Console
-export const KNOWN_FIREBASE_AUTH_USERS = [];
-
-// Initial registered clients seed catalog
-export const INITIAL_CLIENTS = [];
-
-// Initial measurement profiles seed catalog
-export const INITIAL_MEASUREMENTS = [];
-
 export const getLocalUsers = () => {
   if (typeof window === "undefined") return [];
   try {
@@ -496,18 +486,9 @@ export const getLocalUsers = () => {
     let list = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(list)) list = [];
 
-    // Filter out any legacy mock clients or seed accounts
-    const MOCK_IDS = new Set([
-      "client_priya",
-      "client_ananya",
-      "client_kavitha",
-      "client_sneha",
-      "client_divya",
-      "client_meenakshi",
-    ]);
-    list = list.filter((u) => u && u.id && !MOCK_IDS.has(u.id));
+    list = list.filter((u) => u && u.id);
 
-    // Strip legacy businessId if present and ensure createdAt/updatedAt are preserved properly
+    // Strip legacy businessId if present and ensure createdAt/updatedAt are formatted properly
     list = list.map(({ businessId, ...rest }) => {
       return {
         ...rest,
@@ -544,24 +525,7 @@ export const getLocalMeasurements = () => {
     const raw = localStorage.getItem(LOCAL_MEASUREMENTS_KEY);
     let list = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(list)) list = [];
-
-    const MOCK_MEASURE_PREFIXES = [
-      "measure_priya",
-      "measure_ananya",
-      "measure_kavitha",
-      "measure_sneha",
-      "measure_divya",
-      "measure_meenakshi",
-      "m-",
-    ];
-    list = list.filter((m) => {
-      if (!m || !m.id) return false;
-      if (MOCK_MEASURE_PREFIXES.some((p) => m.id.startsWith(p))) return false;
-      if (String(m.userId || "").startsWith("client_")) return false;
-      return true;
-    });
-
-    return list;
+    return list.filter((m) => m && m.id);
   } catch {
     return [];
   }
@@ -2025,28 +1989,6 @@ export const saveOrUpdateUserMeasurements = async (userId, measurementData) => {
 const ORDERS_CACHE_KEY = "aparna_orders_cache";
 const OFFLINE_ORDERS_QUEUE_KEY = "aparna_offline_orders_queue";
 
-export const MOCK_ORDER_IDS = new Set([
-  "ORD-58392",
-  "ORD-71940",
-  "ORD-24915",
-  "ORD-83921",
-  "ORD-77770",
-  "ASPP-58392",
-  "ASPP-71940",
-  "ASPP-24915",
-  "ASPP-83921",
-  "ASPP-77770",
-]);
-
-export const MOCK_CLIENT_IDS = new Set([
-  "client_priya",
-  "client_ananya",
-  "client_kavitha",
-  "client_sneha",
-  "client_divya",
-  "client_meenakshi",
-]);
-
 /**
  * Get offline orders queue from localStorage
  */
@@ -2091,15 +2033,7 @@ export const getCachedOrders = () => {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (o) =>
-        o &&
-        o.id &&
-        !MOCK_ORDER_IDS.has(o.id) &&
-        !MOCK_ORDER_IDS.has(o.orderId) &&
-        !MOCK_CLIENT_IDS.has(o.clientId) &&
-        !String(o.clientId || "").startsWith("client_mock"),
-    );
+    return parsed.filter((o) => o && o.id);
   } catch {
     return [];
   }
@@ -2108,19 +2042,11 @@ export const getCachedOrders = () => {
 export const setCachedOrders = (orders) => {
   try {
     const cleaned = (Array.isArray(orders) ? orders : []).filter(
-      (o) =>
-        o &&
-        o.id &&
-        !MOCK_ORDER_IDS.has(o.id) &&
-        !MOCK_ORDER_IDS.has(o.orderId) &&
-        !MOCK_CLIENT_IDS.has(o.clientId) &&
-        !String(o.clientId || "").startsWith("client_mock"),
+      (o) => o && o.id,
     );
     localStorage.setItem(ORDERS_CACHE_KEY, JSON.stringify(cleaned));
   } catch {}
 };
-
-export const INITIAL_ORDERS = [];
 
 // Registry of assigned order IDs to guarantee 100% uniqueness
 const assignedOrderIds = new Set();
@@ -2567,15 +2493,7 @@ export const getAllOrders = async () => {
     if (snapshot && !snapshot.empty) {
       const rawOrders = snapshot.docs
         .map((d) => formatOrderDoc(d.id, d.data()))
-        .filter(
-          (o) =>
-            o &&
-            o.id &&
-            !MOCK_ORDER_IDS.has(o.id) &&
-            !MOCK_ORDER_IDS.has(o.orderId) &&
-            !MOCK_CLIENT_IDS.has(o.clientId) &&
-            !String(o.clientId || "").startsWith("client_mock"),
-        );
+        .filter((o) => o && o.id);
 
       // Deduplicate orders by ID and unique signature (same client + amount + orderDate within 30s)
       const seenIds = new Set();
@@ -2992,100 +2910,9 @@ export const deleteExpense = async (expenseId) => {
   return true;
 };
 
-// Immediate one-time purge of legacy mock data from client browser cache
+// Clean up sequence number in localStorage if it exceeded range from previous testing
 if (typeof window !== "undefined") {
   try {
-    const MOCK_CLIENT_IDS = new Set([
-      "client_priya",
-      "client_ananya",
-      "client_kavitha",
-      "client_sneha",
-      "client_divya",
-      "client_meenakshi",
-    ]);
-    const rawUsers = localStorage.getItem(LOCAL_USERS_KEY);
-    if (rawUsers) {
-      const parsed = JSON.parse(rawUsers);
-      if (Array.isArray(parsed)) {
-        const cleaned = parsed.filter(
-          (u) => u && u.id && !MOCK_CLIENT_IDS.has(u.id),
-        );
-        localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(cleaned));
-      }
-    }
-    const MOCK_MEASURES = new Set([
-      "measure_priya_1",
-      "measure_priya_2",
-      "measure_ananya_1",
-      "measure_kavitha_1",
-      "measure_sneha_1",
-      "measure_divya_1",
-      "measure_meenakshi_1",
-      "m-1",
-      "m-2",
-      "m-3",
-      "m-4",
-      "m-5",
-      "m-6",
-      "m-7",
-      "m-8",
-      "m-9",
-      "m-10",
-    ]);
-    const rawMeas = localStorage.getItem(LOCAL_MEASUREMENTS_KEY);
-    if (rawMeas) {
-      const parsed = JSON.parse(rawMeas);
-      if (Array.isArray(parsed)) {
-        const cleaned = parsed.filter(
-          (m) =>
-            m &&
-            m.id &&
-            !MOCK_MEASURES.has(m.id) &&
-            !String(m.userId || "").startsWith("client_"),
-        );
-        localStorage.setItem(LOCAL_MEASUREMENTS_KEY, JSON.stringify(cleaned));
-      }
-    }
-    const MOCK_ORDERS = new Set([
-      "ORD-58392",
-      "ORD-71940",
-      "ORD-24915",
-      "ORD-83921",
-      "ORD-77770",
-      "ASPP-58392",
-      "ASPP-71940",
-      "ASPP-24915",
-      "ASPP-83921",
-      "ASPP-77770",
-    ]);
-    const rawOrders = localStorage.getItem(ORDERS_CACHE_KEY);
-    if (rawOrders) {
-      const parsed = JSON.parse(rawOrders);
-      if (Array.isArray(parsed)) {
-        const cleaned = parsed.filter(
-          (o) =>
-            o &&
-            o.id &&
-            !MOCK_ORDERS.has(o.id) &&
-            !MOCK_CLIENT_IDS.has(o.clientId),
-        );
-
-        // Deduplicate identical orders created within same minute
-        const seen = new Map();
-        const deduplicated = [];
-        for (const o of cleaned) {
-          const sig = `${o.clientId || o.userMobile || o.username}_${o.totalAmount}_${o.orderDate || o.deliveryDate}`;
-          if (!seen.has(sig)) {
-            seen.set(sig, o);
-            deduplicated.push(o);
-          }
-        }
-
-        localStorage.setItem(ORDERS_CACHE_KEY, JSON.stringify(deduplicated));
-      }
-    }
-
-    // Reset any legacy random sequence number in localStorage from previous testing
     const currentStoredSeq = parseInt(
       localStorage.getItem("aparna_last_order_seq"),
       10,

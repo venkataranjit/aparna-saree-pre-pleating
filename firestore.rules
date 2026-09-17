@@ -56,5 +56,15 @@ service cloud.firestore {
     match /measurements/{measurementId} {
       allow read, write: if isAuthenticated();
     }
+
+    // 7. Expenses Collection
+    match /expenses/{expenseId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // 8. Counters Collection (For atomic sequential order IDs, invoice numbers)
+    match /counters/{counterId} {
+      allow read, write: if isAuthenticated();
+    }
   }
 }

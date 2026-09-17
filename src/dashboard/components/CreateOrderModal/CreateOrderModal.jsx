@@ -1441,8 +1441,10 @@ export default function CreateOrderModal({
           (err.message || "Please check details and retry."),
       );
     } finally {
-      isSubmittingRef.current = false;
-      setSubmitting(false);
+      setTimeout(() => {
+        isSubmittingRef.current = false;
+        setSubmitting(false);
+      }, 500);
     }
   };
 

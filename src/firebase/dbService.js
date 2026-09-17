@@ -2056,17 +2056,48 @@ const docIdToOrderId = new Map();
 
 /**
  * Helper to get the highest existing sequential order number in the system (10001 - 19999)
- * Strictly starts at 10000 and ignores any legacy random numbers (>20000) from previous testing.
+ * Strictly starts at 10000 and scans localStorage, cached orders, and memory assignedOrderIds.
  */
 export const getHighestOrderSequence = () => {
   let highest = 10000;
   try {
+    // 1. Check localStorage saved sequence
     const savedSeq = parseInt(
       localStorage.getItem("aparna_last_order_seq"),
       10,
     );
     if (!isNaN(savedSeq) && savedSeq >= 10001 && savedSeq < 20000) {
       highest = Math.max(highest, savedSeq);
+    }
+
+    // 2. Scan all cached orders to discover highest actual sequential order number
+    const cached = getCachedOrders();
+    if (Array.isArray(cached)) {
+      for (const ord of cached) {
+        const idToCheck = String(ord.orderId || ord.id || "");
+        const match =
+          idToCheck.match(/^(?:A|ASPP)-(\d{5})-SPP$/i) ||
+          idToCheck.match(/^(?:A|ASPP)-(\d{5})$/i);
+        if (match && match[1]) {
+          const num = parseInt(match[1], 10);
+          if (!isNaN(num) && num >= 10001 && num < 20000) {
+            highest = Math.max(highest, num);
+          }
+        }
+      }
+    }
+
+    // 3. Scan memory registry of assigned IDs
+    for (const assignedId of assignedOrderIds) {
+      const match =
+        String(assignedId).match(/^(?:A|ASPP)-(\d{5})-SPP$/i) ||
+        String(assignedId).match(/^(?:A|ASPP)-(\d{5})$/i);
+      if (match && match[1]) {
+        const num = parseInt(match[1], 10);
+        if (!isNaN(num) && num >= 10001 && num < 20000) {
+          highest = Math.max(highest, num);
+        }
+      }
     }
   } catch (err) {
     console.warn("getHighestOrderSequence error:", err);
@@ -2080,55 +2111,47 @@ export const getHighestOrderSequence = () => {
  * unique sequential numbers across multiple concurrent users/devices starting at 10001.
  */
 export const getNextSequentialOrderId = async () => {
-  try {
-    const counterRef = doc(db, COLLECTIONS.COUNTERS, "orders");
-    const nextNumber = await withTimeout(
-      runTransaction(db, async (transaction) => {
-        const counterDoc = await transaction.get(counterRef);
-        let current = 10000;
-        if (counterDoc.exists()) {
-          const data = counterDoc.data();
-          if (
-            typeof data.lastOrderNumber === "number" &&
-            data.lastOrderNumber >= 10000 &&
-            data.lastOrderNumber < 20000
-          ) {
-            current = data.lastOrderNumber;
-          } else {
-            current = getHighestOrderSequence();
-          }
+  const counterRef = doc(db, COLLECTIONS.COUNTERS, "orders");
+  const nextNumber = await withTimeout(
+    runTransaction(db, async (transaction) => {
+      const counterDoc = await transaction.get(counterRef);
+      let current = 10000;
+      if (counterDoc.exists()) {
+        const data = counterDoc.data();
+        if (
+          typeof data.lastOrderNumber === "number" &&
+          data.lastOrderNumber >= 10000 &&
+          data.lastOrderNumber < 20000
+        ) {
+          current = data.lastOrderNumber;
         } else {
-          current = 10000;
+          current = getHighestOrderSequence();
         }
-        const next = current + 1;
-        transaction.set(
-          counterRef,
-          {
-            lastOrderNumber: next,
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true },
-        );
-        return next;
-      }),
-      8000,
-    );
+      } else {
+        current = getHighestOrderSequence();
+      }
+      const next = current + 1;
+      transaction.set(
+        counterRef,
+        {
+          lastOrderNumber: next,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+      return next;
+    }),
+    8000,
+  );
 
-    if (nextNumber && nextNumber >= 10001) {
-      localStorage.setItem("aparna_last_order_seq", String(nextNumber));
-      const orderIdStr = `A-${nextNumber}-SPP`;
-      assignedOrderIds.add(orderIdStr);
-      return orderIdStr;
-    }
-  } catch (err) {
-    console.warn(
-      "Firestore counter transaction note (falling back to local generator):",
-      err.message || err,
-    );
+  if (nextNumber && nextNumber >= 10001) {
+    localStorage.setItem("aparna_last_order_seq", String(nextNumber));
+    const orderIdStr = `A-${nextNumber}-SPP`;
+    assignedOrderIds.add(orderIdStr);
+    return orderIdStr;
   }
 
-  // Fallback sequential generation
-  return generateOrderId();
+  throw new Error("Failed to allocate atomic sequential order ID");
 };
 
 /**
@@ -2136,100 +2159,143 @@ export const getNextSequentialOrderId = async () => {
  */
 export const generateOrderId = () => {
   const currentMax = getHighestOrderSequence();
-  const nextSeq = currentMax + 1;
+  let nextSeq = currentMax + 1;
+  while (assignedOrderIds.has(`A-${nextSeq}-SPP`)) {
+    nextSeq++;
+  }
   localStorage.setItem("aparna_last_order_seq", String(nextSeq));
   const candidate = `A-${nextSeq}-SPP`;
   assignedOrderIds.add(candidate);
   return candidate;
 };
 
+// Mutex lock to guarantee syncOfflineOrders never runs multiple times concurrently
+let isSyncingOfflineOrders = false;
+
 /**
  * Synchronize all pending offline orders to Cloud Firestore with atomic official serial IDs
  */
 export const syncOfflineOrders = async () => {
-  const queue = getOfflineOrdersQueue();
-  if (!queue || queue.length === 0) return 0;
+  if (isSyncingOfflineOrders) return 0;
+  isSyncingOfflineOrders = true;
 
-  let syncedCount = 0;
-  const remainingQueue = [];
-  const cachedOrders = getCachedOrders() || [];
+  try {
+    const queue = getOfflineOrdersQueue();
+    if (!queue || queue.length === 0) return 0;
 
-  for (const item of queue) {
-    try {
-      const tempId = item.id || item.orderId;
-      const isTemporary =
-        String(tempId).startsWith("A-TEMP-") ||
-        String(tempId).startsWith("ASPP-TEMP-");
+    // Immediately drain the storage queue so concurrent triggers don't pick up the same items
+    setOfflineOrdersQueue([]);
 
-      let officialOrderId = tempId;
-      if (isTemporary) {
-        officialOrderId = await getNextSequentialOrderId();
+    let syncedCount = 0;
+    const remainingQueue = [];
+    const cachedOrders = getCachedOrders() || [];
+
+    for (const item of queue) {
+      try {
+        const tempId = item.id || item.orderId;
+        const isTemporary =
+          String(tempId).startsWith("A-TEMP-") ||
+          String(tempId).startsWith("ASPP-TEMP-");
+
+        // Check if an official order has ALREADY been created for this tempId (deduplication)
+        const alreadySyncedOrder = cachedOrders.find(
+          (o) =>
+            (o.tempOrderId && o.tempOrderId === tempId) ||
+            (!String(o.id).startsWith("A-TEMP-") &&
+              !String(o.id).startsWith("ASPP-TEMP-") &&
+              o.id === item.id),
+        );
+
+        if (
+          alreadySyncedOrder &&
+          !String(alreadySyncedOrder.id).startsWith("A-TEMP-") &&
+          !String(alreadySyncedOrder.id).startsWith("ASPP-TEMP-")
+        ) {
+          console.log(
+            `Order for ${tempId} is already synced as ${alreadySyncedOrder.id}, skipping duplicate creation.`,
+          );
+          continue;
+        }
+
+        let officialOrderId = tempId;
+        if (isTemporary) {
+          officialOrderId = await getNextSequentialOrderId();
+        }
+
+        const updatedModel = createOrderModel({
+          ...item,
+          id: officialOrderId,
+          orderId: officialOrderId,
+          isOfflinePending: false,
+          tempOrderId: isTemporary ? tempId : item.tempOrderId || null,
+          syncedAt: new Date().toISOString(),
+        });
+
+        if ("updatedAt" in updatedModel) delete updatedModel.updatedAt;
+        if ("updatedBy" in updatedModel) delete updatedModel.updatedBy;
+
+        // Save to Firestore with official ID
+        await withTimeout(
+          setDoc(doc(db, COLLECTIONS.ORDERS, officialOrderId), updatedModel),
+          8000,
+        );
+
+        // If it was a temporary draft document in Firestore, remove temp doc
+        if (isTemporary && tempId !== officialOrderId) {
+          try {
+            await deleteDoc(doc(db, COLLECTIONS.ORDERS, tempId));
+          } catch {}
+        }
+
+        // Update cached order entry
+        const formatted = formatOrderDoc(officialOrderId, {
+          ...updatedModel,
+          createdAt: item.createdAt || new Date().toISOString(),
+          rawCreatedAt: item.rawCreatedAt || new Date().toISOString(),
+          orderDate: item.orderDate || new Date().toISOString(),
+        });
+
+        const idx = cachedOrders.findIndex(
+          (o) =>
+            o.id === tempId ||
+            o.orderId === tempId ||
+            o.tempOrderId === tempId ||
+            o.id === officialOrderId,
+        );
+        if (idx >= 0) {
+          cachedOrders[idx] = formatted;
+        } else {
+          cachedOrders.unshift(formatted);
+        }
+
+        syncedCount++;
+      } catch (syncErr) {
+        console.warn(
+          "Failed to sync offline order, retaining in queue:",
+          syncErr,
+        );
+        remainingQueue.push(item);
       }
-
-      const updatedModel = createOrderModel({
-        ...item,
-        id: officialOrderId,
-        orderId: officialOrderId,
-        isOfflinePending: false,
-        tempOrderId: isTemporary ? tempId : null,
-        syncedAt: new Date().toISOString(),
-      });
-
-      if ("updatedAt" in updatedModel) delete updatedModel.updatedAt;
-      if ("updatedBy" in updatedModel) delete updatedModel.updatedBy;
-
-      // Save to Firestore with official ID
-      await withTimeout(
-        setDoc(doc(db, COLLECTIONS.ORDERS, officialOrderId), updatedModel),
-        8000,
-      );
-
-      // If it was a temporary draft, remove temp doc from Firestore
-      if (isTemporary && tempId !== officialOrderId) {
-        try {
-          await deleteDoc(doc(db, COLLECTIONS.ORDERS, tempId));
-        } catch {}
-      }
-
-      // Update cached order entry
-      const formatted = formatOrderDoc(officialOrderId, {
-        ...updatedModel,
-        createdAt: item.createdAt || new Date().toISOString(),
-        rawCreatedAt: item.rawCreatedAt || new Date().toISOString(),
-        orderDate: item.orderDate || new Date().toISOString(),
-      });
-
-      const idx = cachedOrders.findIndex(
-        (o) =>
-          o.id === tempId ||
-          o.orderId === tempId ||
-          o.id === officialOrderId,
-      );
-      if (idx >= 0) {
-        cachedOrders[idx] = formatted;
-      } else {
-        cachedOrders.unshift(formatted);
-      }
-
-      syncedCount++;
-    } catch (syncErr) {
-      console.warn("Failed to sync offline order, retaining in queue:", syncErr);
-      remainingQueue.push(item);
     }
+
+    if (remainingQueue.length > 0) {
+      const currentQueue = getOfflineOrdersQueue();
+      setOfflineOrdersQueue([...currentQueue, ...remainingQueue]);
+    }
+    setCachedOrders(cachedOrders);
+
+    if (syncedCount > 0 && typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("aspp_orders_synced", {
+          detail: { count: syncedCount },
+        }),
+      );
+    }
+
+    return syncedCount;
+  } finally {
+    isSyncingOfflineOrders = false;
   }
-
-  setOfflineOrdersQueue(remainingQueue);
-  setCachedOrders(cachedOrders);
-
-  if (syncedCount > 0 && typeof window !== "undefined") {
-    window.dispatchEvent(
-      new CustomEvent("aspp_orders_synced", {
-        detail: { count: syncedCount },
-      }),
-    );
-  }
-
-  return syncedCount;
 };
 
 // Automatic listener to trigger sync as soon as internet connection is restored
@@ -2252,7 +2318,8 @@ const formatOrderDoc = (id, data) => {
 
   // Determine unique order ID - strictly preserve the actual Firestore document ID
   const cleanId =
-    String(id || data.id || data.orderId || "").trim() || generateOrderId();
+    String(id || data.id || data.orderId || "").trim() ||
+    `A-TEMP-${Date.now().toString(36).toUpperCase()}-SPP`;
 
   if (cleanId) {
     assignedOrderIds.add(cleanId);
@@ -2348,14 +2415,30 @@ const formatOrderDoc = (id, data) => {
 const recentOrderCreations = new Map();
 
 /**
- * Create a new order with sequential serial Order ID: ASPP-10001, ASPP-10002, ASPP-10003...
- * (Or temporary offline ID ASPP-TEMP-... if disconnected, auto-promoted to official serial upon sync)
+ * Create a new order with sequential serial Order ID: A-10001-SPP, A-10002-SPP, A-10003-SPP...
+ * (Or temporary offline ID A-TEMP-...-SPP if disconnected, auto-promoted to official serial upon sync)
  * @param {Object} orderData
  */
 export const createOrder = async (orderData) => {
-  // Deduplication check: construct signature to prevent double-booking within 3.5 seconds
+  // Deduplication check: construct robust signature (ignoring random timestamp client IDs)
+  const clientPhone = String(
+    orderData.userMobile ||
+      orderData.phone ||
+      orderData.client?.userMobile ||
+      "",
+  )
+    .replace(/\D/g, "")
+    .slice(-10);
+  const clientName = String(
+    orderData.username ||
+      orderData.clientName ||
+      orderData.client?.username ||
+      "",
+  )
+    .trim()
+    .toLowerCase();
   const clientKey =
-    orderData.clientId || orderData.userMobile || orderData.username || "";
+    clientPhone || clientName || String(orderData.clientId || "");
   const itemsKey = (orderData.items || [])
     .map(
       (it) =>
@@ -2367,7 +2450,7 @@ export const createOrder = async (orderData) => {
   const nowMs = Date.now();
   if (recentOrderCreations.has(signature)) {
     const existing = recentOrderCreations.get(signature);
-    if (nowMs - existing.timestamp < 3500 && existing.result) {
+    if (nowMs - existing.timestamp < 4000 && existing.result) {
       console.warn(
         "Duplicate createOrder call suppressed for signature:",
         signature,
@@ -2381,14 +2464,15 @@ export const createOrder = async (orderData) => {
   let orderId = String(orderData.id || orderData.orderId || "").trim();
   let isOfflineOrder = false;
 
-  if (
+  const isGenericNewId =
     !orderId ||
     orderId === "A-NEW-SPP" ||
     orderId === "A-NEW" ||
     orderId === "ASPP-NEW" ||
     orderId === "ORD-NEW" ||
-    orderId === "NEW"
-  ) {
+    orderId === "NEW";
+
+  if (isGenericNewId) {
     if (isOnline) {
       try {
         orderId = await getNextSequentialOrderId();
@@ -2404,6 +2488,12 @@ export const createOrder = async (orderData) => {
       orderId = generateOfflineTempOrderId();
       isOfflineOrder = true;
     }
+  } else if (
+    orderId.startsWith("A-TEMP-") ||
+    orderId.startsWith("ASPP-TEMP-")
+  ) {
+    isOfflineOrder = true;
+    assignedOrderIds.add(orderId);
   } else {
     assignedOrderIds.add(orderId);
   }
@@ -2415,7 +2505,7 @@ export const createOrder = async (orderData) => {
     orderId,
     createdBy: currentUid,
     isOfflinePending: isOfflineOrder,
-    tempOrderId: isOfflineOrder ? orderId : null,
+    tempOrderId: isOfflineOrder ? orderId : orderData.tempOrderId || null,
   });
 
   if ("updatedAt" in model) {
@@ -2429,15 +2519,44 @@ export const createOrder = async (orderData) => {
 
   if (!isOfflineOrder && isOnline) {
     try {
-      await withTimeout(
-        setDoc(doc(db, COLLECTIONS.ORDERS, orderId), model),
-        8000,
+      // Check collision before writing to ensure we NEVER overwrite an existing distinct order
+      const existingDoc = await withTimeout(
+        getDoc(doc(db, COLLECTIONS.ORDERS, orderId)),
+        3000,
+        null,
       );
+      if (existingDoc && existingDoc.exists()) {
+        console.warn(
+          `Order document ${orderId} already exists! Allocating a fresh sequential ID to prevent overwrite.`,
+        );
+        try {
+          orderId = await getNextSequentialOrderId();
+        } catch {
+          orderId = generateOfflineTempOrderId();
+          isOfflineOrder = true;
+        }
+        createdId = orderId;
+        model.id = orderId;
+        model.orderId = orderId;
+        model.isOfflinePending = isOfflineOrder;
+        model.tempOrderId = isOfflineOrder ? orderId : null;
+      }
+
+      if (!isOfflineOrder) {
+        await withTimeout(
+          setDoc(doc(db, COLLECTIONS.ORDERS, orderId), model),
+          8000,
+        );
+      }
     } catch (err) {
       console.warn(
-        "createOrder firestore note (setDoc failed):",
+        "createOrder firestore note (falling back to offline queue):",
         err.message || err,
       );
+      if (!isOfflineOrder) {
+        isOfflineOrder = true;
+        model.isOfflinePending = true;
+      }
     }
   }
 
@@ -2455,9 +2574,10 @@ export const createOrder = async (orderData) => {
   setCachedOrders([formatted, ...cached.filter((o) => o.id !== createdId)]);
 
   // If this was an offline temporary order, queue for background sync
+  // (Only queue true temporary orders to avoid re-syncing confirmed online orders)
   if (
     isOfflineOrder &&
-    (orderId.startsWith("A-TEMP-") || orderId.startsWith("ASPP-TEMP-"))
+    (createdId.startsWith("A-TEMP-") || createdId.startsWith("ASPP-TEMP-"))
   ) {
     const queue = getOfflineOrdersQueue();
     setOfflineOrdersQueue([
@@ -2483,7 +2603,7 @@ export const createOrder = async (orderData) => {
 };
 
 /**
- * Get all orders across the orders collection (with deduplication and atomic sync)
+ * Get all orders across the orders collection (with in-memory deduplication and offline sync)
  */
 export const getAllOrders = async () => {
   // Trigger background sync for any queued offline orders
@@ -2502,32 +2622,13 @@ export const getAllOrders = async () => {
         .map((d) => formatOrderDoc(d.id, d.data()))
         .filter((o) => o && o.id);
 
-      // Deduplicate orders by ID and unique signature (same client + amount + orderDate within 30s)
+      // Deduplicate in-memory by ID only (NEVER delete docs from Firestore during read!)
       const seenIds = new Set();
-      const seenSignatures = new Map();
       const uniqueOrders = [];
 
       for (const ord of rawOrders) {
         if (seenIds.has(ord.id)) continue;
         seenIds.add(ord.id);
-
-        const sig = `${ord.clientId || ord.userMobile || ord.username}_${ord.totalAmount}_${ord.orderDate || ord.deliveryDate}`;
-        const existing = seenSignatures.get(sig);
-        if (existing) {
-          const timeDiff = Math.abs(
-            new Date(ord.rawCreatedAt || ord.createdAt).getTime() -
-              new Date(existing.rawCreatedAt || existing.createdAt).getTime(),
-          );
-          if (timeDiff < 30000) {
-            // Redundant duplicate detected! Skip it and delete from Firestore in background
-            try {
-              deleteDoc(doc(db, COLLECTIONS.ORDERS, ord.id));
-            } catch {}
-            continue;
-          }
-        }
-
-        seenSignatures.set(sig, ord);
         uniqueOrders.push(ord);
       }
 

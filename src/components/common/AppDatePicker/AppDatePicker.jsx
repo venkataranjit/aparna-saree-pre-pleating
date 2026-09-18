@@ -62,6 +62,16 @@ export default function AppDatePicker({
   const [anchorEl, setAnchorEl] = useState(null);
   const triggerRef = useRef(null);
 
+  const isError = Boolean(error);
+  const displayHelper =
+    typeof error === 'string' && error
+      ? error
+      : typeof helperText === 'string' && helperText
+      ? helperText
+      : helperText && typeof helperText !== 'boolean'
+      ? helperText
+      : null;
+
   // Current calendar view month and year
   const initialDate = useMemo(() => {
     if (value) {
@@ -274,13 +284,13 @@ export default function AppDatePicker({
         </div>
       </div>
 
-      {helperText && (
+      {displayHelper && (
         <span
           className={`app-datepicker-helper ${
-            error ? 'app-datepicker-helper--error' : ''
+            isError ? 'app-datepicker-helper--error' : ''
           }`}
         >
-          {helperText}
+          {displayHelper}
         </span>
       )}
 

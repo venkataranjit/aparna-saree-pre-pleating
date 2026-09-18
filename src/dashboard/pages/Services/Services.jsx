@@ -117,6 +117,7 @@ const serviceValidationSchema = Yup.object({
   serviceDiscountedPrice: Yup.number()
     .typeError("Discounted price must be a valid number")
     .min(0, "Discounted price cannot be negative")
+    .required("Offer price is required")
     .test(
       "is-discount-valid",
       "Discount price cannot be higher than regular price",
@@ -514,10 +515,9 @@ const Services = () => {
       {/* Page Header matching Clients Page */}
       <div className="services-page__header">
         <div>
-          <h1 className="page-title">Pre-Pleating Services</h1>
+          <h1 className="page-title">Services</h1>
           <p className="page-subtitle">
-            Manage live saree pre-pleating offerings, packages, pricing, and
-            active catalog
+            Manage live service offerings, pricing, and active catalog
           </p>
         </div>
         <div className="header-actions">
@@ -1432,6 +1432,7 @@ const Services = () => {
             value={createFormik.values.serviceName}
             onChange={createFormik.handleChange}
             onBlur={createFormik.handleBlur}
+            required
             error={
               createFormik.touched.serviceName &&
               Boolean(createFormik.errors.serviceName)
@@ -1452,6 +1453,7 @@ const Services = () => {
             value={createFormik.values.serviceType}
             onChange={createFormik.handleChange}
             options={SERVICE_TYPE_OPTIONS}
+            required
             startAdornment={<LayersOutlinedIcon />}
             disabled={createFormik.isSubmitting}
             error={
@@ -1474,6 +1476,7 @@ const Services = () => {
               value={createFormik.values.servicePrice}
               onChange={createFormik.handleChange}
               onBlur={createFormik.handleBlur}
+              required
               error={
                 createFormik.touched.servicePrice &&
                 Boolean(createFormik.errors.servicePrice)
@@ -1494,6 +1497,7 @@ const Services = () => {
               value={createFormik.values.serviceDiscountedPrice}
               onChange={createFormik.handleChange}
               onBlur={createFormik.handleBlur}
+              required
               error={
                 createFormik.touched.serviceDiscountedPrice &&
                 Boolean(createFormik.errors.serviceDiscountedPrice)
@@ -1622,6 +1626,7 @@ const Services = () => {
             value={editFormik.values.serviceName}
             onChange={editFormik.handleChange}
             onBlur={editFormik.handleBlur}
+            required
             error={
               editFormik.touched.serviceName &&
               Boolean(editFormik.errors.serviceName)
@@ -1640,6 +1645,7 @@ const Services = () => {
             value={editFormik.values.serviceType}
             onChange={editFormik.handleChange}
             options={SERVICE_TYPE_OPTIONS}
+            required
             startAdornment={<LayersOutlinedIcon />}
             disabled={editFormik.isSubmitting}
             error={
@@ -1660,6 +1666,7 @@ const Services = () => {
               value={editFormik.values.servicePrice}
               onChange={editFormik.handleChange}
               onBlur={editFormik.handleBlur}
+              required
               error={
                 editFormik.touched.servicePrice &&
                 Boolean(editFormik.errors.servicePrice)
@@ -1679,6 +1686,7 @@ const Services = () => {
               value={editFormik.values.serviceDiscountedPrice}
               onChange={editFormik.handleChange}
               onBlur={editFormik.handleBlur}
+              required
               error={
                 editFormik.touched.serviceDiscountedPrice &&
                 Boolean(editFormik.errors.serviceDiscountedPrice)

@@ -33,6 +33,16 @@ export default function AppSelect({
   const [searchQuery, setSearchQuery] = useState('');
   const triggerRef = useRef(null);
 
+  const isError = Boolean(error);
+  const displayHelper =
+    typeof error === 'string' && error
+      ? error
+      : typeof helperText === 'string' && helperText
+      ? helperText
+      : helperText && typeof helperText !== 'boolean'
+      ? helperText
+      : null;
+
   const isOpen = Boolean(anchorEl);
 
   const handleOpen = (e) => {
@@ -165,13 +175,13 @@ export default function AppSelect({
         </div>
       </div>
 
-      {helperText && (
+      {displayHelper && (
         <span
           className={`app-select-helper ${
-            error ? 'app-select-helper--error' : ''
+            isError ? 'app-select-helper--error' : ''
           }`}
         >
-          {helperText}
+          {displayHelper}
         </span>
       )}
 

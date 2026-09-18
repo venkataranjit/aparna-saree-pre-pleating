@@ -26,7 +26,14 @@ export default function AppInput({
   ...rest
 }) {
   const isError = Boolean(error);
-  const displayHelper = error || helperText;
+  const displayHelper =
+    typeof error === 'string' && error
+      ? error
+      : typeof helperText === 'string' && helperText
+      ? helperText
+      : helperText && typeof helperText !== 'boolean'
+      ? helperText
+      : null;
 
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);

@@ -960,9 +960,9 @@ export const INVOICE_PDF_INTERNAL_CSS = `
   }
 
   #order-pdf-export-container .thankyou-script-img {
-    height: 38px;
+    height: 42px;
     width: auto;
-    max-width: 145px;
+    max-width: 155px;
     object-fit: contain;
     display: block;
     margin: 0 auto 2px auto;
@@ -971,12 +971,12 @@ export const INVOICE_PDF_INTERNAL_CSS = `
 
   #order-pdf-export-container .thankyou-for-choosing {
     font-family: 'Cinzel', 'Playfair Display', 'Times New Roman', Georgia, serif;
-    font-size: 12.5px;
+    font-size: 14px;
     font-weight: 700;
     color: #08182b;
     line-height: 1.25;
     letter-spacing: 0.3px;
-    margin-top: 1px;
+    margin-top: 2px;
   }
 
   #order-pdf-export-container .thankyou-heart-wrap {
@@ -988,15 +988,15 @@ export const INVOICE_PDF_INTERNAL_CSS = `
 
   #order-pdf-export-container .thankyou-heart {
     color: #caa368;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1;
   }
 
   #order-pdf-export-container .thankyou-tradition {
-    font-size: 10px;
-    font-weight: 500;
+    font-size: 11.5px;
+    font-weight: 600;
     color: #334155;
-    line-height: 1.2;
+    line-height: 1.25;
     letter-spacing: 0.2px;
   }
 
@@ -1004,7 +1004,7 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     position: relative;
     z-index: 1;
     width: 1px;
-    height: 62px;
+    height: 68px;
     background: #caa368;
     opacity: 0.55;
     margin: 0 16px 0 12px;
@@ -1032,8 +1032,8 @@ export const INVOICE_PDF_INTERNAL_CSS = `
   }
 
   #order-pdf-export-container .thankyou-qr-img {
-    width: 62px;
-    height: 62px;
+    width: 66px;
+    height: 66px;
     display: block;
     object-fit: contain;
   }
@@ -1047,8 +1047,8 @@ export const INVOICE_PDF_INTERNAL_CSS = `
   }
 
   #order-pdf-export-container .cta-share-text {
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 13.5px;
+    font-weight: 700;
     color: #08182b;
     line-height: 1.2;
     white-space: nowrap;
@@ -1056,9 +1056,9 @@ export const INVOICE_PDF_INTERNAL_CSS = `
 
   #order-pdf-export-container .cta-stars {
     color: #f59e0b;
-    font-size: 13px;
+    font-size: 15px;
     line-height: 1;
-    letter-spacing: 2px;
+    letter-spacing: 2.5px;
   }
 
   #order-pdf-export-container .cta-review-btn {
@@ -1069,10 +1069,10 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     background: #08182b;
     color: #ffffff !important;
     text-decoration: none !important;
-    padding: 5px 12px;
+    padding: 6px 14px;
     border-radius: 9999px;
-    font-size: 10.5px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
     line-height: 1;
     letter-spacing: 0.3px;
     margin-top: 2px;
@@ -1084,7 +1084,7 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1;
     margin-left: 2px;
   }
@@ -1097,10 +1097,10 @@ export const INVOICE_PDF_INTERNAL_CSS = `
   }
 
   #order-pdf-export-container .thankyou-follow-row .follow-label {
-    font-size: 7.5px;
+    font-size: 9.5px;
     font-weight: 700;
     letter-spacing: 1px;
-    color: #64748b;
+    color: #475569;
     text-transform: uppercase;
   }
 
@@ -1114,8 +1114,8 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 19px;
-    height: 19px;
+    width: 21px;
+    height: 21px;
     border-radius: 50%;
     background: #ffffff;
     border: 1px solid #ebdccb;
@@ -1160,39 +1160,31 @@ export const INVOICE_PDF_INTERNAL_CSS = `
   #order-pdf-export-container .pdf-luxury-footer {
     margin-top: auto;
     width: 100%;
-    padding: 0;
+    padding: 14px 24px 12px 24px;
     box-sizing: border-box;
-    background: #ffffff;
+    background: #08182b;
+    border: none;
+    color: #ffffff;
   }
 
   #order-pdf-export-container .footer-top-line-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 0 24px;
-    margin-bottom: 8px;
+    display: none;
   }
 
   #order-pdf-export-container .footer-top-line {
-    flex: 1;
-    height: 1px;
-    background: #caa368;
-    opacity: 0.8;
+    display: none;
   }
 
   #order-pdf-export-container .footer-top-diamond {
-    color: #caa368;
-    font-size: 8px;
-    line-height: 1;
+    display: none;
   }
 
   #order-pdf-export-container .footer-contact-row {
     display: flex;
     justify-content: space-between;
     align-items: stretch;
-    padding: 0 24px 8px 24px;
-    gap: 14px;
+    padding: 0 0 10px 0;
+    gap: 16px;
     box-sizing: border-box;
   }
 
@@ -1204,25 +1196,20 @@ export const INVOICE_PDF_INTERNAL_CSS = `
   }
 
   #order-pdf-export-container .footer-col-divider {
-    width: 1px;
-    height: 36px;
-    background: #e8d7c2;
-    opacity: 0.75;
-    flex-shrink: 0;
-    align-self: center;
+    display: none;
   }
 
   #order-pdf-export-container .footer-icon-wrap {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background: #fdfaf6;
-    border: 1px solid #caa368;
+    background: rgba(255, 255, 255, 0.14);
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 1px 3px rgba(202, 163, 104, 0.15);
+    box-shadow: none;
   }
 
   #order-pdf-export-container .footer-text-block {
@@ -1232,82 +1219,75 @@ export const INVOICE_PDF_INTERNAL_CSS = `
   }
 
   #order-pdf-export-container .footer-col-title {
-    font-size: 7.5px;
+    font-size: 9.5px;
     font-weight: 700;
     letter-spacing: 0.8px;
-    color: #caa368;
+    color: #ffffff;
     text-transform: uppercase;
     margin-bottom: 2px;
     line-height: 1;
   }
 
   #order-pdf-export-container .address-line {
-    font-size: 9.5px;
-    color: #08182b;
+    font-size: 11px;
+    color: #ffffff;
     line-height: 1.35;
     font-weight: 500;
   }
 
   #order-pdf-export-container .phone-num {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
-    color: #08182b;
+    color: #ffffff;
     line-height: 1.2;
   }
 
   #order-pdf-export-container .timing-badge {
-    font-size: 8.5px;
-    color: #64748b;
-    font-weight: 600;
-    margin-top: 1.5px;
+    font-size: 10px;
+    color: #cbd5e1;
+    font-weight: 500;
+    margin-top: 2px;
     line-height: 1.1;
   }
 
   #order-pdf-export-container .email-text {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
-    color: #08182b;
+    color: #ffffff;
     line-height: 1.2;
   }
 
   #order-pdf-export-container .web-text {
-    font-size: 8.5px;
+    font-size: 10px;
     font-weight: 500;
-    color: #64748b;
-    margin-top: 1px;
+    color: #cbd5e1;
+    margin-top: 1.5px;
     line-height: 1.1;
   }
 
-  #order-pdf-export-container .footer-tagline-row {
+  #order-pdf-export-container .pdf-tagline-strip {
+    width: 100%;
+    background: transparent;
+    padding: 6px 24px 8px 24px;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 24px 10px 24px;
-    gap: 8px;
-    box-sizing: border-box;
-  }
-
-  #order-pdf-export-container .tagline-line {
-    flex: 1;
-    height: 1px;
-    background: #caa368;
-  }
-
-  #order-pdf-export-container .tagline-ornament {
-    color: #caa368;
-    font-size: 10px;
-    line-height: 1;
-    padding: 0 3px;
+    text-align: center;
+    border: none;
   }
 
   #order-pdf-export-container .tagline-text {
-    font-size: 9.5px;
-    font-weight: 700;
-    letter-spacing: 2.5px;
+    font-family: 'Cinzel', 'Playfair Display', 'Plus Jakarta Sans', Georgia, serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 3px;
     color: #08182b;
     text-transform: uppercase;
     white-space: nowrap;
-    padding: 0 6px;
+    padding: 0;
+    line-height: 1.2;
+    -webkit-font-smoothing: antialiased;
   }
 `;
 
@@ -1678,17 +1658,17 @@ export const buildBottomGridHtml = (data = {}) => {
 export const buildThankYouBannerHtml = () => {
   const arrowIcon = renderToStaticMarkup(
     <ArrowForwardRoundedIcon
-      style={{ fontSize: 13, color: "#ffffff", verticalAlign: "middle" }}
+      style={{ fontSize: 14, color: "#ffffff", verticalAlign: "middle" }}
     />,
   );
   const instaIcon = renderToStaticMarkup(
-    <InstagramIcon style={{ fontSize: 13, color: "#08182b" }} />,
+    <InstagramIcon style={{ fontSize: 14, color: "#08182b" }} />,
   );
   const waIcon = renderToStaticMarkup(
-    <WhatsAppIcon style={{ fontSize: 13, color: "#08182b" }} />,
+    <WhatsAppIcon style={{ fontSize: 14, color: "#08182b" }} />,
   );
   const fbIcon = renderToStaticMarkup(
-    <FacebookIcon style={{ fontSize: 13, color: "#08182b" }} />,
+    <FacebookIcon style={{ fontSize: 14, color: "#08182b" }} />,
   );
 
   return `
@@ -1739,61 +1719,44 @@ export const buildSignatureSectionHtml = () => `
 
 export const buildLuxuryFooterHtml = () => {
   const locIcon = renderToStaticMarkup(
-    <LocationOnOutlinedIcon style={{ fontSize: 16, color: "#caa368" }} />,
+    <LocationOnOutlinedIcon style={{ fontSize: 18, color: "#ffffff" }} />,
   );
   const phoneIcon = renderToStaticMarkup(
-    <PhoneOutlinedIcon style={{ fontSize: 15, color: "#caa368" }} />,
+    <PhoneOutlinedIcon style={{ fontSize: 17, color: "#ffffff" }} />,
   );
   const emailIcon = renderToStaticMarkup(
-    <EmailOutlinedIcon style={{ fontSize: 15, color: "#caa368" }} />,
+    <EmailOutlinedIcon style={{ fontSize: 17, color: "#ffffff" }} />,
   );
 
   return `
+    <div class="pdf-tagline-strip">
+      <span class="tagline-text">DRAPE TODAY &nbsp;•&nbsp; MEMORIES FOREVER</span>
+    </div>
     <div class="pdf-luxury-footer">
-      <div class="footer-top-line-wrap">
-        <div class="footer-top-line"></div>
-        <span class="footer-top-diamond">❖</span>
-        <div class="footer-top-line"></div>
-      </div>
       <div class="footer-contact-row">
         <div class="footer-col footer-col-address">
           <div class="footer-icon-wrap">${locIcon}</div>
           <div class="footer-text-block">
-            <div class="footer-col-title">STUDIO ADDRESS</div>
             <div class="address-line">H.No. 4715, 1st Floor, Road No. 17,</div>
             <div class="address-line">New MIG, BHEL, Hyderabad - 502032</div>
           </div>
         </div>
 
-        <div class="footer-col-divider"></div>
-
         <div class="footer-col footer-col-phone">
           <div class="footer-icon-wrap">${phoneIcon}</div>
           <div class="footer-text-block">
-            <div class="footer-col-title">CALL & WHATSAPP SUPPORT</div>
             <div class="phone-num">+91 95539 00003</div>
             <div class="timing-badge">Mon - Sun • 10:00 AM - 10:00 PM</div>
           </div>
         </div>
 
-        <div class="footer-col-divider"></div>
-
         <div class="footer-col footer-col-email">
           <div class="footer-icon-wrap">${emailIcon}</div>
           <div class="footer-text-block">
-            <div class="footer-col-title">ONLINE ASSISTANCE</div>
             <div class="email-text">${import.meta.env.VITE_STUDIO_EMAIL || "aparnaaarvi@gmail.com"}</div>
-            <div class="web-text">${import.meta.env.VITE_APP_URL ? `${import.meta.env.VITE_APP_URL}/landing` : "https://aparnasaree.com/landing"}</div>
+            <div class="web-text">${import.meta.env.VITE_APP_URL ? `${import.meta.env.VITE_APP_URL}` : "https://aparnasaree.com"}</div>
           </div>
         </div>
-      </div>
-
-      <div class="footer-tagline-row">
-        <div class="tagline-line line-left"></div>
-        <span class="tagline-ornament">❖</span>
-        <span class="tagline-text">DRAPE TODAY &nbsp;•&nbsp; MEMORIES FOREVER</span>
-        <span class="tagline-ornament">❖</span>
-        <div class="tagline-line line-right"></div>
       </div>
     </div>
   `;

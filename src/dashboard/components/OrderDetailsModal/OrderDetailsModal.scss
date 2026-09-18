@@ -512,6 +512,28 @@
         color: var(--text-primary);
         font-size: 1.1rem;
         font-weight: 700;
+        display: flex;
+        align-items: center;
+
+        .item-price-combo {
+          display: flex;
+          align-items: baseline;
+          gap: 6px;
+        }
+
+        .regular-price-strike {
+          font-size: 0.82rem;
+          font-weight: 500;
+          color: var(--text-muted, #94a3b8);
+          text-decoration: line-through;
+          opacity: 0.85;
+        }
+
+        .offer-price-val {
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
       }
     }
 

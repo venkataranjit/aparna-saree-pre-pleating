@@ -267,7 +267,7 @@ const OrderDetailsModal = ({
           </span>
         </div>
       }
-      subtitle="Saree Pre-Pleating Job Sheet & Order Specifications"
+      subtitle="Order Details"
       maxWidth="lg"
       className="order-details-app-modal"
       bodyClassName="order-details-modal-body"
@@ -424,7 +424,7 @@ const OrderDetailsModal = ({
                 <span className="info-label">Total Sarees</span>
                 <span className="info-val highlight">
                   {rawItems.length}{" "}
-                  {rawItems.length === 1 ? "Saree Service" : "Saree Services"}
+                  {rawItems.length === 1 ? "Service" : "Services"}
                 </span>
               </div>
             </div>
@@ -443,6 +443,14 @@ const OrderDetailsModal = ({
             <div className="dossier-items-list">
               {rawItems.map((item, idx) => {
                 const m = item.measurementProfile;
+                const regularPrice = Number(item.servicePrice || 0);
+                const offerPrice = Number(
+                  item.finalPrice !== undefined && item.finalPrice !== null
+                    ? item.finalPrice
+                    : item.serviceDiscountedPrice || item.servicePrice || 0,
+                );
+                const hasDiscount = regularPrice > offerPrice && offerPrice > 0;
+
                 return (
                   <div key={item.itemId || idx} className="dossier-item-box">
                     <div className="dossier-item-header">
@@ -453,7 +461,23 @@ const OrderDetailsModal = ({
                         </span>
                       </div>
                       <div className="item-price-tag">
-                        ₹{Number(item.finalPrice || 0).toLocaleString("en-IN")}
+                        {hasDiscount ? (
+                          <div className="item-price-combo">
+                            <span className="regular-price-strike">
+                              ₹{regularPrice.toLocaleString("en-IN")}
+                            </span>
+                            <span className="offer-price-val">
+                              ₹{offerPrice.toLocaleString("en-IN")}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="offer-price-val">
+                            ₹
+                            {(offerPrice || regularPrice || 0).toLocaleString(
+                              "en-IN",
+                            )}
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -894,27 +918,7 @@ const OrderDetailsModal = ({
                 </span>
               </div>
             )}
-            {currentPaymentStatus === "paid" ? (
-              <div
-                className="pay-row"
-                style={{ marginTop: 4, color: "#10b981" }}
-              >
-                <span className="pay-label" style={{ color: "#10b981" }}>
-                  Balance Paid:
-                </span>
-                <span
-                  className="pay-val"
-                  style={{ color: "#10b981", fontWeight: 700 }}
-                >
-                  ₹
-                  {Number(
-                    balancePaidAmount > 0
-                      ? balancePaidAmount
-                      : Math.max(0, totalCalculatedAmount - advancePaid),
-                  ).toLocaleString("en-IN")}
-                </span>
-              </div>
-            ) : (
+            {currentPaymentStatus !== "paid" && Number(balanceDue) > 0 && (
               <div
                 className="pay-row"
                 style={{ marginTop: 4, color: "#ef4444" }}

@@ -20,6 +20,7 @@ import DryCleaningOutlinedIcon from "@mui/icons-material/DryCleaningOutlined";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 import PaymentOutlinedIcon from "@mui/icons-material/PaymentOutlined";
+import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 
@@ -362,6 +363,10 @@ const Bookings = () => {
     ).length;
   }, [orders]);
 
+  const activeOrdersCount = useMemo(() => {
+    return acceptedCount + pendingCount + inProgressCount + completedCount;
+  }, [acceptedCount, pendingCount, inProgressCount, completedCount]);
+
   const totalReceivedRevenue = useMemo(() => {
     return orders
       .filter(
@@ -616,14 +621,12 @@ const Bookings = () => {
           icon={<ReceiptLongOutlinedIcon />}
         />
         <StatCard
-          title="Order Status"
-          value={String(completedCount)}
-          subValue={`/ ${inProgressCount + pendingCount} Active`}
-          change={`${completedCount} Completed • ${inProgressCount + pendingCount} In Progress & Pending`}
-          trendType={
-            inProgressCount + pendingCount > 0 ? "pending" : "completed"
-          }
-          icon={<TaskAltOutlinedIcon />}
+          title="Orders Delivered"
+          value={String(deliveredCount)}
+          subValue={`/ ${activeOrdersCount} Active`}
+          change={`${cancelledCount} Cancelled`}
+          trendType={cancelledCount > 0 ? "pending" : "completed"}
+          icon={<LocalShippingOutlinedIcon />}
         />
         <StatCard
           title="Total Services"

@@ -99,11 +99,12 @@ export const mapOrderToInvoiceData = (order) => {
         notes: m.notes || "",
       },
       specialCare,
+      regularPrice: Number(it.servicePrice) || 0,
       price:
         Number(it.finalPrice) !== undefined &&
         !Number.isNaN(Number(it.finalPrice))
           ? Number(it.finalPrice)
-          : Number(it.servicePrice) || 0,
+          : Number(it.serviceDiscountedPrice) || Number(it.servicePrice) || 0,
     };
   });
 
@@ -718,6 +719,28 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     padding-top: 10px;
   }
 
+  #order-pdf-export-container .td-amt .amt-combo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+  }
+
+  #order-pdf-export-container .td-amt .regular-strike {
+    font-size: 11px;
+    font-weight: 500;
+    color: #94a3b8;
+    text-decoration: line-through;
+    line-height: 1.2;
+  }
+
+  #order-pdf-export-container .td-amt .offer-val {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #08182b;
+    line-height: 1.2;
+  }
+
   #order-pdf-export-container .pdf-bottom-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -877,34 +900,19 @@ export const INVOICE_PDF_INTERNAL_CSS = `
 
   #order-pdf-export-container .balance-row {
     padding-top: 1px;
-  }
-
-  #order-pdf-export-container .balance-row.is-paid {
-    color: #15803d;
-  }
-
-  #order-pdf-export-container .balance-row.is-paid .balance-lbl,
-  #order-pdf-export-container .balance-row.is-paid .balance-val {
-    color: #15803d;
-  }
-
-  #order-pdf-export-container .balance-row:not(.is-paid) {
-    color: #dc2626;
-  }
-
-  #order-pdf-export-container .balance-row:not(.is-paid) .balance-lbl,
-  #order-pdf-export-container .balance-row:not(.is-paid) .balance-val {
     color: #dc2626;
   }
 
   #order-pdf-export-container .balance-row .balance-lbl {
     font-weight: 700;
     font-size: 10.5px;
+    color: #dc2626;
   }
 
   #order-pdf-export-container .balance-row .balance-val {
     font-weight: 700;
     font-size: 11.5px;
+    color: #dc2626;
   }
 
   /* 6. Thank You & Google Review Banner Card */
@@ -1544,7 +1552,13 @@ export const buildServiceRowHtml = (s, idx) => {
         <div class="specs-wrap">${specsHtml}</div>
         ${careHtml}
       </td>
-      <td class="td-amt">₹${Number(s.price || 0).toLocaleString("en-IN")}</td>
+      <td class="td-amt">
+        ${
+          s.regularPrice > s.price && s.price > 0
+            ? `<div class="amt-combo"><span class="regular-strike">₹${Number(s.regularPrice).toLocaleString("en-IN")}</span> <span class="offer-val">₹${Number(s.price || 0).toLocaleString("en-IN")}</span></div>`
+            : `₹${Number(s.price || 0).toLocaleString("en-IN")}`
+        }
+      </td>
     </tr>
   `;
 };
@@ -1588,18 +1602,10 @@ export const buildBottomGridHtml = (data = {}) => {
 
   const isPaid = String(data.paymentStatus || "").toLowerCase() === "paid";
   const discountAmount = Number(data.financials?.discount || 0);
-  const balanceDisplayAmount = isPaid
-    ? data.financials?.balancePaid !== undefined &&
-      Number(data.financials?.balancePaid) > 0
-      ? data.financials?.balancePaid
-      : Math.max(
-          0,
-          Number(data.financials?.totalAmount || 0) -
-            Number(data.financials?.advancePaid || 0),
-        )
-    : data.financials?.balanceDue !== undefined &&
-        Number(data.financials?.balanceDue) > 0
-      ? data.financials?.balanceDue
+  const balanceDueAmount =
+    data.financials?.balanceDue !== undefined &&
+    Number(data.financials?.balanceDue) > 0
+      ? Number(data.financials?.balanceDue)
       : Math.max(
           0,
           Number(data.financials?.totalAmount || 0) -
@@ -1655,10 +1661,14 @@ export const buildBottomGridHtml = (data = {}) => {
             <span class="total-lbl">Paid Amount</span>
             <span class="total-val">₹${Number(data.financials?.advancePaid || 0).toLocaleString("en-IN")}</span>
           </div>
-          <div class="total-row balance-row ${isPaid ? "is-paid" : ""}">
-            <span class="balance-lbl">${isPaid ? "Balance Paid" : "Balance Due"}</span>
-            <span class="balance-val">₹${Number(balanceDisplayAmount).toLocaleString("en-IN")}</span>
-          </div>
+          ${
+            !isPaid && balanceDueAmount > 0
+              ? `<div class="total-row balance-row">
+            <span class="balance-lbl">Balance Due</span>
+            <span class="balance-val">₹${Number(balanceDueAmount).toLocaleString("en-IN")}</span>
+          </div>`
+              : ""
+          }
         </div>
       </div>
     </div>

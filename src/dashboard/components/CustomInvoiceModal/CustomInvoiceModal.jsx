@@ -1890,69 +1890,60 @@ export const generateOrderInvoicePdf = async (
   // 1123 - 138 (header) - 80 (footer) - 20 (padding) - 38 (heading) - 185 (dossier) = 662px
   const PAGE1_AVAILABLE_FOR_REST = 662;
 
-  // Single page check: can all services + bottom blocks fit on Page 1 comfortably?
-  const canFitSinglePage =
-    totalServices <= 2 &&
-    totalServicesHeight + BOTTOM_BLOCKS_HEIGHT <= PAGE1_AVAILABLE_FOR_REST;
-
+  // Multi-page luxury invoice flow:
+  // Page 1: Header + "ORDER DETAILS" + Order & Client Dossier + Services Table + Footer
   const pages = [];
+  let serviceIdx = 0;
+  const page1Rows = [];
+  let page1TableHeight = totalServices > 0 ? 55 : 0;
 
-  if (canFitSinglePage) {
-    const allRowsHtml = (data.services || [])
-      .map((s, idx) => buildServiceRowHtml(s, idx))
-      .join("");
+  while (
+    serviceIdx < totalServices &&
+    page1TableHeight + rowHeights[serviceIdx] <= PAGE1_AVAILABLE_FOR_REST - 30
+  ) {
+    page1Rows.push(
+      buildServiceRowHtml(data.services[serviceIdx], serviceIdx),
+    );
+    page1TableHeight += rowHeights[serviceIdx];
+    serviceIdx++;
+  }
 
-    const singlePageBody = [
-      buildMainHeadingHtml("ORDER DETAILS"),
-      buildDossierGridHtml(data),
-      totalServices > 0 ? buildServicesTableHtml(allRowsHtml, false) : "",
-      buildBottomGridHtml(data),
-      buildThankYouBannerHtml(),
-      buildSignatureSectionHtml(),
-    ].join("");
+  const page1Body = [
+    buildMainHeadingHtml("ORDER DETAILS"),
+    buildDossierGridHtml(data),
+    page1Rows.length > 0
+      ? buildServicesTableHtml(page1Rows.join(""), false)
+      : "",
+  ].join("");
 
-    pages.push(singlePageBody);
-  } else {
-    // Multi-page flow
-    // Page 1: Heading + Dossier + Services that fit in PAGE1_AVAILABLE_FOR_REST
-    let serviceIdx = 0;
-    const page1Rows = [];
-    let page1TableHeight = totalServices > 0 ? 55 : 0;
+  pages.push(page1Body);
+
+  // Subsequent pages if there are remaining services:
+  const PAGE2_AVAILABLE = 847;
+
+  while (serviceIdx < totalServices) {
+    const currentPageRows = [];
+    let currentPageTableHeight = 55;
 
     while (
       serviceIdx < totalServices &&
-      page1TableHeight + rowHeights[serviceIdx] <= PAGE1_AVAILABLE_FOR_REST - 30
+      currentPageTableHeight +
+        rowHeights[serviceIdx] +
+        BOTTOM_BLOCKS_HEIGHT <=
+        PAGE2_AVAILABLE
     ) {
-      page1Rows.push(
+      currentPageRows.push(
         buildServiceRowHtml(data.services[serviceIdx], serviceIdx),
       );
-      page1TableHeight += rowHeights[serviceIdx];
+      currentPageTableHeight += rowHeights[serviceIdx];
       serviceIdx++;
     }
 
-    const page1Body = [
-      buildMainHeadingHtml("ORDER DETAILS"),
-      buildDossierGridHtml(data),
-      page1Rows.length > 0
-        ? buildServicesTableHtml(page1Rows.join(""), false)
-        : "",
-    ].join("");
-
-    pages.push(page1Body);
-
-    // Page 2 (and subsequent pages if huge number of items):
-    const PAGE2_AVAILABLE = 847;
-
-    while (serviceIdx < totalServices) {
-      const currentPageRows = [];
-      let currentPageTableHeight = 55;
-
+    if (currentPageRows.length === 0 && serviceIdx < totalServices) {
       while (
         serviceIdx < totalServices &&
-        currentPageTableHeight +
-          rowHeights[serviceIdx] +
-          BOTTOM_BLOCKS_HEIGHT <=
-          PAGE2_AVAILABLE
+        currentPageTableHeight + rowHeights[serviceIdx] <=
+          PAGE2_AVAILABLE - 30
       ) {
         currentPageRows.push(
           buildServiceRowHtml(data.services[serviceIdx], serviceIdx),
@@ -1960,47 +1951,37 @@ export const generateOrderInvoicePdf = async (
         currentPageTableHeight += rowHeights[serviceIdx];
         serviceIdx++;
       }
-
-      if (currentPageRows.length === 0 && serviceIdx < totalServices) {
-        while (
-          serviceIdx < totalServices &&
-          currentPageTableHeight + rowHeights[serviceIdx] <=
-            PAGE2_AVAILABLE - 30
-        ) {
-          currentPageRows.push(
-            buildServiceRowHtml(data.services[serviceIdx], serviceIdx),
-          );
-          currentPageTableHeight += rowHeights[serviceIdx];
-          serviceIdx++;
-        }
-      }
-
-      const pageBodyParts = [
-        buildMainHeadingHtml("ORDER DETAILS (CONTINUED)"),
-        currentPageRows.length > 0
-          ? buildServicesTableHtml(currentPageRows.join(""), true)
-          : "",
-      ];
-
-      if (serviceIdx >= totalServices) {
-        pageBodyParts.push(buildBottomGridHtml(data));
-        pageBodyParts.push(buildThankYouBannerHtml());
-        pageBodyParts.push(buildSignatureSectionHtml());
-      }
-
-      pages.push(pageBodyParts.join(""));
     }
 
-    // If services all fit on Page 1, but bottom blocks needed Page 2:
-    if (pages.length === 1) {
-      const page2Body = [
-        buildMainHeadingHtml("ORDER DETAILS (CONTINUED)"),
-        buildBottomGridHtml(data),
-        buildThankYouBannerHtml(),
-        buildSignatureSectionHtml(),
-      ].join("");
-      pages.push(page2Body);
+    const pageBodyParts = [
+      buildMainHeadingHtml(
+        serviceIdx >= totalServices
+          ? "PAYMENT & CARE SUMMARY"
+          : "ORDER DETAILS (CONTINUED)",
+      ),
+      currentPageRows.length > 0
+        ? buildServicesTableHtml(currentPageRows.join(""), true)
+        : "",
+    ];
+
+    if (serviceIdx >= totalServices) {
+      pageBodyParts.push(buildBottomGridHtml(data));
+      pageBodyParts.push(buildThankYouBannerHtml());
+      pageBodyParts.push(buildSignatureSectionHtml());
     }
+
+    pages.push(pageBodyParts.join(""));
+  }
+
+  // If all services fit on Page 1, add Page 2 for Payment, Care, and Thank You blocks:
+  if (pages.length === 1) {
+    const page2Body = [
+      buildMainHeadingHtml("PAYMENT & CARE SUMMARY"),
+      buildBottomGridHtml(data),
+      buildThankYouBannerHtml(),
+      buildSignatureSectionHtml(),
+    ].join("");
+    pages.push(page2Body);
   }
 
   // Create export container with intact individual A4 page divs

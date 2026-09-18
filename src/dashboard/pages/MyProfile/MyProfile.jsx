@@ -355,11 +355,7 @@ const MyProfile = () => {
   // If so, do not show the Change Password option in the Edit My Profile Details popup
   const canChangePassword = useMemo(() => {
     // Any account with an email can set or update their account password to enable dual login
-    const email = (
-      currentUser?.email ||
-      userProfile?.email ||
-      ""
-    ).trim();
+    const email = (currentUser?.email || userProfile?.email || "").trim();
     return Boolean(email && email.length > 0 && email.includes("@"));
   }, [currentUser, userProfile]);
 
@@ -1218,7 +1214,7 @@ const MyProfile = () => {
             required
             id="profile-mobile"
             name="userMobile"
-            placeholder="10-digit mobile number"
+            placeholder="mobile number"
             value={editProfileFormik.values.userMobile}
             onChange={editProfileFormik.handleChange}
             onBlur={editProfileFormik.handleBlur}

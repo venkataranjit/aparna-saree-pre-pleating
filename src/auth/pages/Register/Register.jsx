@@ -563,7 +563,7 @@ const Register = () => {
 
                 {/* Mobile Number Input */}
                 <AppInput
-                  label="Mobile Number (10 Digits)"
+                  label="Mobile Number"
                   required
                   id="userMobile"
                   name="userMobile"

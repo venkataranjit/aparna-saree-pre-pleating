@@ -835,6 +835,9 @@ const Users = () => {
                               <div className="user-name-text">
                                 {u.username || "—"}
                               </div>
+                              {u.email ? (
+                                <div className="user-email-text">{u.email}</div>
+                              ) : null}
                             </div>
                           </div>
                         </AppTableCell>
@@ -977,24 +980,6 @@ const Users = () => {
                                 </div>
                               </div>
 
-                              {/* Email Tile */}
-                              <div className="expanded-tile">
-                                <div className="tile-header">
-                                  <EmailOutlinedIcon className="tile-icon" />
-                                  <span className="tile-label">
-                                    Email Address
-                                  </span>
-                                </div>
-                                <div className="tile-content">
-                                  {u.email ? (
-                                    <span className="email-text">
-                                      {u.email}
-                                    </span>
-                                  ) : (
-                                    <span className="empty-hint">-</span>
-                                  )}
-                                </div>
-                              </div>
 
                               {/* Created At Tile */}
                               <div className="expanded-tile">
@@ -1099,6 +1084,9 @@ const Users = () => {
                     <h3 className="card-title">
                       {u.username || "Team Member"}
                     </h3>
+                    {u.email ? (
+                      <div className="card-subtitle-email">{u.email}</div>
+                    ) : null}
                     <div className="card-info-rows">
                       <div className="info-item">
                         <PhoneIphoneOutlinedIcon style={{ fontSize: 14 }} />
@@ -1372,7 +1360,7 @@ const Users = () => {
           />
 
           <AppInput
-            label="Mobile Number (10 Digits)"
+            label="Mobile Number"
             required
             id="userMobile"
             name="userMobile"
@@ -1401,27 +1389,6 @@ const Users = () => {
           />
 
           <AppInput
-            select
-            label="Assigned Role"
-            required
-            id="role"
-            name="role"
-            value={formik.values.role}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.role && formik.errors.role}
-            disabled={formik.isSubmitting}
-          >
-            <option value={USER_ROLES.CLIENT}>Client (Default)</option>
-            <option value={USER_ROLES.ADMIN}>
-              Admin (Operations & Orders)
-            </option>
-            <option value={USER_ROLES.STAFF}>
-              Staff (Pleating & Handling)
-            </option>
-          </AppInput>
-
-          <AppInput
             label="Address"
             id="userAddress"
             name="userAddress"
@@ -1448,6 +1415,27 @@ const Users = () => {
             rows={2}
             startAdornment={<NotesOutlinedIcon />}
           />
+
+          <AppInput
+            select
+            label="Assigned Role"
+            required
+            id="role"
+            name="role"
+            value={formik.values.role}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.role && formik.errors.role}
+            disabled={formik.isSubmitting}
+          >
+            <option value={USER_ROLES.CLIENT}>Client (Default)</option>
+            <option value={USER_ROLES.ADMIN}>
+              Admin (Operations & Orders)
+            </option>
+            <option value={USER_ROLES.STAFF}>
+              Staff (Pleating & Handling)
+            </option>
+          </AppInput>
 
           <AppInput
             label="Temporary Password (Locked to default)"
@@ -1510,7 +1498,7 @@ const Users = () => {
           />
 
           <AppInput
-            label="10-Digit Mobile Number"
+            label="Mobile Number"
             required
             id="edit-userMobile"
             name="userMobile"
@@ -1549,6 +1537,36 @@ const Users = () => {
             startAdornment={<EmailOutlinedIcon />}
           />
 
+          <AppInput
+            label="Address"
+            id="edit-userAddress"
+            name="userAddress"
+            placeholder="e.g. Banjara Hills, Hyderabad"
+            value={editFormik.values.userAddress}
+            onChange={editFormik.handleChange}
+            onBlur={editFormik.handleBlur}
+            error={
+              editFormik.touched.userAddress && editFormik.errors.userAddress
+            }
+            disabled={editFormik.isSubmitting}
+            startAdornment={<LocationOnOutlinedIcon />}
+          />
+
+          <AppInput
+            label="Notes (Optional)"
+            id="edit-notes"
+            name="notes"
+            placeholder="e.g. Special role instructions, remarks..."
+            value={editFormik.values.notes}
+            onChange={editFormik.handleChange}
+            onBlur={editFormik.handleBlur}
+            error={editFormik.touched.notes && editFormik.errors.notes}
+            disabled={editFormik.isSubmitting}
+            multiline
+            rows={2}
+            startAdornment={<NotesOutlinedIcon />}
+          />
+
           {selectedUser?.email?.toLowerCase() ===
             SUPERADMIN_EMAIL.toLowerCase() ||
           selectedUser?.role === USER_ROLES.SUPERADMIN ? (
@@ -1580,36 +1598,6 @@ const Users = () => {
               </option>
             </AppInput>
           )}
-
-          <AppInput
-            label="Address"
-            id="edit-userAddress"
-            name="userAddress"
-            placeholder="e.g. Banjara Hills, Hyderabad"
-            value={editFormik.values.userAddress}
-            onChange={editFormik.handleChange}
-            onBlur={editFormik.handleBlur}
-            error={
-              editFormik.touched.userAddress && editFormik.errors.userAddress
-            }
-            disabled={editFormik.isSubmitting}
-            startAdornment={<LocationOnOutlinedIcon />}
-          />
-
-          <AppInput
-            label="Notes (Optional)"
-            id="edit-notes"
-            name="notes"
-            placeholder="e.g. Special role instructions, remarks..."
-            value={editFormik.values.notes}
-            onChange={editFormik.handleChange}
-            onBlur={editFormik.handleBlur}
-            error={editFormik.touched.notes && editFormik.errors.notes}
-            disabled={editFormik.isSubmitting}
-            multiline
-            rows={2}
-            startAdornment={<NotesOutlinedIcon />}
-          />
         </form>
       </AppModal>
 

@@ -250,3 +250,18 @@
   }
 }
 
+// 2-Column Responsive Form Row Utility for Modals
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: flex-start;
+  width: 100%;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+

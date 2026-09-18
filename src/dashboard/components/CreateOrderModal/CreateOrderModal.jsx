@@ -1627,7 +1627,7 @@ export default function CreateOrderModal({
 
               <div className="form-field-wrap">
                 <AppInput
-                  label="Mobile Number (10 Digits)"
+                  label="Mobile Number"
                   placeholder="e.g. 9849012345"
                   inputMode="numeric"
                   maxLength={10}

@@ -918,7 +918,7 @@ const Services = () => {
                           >
                             <div className="table-expanded-container">
                               {/* Service Description Tile */}
-                              <div className="expanded-tile expanded-tile--address">
+                              <div className="expanded-tile expanded-tile--full-width">
                                 <div className="tile-header">
                                   <DescriptionOutlinedIcon className="tile-icon" />
                                   <span className="tile-label">
@@ -941,7 +941,7 @@ const Services = () => {
                               </div>
 
                               {/* Service Type Tile */}
-                              <div className="expanded-tile">
+                              <div className="expanded-tile expanded-tile--third">
                                 <div className="tile-header">
                                   <LayersOutlinedIcon className="tile-icon" />
                                   <span className="tile-label">Service Type</span>
@@ -954,7 +954,7 @@ const Services = () => {
                               </div>
 
                               {/* Created At Tile */}
-                              <div className="expanded-tile">
+                              <div className="expanded-tile expanded-tile--third">
                                 <div className="tile-header">
                                   <CalendarTodayOutlinedIcon className="tile-icon" />
                                   <span className="tile-label">Created At</span>
@@ -969,7 +969,7 @@ const Services = () => {
                               </div>
 
                               {/* Modified At Tile */}
-                              <div className="expanded-tile">
+                              <div className="expanded-tile expanded-tile--third">
                                 <div className="tile-header">
                                   <ScheduleOutlinedIcon className="tile-icon" />
                                   <span className="tile-label">

@@ -887,7 +887,7 @@ const Login = () => {
                   // Step 2A: Enter Mobile Number
                   <form onSubmit={handleSendOtp}>
                     <AppInput
-                      label="Mobile Number (10 Digits)"
+                      label="Mobile Number"
                       id="phone-number"
                       type="tel"
                       placeholder="9848012345"

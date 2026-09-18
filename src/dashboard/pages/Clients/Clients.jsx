@@ -892,8 +892,7 @@ const Clients = () => {
         <div>
           <h1 className="page-title">Clients</h1>
           <p className="page-subtitle">
-            View client profiles, contact info, and manage tailoring
-            measurements
+            View client profiles, contact info, and manage measurements
           </p>
         </div>
 
@@ -1124,6 +1123,11 @@ const Clients = () => {
                               <div className="user-name-text">
                                 {user.username || "Client"}
                               </div>
+                              {user.email ? (
+                                <div className="user-email-text">
+                                  {user.email}
+                                </div>
+                              ) : null}
                             </div>
                           </div>
                         </AppTableCell>
@@ -1359,26 +1363,6 @@ const Clients = () => {
                                 </div>
                               </div>
 
-                              {/* Email Tile */}
-                              <div className="expanded-tile">
-                                <div className="tile-header">
-                                  <EmailOutlinedIcon className="tile-icon" />
-                                  <span className="tile-label">
-                                    Email Address
-                                  </span>
-                                </div>
-                                <div className="tile-content">
-                                  {user.email ? (
-                                    <span className="email-text">
-                                      {user.email}
-                                    </span>
-                                  ) : (
-                                    <span className="empty-hint">
-                                      -
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
 
                               {/* Joined Date Tile */}
                               <div className="expanded-tile">
@@ -1541,6 +1525,9 @@ const Clients = () => {
                       <h3 className="card-title">
                         {user.username || "Client"}
                       </h3>
+                      {user.email ? (
+                        <div className="card-subtitle-email">{user.email}</div>
+                      ) : null}
                       <div className="card-info-rows">
                         <div className="info-item">
                           <PhoneIphoneOutlinedIcon style={{ fontSize: 14 }} />
@@ -1708,6 +1695,11 @@ const Clients = () => {
                           <h3 className="client-heading">
                             {user.username || "Client"}
                           </h3>
+                          {user.email ? (
+                            <div className="card-subtitle-email">
+                              {user.email}
+                            </div>
+                          ) : null}
                         </div>
                         <div
                           style={{
@@ -1913,7 +1905,7 @@ const Clients = () => {
           style={{ display: "flex", flexDirection: "column", gap: "14px" }}
         >
           <AppInput
-            label="Client Full Name"
+            label="Name"
             required
             id="create-username"
             name="username"
@@ -1929,9 +1921,10 @@ const Clients = () => {
           />
 
           <AppInput
-            label="10-Digit Mobile Number"
+            label="Mobile Number"
             required
             id="create-userMobile"
+            s
             name="userMobile"
             placeholder="e.g. 9848012345"
             value={createFormik.values.userMobile}
@@ -1958,38 +1951,36 @@ const Clients = () => {
             startAdornment={<EmailOutlinedIcon />}
           />
 
-          <div className="form-row-2col">
-            <AppInput
-              label="Address"
-              id="create-userAddress"
-              name="userAddress"
-              placeholder="e.g. Jubilee Hills, Hyderabad"
-              value={createFormik.values.userAddress}
-              onChange={createFormik.handleChange}
-              onBlur={createFormik.handleBlur}
-              error={
-                createFormik.touched.userAddress &&
-                createFormik.errors.userAddress
-              }
-              disabled={createFormik.isSubmitting}
-              startAdornment={<LocationOnOutlinedIcon />}
-            />
+          <AppInput
+            label="Address"
+            id="create-userAddress"
+            name="userAddress"
+            placeholder="e.g. Jubilee Hills, Hyderabad"
+            value={createFormik.values.userAddress}
+            onChange={createFormik.handleChange}
+            onBlur={createFormik.handleBlur}
+            error={
+              createFormik.touched.userAddress &&
+              createFormik.errors.userAddress
+            }
+            disabled={createFormik.isSubmitting}
+            startAdornment={<LocationOnOutlinedIcon />}
+          />
 
-            <AppInput
-              label="Notes (Optional)"
-              id="create-notes"
-              name="notes"
-              placeholder="e.g. Saree preferences, special handling notes..."
-              value={createFormik.values.notes}
-              onChange={createFormik.handleChange}
-              onBlur={createFormik.handleBlur}
-              error={createFormik.touched.notes && createFormik.errors.notes}
-              disabled={createFormik.isSubmitting}
-              multiline
-              rows={2}
-              startAdornment={<NotesOutlinedIcon />}
-            />
-          </div>
+          <AppInput
+            label="Notes (Optional)"
+            id="create-notes"
+            name="notes"
+            placeholder="e.g. Saree preferences, special handling notes..."
+            value={createFormik.values.notes}
+            onChange={createFormik.handleChange}
+            onBlur={createFormik.handleBlur}
+            error={createFormik.touched.notes && createFormik.errors.notes}
+            disabled={createFormik.isSubmitting}
+            multiline
+            rows={2}
+            startAdornment={<NotesOutlinedIcon />}
+          />
 
           <AppInput
             label="Temporary Password (Locked to default)"
@@ -2051,7 +2042,7 @@ const Clients = () => {
           />
 
           <AppInput
-            label="10-Digit Mobile Number"
+            label="Mobile Number"
             required
             id="edit-userMobile"
             name="userMobile"
@@ -2078,36 +2069,34 @@ const Clients = () => {
             startAdornment={<EmailOutlinedIcon />}
           />
 
-          <div className="form-row-2col">
-            <AppInput
-              label="Residential / Delivery Address / City"
-              id="edit-userAddress"
-              name="userAddress"
-              value={editFormik.values.userAddress}
-              onChange={editFormik.handleChange}
-              onBlur={editFormik.handleBlur}
-              error={
-                editFormik.touched.userAddress && editFormik.errors.userAddress
-              }
-              disabled={editFormik.isSubmitting}
-              startAdornment={<LocationOnOutlinedIcon />}
-            />
+          <AppInput
+            label="Residential / Delivery Address / City"
+            id="edit-userAddress"
+            name="userAddress"
+            value={editFormik.values.userAddress}
+            onChange={editFormik.handleChange}
+            onBlur={editFormik.handleBlur}
+            error={
+              editFormik.touched.userAddress && editFormik.errors.userAddress
+            }
+            disabled={editFormik.isSubmitting}
+            startAdornment={<LocationOnOutlinedIcon />}
+          />
 
-            <AppInput
-              label="Notes (Optional)"
-              id="edit-notes"
-              name="notes"
-              placeholder="e.g. Saree preferences, special handling notes..."
-              value={editFormik.values.notes}
-              onChange={editFormik.handleChange}
-              onBlur={editFormik.handleBlur}
-              error={editFormik.touched.notes && editFormik.errors.notes}
-              disabled={editFormik.isSubmitting}
-              multiline
-              rows={2}
-              startAdornment={<NotesOutlinedIcon />}
-            />
-          </div>
+          <AppInput
+            label="Notes (Optional)"
+            id="edit-notes"
+            name="notes"
+            placeholder="e.g. Saree preferences, special handling notes..."
+            value={editFormik.values.notes}
+            onChange={editFormik.handleChange}
+            onBlur={editFormik.handleBlur}
+            error={editFormik.touched.notes && editFormik.errors.notes}
+            disabled={editFormik.isSubmitting}
+            multiline
+            rows={2}
+            startAdornment={<NotesOutlinedIcon />}
+          />
 
           <AppInput
             label="Reset Password (Optional)"

@@ -244,7 +244,6 @@ export default function CreateOrderModal({
   const [selectedClientId, setSelectedClientId] = useState("");
   const [clientForm, setClientForm] = useState({
     username: "",
-    nickName: "",
     userMobile: "",
     email: "",
     userAddress: "",
@@ -759,7 +758,6 @@ export default function CreateOrderModal({
     if (!clientId || clientId === "new") {
       setClientForm({
         username: "",
-        nickName: "",
         userMobile: "",
         email: "",
         userAddress: "",
@@ -790,7 +788,6 @@ export default function CreateOrderModal({
     if (found) {
       setClientForm({
         username: found.username || "",
-        nickName: found.nickName || "",
         userMobile: (found.userMobile || "").replace(/\D/g, "").slice(-10),
         email: found.email || "",
         userAddress: found.userAddress || "",
@@ -1373,7 +1370,6 @@ export default function CreateOrderModal({
             ? selectedClientId
             : `client_${Date.now()}`,
         username: cleanName,
-        nickName: (clientForm.nickName || "").trim(),
         userMobile: cleanMobile,
         email: (clientForm.email || "").trim().toLowerCase(),
         userAddress: (clientForm.userAddress || "").trim(),
@@ -1383,7 +1379,6 @@ export default function CreateOrderModal({
               ? selectedClientId
               : `client_${Date.now()}`,
           username: cleanName,
-          nickName: (clientForm.nickName || "").trim(),
           userMobile: cleanMobile,
           email: (clientForm.email || "").trim().toLowerCase(),
           userAddress: (clientForm.userAddress || "").trim(),
@@ -1420,7 +1415,6 @@ export default function CreateOrderModal({
           await createUser({
             id: orderPayload.clientId,
             username: cleanName,
-            nickName: (clientForm.nickName || "").trim(),
             userMobile: cleanMobile,
             email: (clientForm.email || "").trim().toLowerCase(),
             userAddress: (clientForm.userAddress || "").trim(),
@@ -1464,9 +1458,7 @@ export default function CreateOrderModal({
       },
       ...clients.map((c) => ({
         value: c.id,
-        label: c.nickName
-          ? `${c.username || "Unnamed"} (${c.nickName})`
-          : c.username || "Unnamed",
+        label: c.username || "Unnamed",
         subtitle: `${c.userMobile || "No Mobile"}${c.email ? " • " + c.email : ""}`,
       })),
     ];

@@ -307,21 +307,6 @@
         }
       }
 
-      .user-nickname-text {
-        color: var(--text-muted);
-        font-size: 0.78rem;
-        font-weight: 400;
-        letter-spacing: 0.2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        opacity: 0.85;
-
-        @media (max-width: 600px) {
-          font-size: 0.72rem;
-        }
-      }
-
       .user-email-text {
         color: $text-muted;
         font-size: 0.78rem;
@@ -497,14 +482,6 @@
         font-weight: 700;
         color: $text-primary;
         margin: 0 0 10px 0;
-      }
-
-      .card-subtitle-nickname {
-        font-size: 0.82rem;
-        color: var(--text-muted);
-        font-weight: 400;
-        margin: -6px 0 10px 0;
-        opacity: 0.85;
       }
 
       .card-info-rows {

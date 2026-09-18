@@ -78,9 +78,6 @@ const clientValidationSchema = Yup.object({
     .min(2, "Name must be at least 2 characters")
     .max(60, "Name cannot exceed 60 characters")
     .required("Client Name is required"),
-  nickName: Yup.string()
-    .trim()
-    .max(60, "Nick Name cannot exceed 60 characters"),
   notes: Yup.string().trim().max(500, "Notes cannot exceed 500 characters"),
   userMobile: Yup.string()
     .trim()
@@ -430,7 +427,6 @@ const Clients = () => {
     enableReinitialize: true,
     initialValues: {
       username: selectedClient?.username || "",
-      nickName: selectedClient?.nickName || "",
       notes: selectedClient?.notes || "",
       userMobile: selectedClient?.userMobile || "",
       email: selectedClient?.email || "",
@@ -476,7 +472,6 @@ const Clients = () => {
 
         const updatePayload = {
           username: values.username.trim(),
-          nickName: (values.nickName || "").trim(),
           notes: (values.notes || "").trim(),
           userMobile: cleanMobile,
           email: cleanEmail,
@@ -554,7 +549,6 @@ const Clients = () => {
   const createFormik = useFormik({
     initialValues: {
       username: "",
-      nickName: "",
       notes: "",
       userMobile: "",
       email: "",
@@ -620,7 +614,6 @@ const Clients = () => {
         const newClientData = {
           id: authUid,
           username: values.username.trim(),
-          nickName: (values.nickName || "").trim(),
           notes: (values.notes || "").trim(),
           email: cleanEmail,
           userMobile: cleanMobile,
@@ -807,7 +800,6 @@ const Clients = () => {
       const matchesSearch =
         !term ||
         (item.username || "").toLowerCase().includes(term) ||
-        (item.nickName || "").toLowerCase().includes(term) ||
         (item.email || "").toLowerCase().includes(term) ||
         (item.userMobile || "").includes(term) ||
         (item.userAddress || "").toLowerCase().includes(term) ||
@@ -1132,11 +1124,6 @@ const Clients = () => {
                               <div className="user-name-text">
                                 {user.username || "Client"}
                               </div>
-                              {user.nickName ? (
-                                <div className="user-nickname-text">
-                                  {user.nickName}
-                                </div>
-                              ) : null}
                             </div>
                           </div>
                         </AppTableCell>
@@ -1387,7 +1374,7 @@ const Clients = () => {
                                     </span>
                                   ) : (
                                     <span className="empty-hint">
-                                      No email registered
+                                      -
                                     </span>
                                   )}
                                 </div>
@@ -1554,11 +1541,6 @@ const Clients = () => {
                       <h3 className="card-title">
                         {user.username || "Client"}
                       </h3>
-                      {user.nickName ? (
-                        <div className="card-subtitle-nickname">
-                          {user.nickName}
-                        </div>
-                      ) : null}
                       <div className="card-info-rows">
                         <div className="info-item">
                           <PhoneIphoneOutlinedIcon style={{ fontSize: 14 }} />
@@ -1726,11 +1708,6 @@ const Clients = () => {
                           <h3 className="client-heading">
                             {user.username || "Client"}
                           </h3>
-                          {user.nickName ? (
-                            <div className="card-subtitle-nickname">
-                              {user.nickName}
-                            </div>
-                          ) : null}
                         </div>
                         <div
                           style={{
@@ -1952,21 +1929,6 @@ const Clients = () => {
           />
 
           <AppInput
-            label="Nick Name (Optional)"
-            id="create-nickName"
-            name="nickName"
-            placeholder="e.g. Appu"
-            value={createFormik.values.nickName}
-            onChange={createFormik.handleChange}
-            onBlur={createFormik.handleBlur}
-            error={
-              createFormik.touched.nickName && createFormik.errors.nickName
-            }
-            disabled={createFormik.isSubmitting}
-            startAdornment={<PersonOutlineIcon />}
-          />
-
-          <AppInput
             label="10-Digit Mobile Number"
             required
             id="create-userMobile"
@@ -2089,19 +2051,6 @@ const Clients = () => {
           />
 
           <AppInput
-            label="Nick Name (Optional)"
-            id="edit-nickName"
-            name="nickName"
-            placeholder="e.g. Appu"
-            value={editFormik.values.nickName}
-            onChange={editFormik.handleChange}
-            onBlur={editFormik.handleBlur}
-            error={editFormik.touched.nickName && editFormik.errors.nickName}
-            disabled={editFormik.isSubmitting}
-            startAdornment={<PersonOutlineIcon />}
-          />
-
-          <AppInput
             label="10-Digit Mobile Number"
             required
             id="edit-userMobile"
@@ -2215,16 +2164,6 @@ const Clients = () => {
           >
             {/* Client Summary Card */}
             <div className="details-summary-card">
-              {clientForView.nickName ? (
-                <div className="summary-item">
-                  <PersonOutlineIcon className="summary-item-icon" />
-                  <div>
-                    <div className="item-label">Nick Name</div>
-                    <div className="item-value">{clientForView.nickName}</div>
-                  </div>
-                </div>
-              ) : null}
-
               <div className="summary-item">
                 <PhoneIphoneOutlinedIcon className="summary-item-icon" />
                 <div>

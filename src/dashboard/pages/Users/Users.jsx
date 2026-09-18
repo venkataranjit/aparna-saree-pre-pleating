@@ -798,13 +798,7 @@ const Users = () => {
                         style={{ cursor: "pointer" }}
                       >
                         <AppTableCell>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 12,
-                            }}
-                          >
+                          <div className="user-cell-content">
                             <div className="user-avatar-circle">
                               {u.photoURL ? (
                                 <img
@@ -822,7 +816,7 @@ const Users = () => {
                                   <PersonOutlineIcon style={{ fontSize: 16 }} />
                                 ))}
                             </div>
-                            <div>
+                            <div className="user-name-wrapper">
                               <div className="user-name-text">
                                 {u.username || "—"}
                               </div>

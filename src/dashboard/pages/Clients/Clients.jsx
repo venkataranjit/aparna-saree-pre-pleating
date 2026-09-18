@@ -1101,13 +1101,7 @@ const Clients = () => {
                       >
                         {/* Client Avatar & Name */}
                         <AppTableCell>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 12,
-                            }}
-                          >
+                          <div className="user-cell-content">
                             <div className="user-avatar-circle">
                               {user.photoURL ? (
                                 <img
@@ -1125,7 +1119,7 @@ const Clients = () => {
                                   <PersonOutlineIcon style={{ fontSize: 16 }} />
                                 ))}
                             </div>
-                            <div>
+                            <div className="user-name-wrapper">
                               <div className="user-name-text">
                                 {user.username || "Client"}
                               </div>

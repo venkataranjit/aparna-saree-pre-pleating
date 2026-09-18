@@ -642,6 +642,9 @@
             padding: 3px 8px;
             border-radius: 6px;
             letter-spacing: 0.5px;
+            white-space: nowrap !important;
+            word-break: keep-all !important;
+            overflow-wrap: normal !important;
           }
 
           .order-occasion-chip {

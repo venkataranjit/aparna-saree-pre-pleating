@@ -252,20 +252,29 @@
     border-bottom: 1px solid $surface-border !important;
     padding: 12px 14px;
     font-size: 0.86rem;
+    white-space: nowrap;
 
     &.order-id {
       font-weight: 700;
       color: $color-gold !important;
+      white-space: nowrap !important;
+      word-break: keep-all !important;
     }
 
     .order-id-badge-cell {
       display: flex;
       flex-direction: column;
       gap: 3px;
+      white-space: nowrap;
+      min-width: 0;
 
-      span {
+      span:not(.order-occasion-chip) {
         font-weight: 700;
         color: $color-gold;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        overflow-wrap: normal !important;
+        display: inline-block;
       }
 
       .order-occasion-chip {
@@ -644,6 +653,9 @@
         padding: 3px 8px;
         border-radius: 6px;
         border: 1px solid $surface-border;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        overflow-wrap: normal !important;
       }
 
       .card-header-badges {
@@ -831,6 +843,9 @@
         border: 1px solid $surface-border;
         padding: 4px 10px;
         border-radius: 6px;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        overflow-wrap: normal !important;
       }
     }
 

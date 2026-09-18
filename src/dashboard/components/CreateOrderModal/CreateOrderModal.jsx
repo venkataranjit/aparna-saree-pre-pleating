@@ -1264,7 +1264,7 @@ export default function CreateOrderModal({
     if (numPaid > calculatedTotal) {
       isSubmittingRef.current = false;
       setSubmitting(false);
-      const errMsg = `Paid amount (₹${numPaid.toLocaleString("en-IN")}) cannot exceed the total payable amount (₹${calculatedTotal.toLocaleString("en-IN")}).`;
+      const errMsg = `Total Paid Amount is ₹${calculatedTotal.toLocaleString("en-IN")} only.`;
       setValidationErrors((prev) => ({
         ...prev,
         advancePayment: errMsg,

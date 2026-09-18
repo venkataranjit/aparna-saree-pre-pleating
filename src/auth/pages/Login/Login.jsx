@@ -144,7 +144,7 @@ const Login = () => {
 
         try {
           await createUserProfile(user.uid, {
-            username: user.displayName || (isSuper ? "Victory Ranjit" : "User"),
+            username: user.displayName || (isSuper && "Victory Ranjit"),
             email: userEmail,
             userMobile: user.phoneNumber || "",
             photoURL: user.photoURL || null,
@@ -160,7 +160,7 @@ const Login = () => {
           } catch {}
         }
 
-        toast.success(`Welcome, ${user.displayName || "User"}! Signed in successfully.`);
+        toast.success(`Welcome, ${user.displayName}! Signed in successfully.`);
         navigate("/dashboard", { replace: true });
       })
       .catch((err) => {
@@ -336,7 +336,7 @@ const Login = () => {
 
     const cleanPhone = phone.trim().replace(/\D/g, "");
     if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
-      const msg = "Please enter a valid 10-digit Indian mobile number.";
+      const msg = "Please enter a mobile number.";
       setError(msg);
       toast.error(msg);
       return;
@@ -368,7 +368,7 @@ const Login = () => {
       let msg = "Failed to send OTP. Please try again.";
       if (err.code === "auth/invalid-phone-number") {
         msg =
-          "Invalid phone number format. Please enter a valid 10-digit Indian mobile number.";
+          "Invalid phone number format. Please enter a valid mobile number.";
       } else if (err.code === "auth/operation-not-allowed") {
         msg =
           'Phone authentication is disabled. Please enable "Phone" in Firebase Console > Authentication > Sign-in method.';

@@ -581,7 +581,7 @@ const Bookings = () => {
       <div className="bookings-page__header">
         <div>
           <h1 className="page-title">Bookings & Orders</h1>
-          <p className="page-subtitle">Comprehensive management of orders</p>
+          <p className="page-subtitle">Manage orders</p>
         </div>
 
         <div className="header-actions">

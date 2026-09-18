@@ -261,9 +261,19 @@ const MyProfile = () => {
         ? "Admin"
         : role === "staff"
           ? "Staff"
-          : currentUser || userProfile
-            ? "Client"
-            : "";
+          : "Client";
+
+  const userRole = (role || "").toLowerCase();
+  const isClient =
+    !isSuperAdmin &&
+    (userRole === USER_ROLES.CLIENT ||
+      userRole === "client" ||
+      userRole === "");
+  const canCreateOrder =
+    isSuperAdmin ||
+    userRole === "superadmin" ||
+    userRole === "admin" ||
+    userRole === "staff";
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -627,14 +637,16 @@ const MyProfile = () => {
           </AppButton>
 
           {activeTab === "orders" ? (
-            <AppButton
-              variant="primary"
-              className="primary-action-btn"
-              startIcon={<DryCleaningOutlinedIcon />}
-              onClick={() => setOpenCreateOrderModal(true)}
-            >
-              Create Order
-            </AppButton>
+            canCreateOrder ? (
+              <AppButton
+                variant="primary"
+                className="primary-action-btn"
+                startIcon={<DryCleaningOutlinedIcon />}
+                onClick={() => setOpenCreateOrderModal(true)}
+              >
+                Create Order
+              </AppButton>
+            ) : null
           ) : (
             <AppButton
               variant="primary"
@@ -689,15 +701,17 @@ const MyProfile = () => {
               alignItems: "center",
             }}
           >
-            <AppButton
-              variant="primary"
-              size="sm"
-              className="create-order-hero-btn"
-              startIcon={<DryCleaningOutlinedIcon />}
-              onClick={() => setOpenCreateOrderModal(true)}
-            >
-              Create Order
-            </AppButton>
+            {canCreateOrder && (
+              <AppButton
+                variant="primary"
+                size="sm"
+                className="create-order-hero-btn"
+                startIcon={<DryCleaningOutlinedIcon />}
+                onClick={() => setOpenCreateOrderModal(true)}
+              >
+                Create Order
+              </AppButton>
+            )}
 
             <AppButton
               variant="secondary"
@@ -799,18 +813,20 @@ const MyProfile = () => {
               <ReceiptLongOutlinedIcon className="empty-icon" />
               <h4 className="empty-title">No Orders Placed Yet</h4>
               <p className="empty-desc">
-                You haven't placed any saree pre-pleating, draping, or box
-                folding orders yet. Book your first order with your tailored
-                measurements!
+                {canCreateOrder
+                  ? "You haven't placed any saree pre-pleating, draping, or box folding orders yet. Book your first order with your tailored measurements!"
+                  : "You don't have any saree pre-pleating orders recorded with our studio yet. Contact our studio for bookings and inquiries."}
               </p>
-              <AppButton
-                variant="primary"
-                className="primary-action-btn"
-                startIcon={<DryCleaningOutlinedIcon />}
-                onClick={() => setOpenCreateOrderModal(true)}
-              >
-                Book Saree Pre-Pleating
-              </AppButton>
+              {canCreateOrder && (
+                <AppButton
+                  variant="primary"
+                  className="primary-action-btn"
+                  startIcon={<DryCleaningOutlinedIcon />}
+                  onClick={() => setOpenCreateOrderModal(true)}
+                >
+                  Book Saree Pre-Pleating
+                </AppButton>
+              )}
             </div>
           ) : (
             <div className="profile-orders-grid">
@@ -1559,29 +1575,20 @@ const MyProfile = () => {
       />
 
       {/* ========================================================================= */}
-      {/* 6. Modal: Create Order Modal (Client Mode - Strict Data Isolation)       */}
+      {/* 6. Modal: Create Order Modal (Staff / Admin only)                          */}
       {/* ========================================================================= */}
-      <CreateOrderModal
-        open={openCreateOrderModal}
-        onClose={() => setOpenCreateOrderModal(false)}
-        onOrderCreated={(newOrder) => {
-          fetchMyOrders();
-          fetchMyMeasurements();
-          setActiveTab("orders");
-        }}
-        clientMode={true}
-        initialClient={{
-          id: currentUid,
-          username: displayName,
-          userMobile: displayMobile
-            ? displayMobile.replace(/\D/g, "").slice(-10)
-            : "",
-          email: displayEmail,
-          userAddress: displayAddress,
-          role: USER_ROLES.CLIENT,
-        }}
-        initialMeasurements={measurements}
-      />
+      {canCreateOrder && (
+        <CreateOrderModal
+          open={openCreateOrderModal}
+          onClose={() => setOpenCreateOrderModal(false)}
+          onOrderCreated={(newOrder) => {
+            fetchMyOrders();
+            fetchMyMeasurements();
+            setActiveTab("orders");
+          }}
+          clientMode={false}
+        />
+      )}
     </div>
   );
 };

@@ -271,14 +271,16 @@ const Overview = () => {
           >
             {loading || refreshing ? "Refreshing..." : "Refresh"}
           </AppButton>
-          <AppButton
-            variant="primary"
-            startIcon={<AddIcon />}
-            className="new-booking-btn"
-            onClick={() => setOpenCreateModal(true)}
-          >
-            {isClient ? "Book Saree" : "New Booking"}
-          </AppButton>
+          {!isClient && (
+            <AppButton
+              variant="primary"
+              startIcon={<AddIcon />}
+              className="new-booking-btn"
+              onClick={() => setOpenCreateModal(true)}
+            >
+              New Booking
+            </AppButton>
+          )}
         </div>
       </div>
 
@@ -444,18 +446,18 @@ const Overview = () => {
                 <AppButton
                   variant="primary"
                   size="md"
-                  startIcon={<AddIcon />}
-                  onClick={() => setOpenCreateModal(true)}
-                >
-                  Book New Saree
-                </AppButton>
-                <AppButton
-                  variant="secondary"
-                  size="md"
                   startIcon={<StraightenOutlinedIcon />}
                   onClick={() => navigate("/dashboard/profile")}
                 >
                   My Measurements
+                </AppButton>
+                <AppButton
+                  variant="secondary"
+                  size="md"
+                  startIcon={<DryCleaningOutlinedIcon />}
+                  onClick={() => navigate("/dashboard/services")}
+                >
+                  Our Services
                 </AppButton>
                 <AppButton
                   variant="ghost"
@@ -475,7 +477,7 @@ const Overview = () => {
               <div>
                 <h3 className="section-title">My Recent Bookings</h3>
                 <p className="section-subtitle">
-                  Latest status of your saree pre-pleating orders
+                  Latest status
                 </p>
               </div>
               <AppButton
@@ -493,16 +495,16 @@ const Overview = () => {
                 <ReceiptLongOutlinedIcon className="empty-icon" />
                 <h4>No bookings yet</h4>
                 <p>
-                  You haven't placed any saree pre-pleating orders yet. Click
-                  below to book your first order!
+                  You don't have any active orders with us yet.
+                  Explore our services or contact our studio for booking!
                 </p>
                 <AppButton
                   variant="primary"
                   size="sm"
-                  startIcon={<AddIcon />}
-                  onClick={() => setOpenCreateModal(true)}
+                  startIcon={<DryCleaningOutlinedIcon />}
+                  onClick={() => navigate("/dashboard/services")}
                 >
-                  Book Your First Saree
+                  Explore Services
                 </AppButton>
               </div>
             ) : (
@@ -583,26 +585,14 @@ const Overview = () => {
         </div>
       )}
 
-      {/* Create Order Modal */}
-      <CreateOrderModal
-        open={openCreateModal}
-        onClose={() => setOpenCreateModal(false)}
-        onOrderCreated={loadOverviewData}
-        clientMode={isClient}
-        initialClient={
-          isClient
-            ? {
-                id: currentUid,
-                username: displayName,
-                userMobile: userProfile?.userMobile || "",
-                email: userProfile?.email || currentUser?.email || "",
-                userAddress: userProfile?.userAddress || "",
-                role: USER_ROLES.CLIENT,
-              }
-            : null
-        }
-        initialMeasurements={isClient ? clientMeasurements : null}
-      />
+      {/* Create Order Modal (Staff / Admin only) */}
+      {!isClient && (
+        <CreateOrderModal
+          open={openCreateModal}
+          onClose={() => setOpenCreateModal(false)}
+          onOrderCreated={loadOverviewData}
+        />
+      )}
 
       {/* Order Details Modal (Client Read-Only) */}
       <OrderDetailsModal

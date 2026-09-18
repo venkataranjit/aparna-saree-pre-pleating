@@ -19,6 +19,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined";
+import NotesOutlinedIcon from "@mui/icons-material/NotesOutlined";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../../auth/context/AuthContext";
 import {
@@ -89,6 +90,7 @@ const userValidationSchema = Yup.object({
   nickName: Yup.string()
     .trim()
     .max(60, "Nick Name cannot exceed 60 characters"),
+  notes: Yup.string().trim().max(500, "Notes cannot exceed 500 characters"),
   userMobile: Yup.string()
     .trim()
     .matches(
@@ -117,6 +119,7 @@ const editUserValidationSchema = Yup.object({
   nickName: Yup.string()
     .trim()
     .max(60, "Nick Name cannot exceed 60 characters"),
+  notes: Yup.string().trim().max(500, "Notes cannot exceed 500 characters"),
   userMobile: Yup.string()
     .trim()
     .matches(
@@ -172,12 +175,21 @@ const Users = () => {
     if (!u) return false;
     const email = (u.email || "").toLowerCase().trim();
     const r = (u.role || "").toLowerCase().trim();
-    return email === SUPERADMIN_EMAIL.toLowerCase() || r === USER_ROLES.SUPERADMIN || r === "superadmin";
+    return (
+      email === SUPERADMIN_EMAIL.toLowerCase() ||
+      r === USER_ROLES.SUPERADMIN ||
+      r === "superadmin"
+    );
   };
 
   const isSelf = (u) => {
     if (!u || !currentUser) return false;
-    return currentUser.uid === u.id || (u.email && currentUser.email && u.email.toLowerCase().trim() === currentUser.email.toLowerCase().trim());
+    return (
+      currentUser.uid === u.id ||
+      (u.email &&
+        currentUser.email &&
+        u.email.toLowerCase().trim() === currentUser.email.toLowerCase().trim())
+    );
   };
 
   const handleOpenStatusModal = (user) => {
@@ -196,20 +208,20 @@ const Users = () => {
         prev.map((u) =>
           u.id === userForStatusChange.id
             ? { ...u, disabled: targetDisabledState }
-            : u
-        )
+            : u,
+        ),
       );
       toast.success(
-        `User "${userForStatusChange.username || 'User'}" has been ${
+        `User "${userForStatusChange.username || "User"}" has been ${
           targetDisabledState ? "disabled" : "enabled"
-        } successfully!`
+        } successfully!`,
       );
       setStatusModalOpen(false);
       setUserForStatusChange(null);
     } catch (err) {
       console.error("Error updating user status:", err);
       toast.error(
-        "Failed to update user status: " + (err.message || "Please try again.")
+        "Failed to update user status: " + (err.message || "Please try again."),
       );
     } finally {
       setUpdatingStatus(false);
@@ -297,10 +309,11 @@ const Users = () => {
     editFormik.setValues({
       username: user.username || "",
       nickName: user.nickName || "",
+      notes: user.notes || "",
       userMobile: user.userMobile || "",
       email: user.email || "",
       userAddress: user.userAddress || "",
-      role: user.role || USER_ROLES.STAFF,
+      role: user.role || USER_ROLES.CLIENT,
     });
     setOpenEditModal(true);
   };
@@ -310,10 +323,11 @@ const Users = () => {
     initialValues: {
       username: "",
       nickName: "",
+      notes: "",
       userMobile: "",
       email: "",
       userAddress: "",
-      role: USER_ROLES.STAFF,
+      role: USER_ROLES.CLIENT,
     },
     validationSchema: editUserValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -352,6 +366,7 @@ const Users = () => {
         const updatedFields = {
           username: values.username.trim(),
           nickName: (values.nickName || "").trim(),
+          notes: (values.notes || "").trim(),
           userMobile: cleanMobile,
           email: cleanEmail,
           userAddress: values.userAddress.trim(),
@@ -398,10 +413,11 @@ const Users = () => {
     initialValues: {
       username: "",
       nickName: "",
+      notes: "",
       userMobile: "",
       email: "",
       userAddress: "",
-      role: USER_ROLES.STAFF,
+      role: USER_ROLES.CLIENT,
       password: "aparna",
     },
     validationSchema: userValidationSchema,
@@ -471,6 +487,7 @@ const Users = () => {
           id: authUid,
           username: values.username.trim(),
           nickName: (values.nickName || "").trim(),
+          notes: (values.notes || "").trim(),
           email: cleanEmail,
           userMobile: String(values.userMobile).trim(),
           userAddress: values.userAddress.trim(),
@@ -503,10 +520,11 @@ const Users = () => {
           values: {
             username: "",
             nickName: "",
+            notes: "",
             userMobile: "",
             email: "",
             userAddress: "",
-            role: USER_ROLES.STAFF,
+            role: USER_ROLES.CLIENT,
             password: "aparna",
           },
         });
@@ -530,15 +548,16 @@ const Users = () => {
         activeTab === "ALL"
           ? true
           : activeTab === "DISABLED"
-          ? Boolean(u.disabled)
-          : uRole === tabLower;
+            ? Boolean(u.disabled)
+            : uRole === tabLower;
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         !query ||
         u.username?.toLowerCase().includes(query) ||
         u.nickName?.toLowerCase().includes(query) ||
         u.userMobile?.includes(query) ||
-        u.email?.toLowerCase().includes(query);
+        u.email?.toLowerCase().includes(query) ||
+        u.notes?.toLowerCase().includes(query);
       return matchesTab && matchesSearch;
     });
   }, [users, activeTab, searchQuery]);
@@ -715,11 +734,16 @@ const Users = () => {
       {loading ? (
         <div className="users-loading-wrapper">
           <AppSpinner size="lg" color="gold" />
-          <span className="users-loading-text">Loading users from Firebase...</span>
+          <span className="users-loading-text">
+            Loading users from Firebase...
+          </span>
         </div>
       ) : filteredUsers.length === 0 ? (
         <div className="users-empty-wrapper">
-          <PersonOutlineIcon className="empty-state-icon" style={{ fontSize: 44 }} />
+          <PersonOutlineIcon
+            className="empty-state-icon"
+            style={{ fontSize: 44 }}
+          />
           <span className="empty-title">
             {users.length === 0
               ? "No users found in Firebase"
@@ -743,7 +767,9 @@ const Users = () => {
                   <AppTableCell head>
                     <AppTableSortLabel
                       active={sortField === "username"}
-                      direction={sortField === "username" ? sortDirection : "asc"}
+                      direction={
+                        sortField === "username" ? sortDirection : "asc"
+                      }
                       onClick={() => handleRequestSort("username")}
                     >
                       User Name
@@ -772,7 +798,9 @@ const Users = () => {
                   <AppTableCell head>
                     <AppTableSortLabel
                       active={sortField === "disabled"}
-                      direction={sortField === "disabled" ? sortDirection : "asc"}
+                      direction={
+                        sortField === "disabled" ? sortDirection : "asc"
+                      }
                       onClick={() => handleRequestSort("disabled")}
                     >
                       Status
@@ -829,7 +857,9 @@ const Users = () => {
                           </div>
                         </AppTableCell>
                         <AppTableCell>
-                          <span className="mobile-cell">{u.userMobile || "—"}</span>
+                          <span className="mobile-cell">
+                            {u.userMobile || "—"}
+                          </span>
                         </AppTableCell>
                         <AppTableCell>
                           <AppBadge variant={getRoleBadgeVariant(u.role)}>
@@ -837,7 +867,9 @@ const Users = () => {
                           </AppBadge>
                         </AppTableCell>
                         <AppTableCell>
-                          <AppBadge variant={u.disabled ? "danger" : "completed"}>
+                          <AppBadge
+                            variant={u.disabled ? "danger" : "completed"}
+                          >
                             {u.disabled ? "Disabled" : "Active"}
                           </AppBadge>
                         </AppTableCell>
@@ -870,10 +902,10 @@ const Users = () => {
                                   isSuperAdminUser(u)
                                     ? "Super Admin cannot be disabled"
                                     : isSelf(u)
-                                    ? "Cannot disable your own account"
-                                    : u.disabled
-                                    ? "Enable User Account"
-                                    : "Disable User Account"
+                                      ? "Cannot disable your own account"
+                                      : u.disabled
+                                        ? "Enable User Account"
+                                        : "Disable User Account"
                                 }
                                 disabled={isSuperAdminUser(u) || isSelf(u)}
                                 onClick={(e) => {
@@ -882,7 +914,9 @@ const Users = () => {
                                 }}
                               >
                                 {u.disabled ? (
-                                  <CheckCircleOutlineIcon style={{ fontSize: 16 }} />
+                                  <CheckCircleOutlineIcon
+                                    style={{ fontSize: 16 }}
+                                  />
                                 ) : (
                                   <BlockOutlinedIcon style={{ fontSize: 16 }} />
                                 )}
@@ -927,7 +961,7 @@ const Users = () => {
                             className="table-expanded-cell"
                           >
                             <div className="table-expanded-container">
-                              {/* Address Tile (Full Width Top Row) */}
+                              {/* Address Tile (Half Width Top Row) */}
                               <div className="expanded-tile expanded-tile--address">
                                 <div className="tile-header">
                                   <LocationOnOutlinedIcon className="tile-icon" />
@@ -941,9 +975,22 @@ const Users = () => {
                                       {u.userAddress}
                                     </span>
                                   ) : (
-                                    <span className="empty-hint">
-                                      No address provided
-                                    </span>
+                                    <span className="empty-hint">-</span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Notes Tile (Half Width Top Row) */}
+                              <div className="expanded-tile expanded-tile--note">
+                                <div className="tile-header">
+                                  <NotesOutlinedIcon className="tile-icon" />
+                                  <span className="tile-label">Notes</span>
+                                </div>
+                                <div className="tile-content">
+                                  {u.notes ? (
+                                    <span className="note-text">{u.notes}</span>
+                                  ) : (
+                                    <span className="empty-hint">-</span>
                                   )}
                                 </div>
                               </div>
@@ -973,9 +1020,7 @@ const Users = () => {
                               <div className="expanded-tile">
                                 <div className="tile-header">
                                   <CalendarTodayOutlinedIcon className="tile-icon" />
-                                  <span className="tile-label">
-                                    Created At
-                                  </span>
+                                  <span className="tile-label">Created At</span>
                                 </div>
                                 <div className="tile-content">
                                   <DateTimeCell
@@ -1035,7 +1080,10 @@ const Users = () => {
               ).toUpperCase();
 
               return (
-                <div key={u.id} className={`user-grid-card ${u.disabled ? "user-grid-card--disabled" : ""}`}>
+                <div
+                  key={u.id}
+                  className={`user-grid-card ${u.disabled ? "user-grid-card--disabled" : ""}`}
+                >
                   <div className="card-top-accent" />
                   <div className="card-header">
                     <div className="user-avatar-circle">
@@ -1053,7 +1101,13 @@ const Users = () => {
                         initial
                       )}
                     </div>
-                    <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "6px",
+                        alignItems: "center",
+                      }}
+                    >
                       {renderRoleBadge(u)}
                       <AppBadge variant={u.disabled ? "danger" : "completed"}>
                         {u.disabled ? "Disabled" : "Active"}
@@ -1062,7 +1116,9 @@ const Users = () => {
                   </div>
 
                   <div className="card-body">
-                    <h3 className="card-title">{u.username || "Team Member"}</h3>
+                    <h3 className="card-title">
+                      {u.username || "Team Member"}
+                    </h3>
                     {u.nickName ? (
                       <div className="card-subtitle-nickname">{u.nickName}</div>
                     ) : null}
@@ -1112,10 +1168,10 @@ const Users = () => {
                             isSuperAdminUser(u)
                               ? "Super Admin cannot be disabled"
                               : isSelf(u)
-                              ? "Cannot disable your own account"
-                              : u.disabled
-                              ? "Enable User Account"
-                              : "Disable User Account"
+                                ? "Cannot disable your own account"
+                                : u.disabled
+                                  ? "Enable User Account"
+                                  : "Disable User Account"
                           }
                           disabled={isSuperAdminUser(u) || isSelf(u)}
                           onClick={() => handleOpenStatusModal(u)}
@@ -1162,7 +1218,10 @@ const Users = () => {
               ).toUpperCase();
 
               return (
-                <div key={u.id} className={`user-detailed-card ${u.disabled ? "user-detailed-card--disabled" : ""}`}>
+                <div
+                  key={u.id}
+                  className={`user-detailed-card ${u.disabled ? "user-detailed-card--disabled" : ""}`}
+                >
                   <div className="detailed-card-left">
                     <div className="user-avatar-circle user-avatar-circle-lg">
                       {u.photoURL ? (
@@ -1184,10 +1243,20 @@ const Users = () => {
                   <div className="detailed-card-main">
                     <div className="detailed-card-header">
                       <div className="detailed-card-title-row">
-                        <h3 className="user-heading">{u.username || "Team Member"}</h3>
-                        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                        <h3 className="user-heading">
+                          {u.username || "Team Member"}
+                        </h3>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "6px",
+                            alignItems: "center",
+                          }}
+                        >
                           {renderRoleBadge(u)}
-                          <AppBadge variant={u.disabled ? "danger" : "completed"}>
+                          <AppBadge
+                            variant={u.disabled ? "danger" : "completed"}
+                          >
                             {u.disabled ? "Disabled" : "Active"}
                           </AppBadge>
                         </div>
@@ -1201,7 +1270,9 @@ const Users = () => {
                     <div className="detailed-card-meta">
                       <div className="meta-tile">
                         <span className="meta-label">Mobile</span>
-                        <span className="meta-value">{u.userMobile || "—"}</span>
+                        <span className="meta-value">
+                          {u.userMobile || "—"}
+                        </span>
                       </div>
                       <div className="meta-tile">
                         <span className="meta-label">Email Address</span>
@@ -1242,7 +1313,13 @@ const Users = () => {
                       <AppButton
                         variant={u.disabled ? "success" : "danger"}
                         size="sm"
-                        startIcon={u.disabled ? <CheckCircleOutlineIcon /> : <BlockOutlinedIcon />}
+                        startIcon={
+                          u.disabled ? (
+                            <CheckCircleOutlineIcon />
+                          ) : (
+                            <BlockOutlinedIcon />
+                          )
+                        }
                         disabled={isSuperAdminUser(u) || isSelf(u)}
                         onClick={() => handleOpenStatusModal(u)}
                       >
@@ -1371,13 +1448,13 @@ const Users = () => {
             error={formik.touched.role && formik.errors.role}
             disabled={formik.isSubmitting}
           >
+            <option value={USER_ROLES.CLIENT}>Client (Default)</option>
             <option value={USER_ROLES.ADMIN}>
               Admin (Operations & Orders)
             </option>
             <option value={USER_ROLES.STAFF}>
               Staff (Pleating & Handling)
             </option>
-            <option value={USER_ROLES.CLIENT}>Client (Default)</option>
           </AppInput>
 
           <AppInput
@@ -1391,6 +1468,21 @@ const Users = () => {
             error={formik.touched.userAddress && formik.errors.userAddress}
             disabled={formik.isSubmitting}
             startAdornment={<LocationOnOutlinedIcon />}
+          />
+
+          <AppInput
+            label="Notes (Optional)"
+            id="notes"
+            name="notes"
+            placeholder="e.g. Special role instructions, remarks..."
+            value={formik.values.notes}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.notes && formik.errors.notes}
+            disabled={formik.isSubmitting}
+            multiline
+            rows={2}
+            startAdornment={<NotesOutlinedIcon />}
           />
 
           <AppInput
@@ -1528,13 +1620,13 @@ const Users = () => {
               error={editFormik.touched.role && editFormik.errors.role}
               disabled={editFormik.isSubmitting}
             >
+              <option value={USER_ROLES.CLIENT}>Client (Default)</option>
               <option value={USER_ROLES.ADMIN}>
                 Admin (Operations & Orders)
               </option>
               <option value={USER_ROLES.STAFF}>
                 Staff (Pleating & Handling)
               </option>
-              <option value={USER_ROLES.CLIENT}>Client (Default)</option>
             </AppInput>
           )}
 
@@ -1551,6 +1643,21 @@ const Users = () => {
             }
             disabled={editFormik.isSubmitting}
             startAdornment={<LocationOnOutlinedIcon />}
+          />
+
+          <AppInput
+            label="Notes (Optional)"
+            id="edit-notes"
+            name="notes"
+            placeholder="e.g. Special role instructions, remarks..."
+            value={editFormik.values.notes}
+            onChange={editFormik.handleChange}
+            onBlur={editFormik.handleBlur}
+            error={editFormik.touched.notes && editFormik.errors.notes}
+            disabled={editFormik.isSubmitting}
+            multiline
+            rows={2}
+            startAdornment={<NotesOutlinedIcon />}
           />
         </form>
       </AppModal>
@@ -1604,17 +1711,27 @@ const Users = () => {
               <>
                 Are you sure you want to <strong>enable</strong> access for{" "}
                 <strong>{userForStatusChange?.username}</strong>
-                {userForStatusChange?.email ? ` (${userForStatusChange.email})` : ""}?
-                <br /><br />
-                The user will be able to log in and access system features again.
+                {userForStatusChange?.email
+                  ? ` (${userForStatusChange.email})`
+                  : ""}
+                ?
+                <br />
+                <br />
+                The user will be able to log in and access system features
+                again.
               </>
             ) : (
               <>
                 Are you sure you want to <strong>disable</strong> access for{" "}
                 <strong>{userForStatusChange?.username}</strong>
-                {userForStatusChange?.email ? ` (${userForStatusChange.email})` : ""}?
-                <br /><br />
-                The user will be prevented from logging in until re-enabled by an administrator.
+                {userForStatusChange?.email
+                  ? ` (${userForStatusChange.email})`
+                  : ""}
+                ?
+                <br />
+                <br />
+                The user will be prevented from logging in until re-enabled by
+                an administrator.
               </>
             )}
           </p>

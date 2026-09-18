@@ -395,7 +395,7 @@
 
   .table-expanded-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(6, 1fr);
     gap: 12px;
     background: var(--card-bg-gradient, linear-gradient(145deg, #101010 0%, #080808 100%));
     border: 1px solid $surface-border;
@@ -405,6 +405,12 @@
     box-shadow: inset 0 1px 0 var(--surface-gold-tint, rgba(212, 175, 55, 0.12)), var(--table-shadow, 0 8px 24px rgba(0, 0, 0, 0.3));
     animation: drawerSlideDown 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
+    @media (max-width: 900px) {
+      grid-template-columns: repeat(2, 1fr);
+      padding: 12px;
+      gap: 10px;
+    }
+
     @include mobile {
       grid-template-columns: 1fr;
       padding: 12px;
@@ -412,6 +418,7 @@
     }
 
     .expanded-tile {
+      grid-column: span 2;
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -421,13 +428,26 @@
       border-radius: 8px;
       transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 
+      @media (max-width: 900px) {
+        grid-column: span 1;
+      }
+
+      @include mobile {
+        grid-column: auto;
+      }
+
       &:hover {
         border-color: $surface-border-hover;
         background: var(--bg-card-hover, rgba(0, 0, 0, 0.45));
       }
 
-      &--address {
-        grid-column: 1 / -1;
+      &--address,
+      &--note {
+        grid-column: span 3;
+
+        @media (max-width: 900px) {
+          grid-column: span 1;
+        }
 
         @include mobile {
           grid-column: auto;
@@ -458,9 +478,11 @@
         font-size: 0.86rem;
         line-height: 1.4;
 
-        .address-text {
+        .address-text,
+        .note-text {
           word-break: break-word;
           color: $text-primary;
+          white-space: pre-wrap;
         }
 
         .empty-hint {

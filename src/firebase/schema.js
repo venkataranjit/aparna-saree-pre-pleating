@@ -119,6 +119,7 @@ export const createBusinessModel = ({
 export const createUserModel = ({
   username = "",
   nickName = "",
+  notes = "",
   email = "",
   userMobile = "",
   userAddress = "",
@@ -142,6 +143,7 @@ export const createUserModel = ({
   return {
     username: String(username).trim(),
     nickName: String(nickName || "").trim(),
+    notes: String(notes || "").trim(),
     email: normalizedEmail,
     userMobile: String(userMobile).trim(),
     userAddress: String(userAddress).trim(),
@@ -195,6 +197,7 @@ export const createServiceModel = ({
  * @param {Object} data
  * @param {string} [data.clientName]
  * @param {string} [data.nickName]
+ * @param {string} [data.notes]
  * @param {string} [data.clientMobile] (stored strictly as string)
  * @param {string} [data.clientAddress]
  * @param {string|null} [data.userId] - Optional mapped user document ID
@@ -203,6 +206,7 @@ export const createServiceModel = ({
 export const createClientModel = ({
   clientName = "",
   nickName = "",
+  notes = "",
   clientMobile = "",
   clientAddress = "",
   userId = null,
@@ -210,12 +214,14 @@ export const createClientModel = ({
 } = {}) => {
   const resolvedName = String(clientName || "").trim();
   const resolvedNickName = String(nickName || "").trim();
+  const resolvedNotes = String(notes || "").trim();
   const resolvedMobile = String(clientMobile || "").trim();
   const resolvedAddress = String(clientAddress || "").trim();
 
   return {
     clientName: resolvedName,
     nickName: resolvedNickName,
+    notes: resolvedNotes,
     clientMobile: resolvedMobile, // Mobile must be stored as string
     clientAddress: resolvedAddress,
     userId: userId ? String(userId).trim() : null,

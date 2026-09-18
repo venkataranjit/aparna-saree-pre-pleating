@@ -1363,7 +1363,6 @@ const Clients = () => {
                                 </div>
                               </div>
 
-
                               {/* Joined Date Tile */}
                               <div className="expanded-tile">
                                 <div className="tile-header">
@@ -1905,7 +1904,7 @@ const Clients = () => {
           style={{ display: "flex", flexDirection: "column", gap: "14px" }}
         >
           <AppInput
-            label="Name"
+            label="Full Name"
             required
             id="create-username"
             name="username"
@@ -2029,7 +2028,7 @@ const Clients = () => {
           style={{ display: "flex", flexDirection: "column", gap: "14px" }}
         >
           <AppInput
-            label="Client Full Name"
+            label="Full Name"
             required
             id="edit-username"
             name="username"
@@ -2070,7 +2069,7 @@ const Clients = () => {
           />
 
           <AppInput
-            label="Residential / Delivery Address / City"
+            label="Address"
             id="edit-userAddress"
             name="userAddress"
             value={editFormik.values.userAddress}
@@ -2520,7 +2519,7 @@ const Clients = () => {
           style={{ display: "flex", flexDirection: "column", gap: "14px" }}
         >
           <AppInput
-            label="Profile Title"
+            label="Measurement Profile Title"
             required
             id="edit-measure-title"
             name="title"
@@ -2535,7 +2534,7 @@ const Clients = () => {
 
           <div className="measurement-modal-grid">
             <AppInput
-              label="Pallu Length (inches)"
+              label="Pallu Length (in)"
               id="edit-measure-pallu"
               name="pallu"
               value={editMeasureFormik.values.pallu}
@@ -2549,7 +2548,7 @@ const Clients = () => {
             />
 
             <AppInput
-              label="Shoulder to Tight (in)"
+              label="Shoulder to Thigh (in)"
               id="edit-measure-shoulder"
               name="shoulderToRightTight"
               value={editMeasureFormik.values.shoulderToRightTight}
@@ -2563,7 +2562,7 @@ const Clients = () => {
             />
 
             <AppInput
-              label="Chest (inches)"
+              label="Chest (in)"
               id="edit-measure-chest"
               name="chest"
               value={editMeasureFormik.values.chest}
@@ -2577,7 +2576,7 @@ const Clients = () => {
             />
 
             <AppInput
-              label="Hip (inches)"
+              label="Hip (in)"
               id="edit-measure-hip"
               name="hip"
               value={editMeasureFormik.values.hip}
@@ -2618,7 +2617,7 @@ const Clients = () => {
             />
 
             <AppInput
-              label="Height (cm / ft)"
+              label="Height (ft)"
               id="edit-measure-height"
               name="height"
               value={editMeasureFormik.values.height}
@@ -2658,7 +2657,7 @@ const Clients = () => {
           <AppInput
             multiline
             rows={2}
-            label="Special Tailoring Notes"
+            label="Special Notes"
             id="edit-measure-notes"
             name="notes"
             value={editMeasureFormik.values.notes}

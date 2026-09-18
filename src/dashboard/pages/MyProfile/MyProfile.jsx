@@ -1371,7 +1371,7 @@ const MyProfile = () => {
 
           <div className="measurement-modal-grid">
             <AppInput
-              label="Pallu Length (Inches)"
+              label="Pallu Length (in)"
               id="edit-measure-pallu"
               name="pallu"
               value={editMeasureFormik.values.pallu}
@@ -1382,11 +1382,10 @@ const MyProfile = () => {
                 editMeasureFormik.errors.pallu
               }
               disabled={editMeasureFormik.isSubmitting}
-              endAdornment={<span>in</span>}
             />
 
             <AppInput
-              label="Shoulder to Tight (Inches)"
+              label="Shoulder to Thigh (in)"
               id="edit-measure-shoulder"
               name="shoulderToRightTight"
               value={editMeasureFormik.values.shoulderToRightTight}
@@ -1397,11 +1396,10 @@ const MyProfile = () => {
                 editMeasureFormik.errors.shoulderToRightTight
               }
               disabled={editMeasureFormik.isSubmitting}
-              endAdornment={<span>in</span>}
             />
 
             <AppInput
-              label="Chest Size (Inches)"
+              label="Chest Size (in)"
               id="edit-measure-chest"
               name="chest"
               value={editMeasureFormik.values.chest}
@@ -1412,11 +1410,10 @@ const MyProfile = () => {
                 editMeasureFormik.errors.chest
               }
               disabled={editMeasureFormik.isSubmitting}
-              endAdornment={<span>in</span>}
             />
 
             <AppInput
-              label="Hip Size (Inches)"
+              label="Hip Size (in)"
               id="edit-measure-hip"
               name="hip"
               value={editMeasureFormik.values.hip}
@@ -1426,11 +1423,10 @@ const MyProfile = () => {
                 editMeasureFormik.touched.hip && editMeasureFormik.errors.hip
               }
               disabled={editMeasureFormik.isSubmitting}
-              endAdornment={<span>in</span>}
             />
 
             <AppInput
-              label="First Pleat Size (Inches)"
+              label="First Pleat Size (in)"
               id="edit-measure-first-pleat"
               name="firstPleatSize"
               value={editMeasureFormik.values.firstPleatSize}
@@ -1441,7 +1437,6 @@ const MyProfile = () => {
                 editMeasureFormik.errors.firstPleatSize
               }
               disabled={editMeasureFormik.isSubmitting}
-              endAdornment={<span>in</span>}
             />
 
             <AppInput
@@ -1456,11 +1451,10 @@ const MyProfile = () => {
                 editMeasureFormik.errors.noOfChestPleats
               }
               disabled={editMeasureFormik.isSubmitting}
-              endAdornment={<span>pleats</span>}
             />
 
             <AppInput
-              label="Height (cm / ft)"
+              label="Height (ft)"
               id="edit-measure-height"
               name="height"
               value={editMeasureFormik.values.height}

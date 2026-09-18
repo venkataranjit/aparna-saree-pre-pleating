@@ -90,7 +90,7 @@ export const MeasurementModal = ({
     <AppModal
       open={open}
       onClose={handleClose}
-      title="Add Saree Measurement Profile"
+      title="Add Measurement Profile"
       subtitle={subtitle}
       maxWidth="md"
       actions={
@@ -112,17 +112,14 @@ export const MeasurementModal = ({
         </>
       }
     >
-      <form
-        onSubmit={formik.handleSubmit}
-        className="measurement-modal-form"
-      >
+      <form onSubmit={formik.handleSubmit} className="measurement-modal-form">
         {/* Profile Title */}
         <AppInput
           label="Measurement Profile Title"
           required
           id="mm-title"
           name="title"
-          placeholder="e.g. Kanjeevaram Saree / Reception Saree"
+          placeholder="e.g. Aparna Measurements Profile"
           value={formik.values.title}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
@@ -133,10 +130,10 @@ export const MeasurementModal = ({
         {/* Measurements Grid */}
         <div className="measurement-modal-grid">
           <AppInput
-            label="Pallu Length (inches)"
+            label="Pallu Length (in)"
             id="mm-pallu"
             name="pallu"
-            placeholder="e.g. 38"
+            placeholder="e.g. 42"
             value={formik.values.pallu}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -144,10 +141,10 @@ export const MeasurementModal = ({
             disabled={formik.isSubmitting}
           />
           <AppInput
-            label="Shoulder to Tight (in)"
+            label="Shoulder to Thigh (in)"
             id="mm-shoulder"
             name="shoulderToRightTight"
-            placeholder="e.g. 14"
+            placeholder="e.g. 53"
             value={formik.values.shoulderToRightTight}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -158,10 +155,10 @@ export const MeasurementModal = ({
             disabled={formik.isSubmitting}
           />
           <AppInput
-            label="Chest (inches)"
+            label="Chest (in)"
             id="mm-chest"
             name="chest"
-            placeholder="e.g. 36"
+            placeholder="e.g. 14"
             value={formik.values.chest}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -169,10 +166,10 @@ export const MeasurementModal = ({
             disabled={formik.isSubmitting}
           />
           <AppInput
-            label="Hip (inches)"
+            label="Hip (in)"
             id="mm-hip"
             name="hip"
-            placeholder="e.g. 40"
+            placeholder="e.g. 52"
             value={formik.values.hip}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -183,7 +180,7 @@ export const MeasurementModal = ({
             label="First Pleat Size (in)"
             id="mm-firstPleat"
             name="firstPleatSize"
-            placeholder="e.g. 5.5"
+            placeholder="e.g. 4"
             value={formik.values.firstPleatSize}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -196,7 +193,7 @@ export const MeasurementModal = ({
             label="Chest Pleats (count)"
             id="mm-chestPleats"
             name="noOfChestPleats"
-            placeholder="e.g. 5"
+            placeholder="e.g. 7"
             value={formik.values.noOfChestPleats}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -206,10 +203,10 @@ export const MeasurementModal = ({
             disabled={formik.isSubmitting}
           />
           <AppInput
-            label="Height (cm / ft)"
+            label="Height (ft)"
             id="mm-height"
             name="height"
-            placeholder="e.g. 160"
+            placeholder="e.g. 5.2"
             value={formik.values.height}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}

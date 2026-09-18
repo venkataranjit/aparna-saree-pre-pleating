@@ -66,11 +66,9 @@ import {
 import "./Services.scss";
 
 // Service Type Dropdown Options
-const SERVICE_TYPE_OPTIONS = (SERVICE_TYPES || [
-  "Pleating Service",
-  "Draping Service",
-  "Other Service",
-]).map((t) => ({
+const SERVICE_TYPE_OPTIONS = (
+  SERVICE_TYPES || ["Pleating Service", "Draping Service", "Other Service"]
+).map((t) => ({
   label: t,
   value: t,
 }));
@@ -242,7 +240,10 @@ const Services = () => {
           updatedAt: null,
           rawUpdatedAt: null,
         };
-        setServices((prev) => [createdWithTimestamps, ...prev.filter((s) => s.id !== created.id)]);
+        setServices((prev) => [
+          createdWithTimestamps,
+          ...prev.filter((s) => s.id !== created.id),
+        ]);
         toast.success(`Service "${payload.serviceName}" added to catalog!`);
         resetForm();
         setDialogOpen(false);
@@ -372,7 +373,10 @@ const Services = () => {
       serviceType: service.serviceType || "Pleating Service",
       servicePrice: service.servicePrice ?? "",
       serviceDiscountedPrice: service.serviceDiscountedPrice ?? "",
-      displayOrder: service.displayOrder && service.displayOrder > 0 ? service.displayOrder : "",
+      displayOrder:
+        service.displayOrder && service.displayOrder > 0
+          ? service.displayOrder
+          : "",
       description: service.description || "",
       active: service.active !== false,
     });
@@ -439,8 +443,14 @@ const Services = () => {
   const sortedServices = useMemo(() => {
     return [...filteredServices].sort((a, b) => {
       if (sortField === "displayOrder") {
-        const orderA = a.displayOrder && a.displayOrder > 0 ? Number(a.displayOrder) : 999999;
-        const orderB = b.displayOrder && b.displayOrder > 0 ? Number(b.displayOrder) : 999999;
+        const orderA =
+          a.displayOrder && a.displayOrder > 0
+            ? Number(a.displayOrder)
+            : 999999;
+        const orderB =
+          b.displayOrder && b.displayOrder > 0
+            ? Number(b.displayOrder)
+            : 999999;
         if (orderA !== orderB) {
           return sortDirection === "asc" ? orderA - orderB : orderB - orderA;
         }
@@ -734,7 +744,10 @@ const Services = () => {
                       >
                         <AppTableCell style={{ textAlign: "center" }}>
                           <span className="service-order-pill">
-                            #{service.displayOrder && service.displayOrder > 0 ? service.displayOrder : "—"}
+                            #
+                            {service.displayOrder && service.displayOrder > 0
+                              ? service.displayOrder
+                              : "—"}
                           </span>
                         </AppTableCell>
                         <AppTableCell>
@@ -751,7 +764,8 @@ const Services = () => {
                               {service.description && (
                                 <div className="user-email-text">
                                   {service.description.length > 50
-                                    ? service.description.substring(0, 50) + "..."
+                                    ? service.description.substring(0, 50) +
+                                      "..."
                                     : service.description}
                                 </div>
                               )}
@@ -940,19 +954,6 @@ const Services = () => {
                                 </div>
                               </div>
 
-                              {/* Service Type Tile */}
-                              <div className="expanded-tile expanded-tile--third">
-                                <div className="tile-header">
-                                  <LayersOutlinedIcon className="tile-icon" />
-                                  <span className="tile-label">Service Type</span>
-                                </div>
-                                <div className="tile-content">
-                                  <span className="service-type-tag-inline">
-                                    {service.serviceType || "Pleating Service"}
-                                  </span>
-                                </div>
-                              </div>
-
                               {/* Created At Tile */}
                               <div className="expanded-tile expanded-tile--third">
                                 <div className="tile-header">
@@ -1030,12 +1031,22 @@ const Services = () => {
                 >
                   <div className="card-top-accent" />
                   <div className="card-header">
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
                       <div className="user-avatar-circle service-icon-circle">
                         {getServiceIcon(service.serviceName)}
                       </div>
                       <span className="service-order-pill">
-                        #{service.displayOrder && service.displayOrder > 0 ? service.displayOrder : "—"}
+                        #
+                        {service.displayOrder && service.displayOrder > 0
+                          ? service.displayOrder
+                          : "—"}
                       </span>
                       <span className="service-type-tag">
                         {service.serviceType || "Pleating Service"}
@@ -1202,9 +1213,19 @@ const Services = () => {
                   <div className="detailed-card-main">
                     <div className="detailed-card-header">
                       <div className="detailed-card-title-row">
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            flexWrap: "wrap",
+                          }}
+                        >
                           <span className="service-order-pill">
-                            #{service.displayOrder && service.displayOrder > 0 ? service.displayOrder : "—"}
+                            #
+                            {service.displayOrder && service.displayOrder > 0
+                              ? service.displayOrder
+                              : "—"}
                           </span>
                           <h3 className="service-heading">
                             {service.serviceName}
@@ -1245,12 +1266,21 @@ const Services = () => {
                       <div className="meta-tile">
                         <span className="meta-label">Display Order</span>
                         <span className="meta-value">
-                          #{service.displayOrder && service.displayOrder > 0 ? service.displayOrder : "—"}
+                          #
+                          {service.displayOrder && service.displayOrder > 0
+                            ? service.displayOrder
+                            : "—"}
                         </span>
                       </div>
                       <div className="meta-tile">
                         <span className="meta-label">Service Type</span>
-                        <span className="meta-value" style={{ color: "var(--gold-light, #d4af37)", fontWeight: 600 }}>
+                        <span
+                          className="meta-value"
+                          style={{
+                            color: "var(--gold-light, #d4af37)",
+                            fontWeight: 600,
+                          }}
+                        >
                           {service.serviceType || "Pleating Service"}
                         </span>
                       </div>
@@ -1368,8 +1398,8 @@ const Services = () => {
       <AppModal
         open={dialogOpen}
         onClose={() => !createFormik.isSubmitting && setDialogOpen(false)}
-        title="Add Pre-Pleating Service"
-        subtitle="Register a new saree draping or pleating offering in the catalog"
+        title="Add Service"
+        subtitle="Register a new service offering in the catalog"
         maxWidth="sm"
         actions={
           <>
@@ -1394,48 +1424,47 @@ const Services = () => {
         }
       >
         <div className="service-form-dialog">
-          {/* Row 1: Service Title & Service Type */}
-          <div className="service-form-grid-2">
-            <AppInput
-              label="Service Title"
-              name="serviceName"
-              placeholder="e.g. Bridal Kanjeevaram Saree Pre-Pleating"
-              value={createFormik.values.serviceName}
-              onChange={createFormik.handleChange}
-              onBlur={createFormik.handleBlur}
-              error={
-                createFormik.touched.serviceName &&
-                Boolean(createFormik.errors.serviceName)
-              }
-              helperText={
-                createFormik.touched.serviceName &&
-                createFormik.errors.serviceName
-              }
-              startAdornment={<DryCleaningOutlinedIcon />}
-              disabled={createFormik.isSubmitting}
-              autoFocus
-            />
+          {/* Row 1: Service Title */}
+          <AppInput
+            label="Service Title"
+            name="serviceName"
+            placeholder="e.g. Flat Pleats"
+            value={createFormik.values.serviceName}
+            onChange={createFormik.handleChange}
+            onBlur={createFormik.handleBlur}
+            error={
+              createFormik.touched.serviceName &&
+              Boolean(createFormik.errors.serviceName)
+            }
+            helperText={
+              createFormik.touched.serviceName &&
+              createFormik.errors.serviceName
+            }
+            startAdornment={<DryCleaningOutlinedIcon />}
+            disabled={createFormik.isSubmitting}
+            autoFocus
+          />
 
-            <AppSelect
-              label="Service Type"
-              name="serviceType"
-              value={createFormik.values.serviceType}
-              onChange={createFormik.handleChange}
-              options={SERVICE_TYPE_OPTIONS}
-              startAdornment={<LayersOutlinedIcon />}
-              disabled={createFormik.isSubmitting}
-              error={
-                createFormik.touched.serviceType &&
-                Boolean(createFormik.errors.serviceType)
-              }
-              helperText={
-                createFormik.touched.serviceType &&
-                createFormik.errors.serviceType
-              }
-            />
-          </div>
+          {/* Row 2: Service Type */}
+          <AppSelect
+            label="Service Type"
+            name="serviceType"
+            value={createFormik.values.serviceType}
+            onChange={createFormik.handleChange}
+            options={SERVICE_TYPE_OPTIONS}
+            startAdornment={<LayersOutlinedIcon />}
+            disabled={createFormik.isSubmitting}
+            error={
+              createFormik.touched.serviceType &&
+              Boolean(createFormik.errors.serviceType)
+            }
+            helperText={
+              createFormik.touched.serviceType &&
+              createFormik.errors.serviceType
+            }
+          />
 
-          {/* Row 2: Regular Price & Offer Price */}
+          {/* Row 3: Regular Price & Offer Price */}
           <div className="service-form-grid-2">
             <AppInput
               label="Regular Price (₹)"
@@ -1458,10 +1487,10 @@ const Services = () => {
             />
 
             <AppInput
-              label="Offer / Discounted Price (₹)"
+              label="Offer Price (₹)"
               name="serviceDiscountedPrice"
               type="number"
-              placeholder="e.g. 499"
+              placeholder="e.g. 500"
               value={createFormik.values.serviceDiscountedPrice}
               onChange={createFormik.handleChange}
               onBlur={createFormik.handleBlur}
@@ -1478,9 +1507,9 @@ const Services = () => {
             />
           </div>
 
-          {/* Row 3: Description */}
+          {/* Row 4: Description */}
           <AppInput
-            label="Description & Draping Notes"
+            label="Service Description"
             name="description"
             placeholder="Describe the specialized pleating technique, fabric types supported, and packaging included..."
             value={createFormik.values.description}
@@ -1504,52 +1533,51 @@ const Services = () => {
             disabled={createFormik.isSubmitting}
           />
 
-          {/* Row 4: Display Order beside Active in Public Catalog */}
-          <div className="service-form-grid-2 service-form-bottom-row">
-            <AppInput
-              label="Display Order (Sequence #)"
-              name="displayOrder"
-              type="number"
-              min={1}
-              placeholder="e.g. 1, 2, 3..."
-              value={createFormik.values.displayOrder}
-              onChange={createFormik.handleChange}
-              onBlur={createFormik.handleBlur}
-              error={
-                createFormik.touched.displayOrder &&
-                Boolean(createFormik.errors.displayOrder)
-              }
-              helperText={
-                (createFormik.touched.displayOrder &&
-                  createFormik.errors.displayOrder) ||
-                "Order in catalog & dropdown (1 = Top)."
-              }
-              startAdornment={<FormatListNumberedOutlinedIcon />}
-              disabled={createFormik.isSubmitting}
-            />
+          {/* Row 5: Display Order */}
+          <AppInput
+            label="Display Order (Sequence #)"
+            name="displayOrder"
+            type="number"
+            min={1}
+            placeholder="e.g. 1, 2, 3..."
+            value={createFormik.values.displayOrder}
+            onChange={createFormik.handleChange}
+            onBlur={createFormik.handleBlur}
+            error={
+              createFormik.touched.displayOrder &&
+              Boolean(createFormik.errors.displayOrder)
+            }
+            helperText={
+              (createFormik.touched.displayOrder &&
+                createFormik.errors.displayOrder) ||
+              "Order in catalog & dropdown (1 = Top)."
+            }
+            startAdornment={<FormatListNumberedOutlinedIcon />}
+            disabled={createFormik.isSubmitting}
+          />
 
-            <div className="service-status-card">
-              <div className="status-text-wrap">
-                <span className="status-title">Active in Public Catalog</span>
-                <span className="status-hint">
-                  When enabled, clients can view and book.
-                </span>
-              </div>
-              <label
-                className="luxury-switch-toggle"
-                htmlFor="service-add-active"
-              >
-                <input
-                  type="checkbox"
-                  id="service-add-active"
-                  name="active"
-                  checked={createFormik.values.active}
-                  onChange={createFormik.handleChange}
-                  disabled={createFormik.isSubmitting}
-                />
-                <span className="luxury-switch-slider" />
-              </label>
+          {/* Row 6: Active in Public Catalog */}
+          <div className="service-status-card">
+            <div className="status-text-wrap">
+              <span className="status-title">Active in Public Catalog</span>
+              <span className="status-hint">
+                When enabled, clients can view and book.
+              </span>
             </div>
+            <label
+              className="luxury-switch-toggle"
+              htmlFor="service-add-active"
+            >
+              <input
+                type="checkbox"
+                id="service-add-active"
+                name="active"
+                checked={createFormik.values.active}
+                onChange={createFormik.handleChange}
+                disabled={createFormik.isSubmitting}
+              />
+              <span className="luxury-switch-slider" />
+            </label>
           </div>
         </div>
       </AppModal>
@@ -1587,45 +1615,43 @@ const Services = () => {
         }
       >
         <div className="service-form-dialog">
-          {/* Row 1: Service Title & Service Type */}
-          <div className="service-form-grid-2">
-            <AppInput
-              label="Service Title"
-              name="serviceName"
-              value={editFormik.values.serviceName}
-              onChange={editFormik.handleChange}
-              onBlur={editFormik.handleBlur}
-              error={
-                editFormik.touched.serviceName &&
-                Boolean(editFormik.errors.serviceName)
-              }
-              helperText={
-                editFormik.touched.serviceName && editFormik.errors.serviceName
-              }
-              startAdornment={<DryCleaningOutlinedIcon />}
-              disabled={editFormik.isSubmitting}
-            />
+          {/* Row 1: Service Title */}
+          <AppInput
+            label="Service Title"
+            name="serviceName"
+            value={editFormik.values.serviceName}
+            onChange={editFormik.handleChange}
+            onBlur={editFormik.handleBlur}
+            error={
+              editFormik.touched.serviceName &&
+              Boolean(editFormik.errors.serviceName)
+            }
+            helperText={
+              editFormik.touched.serviceName && editFormik.errors.serviceName
+            }
+            startAdornment={<DryCleaningOutlinedIcon />}
+            disabled={editFormik.isSubmitting}
+          />
 
-            <AppSelect
-              label="Service Type"
-              name="serviceType"
-              value={editFormik.values.serviceType}
-              onChange={editFormik.handleChange}
-              options={SERVICE_TYPE_OPTIONS}
-              startAdornment={<LayersOutlinedIcon />}
-              disabled={editFormik.isSubmitting}
-              error={
-                editFormik.touched.serviceType &&
-                Boolean(editFormik.errors.serviceType)
-              }
-              helperText={
-                editFormik.touched.serviceType &&
-                editFormik.errors.serviceType
-              }
-            />
-          </div>
+          {/* Row 2: Service Type */}
+          <AppSelect
+            label="Service Type"
+            name="serviceType"
+            value={editFormik.values.serviceType}
+            onChange={editFormik.handleChange}
+            options={SERVICE_TYPE_OPTIONS}
+            startAdornment={<LayersOutlinedIcon />}
+            disabled={editFormik.isSubmitting}
+            error={
+              editFormik.touched.serviceType &&
+              Boolean(editFormik.errors.serviceType)
+            }
+            helperText={
+              editFormik.touched.serviceType && editFormik.errors.serviceType
+            }
+          />
 
-          {/* Row 2: Regular Price & Offer Price */}
+          {/* Row 3: Regular Price & Offer Price */}
           <div className="service-form-grid-2">
             <AppInput
               label="Regular Price (₹)"
@@ -1647,7 +1673,7 @@ const Services = () => {
             />
 
             <AppInput
-              label="Offer / Discounted Price (₹)"
+              label="Offer Price (₹)"
               name="serviceDiscountedPrice"
               type="number"
               value={editFormik.values.serviceDiscountedPrice}
@@ -1666,9 +1692,9 @@ const Services = () => {
             />
           </div>
 
-          {/* Row 3: Description */}
+          {/* Row 4: Description */}
           <AppInput
-            label="Description & Draping Notes"
+            label="Service Description"
             name="description"
             placeholder="Describe the specialized pleating technique, fabric types supported, and packaging included..."
             value={editFormik.values.description}
@@ -1691,52 +1717,51 @@ const Services = () => {
             disabled={editFormik.isSubmitting}
           />
 
-          {/* Row 4: Display Order beside Active in Public Catalog */}
-          <div className="service-form-grid-2 service-form-bottom-row">
-            <AppInput
-              label="Display Order (Sequence #)"
-              name="displayOrder"
-              type="number"
-              min={1}
-              placeholder="e.g. 1, 2, 3..."
-              value={editFormik.values.displayOrder}
-              onChange={editFormik.handleChange}
-              onBlur={editFormik.handleBlur}
-              error={
-                editFormik.touched.displayOrder &&
-                Boolean(editFormik.errors.displayOrder)
-              }
-              helperText={
-                (editFormik.touched.displayOrder &&
-                  editFormik.errors.displayOrder) ||
-                "Order in catalog & dropdown (1 = Top)."
-              }
-              startAdornment={<FormatListNumberedOutlinedIcon />}
-              disabled={editFormik.isSubmitting}
-            />
+          {/* Row 5: Display Order */}
+          <AppInput
+            label="Display Order (Sequence #)"
+            name="displayOrder"
+            type="number"
+            min={1}
+            placeholder="e.g. 1, 2, 3..."
+            value={editFormik.values.displayOrder}
+            onChange={editFormik.handleChange}
+            onBlur={editFormik.handleBlur}
+            error={
+              editFormik.touched.displayOrder &&
+              Boolean(editFormik.errors.displayOrder)
+            }
+            helperText={
+              (editFormik.touched.displayOrder &&
+                editFormik.errors.displayOrder) ||
+              "Order in catalog & dropdown (1 = Top)."
+            }
+            startAdornment={<FormatListNumberedOutlinedIcon />}
+            disabled={editFormik.isSubmitting}
+          />
 
-            <div className="service-status-card">
-              <div className="status-text-wrap">
-                <span className="status-title">Active in Public Catalog</span>
-                <span className="status-hint">
-                  When enabled, clients can view and book.
-                </span>
-              </div>
-              <label
-                className="luxury-switch-toggle"
-                htmlFor="service-edit-active"
-              >
-                <input
-                  type="checkbox"
-                  id="service-edit-active"
-                  name="active"
-                  checked={editFormik.values.active}
-                  onChange={editFormik.handleChange}
-                  disabled={editFormik.isSubmitting}
-                />
-                <span className="luxury-switch-slider" />
-              </label>
+          {/* Row 6: Active in Public Catalog */}
+          <div className="service-status-card">
+            <div className="status-text-wrap">
+              <span className="status-title">Active in Public Catalog</span>
+              <span className="status-hint">
+                When enabled, clients can view and book.
+              </span>
             </div>
+            <label
+              className="luxury-switch-toggle"
+              htmlFor="service-edit-active"
+            >
+              <input
+                type="checkbox"
+                id="service-edit-active"
+                name="active"
+                checked={editFormik.values.active}
+                onChange={editFormik.handleChange}
+                disabled={editFormik.isSubmitting}
+              />
+              <span className="luxury-switch-slider" />
+            </label>
           </div>
         </div>
       </AppModal>

@@ -86,27 +86,31 @@
   &__brand-logo {
     position: relative;
     z-index: 1;
-    max-width: 500px;
-    width: 90vw;
+    max-width: 750px;
+    width: 95vw;
     height: auto;
-    max-height: 130px;
+    max-height: 220px;
     object-fit: contain;
     animation: gentleFloat 6s ease-in-out infinite alternate;
     display: block;
 
     @media (max-width: 768px) {
-      max-width: 380px;
-      max-height: 100px;
+      max-width: 580px;
+      max-height: 180px;
     }
 
     @media (max-width: 480px) {
-      max-width: 290px;
-      max-height: 80px;
+      max-width: 440px;
+      max-height: 150px;
     }
   }
 
   // Modern Glass Card Base
   .not-found-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
     border-radius: 20px;
     padding: 38px 44px;
     backdrop-filter: blur(14px);
@@ -118,8 +122,11 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     @media (max-width: 600px) {
-      padding: 26px 18px;
-      border-radius: 16px;
+      padding: 16px 8px;
+      border-radius: 0;
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
     }
 
     &__hairline {
@@ -129,16 +136,21 @@
       right: 15%;
       height: 2px;
       opacity: 0.85;
+
+      @media (max-width: 600px) {
+        display: none;
+      }
     }
 
     // Modern 404 tag chip
     .not-found-tag {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
-      padding: 5px 16px;
+      padding: 6px 18px;
       border-radius: 9999px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
 
       &__icon {
         font-size: 1rem;
@@ -152,15 +164,50 @@
       }
     }
 
-    // Modern stylized 404 code
-    &__code {
-      font-size: clamp(4.5rem, 11vw, 7.5rem) !important;
-      font-weight: 900 !important;
-      line-height: 0.95 !important;
-      letter-spacing: -2px;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 14px !important;
+    // Modern stylized 404 code with Lady Logo replacing 0
+    &__code-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 16px;
+      line-height: 1;
+
+      @media (max-width: 600px) {
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .code-digit {
+        font-family: inherit;
+        font-size: clamp(6.2rem, 15vw, 10.4rem);
+        font-weight: 900;
+        line-height: 0.85;
+        letter-spacing: -2px;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        @media (max-width: 600px) {
+          font-size: clamp(4.8rem, 14vw, 7.2rem);
+        }
+      }
+
+      .code-lady-img {
+        width: auto;
+        height: clamp(4.5rem, 11vw, 7.5rem);
+        max-height: 115px;
+        object-fit: contain;
+        display: block;
+        animation: gentleFloat 4s ease-in-out infinite alternate;
+        transition: transform 0.3s ease;
+
+        @media (max-width: 600px) {
+          height: clamp(3.5rem, 10vw, 5.2rem);
+        }
+      }
     }
 
     // Headline
@@ -169,9 +216,13 @@
       font-weight: 700 !important;
       letter-spacing: 0.2px;
       margin-bottom: 12px !important;
+
+      @media (max-width: 600px) {
+        margin-bottom: 24px !important;
+      }
     }
 
-    // Subtext
+    // Subtext / Description
     &__subtext {
       font-size: 0.94rem !important;
       line-height: 1.6 !important;
@@ -179,14 +230,43 @@
       margin: 0 auto 28px auto !important;
 
       @media (max-width: 600px) {
-        font-size: 0.86rem !important;
-        margin-bottom: 22px !important;
+        display: none !important;
       }
     }
 
     // Action Buttons
     &__actions {
       margin-bottom: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+
+      .primary-btn,
+      .secondary-btn {
+        white-space: nowrap;
+
+        @media (max-width: 600px) {
+          font-size: 0.8rem !important;
+          padding: 8px 14px !important;
+          border-radius: 8px !important;
+
+          .MuiButton-startIcon {
+            margin-right: 4px !important;
+            margin-left: -2px !important;
+
+            svg {
+              font-size: 1.1rem !important;
+            }
+          }
+        }
+
+        @media (max-width: 380px) {
+          font-size: 0.74rem !important;
+          padding: 7px 10px !important;
+        }
+      }
 
       .primary-btn {
         font-weight: 700 !important;
@@ -209,15 +289,17 @@
   // ==========================================================================
   // Mode 1: Default (Royal Obsidian Gold)
   // ==========================================================================
-  &,
-  &[data-theme="default"] {
-    background-color: #000000;
+  &[data-theme="default"],
+  &:not([data-theme="dark"]):not([data-theme="light"]),
+  [data-theme="default"] &,
+  :root:not([data-theme="dark"]):not([data-theme="light"]) & {
+    background-color: #000000 !important;
     background: radial-gradient(
       circle at 50% 20%,
       rgba(212, 175, 55, 0.12) 0%,
       rgba(0, 0, 0, 0.95) 60%,
       #000000 100%
-    );
+    ) !important;
 
     .not-found-page__top-accent-bar {
       background: linear-gradient(
@@ -237,16 +319,11 @@
     }
 
     .not-found-page__logo-wrap .logo-halo {
-      background: radial-gradient(
-        ellipse at center,
-        rgba(212, 175, 55, 0.25) 0%,
-        transparent 70%
-      );
+      display: none;
     }
 
     .not-found-page__brand-logo {
-      filter: drop-shadow(0 0 24px rgba(212, 175, 55, 0.45))
-        drop-shadow(0 6px 16px rgba(0, 0, 0, 0.8));
+      filter: none;
     }
 
     .not-found-card {
@@ -282,16 +359,22 @@
         }
       }
 
-      &__code {
-        background: linear-gradient(
-          135deg,
-          #fff3cf 0%,
-          #d4af37 45%,
-          #9a7b1c 100%
-        );
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-shadow: 0 0 40px rgba(212, 175, 55, 0.25);
+      &__code-wrap {
+        .code-digit {
+          background: linear-gradient(
+            135deg,
+            #fff3cf 0%,
+            #d4af37 45%,
+            #9a7b1c 100%
+          );
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          text-shadow: 0 0 40px rgba(212, 175, 55, 0.25);
+        }
+
+        .code-lady-img {
+          filter: none;
+        }
       }
 
       &__headline {
@@ -333,14 +416,15 @@
   // ==========================================================================
   // Mode 2: Dark Mode (Midnight Slate / Charcoal)
   // ==========================================================================
-  &[data-theme="dark"] {
-    background-color: #0f1117;
+  &[data-theme="dark"],
+  [data-theme="dark"] & {
+    background-color: #0f1117 !important;
     background: radial-gradient(
       circle at 50% 20%,
       rgba(56, 189, 248, 0.07) 0%,
       rgba(15, 17, 23, 0.98) 60%,
       #0f1117 100%
-    );
+    ) !important;
 
     .not-found-page__top-accent-bar {
       background: linear-gradient(
@@ -360,16 +444,11 @@
     }
 
     .not-found-page__logo-wrap .logo-halo {
-      background: radial-gradient(
-        ellipse at center,
-        rgba(241, 245, 249, 0.15) 0%,
-        transparent 70%
-      );
+      display: none;
     }
 
     .not-found-page__brand-logo {
-      filter: drop-shadow(0 0 20px rgba(241, 245, 249, 0.2))
-        drop-shadow(0 6px 16px rgba(0, 0, 0, 0.6));
+      filter: none;
     }
 
     .not-found-card {
@@ -405,16 +484,22 @@
         }
       }
 
-      &__code {
-        background: linear-gradient(
-          135deg,
-          #ffffff 0%,
-          #cbd5e1 50%,
-          #94a3b8 100%
-        );
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-shadow: 0 0 30px rgba(241, 245, 249, 0.15);
+      &__code-wrap {
+        .code-digit {
+          background: linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #cbd5e1 50%,
+            #94a3b8 100%
+          );
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          text-shadow: 0 0 30px rgba(241, 245, 249, 0.15);
+        }
+
+        .code-lady-img {
+          filter: none;
+        }
       }
 
       &__headline {
@@ -456,14 +541,15 @@
   // ==========================================================================
   // Mode 3: Light Mode (Soft Slate Mist / Ivory)
   // ==========================================================================
-  &[data-theme="light"] {
-    background-color: #f8fafc;
+  &[data-theme="light"],
+  [data-theme="light"] & {
+    background-color: #f8fafc !important;
     background: radial-gradient(
       circle at 50% 15%,
       rgba(226, 232, 240, 0.7) 0%,
       #f8fafc 60%,
       #f1f5f9 100%
-    );
+    ) !important;
 
     .not-found-page__top-accent-bar {
       background: linear-gradient(
@@ -483,15 +569,11 @@
     }
 
     .not-found-page__logo-wrap .logo-halo {
-      background: radial-gradient(
-        ellipse at center,
-        rgba(30, 41, 59, 0.06) 0%,
-        transparent 70%
-      );
+      display: none;
     }
 
     .not-found-page__brand-logo {
-      filter: drop-shadow(0 4px 12px rgba(15, 23, 42, 0.08));
+      filter: none;
     }
 
     .not-found-card {
@@ -523,16 +605,22 @@
         }
       }
 
-      &__code {
-        background: linear-gradient(
-          135deg,
-          #0f172a 0%,
-          #1e293b 50%,
-          #475569 100%
-        );
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-shadow: none;
+      &__code-wrap {
+        .code-digit {
+          background: linear-gradient(
+            135deg,
+            #0f172a 0%,
+            #1e293b 50%,
+            #475569 100%
+          );
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          text-shadow: none;
+        }
+
+        .code-lady-img {
+          filter: none;
+        }
       }
 
       &__headline {

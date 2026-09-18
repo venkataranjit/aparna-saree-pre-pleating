@@ -1,17 +1,20 @@
-import React from 'react';
-import { Box, Typography, Button, Container, Stack } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
-import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
-import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
-import SparklesIcon from '@mui/icons-material/AutoAwesome';
-import logo from '../../../assets/logo.png';
-import logoDark from '../../../assets/logo-dark.png';
-import logoLight from '../../../assets/logo-light.png';
-import { useTheme } from '../../../context/ThemeContext';
-import { useAuth } from '../../../auth/context/AuthContext';
-import { ThemeToggle } from '../../../components/common/ThemeToggle/ThemeToggle';
-import './NotFound.scss';
+import React from "react";
+import { Box, Typography, Button, Container, Stack } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import SparklesIcon from "@mui/icons-material/AutoAwesome";
+import logo from "../../../assets/logo.png";
+import logoDark from "../../../assets/logo-dark.png";
+import logoLight from "../../../assets/logo-light.png";
+import ladyLogo from "../../../assets/lady-logo.png";
+import ladyLogoDark from "../../../assets/lady-logo-dark.png";
+import ladyLogoLight from "../../../assets/lady-logo-light.png";
+import { useTheme } from "../../../context/ThemeContext";
+import { useAuth } from "../../../auth/context/AuthContext";
+import { ThemeToggle } from "../../../components/common/ThemeToggle/ThemeToggle";
+import "./NotFound.scss";
 
 const NotFound = () => {
   const { theme, isLight, isDark } = useTheme();
@@ -22,6 +25,11 @@ const NotFound = () => {
   // - Dark theme  -> logoDark (silver/white logo for dark background)
   // - Default     -> logo (gold logo for black obsidian background)
   const currentLogo = isLight ? logoLight : isDark ? logoDark : logo;
+  const currentLadyLogo = isLight
+    ? ladyLogoDark
+    : isDark
+      ? ladyLogoLight
+      : ladyLogo;
 
   return (
     <Box className="not-found-page" data-theme={theme}>
@@ -54,31 +62,33 @@ const NotFound = () => {
           <Box className="not-found-tag">
             <SparklesIcon className="not-found-tag__icon" />
             <Typography component="span" className="not-found-tag__text">
-              Error 404 • Page Not Found
+              Page Not Found
             </Typography>
           </Box>
 
-          {/* Big Modern 404 Typography */}
-          <Typography variant="h1" className="not-found-card__code">
-            404
-          </Typography>
+          {/* Big Modern 404 Typography with Lady Logo replacing 0 */}
+          <Box className="not-found-card__code-wrap">
+            <span className="code-digit">4</span>
+            <img
+              src={currentLadyLogo}
+              alt="0"
+              className="code-lady-img"
+              key={`lady-${theme}`}
+            />
+            <span className="code-digit">4</span>
+          </Box>
 
           {/* Catchy Boutique Saree Pre-Pleating Title */}
           <Typography variant="h4" className="not-found-card__headline">
             This Pleat Slipped Out of Fold
           </Typography>
 
-          {/* Description */}
-          <Typography variant="body1" className="not-found-card__subtext">
-            The page you are looking for might have been folded away, renamed, or is temporarily unavailable.
-            Even the most exquisite drape sometimes misses a crease — let's help you find your way back.
-          </Typography>
-
           {/* Action Buttons */}
           <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={2}
+            direction="row"
+            spacing={{ xs: 1.5, sm: 2 }}
             justifyContent="center"
+            alignItems="center"
             className="not-found-card__actions"
           >
             {currentUser ? (

@@ -99,11 +99,12 @@
 
           .biometric-brand-logo {
             width: auto;
-            max-width: 220px;
+            max-width: 320px;
+            width: 85vw;
             height: auto;
-            max-height: 110px;
+            max-height: 160px;
             object-fit: contain;
-            filter: drop-shadow(0 4px 16px rgba(212, 175, 55, 0.45));
+            filter: drop-shadow(0 6px 20px rgba(212, 175, 55, 0.5));
           }
         }
 

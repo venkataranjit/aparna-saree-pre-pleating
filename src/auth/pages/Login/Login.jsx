@@ -759,7 +759,8 @@ const Login = () => {
               <h1 className="login-title">Login</h1>
             </div>
 
-            {/* Method Switcher Tabs (Email vs Phone OTP) */}
+            {/* Method Switcher Tabs (Phone OTP tab commented out as of now) */}
+            {/*
             <div className="login-method-switch">
               <button
                 type="button"
@@ -784,6 +785,7 @@ const Login = () => {
                 <span>Phone OTP</span>
               </button>
             </div>
+            */}
 
             {/* Error / Success Feedback */}
 

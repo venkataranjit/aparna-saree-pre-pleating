@@ -12,8 +12,13 @@ import "./BiometricAuthGuard.scss";
 const SESSION_KEY = "aparna_dashboard_biometric_unlocked";
 
 export default function BiometricAuthGuard({ children }) {
+  const isNative = Capacitor.isNativePlatform();
   const { currentUser, logout } = useAuth();
   const [isUnlocked, setIsUnlocked] = useState(() => {
+    // Web browsers do not use native biometric guard, immediately unlock with zero screen flash
+    if (!Capacitor.isNativePlatform()) {
+      return true;
+    }
     return sessionStorage.getItem(SESSION_KEY) === "true";
   });
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -25,62 +30,61 @@ export default function BiometricAuthGuard({ children }) {
   const hasAutoPromptedRef = useRef(false);
 
   const performBiometricAuth = useCallback(async () => {
+    if (!Capacitor.isNativePlatform()) {
+      sessionStorage.setItem(SESSION_KEY, "true");
+      setIsUnlocked(true);
+      return;
+    }
+
     if (!currentUser || isUnlocked || isAuthenticatingRef.current) return;
 
     isAuthenticatingRef.current = true;
     setIsAuthenticating(true);
     setAuthError(null);
 
-    // 1. Check if running in Native Capacitor APK
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const info = await BiometricAuth.checkBiometry();
-        setBiometryInfo(info);
+    // Native Capacitor Platform
+    try {
+      const info = await BiometricAuth.checkBiometry();
+      setBiometryInfo(info);
 
-        if (info.isAvailable) {
-          await BiometricAuth.authenticate({
-            reason:
-              "Scan your fingerprint or enter device PIN to unlock the Dashboard",
-            cancelTitle: "Cancel",
-            allowDeviceCredential: true,
-            iosFallbackTitle: "Use Passcode",
-          });
+      if (info.isAvailable) {
+        await BiometricAuth.authenticate({
+          reason:
+            "Scan your fingerprint or enter device PIN to unlock the Dashboard",
+          cancelTitle: "Cancel",
+          allowDeviceCredential: true,
+          iosFallbackTitle: "Use Passcode",
+        });
 
-          // Authentication Successful
-          sessionStorage.setItem(SESSION_KEY, "true");
-          setIsUnlocked(true);
-          setAuthError(null);
-        } else {
-          // Device has no enrolled biometrics, allow access with device credentials or fallback
-          sessionStorage.setItem(SESSION_KEY, "true");
-          setIsUnlocked(true);
-        }
-      } catch (err) {
-        console.warn(
-          "[BiometricAuthGuard] Biometric auth rejected or failed:",
-          err,
-        );
-        setAuthError(
-          err.message?.includes("cancel") || err.code === 10
-            ? "Authentication cancelled. Tap below to scan fingerprint."
-            : "Fingerprint not recognized. Tap below to retry or use device PIN.",
-        );
-      } finally {
-        setIsAuthenticating(false);
-        isAuthenticatingRef.current = false;
+        // Authentication Successful
+        sessionStorage.setItem(SESSION_KEY, "true");
+        setIsUnlocked(true);
+        setAuthError(null);
+      } else {
+        // Device has no enrolled biometrics, allow access with device credentials or fallback
+        sessionStorage.setItem(SESSION_KEY, "true");
+        setIsUnlocked(true);
       }
-    } else {
-      // 2. Web Browser Environment
-      sessionStorage.setItem(SESSION_KEY, "true");
-      setIsUnlocked(true);
+    } catch (err) {
+      console.warn(
+        "[BiometricAuthGuard] Biometric auth rejected or failed:",
+        err,
+      );
+      setAuthError(
+        err.message?.includes("cancel") || err.code === 10
+          ? "Authentication cancelled. Tap below to scan fingerprint."
+          : "Fingerprint not recognized. Tap below to retry or use device PIN.",
+      );
+    } finally {
       setIsAuthenticating(false);
       isAuthenticatingRef.current = false;
     }
   }, [currentUser, isUnlocked]);
 
-  // Trigger auto-prompt exactly ONCE per session on mount when user is authenticated
+  // Trigger auto-prompt exactly ONCE per session on mount when user is authenticated (Native Only)
   useEffect(() => {
-    if (isUnlocked || !currentUser || hasAutoPromptedRef.current) return;
+    if (!isNative || isUnlocked || !currentUser || hasAutoPromptedRef.current)
+      return;
 
     hasAutoPromptedRef.current = true;
     const timer = setTimeout(() => {
@@ -88,10 +92,10 @@ export default function BiometricAuthGuard({ children }) {
     }, 250);
 
     return () => clearTimeout(timer);
-  }, [isUnlocked, currentUser, performBiometricAuth]);
+  }, [isNative, isUnlocked, currentUser, performBiometricAuth]);
 
-  // If unlocked, render dashboard immediately
-  if (isUnlocked) {
+  // If not on native platform or already unlocked, render dashboard immediately
+  if (!isNative || isUnlocked) {
     return children;
   }
 

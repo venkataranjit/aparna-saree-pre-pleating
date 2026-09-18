@@ -86,6 +86,9 @@ const userValidationSchema = Yup.object({
     .min(2, "Name must be at least 2 characters")
     .max(60, "Name cannot exceed 60 characters")
     .required("User Name is required"),
+  nickName: Yup.string()
+    .trim()
+    .max(60, "Nick Name cannot exceed 60 characters"),
   userMobile: Yup.string()
     .trim()
     .matches(
@@ -111,6 +114,9 @@ const editUserValidationSchema = Yup.object({
     .min(2, "Name must be at least 2 characters")
     .max(60, "Name cannot exceed 60 characters")
     .required("User Name is required"),
+  nickName: Yup.string()
+    .trim()
+    .max(60, "Nick Name cannot exceed 60 characters"),
   userMobile: Yup.string()
     .trim()
     .matches(
@@ -290,6 +296,7 @@ const Users = () => {
     setSelectedUser(user);
     editFormik.setValues({
       username: user.username || "",
+      nickName: user.nickName || "",
       userMobile: user.userMobile || "",
       email: user.email || "",
       userAddress: user.userAddress || "",
@@ -302,6 +309,7 @@ const Users = () => {
   const editFormik = useFormik({
     initialValues: {
       username: "",
+      nickName: "",
       userMobile: "",
       email: "",
       userAddress: "",
@@ -343,6 +351,7 @@ const Users = () => {
 
         const updatedFields = {
           username: values.username.trim(),
+          nickName: (values.nickName || "").trim(),
           userMobile: cleanMobile,
           email: cleanEmail,
           userAddress: values.userAddress.trim(),
@@ -388,6 +397,7 @@ const Users = () => {
   const formik = useFormik({
     initialValues: {
       username: "",
+      nickName: "",
       userMobile: "",
       email: "",
       userAddress: "",
@@ -460,6 +470,7 @@ const Users = () => {
         const newUserPayload = {
           id: authUid,
           username: values.username.trim(),
+          nickName: (values.nickName || "").trim(),
           email: cleanEmail,
           userMobile: String(values.userMobile).trim(),
           userAddress: values.userAddress.trim(),
@@ -491,6 +502,7 @@ const Users = () => {
         resetForm({
           values: {
             username: "",
+            nickName: "",
             userMobile: "",
             email: "",
             userAddress: "",
@@ -524,6 +536,7 @@ const Users = () => {
       const matchesSearch =
         !query ||
         u.username?.toLowerCase().includes(query) ||
+        u.nickName?.toLowerCase().includes(query) ||
         u.userMobile?.includes(query) ||
         u.email?.toLowerCase().includes(query);
       return matchesTab && matchesSearch;
@@ -813,9 +826,11 @@ const Users = () => {
                               <div className="user-name-text">
                                 {u.username || "—"}
                               </div>
-                              <div className="user-email-text">
-                                {u.email || "—"}
-                              </div>
+                              {u.nickName ? (
+                                <div className="user-nickname-text">
+                                  {u.nickName}
+                                </div>
+                              ) : null}
                             </div>
                           </div>
                         </AppTableCell>
@@ -910,7 +925,7 @@ const Users = () => {
                         </AppTableCell>
                       </AppTableRow>
 
-                      {/* Expandable View More Row with extra fields: Address, Created At, Modified At */}
+                      {/* Expandable View More Row with extra fields: Email, Address, Created At, Modified At */}
                       {isExpanded && (
                         <AppTableRow className="table-expanded-row">
                           <AppTableCell
@@ -918,7 +933,7 @@ const Users = () => {
                             className="table-expanded-cell"
                           >
                             <div className="table-expanded-container">
-                              {/* Address Tile */}
+                              {/* Address Tile (Full Width Top Row) */}
                               <div className="expanded-tile expanded-tile--address">
                                 <div className="tile-header">
                                   <LocationOnOutlinedIcon className="tile-icon" />
@@ -934,6 +949,27 @@ const Users = () => {
                                   ) : (
                                     <span className="empty-hint">
                                       No address provided
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Email Tile */}
+                              <div className="expanded-tile">
+                                <div className="tile-header">
+                                  <EmailOutlinedIcon className="tile-icon" />
+                                  <span className="tile-label">
+                                    Email Address
+                                  </span>
+                                </div>
+                                <div className="tile-content">
+                                  {u.email ? (
+                                    <span className="email-text">
+                                      {u.email}
+                                    </span>
+                                  ) : (
+                                    <span className="empty-hint">
+                                      No email registered
                                     </span>
                                   )}
                                 </div>
@@ -1033,6 +1069,9 @@ const Users = () => {
 
                   <div className="card-body">
                     <h3 className="card-title">{u.username || "Team Member"}</h3>
+                    {u.nickName ? (
+                      <div className="card-subtitle-nickname">{u.nickName}</div>
+                    ) : null}
                     <div className="card-info-rows">
                       <div className="info-item">
                         <PhoneIphoneOutlinedIcon style={{ fontSize: 14 }} />
@@ -1285,6 +1324,19 @@ const Users = () => {
           />
 
           <AppInput
+            label="Nick Name (Optional)"
+            id="nickName"
+            name="nickName"
+            placeholder="e.g. Appu"
+            value={formik.values.nickName}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.nickName && formik.errors.nickName}
+            disabled={formik.isSubmitting}
+            startAdornment={<PersonOutlineIcon />}
+          />
+
+          <AppInput
             label="Mobile Number (10 Digits)"
             required
             id="userMobile"
@@ -1403,6 +1455,19 @@ const Users = () => {
             onChange={editFormik.handleChange}
             onBlur={editFormik.handleBlur}
             error={editFormik.touched.username && editFormik.errors.username}
+            disabled={editFormik.isSubmitting}
+            startAdornment={<PersonOutlineIcon />}
+          />
+
+          <AppInput
+            label="Nick Name (Optional)"
+            id="edit-nickName"
+            name="nickName"
+            placeholder="e.g. Appu"
+            value={editFormik.values.nickName}
+            onChange={editFormik.handleChange}
+            onBlur={editFormik.handleBlur}
+            error={editFormik.touched.nickName && editFormik.errors.nickName}
             disabled={editFormik.isSubmitting}
             startAdornment={<PersonOutlineIcon />}
           />

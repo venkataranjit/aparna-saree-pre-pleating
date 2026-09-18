@@ -110,6 +110,7 @@ export const createBusinessModel = ({
  * 2. User Model
  * @param {Object} data
  * @param {string} data.username
+ * @param {string} [data.nickName]
  * @param {string} data.userMobile
  * @param {string} data.userAddress
  * @param {('superadmin'|'admin'|'staff'|'client')} [data.role='client']
@@ -117,6 +118,7 @@ export const createBusinessModel = ({
  */
 export const createUserModel = ({
   username = "",
+  nickName = "",
   email = "",
   userMobile = "",
   userAddress = "",
@@ -139,6 +141,7 @@ export const createUserModel = ({
 
   return {
     username: String(username).trim(),
+    nickName: String(nickName || "").trim(),
     email: normalizedEmail,
     userMobile: String(userMobile).trim(),
     userAddress: String(userAddress).trim(),
@@ -191,6 +194,7 @@ export const createServiceModel = ({
  * 4. Client Model
  * @param {Object} data
  * @param {string} [data.clientName]
+ * @param {string} [data.nickName]
  * @param {string} [data.clientMobile] (stored strictly as string)
  * @param {string} [data.clientAddress]
  * @param {string|null} [data.userId] - Optional mapped user document ID
@@ -198,17 +202,20 @@ export const createServiceModel = ({
  */
 export const createClientModel = ({
   clientName = "",
+  nickName = "",
   clientMobile = "",
   clientAddress = "",
   userId = null,
   measurementId = null,
 } = {}) => {
   const resolvedName = String(clientName || "").trim();
+  const resolvedNickName = String(nickName || "").trim();
   const resolvedMobile = String(clientMobile || "").trim();
   const resolvedAddress = String(clientAddress || "").trim();
 
   return {
     clientName: resolvedName,
+    nickName: resolvedNickName,
     clientMobile: resolvedMobile, // Mobile must be stored as string
     clientAddress: resolvedAddress,
     userId: userId ? String(userId).trim() : null,
@@ -278,6 +285,7 @@ export const createOrderModel = ({
   orderId = "",
   clientId = "",
   username = "",
+  nickName = "",
   userMobile = "",
   email = "",
   userAddress = "",
@@ -310,6 +318,7 @@ export const createOrderModel = ({
   const clientObj = client || {
     clientId: String(clientId || "").trim(),
     username: String(username || "").trim(),
+    nickName: String(nickName || "").trim(),
     userMobile: String(userMobile || "").trim(),
     email: String(email || "").trim(),
     userAddress: String(userAddress || "").trim(),
@@ -355,6 +364,7 @@ export const createOrderModel = ({
     isOfflinePending: Boolean(isOfflinePending),
     clientId: String(clientObj.clientId || clientId || "").trim(),
     username: String(clientObj.username || username || "").trim(),
+    nickName: String(clientObj.nickName || nickName || "").trim(),
     userMobile: String(clientObj.userMobile || userMobile || "").trim(),
     email: String(clientObj.email || email || "").trim(),
     userAddress: String(clientObj.userAddress || userAddress || "").trim(),

@@ -311,6 +311,17 @@
         }
       }
 
+      .user-nickname-text {
+        color: var(--color-gold, #d4af37);
+        font-size: 0.78rem;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+
+        @media (max-width: 600px) {
+          font-size: 0.72rem;
+        }
+      }
+
       .user-email-text {
         color: $text-muted;
         font-size: 0.78rem;
@@ -520,6 +531,13 @@
         color: var(--text-primary);
         margin: 0 0 10px 0;
         text-transform: capitalize;
+      }
+
+      .card-subtitle-nickname {
+        font-size: 0.82rem;
+        color: var(--color-gold, #d4af37);
+        font-weight: 500;
+        margin: -6px 0 10px 0;
       }
 
       .card-info-rows {

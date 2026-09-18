@@ -84,12 +84,12 @@
   &--secondary {
     background: var(--surface-gold-tint, rgba(212, 175, 55, 0.08));
     color: var(--color-gold, #d4af37);
-    border-color: $surface-border;
+    border-color: var(--surface-border, rgba(212, 175, 55, 0.25));
 
     &:hover:not(:disabled) {
       border-color: var(--color-gold, #d4af37);
-      background-color: rgba(212, 175, 55, 0.24);
-      color: var(--color-gold, #e6d8a3);
+      background-color: var(--surface-border-hover, rgba(212, 175, 55, 0.24));
+      color: var(--color-light-gold, #e6d8a3);
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
@@ -257,6 +257,54 @@
     svg {
       width: 1em;
       height: 1em;
+    }
+  }
+}
+
+// Dark Mode Button Overrides (Modern Slate / Charcoal)
+[data-theme="dark"] {
+  .app-btn {
+    &--secondary {
+      background: rgba(241, 245, 249, 0.08) !important;
+      border-color: rgba(226, 232, 240, 0.18) !important;
+      color: #f1f5f9 !important;
+
+      &:hover:not(:disabled) {
+        background: rgba(241, 245, 249, 0.16) !important;
+        border-color: rgba(226, 232, 240, 0.38) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+      }
+    }
+
+    &--ghost {
+      background: transparent !important;
+      border-color: rgba(226, 232, 240, 0.15) !important;
+      color: #cbd5e1 !important;
+
+      &:hover:not(:disabled) {
+        background: rgba(241, 245, 249, 0.08) !important;
+        border-color: rgba(226, 232, 240, 0.3) !important;
+        color: #ffffff !important;
+      }
+    }
+  }
+}
+
+// Default Gold / Obsidian Theme Overrides
+[data-theme="default"] {
+  .app-btn {
+    &--secondary {
+      background: rgba(212, 175, 55, 0.08) !important;
+      border-color: rgba(212, 175, 55, 0.25) !important;
+      color: #d4af37 !important;
+
+      &:hover:not(:disabled) {
+        background: rgba(212, 175, 55, 0.2) !important;
+        border-color: #d4af37 !important;
+        color: #e6d8a3 !important;
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15) !important;
+      }
     }
   }
 }

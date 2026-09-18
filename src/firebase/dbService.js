@@ -1251,12 +1251,18 @@ export const updateUser = async (userId, updatedData) => {
 
   const existingUser = existingIdx >= 0 ? localList[existingIdx] : {};
   const now = new Date();
+  const resolvedNickName =
+    updatedData.nickName !== undefined
+      ? String(updatedData.nickName || "").trim()
+      : String(existingUser.nickName || "").trim();
+
   const payload = {
     ...existingUser,
     id:
       userId ||
       (existingIdx >= 0 ? localList[existingIdx].id : "user-" + Date.now()),
     username: String(updatedData.username || "").trim(),
+    nickName: resolvedNickName,
     email: cleanEmail,
     userMobile: String(updatedData.userMobile || "").trim(),
     userAddress: String(updatedData.userAddress || "").trim(),
@@ -1307,6 +1313,7 @@ export const updateUser = async (userId, updatedData) => {
         : Boolean(existingUser.disabled);
     const firestorePayload = {
       username: payload.username,
+      nickName: payload.nickName,
       email: payload.email,
       userMobile: payload.userMobile,
       userAddress: payload.userAddress,

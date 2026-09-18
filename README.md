@@ -1,4 +1,4 @@
-# Aparna Saree Pre-Pleating Studio — Web & Android Application
+# Aparna Saree Pre-Pleating Studio - Web & Android Application
 
 [![React](https://img.shields.io/badge/React-19.0.0-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-6.2.0-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -13,6 +13,7 @@
 ---
 
 ## 📑 Table of Contents
+
 1. [Business Overview & Domain Workflows](#1-business-overview--domain-workflows)
 2. [End-to-End Business Flow](#2-end-to-end-business-flow)
 3. [Technology Stack](#3-technology-stack)
@@ -33,6 +34,7 @@
 **Aparna Saree Pre-Pleating Studio** specializes in bespoke saree care, luxury pre-pleating, box folding, pinless draping, and customized fitting profiles for weddings, festive occasions, and everyday elegance.
 
 The application serves dual interfaces:
+
 - **Desktop / Web Dashboard**: Optimized for studio receptionists, admins, and master pleaters to manage bookings, track financials, record client profiles, and oversee operational efficiency.
 - **Android Mobile App**: Packaged via Capacitor for on-the-go studio managers to take client measurements, check orders on the workshop floor, record daily expenses, and share PDF invoices directly to customer WhatsApp chats with a single tap.
 
@@ -56,6 +58,7 @@ flowchart TD
 ```
 
 ### Detailed Lifecycle Steps:
+
 1. **Client Intake & CRM**: Client details (Name, Phone, Email, Address) are captured or auto-completed from existing records.
 2. **Measurement Profile Definition**: Detailed tailoring metrics (Pallu length/style, Shoulder-Tight, Chest pleats count, Hip measurement, Height, Dress size, Special care notes) are saved for future repeat orders.
 3. **Multi-Service Order Creation**: Orders can bundle multiple sarees/services (e.g., Pre-pleating + Box Folding + Ironing + Saree Draping), custom fabric types (Kanjivaram, Silk, Chiffon, Organza), delivery dates, and occasion tags (Bridal, Reception, Party).
@@ -76,6 +79,7 @@ flowchart TD
 ## 3. Technology Stack
 
 ### 🎨 1. Frontend & UI Engineering
+
 - **[React 19](https://react.dev/) (`v19.0.0`)**: Modern declarative component architecture utilizing React hooks, concurrent rendering, and server-to-static DOM markup compilation (`react-dom/server`).
 - **[Vite 6](https://vitejs.dev/) (`v6.2.0`)**: Next-generation lightning-fast frontend tooling, HMR, and production Rollup bundle optimizer.
 - **[SCSS / Sass](https://sass-lang.com/) (`v1.85.0`)**: Modular styling with luxury gold/navy design tokens, BEM architecture, and responsive breakpoints.
@@ -84,12 +88,14 @@ flowchart TD
 - **Custom Theming Engine**: Dynamic Dark/Light mode ThemeContext with persistent studio branding and color tokens.
 
 ### 📱 2. Mobile & Android Native Runtime
+
 - **[Ionic Capacitor 7](https://capacitorjs.com/) (`@capacitor/core`, `@capacitor/android` `v7.0.0`)**: Native bridge enabling the web application to run as a high-performance native Android app.
 - **`@capacitor/filesystem` (`v7.0.0`)**: Manages offline temporary cache and local device storage (`Directory.Cache` & `Directory.Documents`) for generated PDF invoices.
 - **`@capacitor/share` (`v7.0.0`)**: Native Android share sheet integration allowing direct 1-tap PDF file attachments to WhatsApp chats.
 - **`@capgo/capacitor-social-login` (`v7.20.0`)**: Native Google Sign-In authentication for Android.
 
 ### ☁️ 3. Backend & Cloud Infrastructure (Google Firebase)
+
 - **[Cloud Firestore](https://firebase.google.com/docs/firestore) (Firebase JS SDK `v12.18.0`)**: Scalable real-time NoSQL cloud database storing:
   - `orders`, `clients`, `measurements`, `services`, `expenses`, `businesses`, and `users`.
 - **[Firebase Authentication](https://firebase.google.com/docs/auth)**: Multi-factor identity management (Email/Password, Google OAuth, custom session handling).
@@ -97,6 +103,7 @@ flowchart TD
 - **Role-Based Security**: Strict access control (`superadmin`, `admin`, `staff`, `client`).
 
 ### 📄 4. Document, PDF & QR Vector Generation
+
 - **[jsPDF](https://github.com/parallax/jsPDF)**: Client-side vector PDF document generator producing standard A4 (`794px × 1123px`) printable invoices.
 - **[html2canvas](https://html2canvas.hertzen.com/)**: High-fidelity 2x scale DOM rasterizer for rendering off-screen invoice layouts.
 - **[html2pdf.js](https://ekoopmans.github.io/html2pdf.js/) (`v0.14.0`)**: Complementary HTML-to-PDF compilation pipeline.
@@ -104,11 +111,13 @@ flowchart TD
 - **[Puppeteer](https://pptr.dev/) (`v25.10.0`)**: Headless browser automation for automated PDF testing and rendering verification.
 
 ### 🔄 5. Routing, State & Form Management
+
 - **[React Router DOM v7](https://reactrouter.com/) (`v7.18.3`)**: Client-side single-page routing with protected route guards and nested layouts.
 - **[Formik](https://formik.org/) (`v2.4.9`) + [Yup](https://github.com/jquense/yup) (`v1.7.1`)**: Type-safe schema validation and multi-step order/client intake forms.
 - **[React Toastify](https://fkhadra.github.io/react-toastify/) (`v11.1.0`)**: Non-blocking toast notifications and progress feedback.
 
 ### ⚙️ 6. DevOps, Build & Environment Automation
+
 - **Multi-Environment Pipeline**:
   - `DEV`: Uses development Firebase configuration and outputs `aparna-saree-pre-pleating-dev.apk`.
   - `PROD`: Uses production Firebase configuration and outputs `aparna-saree-pre-pleating.apk`.
@@ -228,38 +237,43 @@ web and android/
 
 ### Firestore Collections:
 
-| Collection | Description | Key Fields |
-| :--- | :--- | :--- |
-| `businesses` | Studio business entities | `ownerName`, `ownerMobile`, `businessAddress`, `email`, `createdAt` |
-| `users` | System users & staff | `uid`, `email`, `displayName`, `role` (`superadmin`, `admin`, `staff`), `mobile` |
-| `services` | Service catalog | `serviceName`, `price`, `description`, `category`, `isActive` |
-| `clients` | Customer registry | `name`, `mobile`, `email`, `address`, `totalOrders`, `createdAt` |
-| `measurements` | Body & pleating profiles | `clientId`, `title`, `pallu`, `shoulderToRightTight`, `chest`, `hip`, `firstPleatSize`, `noOfChestPleats`, `dressSize`, `height`, `notes` |
-| `orders` | Studio bookings & orders | `orderId`, `clientId`, `client` (embedded object), `services` (array of line items), `financials` (subtotal, charges, discount, advance, balance), `orderStatus`, `paymentStatus`, `bookingDate`, `deliveryDate`, `occasion` |
-| `expenses` | Studio operational costs | `title`, `amount`, `category` (`Store Items`, `Travelling`, `Paid Reviews`, `Others`), `paymentMethod`, `date`, `notes` |
+| Collection     | Description              | Key Fields                                                                                                                                                                                                                   |
+| :------------- | :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `businesses`   | Studio business entities | `ownerName`, `ownerMobile`, `businessAddress`, `email`, `createdAt`                                                                                                                                                          |
+| `users`        | System users & staff     | `uid`, `email`, `displayName`, `role` (`superadmin`, `admin`, `staff`), `mobile`                                                                                                                                             |
+| `services`     | Service catalog          | `serviceName`, `price`, `description`, `category`, `isActive`                                                                                                                                                                |
+| `clients`      | Customer registry        | `name`, `mobile`, `email`, `address`, `totalOrders`, `createdAt`                                                                                                                                                             |
+| `measurements` | Body & pleating profiles | `clientId`, `title`, `pallu`, `shoulderToRightTight`, `chest`, `hip`, `firstPleatSize`, `noOfChestPleats`, `dressSize`, `height`, `notes`                                                                                    |
+| `orders`       | Studio bookings & orders | `orderId`, `clientId`, `client` (embedded object), `services` (array of line items), `financials` (subtotal, charges, discount, advance, balance), `orderStatus`, `paymentStatus`, `bookingDate`, `deliveryDate`, `occasion` |
+| `expenses`     | Studio operational costs | `title`, `amount`, `category` (`Store Items`, `Travelling`, `Paid Reviews`, `Others`), `paymentMethod`, `date`, `notes`                                                                                                      |
 
 ---
 
 ## 7. Key Modules & Feature Highlights
 
 ### 1. Dashboard Overview & Analytics
+
 - Real-time gross revenue, total completed orders, pending deliveries, and monthly expense metrics.
 - Visual charts for weekly booking volume and expense distribution.
 
 ### 2. Client Management & Measurement Profiles
+
 - One-click search by mobile number or client name.
-- Unlimited reusable measurement profiles per client (e.g. *"Bridal Heavy Silk"*, *"Party Chiffon"*).
+- Unlimited reusable measurement profiles per client (e.g. _"Bridal Heavy Silk"_, _"Party Chiffon"_).
 - Instant mapping from client profile into new orders.
 
 ### 3. Service Catalog
+
 - Manage service offerings (Saree Pre-Pleating, Box Folding, Ironing, Saree Draping, Combo Packages).
 - Dynamic pricing and spec templates.
 
 ### 4. Expense & Profit Tracking
+
 - Categorized expense logging with receipt notes and payment method tags.
 - Direct calculation of Net Studio Profit = Total Revenue Received - Total Expenses.
 
 ### 5. Multi-Device UI/UX
+
 - **Desktop**: Full expandable sidebar, table views, batch operations.
 - **Mobile**: Custom curved bottom navigation bar with floating action button (FAB) for instant order creation.
 
@@ -268,6 +282,7 @@ web and android/
 ## 8. PDF Generation & WhatsApp Engine
 
 The application includes an advanced, off-screen PDF compiling engine (`CustomInvoiceModal.jsx`):
+
 - **High-Resolution Vector Compilation**: Renders a fixed 794px × 1123px container off-screen, waits for local image asset resolution, and rasterizes at 2x scale via `html2canvas` into standard A4 `jsPDF`.
 - **Active Clickable Links in PDF**: Coordinates of the `Review Us` button and review URL are mapped directly into native PDF annotations (`pdf.link(...)`).
 - **1-Click WhatsApp Sharing**:
@@ -292,11 +307,13 @@ The project features a custom build engine (`scripts/build-apk.mjs`) supporting 
 ## 10. Installation & Setup Guide
 
 ### Prerequisites
+
 - [Node.js](https://nodejs.org/) (v18 or v20 LTS recommended)
 - [Android Studio](https://developer.android.com/studio) (with Android SDK 34/35 & Command-line Tools for mobile builds)
 - [Java JDK 17 or 21](https://adoptium.net/)
 
 ### 1. Clone & Install Dependencies
+
 ```bash
 # Clone the repository
 git clone https://github.com/your-username/aparna-saree-pre-pleating.git
@@ -307,9 +324,11 @@ npm install
 ```
 
 ### 2. Environment Configuration
+
 Create a `.env` file in the project root if needed for custom Firebase configurations, or use the pre-configured multi-environment setups in `src/firebase/config.js`.
 
 ### 3. Run Development Server
+
 ```bash
 # Launch in DEV mode
 npm run dev
@@ -317,23 +336,24 @@ npm run dev
 # Or launch with PROD Firebase configuration
 npm run dev:prod
 ```
+
 The web application will be available at `http://localhost:5173`.
 
 ---
 
 ## 11. NPM Scripts & CLI Commands
 
-| Command | Description |
-| :--- | :--- |
-| `npm run dev` | Starts the Vite development server in `dev` mode. |
-| `npm run dev:prod` | Starts the Vite development server in `prod` mode. |
-| `npm run build` | Compiles the production web bundle into `dist/`. |
-| `npm run build:apk` | Compiles the Android APK in `dev` mode. |
-| `npm run build:apk:dev` | Compiles the Android Development APK (`aparna-saree-pre-pleating-dev.apk`). |
-| `npm run build:apk:prod` | Compiles the Android Production APK (`aparna-saree-pre-pleating.apk`). |
-| `npm run cap:sync` | Synchronizes web assets with the Android native project. |
-| `npm run cap:open` | Opens the Android project in Android Studio. |
-| `npm run preview` | Previews the compiled `dist/` build locally. |
+| Command                  | Description                                                                 |
+| :----------------------- | :-------------------------------------------------------------------------- |
+| `npm run dev`            | Starts the Vite development server in `dev` mode.                           |
+| `npm run dev:prod`       | Starts the Vite development server in `prod` mode.                          |
+| `npm run build`          | Compiles the production web bundle into `dist/`.                            |
+| `npm run build:apk`      | Compiles the Android APK in `dev` mode.                                     |
+| `npm run build:apk:dev`  | Compiles the Android Development APK (`aparna-saree-pre-pleating-dev.apk`). |
+| `npm run build:apk:prod` | Compiles the Android Production APK (`aparna-saree-pre-pleating.apk`).      |
+| `npm run cap:sync`       | Synchronizes web assets with the Android native project.                    |
+| `npm run cap:open`       | Opens the Android project in Android Studio.                                |
+| `npm run preview`        | Previews the compiled `dist/` build locally.                                |
 
 ---
 
@@ -350,9 +370,9 @@ The web application will be available at `http://localhost:5173`.
 
 - **Studio Name**: Aparna Saree Pre-Pleating Studio
 - **Address**: H.No. 4715, 1st Floor, Road No. 17, New MIG, BHEL, Hyderabad - 502032
-- **Motto**: *DRAPES • ELEVATE • BE YOU*
+- **Motto**: _DRAPES • ELEVATE • BE YOU_
 - **Google Reviews**: [Aparna Saree Pre-Pleating Studio Review Page](https://g.page/r/CfQ3Ljt5NC91EBM/review)
 
 ---
 
-*Crafted with precision for Aparna Saree Pre-Pleating Studio.*
+_Crafted with precision for Aparna Saree Pre-Pleating Studio._

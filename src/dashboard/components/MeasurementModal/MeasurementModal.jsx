@@ -6,7 +6,7 @@ import "./MeasurementModal.scss";
 
 export const DRESS_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "Custom"];
 
-// Shared numeric validator — error is always "Enter a valid measurement"
+// Shared numeric validator - error is always "Enter a valid measurement"
 const numericField = (key) =>
   Yup.string()
     .trim()

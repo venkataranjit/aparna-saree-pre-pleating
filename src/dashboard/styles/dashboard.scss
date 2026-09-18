@@ -327,7 +327,7 @@ body,
 
 // ─────────────────────────────────────────────
 // ─────────────────────────────────────────────
-// React-Toastify — Luxury Theme (Mobile & Desktop)
+// React-Toastify - Luxury Theme (Mobile & Desktop)
 // ─────────────────────────────────────────────
 :root {
   --toastify-toast-width: max-content !important;
@@ -609,7 +609,9 @@ body,
     background-color: #0f0f0f !important;
     background: linear-gradient(165deg, #141414 0%, #0a0a0b 100%) !important;
     border: 1px solid rgba(212, 175, 55, 0.28) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(212, 175, 55, 0.2) !important;
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.8),
+      0 0 1px 1px rgba(212, 175, 55, 0.2) !important;
     border-radius: 10px !important;
     color: #e6d8a3 !important;
 
@@ -651,7 +653,9 @@ body,
     background-color: #1a1e29 !important;
     background: linear-gradient(165deg, #1e2433 0%, #151822 100%) !important;
     border: 1px solid rgba(226, 232, 240, 0.15) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(226, 232, 240, 0.08) !important;
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.4),
+      0 0 1px 1px rgba(226, 232, 240, 0.08) !important;
     border-radius: 10px !important;
     color: #f1f5f9 !important;
 
@@ -693,7 +697,9 @@ body,
     background-color: #ffffff !important;
     background: #ffffff !important;
     border: 1px solid rgba(15, 23, 42, 0.12) !important;
-    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12), 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    box-shadow:
+      0 10px 25px rgba(15, 23, 42, 0.12),
+      0 1px 3px rgba(15, 23, 42, 0.04) !important;
     border-radius: 10px !important;
     color: #0f172a !important;
 
@@ -1014,7 +1020,10 @@ body,
   .action-btn--edit,
   .action-btn--more,
   .action-btn--invoice {
-    background-color: var(--surface-gold-tint, rgba(212, 175, 55, 0.12)) !important;
+    background-color: var(
+      --surface-gold-tint,
+      rgba(212, 175, 55, 0.12)
+    ) !important;
     color: var(--color-gold, #d4af37) !important;
     border: 1px solid var(--surface-border, rgba(212, 175, 55, 0.22)) !important;
 

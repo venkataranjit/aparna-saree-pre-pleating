@@ -649,7 +649,7 @@ const Clients = () => {
     },
   });
 
-  // measureFormik removed — handled by <MeasurementModal> component via onSave prop.
+  // measureFormik removed - handled by <MeasurementModal> component via onSave prop.
 
   // Open Edit Measurement Modal
   const handleOpenEditMeasure = (measure) => {
@@ -1135,7 +1135,7 @@ const Clients = () => {
                         {/* Mobile Number */}
                         <AppTableCell>
                           <span className="mobile-cell">
-                            {user.userMobile || "—"}
+                            {user.userMobile || "-"}
                           </span>
                         </AppTableCell>
 
@@ -1530,7 +1530,7 @@ const Clients = () => {
                       <div className="card-info-rows">
                         <div className="info-item">
                           <PhoneIphoneOutlinedIcon style={{ fontSize: 14 }} />
-                          <span>{user.userMobile || "—"}</span>
+                          <span>{user.userMobile || "-"}</span>
                         </div>
                         <div className="info-item">
                           <EmailOutlinedIcon style={{ fontSize: 14 }} />
@@ -1755,13 +1755,13 @@ const Clients = () => {
                       <div className="meta-tile">
                         <span className="meta-label">Mobile</span>
                         <span className="meta-value">
-                          {user.userMobile || "—"}
+                          {user.userMobile || "-"}
                         </span>
                       </div>
                       <div className="meta-tile">
                         <span className="meta-label">Email</span>
                         <span className="meta-value truncate-text">
-                          {user.email || "—"}
+                          {user.email || "-"}
                         </span>
                       </div>
                       <div className="meta-tile">
@@ -2157,7 +2157,7 @@ const Clients = () => {
                 <div>
                   <div className="item-label">Phone</div>
                   <div className="item-value">
-                    {clientForView.userMobile || "—"}
+                    {clientForView.userMobile || "-"}
                   </div>
                 </div>
               </div>
@@ -2166,7 +2166,7 @@ const Clients = () => {
                 <EmailOutlinedIcon className="summary-item-icon" />
                 <div>
                   <div className="item-label">Email</div>
-                  <div className="item-value">{clientForView.email || "—"}</div>
+                  <div className="item-value">{clientForView.email || "-"}</div>
                 </div>
               </div>
 
@@ -2175,7 +2175,7 @@ const Clients = () => {
                 <div>
                   <div className="item-label">Address</div>
                   <div className="item-value">
-                    {clientForView.userAddress || "—"}
+                    {clientForView.userAddress || "-"}
                   </div>
                 </div>
               </div>
@@ -2344,7 +2344,7 @@ const Clients = () => {
                       <div className="dim-item">
                         <span className="dim-label">Pallu Length</span>
                         <span className="dim-value">
-                          {measure.pallu ? `${measure.pallu}"` : "—"}
+                          {measure.pallu ? `${measure.pallu}"` : "-"}
                         </span>
                       </div>
 
@@ -2353,21 +2353,21 @@ const Clients = () => {
                         <span className="dim-value">
                           {measure.shoulderToRightTight
                             ? `${measure.shoulderToRightTight}"`
-                            : "—"}
+                            : "-"}
                         </span>
                       </div>
 
                       <div className="dim-item">
                         <span className="dim-label">Chest Size</span>
                         <span className="dim-value">
-                          {measure.chest ? `${measure.chest}"` : "—"}
+                          {measure.chest ? `${measure.chest}"` : "-"}
                         </span>
                       </div>
 
                       <div className="dim-item">
                         <span className="dim-label">Hip Size</span>
                         <span className="dim-value">
-                          {measure.hip ? `${measure.hip}"` : "—"}
+                          {measure.hip ? `${measure.hip}"` : "-"}
                         </span>
                       </div>
 
@@ -2376,28 +2376,28 @@ const Clients = () => {
                         <span className="dim-value">
                           {measure.firstPleatSize
                             ? `${measure.firstPleatSize}"`
-                            : "—"}
+                            : "-"}
                         </span>
                       </div>
 
                       <div className="dim-item">
                         <span className="dim-label">Chest Pleats</span>
                         <span className="dim-value">
-                          {measure.noOfChestPleats || "—"}
+                          {measure.noOfChestPleats || "-"}
                         </span>
                       </div>
 
                       <div className="dim-item">
                         <span className="dim-label">Client Height</span>
                         <span className="dim-value">
-                          {measure.height ? `${measure.height}` : "—"}
+                          {measure.height ? `${measure.height}` : "-"}
                         </span>
                       </div>
 
                       <div className="dim-item">
                         <span className="dim-label">Dress Size</span>
                         <span className="dim-value">
-                          {measure.dressSize || "—"}
+                          {measure.dressSize || "-"}
                         </span>
                       </div>
                     </div>

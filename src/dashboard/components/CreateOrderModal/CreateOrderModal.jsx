@@ -117,10 +117,7 @@ const orderValidationSchema = Yup.object({
     userMobile: Yup.string()
       .trim()
       .required("Mobile number is required")
-      .matches(
-        /^[6-9]\d{9}$/,
-        "Please enter a valid 10-digit Indian mobile number (e.g. 9849012345)",
-      ),
+      .matches(/^[6-9]\d{9}$/, "Please enter a valid 10-digit mobile number"),
     email: Yup.string()
       .trim()
       .test("is-valid-email", "Please enter a valid email address", (val) => {
@@ -256,7 +253,7 @@ export default function CreateOrderModal({
   const todayStr = new Date().toISOString().split("T")[0];
   const defaultDeliveryStr = useMemo(() => {
     const d = new Date();
-    d.setDate(d.getDate() + 3);
+    d.setDate(d.getDate() + 0);
     return d.toISOString().split("T")[0];
   }, []);
   const [orderDate, setOrderDate] = useState(todayStr);
@@ -414,7 +411,7 @@ export default function CreateOrderModal({
               r !== USER_ROLES.ADMIN &&
               r !== USER_ROLES.STAFF &&
               Boolean(u.username) &&
-              u.username !== "—" &&
+              u.username !== "-" &&
               u.username !== "Client"
             );
           })
@@ -453,7 +450,7 @@ export default function CreateOrderModal({
           if (
             m.username &&
             m.username.trim().toLowerCase() !== "client" &&
-            m.username.trim() !== "—"
+            m.username.trim() !== "-"
           ) {
             uids.add(String(m.username).trim().toLowerCase());
           }
@@ -665,7 +662,7 @@ export default function CreateOrderModal({
         if (
           foundClient.username &&
           foundClient.username.trim().toLowerCase() !== "client" &&
-          foundClient.username.trim() !== "—"
+          foundClient.username.trim() !== "-"
         ) {
           clientKeys.add(foundClient.username.toLowerCase().trim());
         }
@@ -732,7 +729,7 @@ export default function CreateOrderModal({
             mEmail === foundClient.email.toLowerCase().trim()) ||
           (foundClient?.username &&
             foundClient.username.trim().toLowerCase() !== "client" &&
-            foundClient.username.trim() !== "—" &&
+            foundClient.username.trim() !== "-" &&
             mUsername &&
             mUsername === foundClient.username.toLowerCase().trim());
 
@@ -1576,7 +1573,7 @@ export default function CreateOrderModal({
                     {isClientMode
                       ? "Your contact details and delivery location"
                       : initialClient
-                        ? "Client pre-selected — contact details loaded automatically"
+                        ? "Client pre-selected - contact details loaded automatically"
                         : "Select an existing registered client or enter new client details"}
                   </p>
                 </div>
@@ -1951,7 +1948,7 @@ export default function CreateOrderModal({
                               ...clientSavedMeasures.map((m) => ({
                                 value: m.id,
                                 label: m.title || "Saved Profile",
-                                subtitle: `Pallu: ${m.pallu || "—"} | Pleats: ${m.noOfChestPleats || "—"}`,
+                                subtitle: `Pallu: ${m.pallu || "-"} | Pleats: ${m.noOfChestPleats || "-"}`,
                               })),
                             ]}
                             startAdornment={<StraightenOutlinedIcon />}
@@ -1986,34 +1983,34 @@ export default function CreateOrderModal({
                             </span>
                             <span className="measure-chip">
                               <strong>Pallu:</strong>{" "}
-                              {m.pallu ? `${m.pallu}"` : "—"}
+                              {m.pallu ? `${m.pallu}"` : "-"}
                             </span>
                             <span className="measure-chip">
                               <strong>Shoulder to Tight:</strong>{" "}
                               {m.shoulderToRightTight
                                 ? `${m.shoulderToRightTight}"`
-                                : "—"}
+                                : "-"}
                             </span>
                             <span className="measure-chip">
                               <strong>Chest:</strong>{" "}
-                              {m.chest ? `${m.chest}"` : "—"}
+                              {m.chest ? `${m.chest}"` : "-"}
                             </span>
                             <span className="measure-chip">
-                              <strong>Hip:</strong> {m.hip ? `${m.hip}"` : "—"}
+                              <strong>Hip:</strong> {m.hip ? `${m.hip}"` : "-"}
                             </span>
                             <span className="measure-chip">
                               <strong>1st Pleat:</strong>{" "}
-                              {m.firstPleatSize ? `${m.firstPleatSize}"` : "—"}
+                              {m.firstPleatSize ? `${m.firstPleatSize}"` : "-"}
                             </span>
                             <span className="measure-chip">
                               <strong>Chest Pleats:</strong>{" "}
-                              {m.noOfChestPleats || "—"}
+                              {m.noOfChestPleats || "-"}
                             </span>
                             <span className="measure-chip">
-                              <strong>Height:</strong> {m.height || "—"}
+                              <strong>Height:</strong> {m.height || "-"}
                             </span>
                             <span className="measure-chip">
-                              <strong>Dress Size:</strong> {m.dressSize || "—"}
+                              <strong>Dress Size:</strong> {m.dressSize || "-"}
                             </span>
                             {m.notes && (
                               <span className="measure-chip measure-chip--note">
@@ -2027,7 +2024,7 @@ export default function CreateOrderModal({
                       <div className="custom-measure-grid">
                         <AppInput
                           label="Pallu Length (in)"
-                          placeholder="e.g. 38"
+                          placeholder="e.g. 42"
                           inputMode="decimal"
                           onKeyDown={(e) => handleNumericKeyDown(e, true)}
                           value={item.customMeasurement.pallu}
@@ -2052,8 +2049,8 @@ export default function CreateOrderModal({
                           }
                         />
                         <AppInput
-                          label="Shoulder to Tight (in)"
-                          placeholder="e.g. 14"
+                          label="Shoulder to Thigh (in)"
+                          placeholder="e.g. 52"
                           inputMode="decimal"
                           onKeyDown={(e) => handleNumericKeyDown(e, true)}
                           value={item.customMeasurement.shoulderToRightTight}
@@ -2085,7 +2082,7 @@ export default function CreateOrderModal({
                         />
                         <AppInput
                           label="Chest Size (in)"
-                          placeholder="e.g. 36"
+                          placeholder="e.g. 14"
                           inputMode="decimal"
                           onKeyDown={(e) => handleNumericKeyDown(e, true)}
                           value={item.customMeasurement.chest}
@@ -2111,7 +2108,7 @@ export default function CreateOrderModal({
                         />
                         <AppInput
                           label="Hip Size (in)"
-                          placeholder="e.g. 40"
+                          placeholder="e.g. 52"
                           inputMode="decimal"
                           onKeyDown={(e) => handleNumericKeyDown(e, true)}
                           value={item.customMeasurement.hip}
@@ -2137,7 +2134,7 @@ export default function CreateOrderModal({
                         />
                         <AppInput
                           label="First Pleat Width (in)"
-                          placeholder="e.g. 5.5"
+                          placeholder="e.g. 4"
                           inputMode="decimal"
                           onKeyDown={(e) => handleNumericKeyDown(e, true)}
                           value={item.customMeasurement.firstPleatSize}
@@ -2165,7 +2162,7 @@ export default function CreateOrderModal({
                         />
                         <AppInput
                           label="Chest Pleats (count)"
-                          placeholder="e.g. 6"
+                          placeholder="e.g. 7"
                           inputMode="numeric"
                           onKeyDown={(e) => handleNumericKeyDown(e, false)}
                           value={item.customMeasurement.noOfChestPleats}
@@ -2192,8 +2189,8 @@ export default function CreateOrderModal({
                           }
                         />
                         <AppInput
-                          label="Client Height"
-                          placeholder="e.g. 5.4 or 160"
+                          label="Client Height (ft)"
+                          placeholder="e.g. 5.2"
                           inputMode="decimal"
                           onKeyDown={(e) => handleNumericKeyDown(e, true)}
                           value={item.customMeasurement.height}
@@ -2252,7 +2249,7 @@ export default function CreateOrderModal({
 
                     <div style={{ marginTop: 8 }}>
                       <AppInput
-                        label="Service Notes / Saree Specific Instructions (optional)"
+                        label="Measurement Notes (optional)"
                         placeholder="e.g. Handle antique zari border with extra care, add pins at 30 in waist"
                         value={item.itemNotes}
                         onChange={(e) =>

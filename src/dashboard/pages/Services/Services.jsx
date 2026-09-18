@@ -747,7 +747,7 @@ const Services = () => {
                             #
                             {service.displayOrder && service.displayOrder > 0
                               ? service.displayOrder
-                              : "—"}
+                              : "-"}
                           </span>
                         </AppTableCell>
                         <AppTableCell>
@@ -936,7 +936,7 @@ const Services = () => {
                                 <div className="tile-header">
                                   <DescriptionOutlinedIcon className="tile-icon" />
                                   <span className="tile-label">
-                                    Service Description & Draping Notes
+                                    Service Description
                                   </span>
                                 </div>
                                 <div className="tile-content">
@@ -945,11 +945,7 @@ const Services = () => {
                                       {service.description}
                                     </span>
                                   ) : (
-                                    <span className="empty-hint">
-                                      Specialized saree pre-pleating, precision
-                                      steam press & pleat setting, safety pin
-                                      reinforcement, and pristine packaging.
-                                    </span>
+                                    <span className="empty-hint">-</span>
                                   )}
                                 </div>
                               </div>
@@ -1046,7 +1042,7 @@ const Services = () => {
                         #
                         {service.displayOrder && service.displayOrder > 0
                           ? service.displayOrder
-                          : "—"}
+                          : "-"}
                       </span>
                       <span className="service-type-tag">
                         {service.serviceType || "Pleating Service"}
@@ -1225,7 +1221,7 @@ const Services = () => {
                             #
                             {service.displayOrder && service.displayOrder > 0
                               ? service.displayOrder
-                              : "—"}
+                              : "-"}
                           </span>
                           <h3 className="service-heading">
                             {service.serviceName}
@@ -1269,7 +1265,7 @@ const Services = () => {
                           #
                           {service.displayOrder && service.displayOrder > 0
                             ? service.displayOrder
-                            : "—"}
+                            : "-"}
                         </span>
                       </div>
                       <div className="meta-tile">

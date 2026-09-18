@@ -33,7 +33,7 @@ const OFFERINGS = [
   },
   {
     title: "Semi-Fluffy Pleats",
-    desc: "Soft and natural pleats with a gentle puff — comfortable and easy to wear all day.",
+    desc: "Soft and natural pleats with a gentle puff - comfortable and easy to wear all day.",
     badge: "Signature",
     icon: <FlareOutlinedIcon className="service-card-icon" />,
   },
@@ -111,7 +111,8 @@ const LandingPage = () => {
 
     return () => {
       try {
-        const savedTheme = localStorage.getItem("aparna_app_theme") || "default";
+        const savedTheme =
+          localStorage.getItem("aparna_app_theme") || "default";
         root.setAttribute("data-theme", savedTheme);
       } catch {
         // Ignore storage errors
@@ -306,9 +307,7 @@ const LandingPage = () => {
               {OFFERINGS.map((item, index) => (
                 <div key={index} className="service-card">
                   <div className="service-card__top">
-                    <div className="service-icon-box">
-                      {item.icon}
-                    </div>
+                    <div className="service-icon-box">{item.icon}</div>
                     <span className="service-badge">{item.badge}</span>
                   </div>
                   <h3 className="service-card__title">{item.title}</h3>

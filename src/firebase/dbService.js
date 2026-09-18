@@ -115,7 +115,7 @@ export const formatDateSafe = (val, customFallback = "-") => {
     val === "undefined" ||
     val === "[object Object]" ||
     val === "-" ||
-    val === "—"
+    val === "-"
   ) {
     return getFallback();
   }
@@ -162,7 +162,7 @@ export const formatDateSafe = (val, customFallback = "-") => {
       trimmed === "[object Object]" ||
       trimmed === "" ||
       trimmed === "-" ||
-      trimmed === "—"
+      trimmed === "-"
     ) {
       return getFallback();
     }
@@ -229,7 +229,7 @@ export const formatTimeSafe = (val) => {
     val === "undefined" ||
     val === "[object Object]" ||
     val === "-" ||
-    val === "—"
+    val === "-"
   ) {
     return null;
   }
@@ -261,7 +261,7 @@ export const formatTimeSafe = (val) => {
   // 5. String parsing
   else if (typeof val === "string") {
     const trimmed = val.trim();
-    if (!trimmed || trimmed === "-" || trimmed === "—") return null;
+    if (!trimmed || trimmed === "-" || trimmed === "-") return null;
 
     // Check if it is a pure date string without time component
     if (
@@ -313,7 +313,7 @@ export const getTimestampMillis = (val) => {
   if (
     !val ||
     val === "-" ||
-    val === "—" ||
+    val === "-" ||
     val === "null" ||
     val === "undefined"
   ) {
@@ -345,7 +345,7 @@ export const getTimestampMillis = (val) => {
   }
   if (typeof val === "string") {
     const s = val.trim();
-    if (!s || s === "-" || s === "—") return NaN;
+    if (!s || s === "-" || s === "-") return NaN;
     const match = s.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
     if (match) {
       const day = parseInt(match[1], 10);
@@ -392,7 +392,7 @@ export const getModifiedDateTime = (updatedVal, createdVal = null) => {
   if (
     !updatedVal ||
     updatedVal === "-" ||
-    updatedVal === "—" ||
+    updatedVal === "-" ||
     updatedVal === "null" ||
     updatedVal === "undefined"
   ) {
@@ -653,10 +653,7 @@ export const createUserProfile = async (uid, userData = {}) => {
     null;
 
   const finalPhotoURL =
-    userData.photoURL ||
-    existingData?.photoURL ||
-    localMatch?.photoURL ||
-    null;
+    userData.photoURL || existingData?.photoURL || localMatch?.photoURL || null;
 
   const finalIsActive =
     typeof userData.isActive === "boolean"
@@ -673,7 +670,9 @@ export const createUserProfile = async (uid, userData = {}) => {
     userMobile: String(finalMobile).trim(),
     userAddress: String(finalAddress).trim(),
     role: resolvedRole,
-    measurementId: finalMeasurementId ? String(finalMeasurementId).trim() : null,
+    measurementId: finalMeasurementId
+      ? String(finalMeasurementId).trim()
+      : null,
     authProvider: finalAuthProvider,
     photoURL: finalPhotoURL,
     isActive: finalIsActive,

@@ -60,7 +60,7 @@ import "./Bookings.scss";
 
 // Helpers for robust data access across single / multi-service and legacy formats
 export const getOrderClientName = (order) => {
-  if (!order) return "—";
+  if (!order) return "-";
   if (typeof order.client === "string") return order.client;
   if (order.client?.username) return order.client.username;
   if (order.username) return order.username;
@@ -68,17 +68,17 @@ export const getOrderClientName = (order) => {
 };
 
 export const getOrderClientMobile = (order) => {
-  if (!order) return "—";
+  if (!order) return "-";
   if (order.client?.userMobile) return order.client.userMobile;
   if (order.userMobile) return order.userMobile;
-  return "—";
+  return "-";
 };
 
 export const getOrderClientEmail = (order) => {
-  if (!order) return "—";
+  if (!order) return "-";
   if (order.client?.email) return order.client.email;
   if (order.email) return order.email;
-  return "—";
+  return "-";
 };
 
 export const getOrderItems = (order) => {
@@ -102,7 +102,7 @@ export const getOrderItems = (order) => {
 
 export const getOrderServiceSummary = (order) => {
   const items = getOrderItems(order);
-  if (items.length === 0) return "—";
+  if (items.length === 0) return "-";
   if (items.length === 1) {
     return items[0].serviceName || "Saree Service";
   }
@@ -161,14 +161,24 @@ export const getOrderPaidAmountNumeric = (order) => {
   const paymentStatus = String(order.paymentStatus || "").toLowerCase();
   const total = getOrderAmountNumeric(order);
   if (paymentStatus === "paid") {
-    return order.paidAmount !== undefined && order.paidAmount !== null && order.paidAmount !== ""
+    return order.paidAmount !== undefined &&
+      order.paidAmount !== null &&
+      order.paidAmount !== ""
       ? Number(order.paidAmount) || total
       : total;
   }
-  if (order.paidAmount !== undefined && order.paidAmount !== null && order.paidAmount !== "") {
+  if (
+    order.paidAmount !== undefined &&
+    order.paidAmount !== null &&
+    order.paidAmount !== ""
+  ) {
     return Number(order.paidAmount) || 0;
   }
-  if (order.advancePayment !== undefined && order.advancePayment !== null && order.advancePayment !== "") {
+  if (
+    order.advancePayment !== undefined &&
+    order.advancePayment !== null &&
+    order.advancePayment !== ""
+  ) {
     return Number(order.advancePayment) || 0;
   }
   return 0;
@@ -185,7 +195,11 @@ export const getOrderPendingAmountNumeric = (order) => {
   }
   const total = getOrderAmountNumeric(order);
   const paid = getOrderPaidAmountNumeric(order);
-  if (order.balanceDue !== undefined && order.balanceDue !== null && order.balanceDue !== "") {
+  if (
+    order.balanceDue !== undefined &&
+    order.balanceDue !== null &&
+    order.balanceDue !== ""
+  ) {
     return Math.max(0, Number(order.balanceDue) || 0);
   }
   return Math.max(0, total - paid);
@@ -562,10 +576,7 @@ const Bookings = () => {
       <div className="bookings-page__header">
         <div>
           <h1 className="page-title">Bookings & Orders</h1>
-          <p className="page-subtitle">
-            Comprehensive management of pre-pleating, draping, and dispatch
-            orders
-          </p>
+          <p className="page-subtitle">Comprehensive management of orders</p>
         </div>
 
         <div className="header-actions">
@@ -609,7 +620,9 @@ const Bookings = () => {
           value={String(completedCount)}
           subValue={`/ ${inProgressCount + pendingCount} Active`}
           change={`${completedCount} Completed • ${inProgressCount + pendingCount} In Progress & Pending`}
-          trendType={inProgressCount + pendingCount > 0 ? "pending" : "completed"}
+          trendType={
+            inProgressCount + pendingCount > 0 ? "pending" : "completed"
+          }
           icon={<TaskAltOutlinedIcon />}
         />
         <StatCard
@@ -635,7 +648,11 @@ const Bookings = () => {
         <StatCard
           title="Total Revenue"
           value={`₹${totalReceivedRevenue.toLocaleString("en-IN")}`}
-          change={totalPendingRevenue > 0 ? `Pending: ₹${totalPendingRevenue.toLocaleString("en-IN")}` : "All Paid"}
+          change={
+            totalPendingRevenue > 0
+              ? `Pending: ₹${totalPendingRevenue.toLocaleString("en-IN")}`
+              : "All Paid"
+          }
           trendType={totalPendingRevenue > 0 ? "pending" : "completed"}
           icon={<CurrencyRupeeIcon />}
         />
@@ -819,9 +836,9 @@ const Bookings = () => {
                         <div className="client-info-stack">
                           <div className="user-name-text">{clientName}</div>
                           <div className="user-email-text">
-                            {clientMobile && clientMobile !== "—"
+                            {clientMobile && clientMobile !== "-"
                               ? clientMobile
-                              : clientEmail || "—"}
+                              : clientEmail || "-"}
                           </div>
                         </div>
                       </AppTableCell>
@@ -850,7 +867,7 @@ const Bookings = () => {
                             <span>{formatDateSafe(order.deliveryDate)}</span>
                           </div>
                         ) : (
-                          <span className="empty-cell-dash">—</span>
+                          <span className="empty-cell-dash">-</span>
                         )}
                       </AppTableCell>
 
@@ -873,7 +890,8 @@ const Bookings = () => {
                             {getOrderTotalAmount(order)}
                           </span>
                           {(() => {
-                            const balanceDue = getOrderPendingAmountNumeric(order);
+                            const balanceDue =
+                              getOrderPendingAmountNumeric(order);
                             return balanceDue > 0 ? (
                               <span className="amount-cell-due">
                                 Due: ₹{balanceDue.toLocaleString("en-IN")}
@@ -920,7 +938,9 @@ const Bookings = () => {
                               downloadInvoicePdfDirectly(order);
                             }}
                           >
-                            <FileDownloadOutlinedIcon style={{ fontSize: 16 }} />
+                            <FileDownloadOutlinedIcon
+                              style={{ fontSize: 16 }}
+                            />
                           </AppButton>
                           <AppButton
                             variant="secondary"
@@ -1015,7 +1035,7 @@ const Bookings = () => {
                     <div className="client-header-row">
                       <div>
                         <h4 className="client-name">{clientName}</h4>
-                        {clientMobile && clientMobile !== "—" && (
+                        {clientMobile && clientMobile !== "-" && (
                           <div className="client-mobile-hint">
                             {clientMobile}
                           </div>
@@ -1077,7 +1097,7 @@ const Bookings = () => {
                     <span className="date-info">
                       {order.deliveryDate
                         ? `Target: ${formatDateSafe(order.deliveryDate)}`
-                        : order.date || "—"}
+                        : order.date || "-"}
                     </span>
                     <div
                       style={{
@@ -1193,7 +1213,7 @@ const Bookings = () => {
                     <div className="detailed-card-header">
                       <div className="title-row">
                         <h3 className="client-name">{clientName}</h3>
-                        {clientMobile && clientMobile !== "—" && (
+                        {clientMobile && clientMobile !== "-" && (
                           <span className="client-phone-pill">
                             <PhoneIphoneOutlinedIcon style={{ fontSize: 13 }} />
                             {clientMobile}
@@ -1246,7 +1266,8 @@ const Bookings = () => {
                           {getOrderTotalAmount(order)}
                         </span>
                         {(() => {
-                          const balanceDue = getOrderPendingAmountNumeric(order);
+                          const balanceDue =
+                            getOrderPendingAmountNumeric(order);
                           return balanceDue > 0 ? (
                             <span className="dossier-due-text">
                               Due: ₹{balanceDue.toLocaleString("en-IN")}

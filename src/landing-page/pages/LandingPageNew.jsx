@@ -91,7 +91,7 @@ const SERVICES_LIST = [
   },
   {
     title: "Semi-Fluffy Pleats",
-    desc: "Soft and natural pleats with a gentle puff — comfortable and easy to wear all day.",
+    desc: "Soft and natural pleats with a gentle puff - comfortable and easy to wear all day.",
     badge: "Signature",
     icon: <FlareOutlinedIcon className="service-card-icon" />,
   },
@@ -434,7 +434,7 @@ const GALLERY_ITEMS = [
     pleatStyle: "Hook & Zip Quick-Snap Band",
     wearTime: "120 Seconds Flat",
     img: g14,
-    desc: "Pre-measured waistband and calibrated pleats — wear in under 120 seconds with zero pins or assistance required.",
+    desc: "Pre-measured waistband and calibrated pleats - wear in under 120 seconds with zero pins or assistance required.",
     highlights: [
       "Zero Safety Pins Needed",
       "Fits Perfectly in 2 Minutes",
@@ -698,11 +698,14 @@ const LandingPageNew = () => {
 
   const getLogo = () => brandLogo;
 
-  const WHATSAPP_NUMBER = import.meta.env.VITE_STUDIO_WHATSAPP_RAW || "919553900003";
+  const WHATSAPP_NUMBER =
+    import.meta.env.VITE_STUDIO_WHATSAPP_RAW || "919553900003";
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
     "Hello Aparna ji, I would like to book a saree pre-pleating and draping service with you.",
   )}`;
-  const instagramUrl = import.meta.env.VITE_STUDIO_INSTAGRAM_URL || "https://www.instagram.com/aparna_saree_prepleating/";
+  const instagramUrl =
+    import.meta.env.VITE_STUDIO_INSTAGRAM_URL ||
+    "https://www.instagram.com/aparna_saree_prepleating/";
 
   const scrollToSection = (id) => {
     setActiveSection(id);
@@ -979,7 +982,7 @@ const LandingPageNew = () => {
                 </h3>
                 <p className="about-narrative">
                   At <strong>Aparna Saree Pre-Pleating</strong>, we understand
-                  that a saree is never just fabric — it is an emotion, a family
+                  that a saree is never just fabric - it is an emotion, a family
                   legacy, and a statement of timeless grace. Our journey began
                   with a mission to banish the stress of uneven pleats, shifting
                   pallus, and frantic safety pins on your most cherished
@@ -988,7 +991,7 @@ const LandingPageNew = () => {
                 <p className="about-narrative">
                   Whether it is a regal Kanchipuram bridal pattu, an intricate
                   Banarasi, or a lightweight modern organza, our master
-                  craftsmen calibrate every fold to your unique body contour —
+                  craftsmen calibrate every fold to your unique body contour -
                   guaranteeing razor-sharp symmetry and effortless movement
                   throughout your celebrations.
                 </p>

@@ -148,10 +148,10 @@ export const mapOrderToInvoiceData = (order) => {
     order.client?.username ||
     (typeof order.client === "string" ? order.client : "Client");
   const clientMobile =
-    order.userMobile || order.client?.userMobile || order.phone || "—";
-  const clientEmail = order.email || order.client?.email || "—";
+    order.userMobile || order.client?.userMobile || order.phone || "-";
+  const clientEmail = order.email || order.client?.email || "-";
   const clientAddress =
-    order.userAddress || order.client?.userAddress || order.address || "—";
+    order.userAddress || order.client?.userAddress || order.address || "-";
 
   const orderId = order.id || "A-NEW-SPP";
   const invNumber =
@@ -162,7 +162,7 @@ export const mapOrderToInvoiceData = (order) => {
     ? formatDateSafe(order.orderDate)
     : order.createdAt
       ? formatDateSafe(order.createdAt)
-      : "—";
+      : "-";
   const deliveryDateStr = order.deliveryDate
     ? formatDateSafe(order.deliveryDate)
     : "Standard Delivery";
@@ -1464,15 +1464,15 @@ export const buildDossierGridHtml = (data = {}) => {
               </tr>
               <tr>
                 <td class="kv-key">Phone</td>
-                <td class="kv-val">${data.client?.mobile || "—"}</td>
+                <td class="kv-val">${data.client?.mobile || "-"}</td>
               </tr>
               <tr>
                 <td class="kv-key">Email</td>
-                <td class="kv-val">${data.client?.email || "—"}</td>
+                <td class="kv-val">${data.client?.email || "-"}</td>
               </tr>
               <tr>
                 <td class="kv-key">Address</td>
-                <td class="kv-val">${data.client?.address || "—"}</td>
+                <td class="kv-val">${data.client?.address || "-"}</td>
               </tr>
             </tbody>
           </table>
@@ -1772,8 +1772,8 @@ export const buildLuxuryFooterHtml = () => {
           <div class="footer-icon-wrap">${emailIcon}</div>
           <div class="footer-text-block">
             <div class="footer-col-title">ONLINE ASSISTANCE</div>
-            <div class="email-text">${import.meta.env.VITE_STUDIO_EMAIL || 'aparnaaarvi@gmail.com'}</div>
-            <div class="web-text">${import.meta.env.VITE_APP_URL ? `${import.meta.env.VITE_APP_URL}/landing` : 'https://aparnasaree.com/landing'}</div>
+            <div class="email-text">${import.meta.env.VITE_STUDIO_EMAIL || "aparnaaarvi@gmail.com"}</div>
+            <div class="web-text">${import.meta.env.VITE_APP_URL ? `${import.meta.env.VITE_APP_URL}/landing` : "https://aparnasaree.com/landing"}</div>
           </div>
         </div>
       </div>
@@ -1901,9 +1901,7 @@ export const generateOrderInvoicePdf = async (
     serviceIdx < totalServices &&
     page1TableHeight + rowHeights[serviceIdx] <= PAGE1_AVAILABLE_FOR_REST - 30
   ) {
-    page1Rows.push(
-      buildServiceRowHtml(data.services[serviceIdx], serviceIdx),
-    );
+    page1Rows.push(buildServiceRowHtml(data.services[serviceIdx], serviceIdx));
     page1TableHeight += rowHeights[serviceIdx];
     serviceIdx++;
   }
@@ -1927,9 +1925,7 @@ export const generateOrderInvoicePdf = async (
 
     while (
       serviceIdx < totalServices &&
-      currentPageTableHeight +
-        rowHeights[serviceIdx] +
-        BOTTOM_BLOCKS_HEIGHT <=
+      currentPageTableHeight + rowHeights[serviceIdx] + BOTTOM_BLOCKS_HEIGHT <=
         PAGE2_AVAILABLE
     ) {
       currentPageRows.push(
@@ -1942,8 +1938,7 @@ export const generateOrderInvoicePdf = async (
     if (currentPageRows.length === 0 && serviceIdx < totalServices) {
       while (
         serviceIdx < totalServices &&
-        currentPageTableHeight + rowHeights[serviceIdx] <=
-          PAGE2_AVAILABLE - 30
+        currentPageTableHeight + rowHeights[serviceIdx] <= PAGE2_AVAILABLE - 30
       ) {
         currentPageRows.push(
           buildServiceRowHtml(data.services[serviceIdx], serviceIdx),
@@ -2105,7 +2100,6 @@ export const generateOrderInvoicePdf = async (
       fileName,
       clientName,
       formattedPhone,
-      whatsappMessage,
       toastId,
     };
   } finally {
@@ -2276,7 +2270,7 @@ export const shareOrderPdfToWhatsApp = async (order) => {
 
         window.open(waUrl, "_blank");
         toast.info(
-          `Invoice PDF downloaded! WhatsApp chat opened — click 📎 to attach the downloaded PDF.`,
+          `Invoice PDF downloaded! WhatsApp chat opened - click 📎 to attach the downloaded PDF.`,
         );
       }
     }
@@ -2323,13 +2317,8 @@ export const openClientWhatsAppChat = (order) => {
     order.name ||
     order.client?.name ||
     "";
-  const orderId = order.orderId || order.id || "";
 
-  const greeting = clientName ? `Hello ${clientName} ji, ` : "Hello, ";
-  const orderRef = orderId
-    ? `regarding your Saree Pre-Pleating Order #${orderId}`
-    : "regarding your Saree Pre-Pleating Order";
-  const message = `${greeting}${orderRef} at Aparna Saree Pre-Pleating Studio.`;
+  const message = ``;
 
   const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
   window.open(url, "_blank");

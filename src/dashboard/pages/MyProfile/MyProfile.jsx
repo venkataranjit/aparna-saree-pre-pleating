@@ -482,7 +482,7 @@ const MyProfile = () => {
     },
   });
 
-  // addMeasureFormik removed — handled by <MeasurementModal> component via onSave prop.
+  // addMeasureFormik removed - handled by <MeasurementModal> component via onSave prop.
 
   // Edit Measurement Formik
   const editMeasureFormik = useFormik({
@@ -884,7 +884,7 @@ const MyProfile = () => {
                               <DryCleaningOutlinedIcon
                                 style={{ fontSize: 12, marginRight: 4 }}
                               />
-                              {it.serviceName} — ₹{it.finalPrice || 0}
+                              {it.serviceName} - ₹{it.finalPrice || 0}
                             </span>
                           ))}
                         </div>
@@ -1037,7 +1037,7 @@ const MyProfile = () => {
                         <span className="dim-val">
                           {measure.pallu != null && measure.pallu !== ""
                             ? `${measure.pallu}"`
-                            : "—"}
+                            : "-"}
                         </span>
                       </div>
                       <div className="dim-cell">
@@ -1046,7 +1046,7 @@ const MyProfile = () => {
                           {measure.shoulderToRightTight != null &&
                           measure.shoulderToRightTight !== ""
                             ? `${measure.shoulderToRightTight}"`
-                            : "—"}
+                            : "-"}
                         </span>
                       </div>
                       <div className="dim-cell">
@@ -1054,7 +1054,7 @@ const MyProfile = () => {
                         <span className="dim-val">
                           {measure.chest != null && measure.chest !== ""
                             ? `${measure.chest}"`
-                            : "—"}
+                            : "-"}
                         </span>
                       </div>
                       <div className="dim-cell">
@@ -1062,7 +1062,7 @@ const MyProfile = () => {
                         <span className="dim-val">
                           {measure.hip != null && measure.hip !== ""
                             ? `${measure.hip}"`
-                            : "—"}
+                            : "-"}
                         </span>
                       </div>
                       <div className="dim-cell">
@@ -1071,7 +1071,7 @@ const MyProfile = () => {
                           {measure.firstPleatSize != null &&
                           measure.firstPleatSize !== ""
                             ? `${measure.firstPleatSize}"`
-                            : "—"}
+                            : "-"}
                         </span>
                       </div>
                       <div className="dim-cell">
@@ -1080,7 +1080,7 @@ const MyProfile = () => {
                           {measure.noOfChestPleats != null &&
                           measure.noOfChestPleats !== ""
                             ? `${measure.noOfChestPleats} Pleats`
-                            : "—"}
+                            : "-"}
                         </span>
                       </div>
                       <div className="dim-cell">
@@ -1088,13 +1088,13 @@ const MyProfile = () => {
                         <span className="dim-val">
                           {measure.height != null && measure.height !== ""
                             ? `${measure.height}`
-                            : "—"}
+                            : "-"}
                         </span>
                       </div>
                       <div className="dim-cell">
                         <span className="dim-name">Dress Size</span>
                         <span className="dim-val">
-                          {measure.dressSize || "—"}
+                          {measure.dressSize || "-"}
                         </span>
                       </div>
                     </div>

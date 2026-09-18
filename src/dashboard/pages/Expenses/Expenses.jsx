@@ -1039,7 +1039,7 @@ const Expenses = () => {
                               <AppTableCell>
                                 <div className="expense-name-cell">
                                   <span className="expense-name">
-                                    {exp.name || "—"}
+                                    {exp.name || "-"}
                                   </span>
                                 </div>
                               </AppTableCell>
@@ -1314,7 +1314,7 @@ const Expenses = () => {
                           </div>
 
                           <div className="card-name-row">
-                            <span className="card-name">{exp.name || "—"}</span>
+                            <span className="card-name">{exp.name || "-"}</span>
                             {desc && <p className="card-purpose">{desc}</p>}
                           </div>
 
@@ -1407,7 +1407,7 @@ const Expenses = () => {
         open={openAddModal}
         onClose={() => !addFormik.isSubmitting && setOpenAddModal(false)}
         title="Record New Expense"
-        subtitle="Log a business purchase, operational payment, or vendor cost"
+        subtitle="Log a new expense to keep track of your business expenditures"
         maxWidth="md"
         actions={
           <>
@@ -1671,7 +1671,7 @@ const Expenses = () => {
                 <div className="dossier-content">
                   <span className="dossier-label">Expense Name</span>
                   <span className="dossier-val">
-                    {expenseForView.name || "—"}
+                    {expenseForView.name || "-"}
                   </span>
                 </div>
               </div>

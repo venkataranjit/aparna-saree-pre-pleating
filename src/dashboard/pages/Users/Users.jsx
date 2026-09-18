@@ -833,7 +833,7 @@ const Users = () => {
                             </div>
                             <div className="user-name-wrapper">
                               <div className="user-name-text">
-                                {u.username || "—"}
+                                {u.username || "-"}
                               </div>
                               {u.email ? (
                                 <div className="user-email-text">{u.email}</div>
@@ -843,7 +843,7 @@ const Users = () => {
                         </AppTableCell>
                         <AppTableCell>
                           <span className="mobile-cell">
-                            {u.userMobile || "—"}
+                            {u.userMobile || "-"}
                           </span>
                         </AppTableCell>
                         <AppTableCell>
@@ -980,7 +980,6 @@ const Users = () => {
                                 </div>
                               </div>
 
-
                               {/* Created At Tile */}
                               <div className="expanded-tile">
                                 <div className="tile-header">
@@ -1090,11 +1089,11 @@ const Users = () => {
                     <div className="card-info-rows">
                       <div className="info-item">
                         <PhoneIphoneOutlinedIcon style={{ fontSize: 14 }} />
-                        <span>{u.userMobile || "—"}</span>
+                        <span>{u.userMobile || "-"}</span>
                       </div>
                       <div className="info-item">
                         <EmailOutlinedIcon style={{ fontSize: 14 }} />
-                        <span className="truncate-text">{u.email || "—"}</span>
+                        <span className="truncate-text">{u.email || "-"}</span>
                       </div>
                       {u.userAddress && (
                         <div className="info-item">
@@ -1236,13 +1235,13 @@ const Users = () => {
                       <div className="meta-tile">
                         <span className="meta-label">Mobile</span>
                         <span className="meta-value">
-                          {u.userMobile || "—"}
+                          {u.userMobile || "-"}
                         </span>
                       </div>
                       <div className="meta-tile">
                         <span className="meta-label">Email Address</span>
                         <span className="meta-value truncate-text">
-                          {u.email || "—"}
+                          {u.email || "-"}
                         </span>
                       </div>
                       <div className="meta-tile">

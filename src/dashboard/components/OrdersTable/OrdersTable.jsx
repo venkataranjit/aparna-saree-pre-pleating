@@ -33,7 +33,7 @@ import "./OrdersTable.scss";
 
 // Helpers for robust data access across single / multi-service and legacy formats
 export const getOrderClientName = (order) => {
-  if (!order) return "—";
+  if (!order) return "-";
   if (typeof order.client === "string") return order.client;
   if (order.client?.username) return order.client.username;
   if (order.username) return order.username;
@@ -41,18 +41,18 @@ export const getOrderClientName = (order) => {
 };
 
 export const getOrderClientMobile = (order) => {
-  if (!order) return "—";
+  if (!order) return "-";
   if (order.client?.userMobile) return order.client.userMobile;
   if (order.userMobile) return order.userMobile;
   if (order.phone) return order.phone;
-  return "—";
+  return "-";
 };
 
 export const getOrderClientEmail = (order) => {
-  if (!order) return "—";
+  if (!order) return "-";
   if (order.client?.email) return order.client.email;
   if (order.email) return order.email;
-  return "—";
+  return "-";
 };
 
 export const getOrderItems = (order) => {
@@ -65,8 +65,14 @@ export const getOrderItems = (order) => {
     {
       id: "item_legacy",
       serviceName: order.service || "Saree Pre-Pleating",
-      servicePrice: Number(String(order.baseAmount || order.amount || 0).replace(/[^0-9]/g, "")) || 0,
-      serviceDiscountedPrice: Number(String(order.amount || order.baseAmount || 0).replace(/[^0-9]/g, "")) || 0,
+      servicePrice:
+        Number(
+          String(order.baseAmount || order.amount || 0).replace(/[^0-9]/g, ""),
+        ) || 0,
+      serviceDiscountedPrice:
+        Number(
+          String(order.amount || order.baseAmount || 0).replace(/[^0-9]/g, ""),
+        ) || 0,
       finalPrice: Number(String(order.amount || 0).replace(/[^0-9]/g, "")) || 0,
       sareeType: order.sareeType || "Silk Saree",
       serviceDescription: order.packaging || "",
@@ -77,7 +83,7 @@ export const getOrderItems = (order) => {
 
 export const getOrderServiceSummary = (order) => {
   const items = getOrderItems(order);
-  if (items.length === 0) return "—";
+  if (items.length === 0) return "-";
   if (items.length === 1) {
     return items[0].serviceName || "Saree Service";
   }
@@ -184,7 +190,7 @@ const OrdersTable = ({
           field === "recent" ||
           field === "deliveryDate"
           ? "desc"
-          : "asc"
+          : "asc",
       );
     }
     setPage(0);
@@ -198,15 +204,25 @@ const OrdersTable = ({
     setInternalOrders((prev) =>
       prev.map((ord) =>
         ord.id === orderId
-          ? { ...ord, status: newStatus, orderStatus: newStatus, updatedAt: new Date().toISOString() }
-          : ord
-      )
+          ? {
+              ...ord,
+              status: newStatus,
+              orderStatus: newStatus,
+              updatedAt: new Date().toISOString(),
+            }
+          : ord,
+      ),
     );
     if (selectedOrder && selectedOrder.id === orderId) {
       setSelectedOrder((prev) =>
         prev
-          ? { ...prev, status: newStatus, orderStatus: newStatus, updatedAt: new Date().toISOString() }
-          : null
+          ? {
+              ...prev,
+              status: newStatus,
+              orderStatus: newStatus,
+              updatedAt: new Date().toISOString(),
+            }
+          : null,
       );
     }
   };
@@ -216,7 +232,8 @@ const OrdersTable = ({
     return orders.filter((order) => {
       const statusVal = order.status || order.orderStatus || "in-progress";
       const matchesFilter =
-        activeFilter === "All" || statusVal.toLowerCase() === activeFilter.toLowerCase();
+        activeFilter === "All" ||
+        statusVal.toLowerCase() === activeFilter.toLowerCase();
 
       if (!matchesFilter) return false;
       if (!q) return true;
@@ -228,10 +245,10 @@ const OrdersTable = ({
       const occasion = (order.occasion || "").toLowerCase();
       const items = getOrderItems(order);
       const serviceMatch = items.some((it) =>
-        (it.serviceName || "").toLowerCase().includes(q)
+        (it.serviceName || "").toLowerCase().includes(q),
       );
       const fabricMatch = items.some((it) =>
-        (it.sareeType || "").toLowerCase().includes(q)
+        (it.sareeType || "").toLowerCase().includes(q),
       );
 
       return (
@@ -314,7 +331,7 @@ const OrdersTable = ({
   const paginatedOrders = useMemo(() => {
     return sortedOrders.slice(
       page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage
+      page * rowsPerPage + rowsPerPage,
     );
   }, [sortedOrders, page, rowsPerPage]);
 
@@ -367,7 +384,13 @@ const OrdersTable = ({
 
       {/* Loading Spinner */}
       {loading && (
-        <div style={{ display: "flex", justifyContent: "center", padding: "48px 0" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            padding: "48px 0",
+          }}
+        >
           <AppSpinner size="lg" color="gold" />
         </div>
       )}
@@ -420,7 +443,9 @@ const OrdersTable = ({
                 <AppTableCell head className="table-head-cell">
                   <AppTableSortLabel
                     active={sortField === "deliveryDate"}
-                    direction={sortField === "deliveryDate" ? sortDirection : "asc"}
+                    direction={
+                      sortField === "deliveryDate" ? sortDirection : "asc"
+                    }
                     onClick={() => handleRequestSort("deliveryDate")}
                   >
                     Target Delivery
@@ -467,7 +492,8 @@ const OrdersTable = ({
                 const items = getOrderItems(order);
                 const clientName = getOrderClientName(order);
                 const clientMobile = getOrderClientMobile(order);
-                const statusVal = order.status || order.orderStatus || "in-progress";
+                const statusVal =
+                  order.status || order.orderStatus || "in-progress";
 
                 return (
                   <AppTableRow
@@ -480,7 +506,10 @@ const OrdersTable = ({
                       <div className="order-id-badge-cell">
                         <span>{order.id}</span>
                         {order.occasion && (
-                          <span className="order-occasion-chip" title={order.occasion}>
+                          <span
+                            className="order-occasion-chip"
+                            title={order.occasion}
+                          >
                             {order.occasion}
                           </span>
                         )}
@@ -489,9 +518,11 @@ const OrdersTable = ({
                     <AppTableCell className="table-body-cell client-cell">
                       <div className="client-info-stack">
                         <div className="client-name">{clientName}</div>
-                        {clientMobile && clientMobile !== "—" && (
+                        {clientMobile && clientMobile !== "-" && (
                           <div className="client-subtext">
-                            <PhoneIphoneOutlinedIcon style={{ fontSize: 13, marginRight: 2 }} />
+                            <PhoneIphoneOutlinedIcon
+                              style={{ fontSize: 13, marginRight: 2 }}
+                            />
                             {clientMobile}
                           </div>
                         )}
@@ -517,11 +548,18 @@ const OrdersTable = ({
                           <span>{formatDateSafe(order.deliveryDate)}</span>
                         </div>
                       ) : (
-                        <span className="empty-cell-dash">—</span>
+                        <span className="empty-cell-dash">-</span>
                       )}
                     </AppTableCell>
                     <AppTableCell className="table-body-cell date-cell">
-                      <DateTimeCell value={order.updatedAt || order.createdAt || order.orderDate || order.date} />
+                      <DateTimeCell
+                        value={
+                          order.updatedAt ||
+                          order.createdAt ||
+                          order.orderDate ||
+                          order.date
+                        }
+                      />
                     </AppTableCell>
                     <AppTableCell className="table-body-cell amount-cell">
                       {getOrderTotalAmount(order)}
@@ -576,7 +614,8 @@ const OrdersTable = ({
               const items = getOrderItems(order);
               const clientName = getOrderClientName(order);
               const clientMobile = getOrderClientMobile(order);
-              const statusVal = order.status || order.orderStatus || "in-progress";
+              const statusVal =
+                order.status || order.orderStatus || "in-progress";
               const paymentVal = (order.paymentStatus || "paid").toLowerCase();
 
               return (
@@ -605,7 +644,7 @@ const OrdersTable = ({
 
                   <div className="card-body">
                     <h4 className="client-name">{clientName}</h4>
-                    {clientMobile && clientMobile !== "—" && (
+                    {clientMobile && clientMobile !== "-" && (
                       <div className="client-mobile-hint">{clientMobile}</div>
                     )}
 
@@ -626,34 +665,45 @@ const OrdersTable = ({
                       )}
                       {items.length > 1 && (
                         <span className="items-count-badge">
-                          +{items.length - 1} extra service{items.length > 2 ? "s" : ""}
+                          +{items.length - 1} extra service
+                          {items.length > 2 ? "s" : ""}
                         </span>
                       )}
                     </div>
 
                     <div className="order-fabric-row">
                       <span className="fabric-label">Fabric:</span>
-                      <span className="fabric-value">{getOrderFabricSummary(order)}</span>
+                      <span className="fabric-value">
+                        {getOrderFabricSummary(order)}
+                      </span>
                     </div>
 
                     {order.deliveryDate && (
                       <div className="order-delivery-row">
                         <span className="fabric-label">Target Delivery:</span>
-                        <span className="delivery-val">{formatDateSafe(order.deliveryDate)}</span>
+                        <span className="delivery-val">
+                          {formatDateSafe(order.deliveryDate)}
+                        </span>
                       </div>
                     )}
                   </div>
 
                   <div className="card-pricing-row">
                     <span className="amount-label">
-                      {items.length > 1 ? `Total (${items.length} Items)` : "Total Amount"}
+                      {items.length > 1
+                        ? `Total (${items.length} Items)`
+                        : "Total Amount"}
                     </span>
-                    <span className="amount-val">{getOrderTotalAmount(order)}</span>
+                    <span className="amount-val">
+                      {getOrderTotalAmount(order)}
+                    </span>
                   </div>
 
                   <div className="card-footer">
                     <span className="date-info">
-                      {order.deliveryDate ? `Target: ${formatDateSafe(order.deliveryDate)}` : (order.date || "—")}
+                      {order.deliveryDate
+                        ? `Target: ${formatDateSafe(order.deliveryDate)}`
+                        : order.date || "-"}
                     </span>
                     <AppButton
                       size="sm"
@@ -694,7 +744,8 @@ const OrdersTable = ({
               const items = getOrderItems(order);
               const clientName = getOrderClientName(order);
               const clientMobile = getOrderClientMobile(order);
-              const statusVal = order.status || order.orderStatus || "in-progress";
+              const statusVal =
+                order.status || order.orderStatus || "in-progress";
 
               return (
                 <div
@@ -715,7 +766,7 @@ const OrdersTable = ({
                     <div className="detailed-card-header">
                       <div className="title-row">
                         <h3 className="client-name">{clientName}</h3>
-                        {clientMobile && clientMobile !== "—" && (
+                        {clientMobile && clientMobile !== "-" && (
                           <span className="client-phone-pill">
                             <PhoneIphoneOutlinedIcon style={{ fontSize: 13 }} />
                             {clientMobile}
@@ -728,7 +779,9 @@ const OrdersTable = ({
                         </span>
                         {order.occasion && (
                           <span className="occasion-badge">
-                            <CelebrationOutlinedIcon style={{ fontSize: 13, marginRight: 4 }} />
+                            <CelebrationOutlinedIcon
+                              style={{ fontSize: 13, marginRight: 4 }}
+                            />
                             {order.occasion}
                           </span>
                         )}
@@ -739,34 +792,47 @@ const OrdersTable = ({
                         <div className="items-mini-chips">
                           {items.map((it, idx) => (
                             <span key={it.id || idx} className="item-mini-chip">
-                              <DryCleaningOutlinedIcon style={{ fontSize: 12, marginRight: 4 }} />
-                              {it.serviceName} ({it.sareeType || "Saree"}) — ₹{it.finalPrice || 0}
+                              <DryCleaningOutlinedIcon
+                                style={{ fontSize: 12, marginRight: 4 }}
+                              />
+                              {it.serviceName} ({it.sareeType || "Saree"}) - ₹
+                              {it.finalPrice || 0}
                             </span>
                           ))}
                         </div>
                       )}
 
-                      {order.notes && <p className="order-notes">{order.notes}</p>}
+                      {order.notes && (
+                        <p className="order-notes">{order.notes}</p>
+                      )}
                     </div>
 
                     <div className="detailed-card-meta">
                       <div className="meta-tile">
                         <span className="meta-label">Saree Fabric</span>
-                        <span className="meta-value">{getOrderFabricSummary(order)}</span>
+                        <span className="meta-value">
+                          {getOrderFabricSummary(order)}
+                        </span>
                       </div>
                       <div className="meta-tile">
                         <span className="meta-label">Target Delivery</span>
                         <span className="meta-value">
-                          {order.deliveryDate ? formatDateSafe(order.deliveryDate) : "Standard"}
+                          {order.deliveryDate
+                            ? formatDateSafe(order.deliveryDate)
+                            : "Standard"}
                         </span>
                       </div>
                       <div className="meta-tile">
                         <span className="meta-label">Services Count</span>
-                        <span className="meta-value">{items.length} Item{items.length > 1 ? "s" : ""}</span>
+                        <span className="meta-value">
+                          {items.length} Item{items.length > 1 ? "s" : ""}
+                        </span>
                       </div>
                       <div className="meta-tile highlight-gold">
                         <span className="meta-label">Total Amount</span>
-                        <span className="meta-value gold-amount">{getOrderTotalAmount(order)}</span>
+                        <span className="meta-value gold-amount">
+                          {getOrderTotalAmount(order)}
+                        </span>
                       </div>
                     </div>
                   </div>

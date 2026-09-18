@@ -191,10 +191,10 @@ const OrderDetailsModal = ({
     order.client?.username ||
     (typeof order.client === "string" ? order.client : "Client");
   const clientMobile =
-    order.userMobile || order.client?.userMobile || order.phone || "—";
-  const clientEmail = order.email || order.client?.email || "—";
+    order.userMobile || order.client?.userMobile || order.phone || "-";
+  const clientEmail = order.email || order.client?.email || "-";
   const clientAddress =
-    order.userAddress || order.client?.userAddress || order.address || "—";
+    order.userAddress || order.client?.userAddress || order.address || "-";
 
   // Normalize items array
   const rawItems =
@@ -352,7 +352,7 @@ const OrderDetailsModal = ({
                     <PhoneOutlinedIcon className="inline-icon" />
                     {clientMobile}
                   </span>
-                  {clientMobile && clientMobile !== "—" && (
+                  {clientMobile && clientMobile !== "-" && (
                     <button
                       type="button"
                       className="inline-wa-btn"
@@ -933,7 +933,6 @@ const OrderDetailsModal = ({
           </div>
         </div>
       </div>
-
     </AppModal>
   );
 };

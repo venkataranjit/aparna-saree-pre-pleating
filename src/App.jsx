@@ -1,18 +1,19 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { dashboardRoutes } from './dashboard/routes/dashboardRoutes';
-import { landingRoutes } from './landing-page/routes/landingRoutes';
-import Login from './auth/pages/Login/Login';
-import Register from './auth/pages/Register/Register';
-import ForgotPassword from './auth/pages/ForgotPassword/ForgotPassword';
-import ResetPassword from './auth/pages/ResetPassword/ResetPassword';
-import NotFound from './dashboard/pages/NotFound/NotFound';
-import { AuthProvider, useAuth } from './auth/context/AuthContext';
-import { ThemeProvider } from './context/ThemeContext';
-import { PageLoader } from './components/common';
-import BackButtonHandler from './components/common/BackButtonHandler';
-import { PublicRoute } from './components/routes/ProtectedRoute';
-import './App.scss';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { dashboardRoutes } from "./dashboard/routes/dashboardRoutes";
+import { landingRoutes } from "./landing-page/routes/landingRoutes";
+import Login from "./auth/pages/Login/Login";
+import Register from "./auth/pages/Register/Register";
+import ForgotPassword from "./auth/pages/ForgotPassword/ForgotPassword";
+import ResetPassword from "./auth/pages/ResetPassword/ResetPassword";
+import NotFound from "./dashboard/pages/NotFound/NotFound";
+import BiometricPreview from "./dashboard/pages/BiometricPreview/BiometricPreview";
+import { AuthProvider, useAuth } from "./auth/context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import { PageLoader } from "./components/common";
+import BackButtonHandler from "./components/common/BackButtonHandler";
+import { PublicRoute } from "./components/routes/ProtectedRoute";
+import "./App.scss";
 
 function AppContent() {
   const { currentUser, loading } = useAuth();
@@ -55,7 +56,7 @@ function AppContent() {
           <Route key={route.path} path={route.path} element={route.element}>
             {route.children?.map((child) => (
               <Route
-                key={child.index ? 'index' : child.path}
+                key={child.index ? "index" : child.path}
                 index={child.index}
                 path={child.path}
                 element={child.element}
@@ -63,7 +64,6 @@ function AppContent() {
             ))}
           </Route>
         ))}
-
 
         {/* Authentication routes (Public Only) */}
         <Route
@@ -94,6 +94,9 @@ function AppContent() {
         <Route path="/auth/action" element={<ResetPassword />} />
         <Route path="/__/auth/action" element={<ResetPassword />} />
 
+        {/* Temporary Biometric UI Preview & Design Route */}
+        <Route path="/biometric-preview" element={<BiometricPreview />} />
+
         {/* 404 Fallback */}
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -112,4 +115,3 @@ function App() {
 }
 
 export default App;
-

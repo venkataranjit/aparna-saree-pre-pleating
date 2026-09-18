@@ -6,7 +6,7 @@ import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useAuth } from "../../../auth/context/AuthContext";
-import ladyLogo from "../../../assets/lady-logo.png";
+import brandLogo from "../../../assets/logo.png";
 import "./BiometricAuthGuard.scss";
 
 const SESSION_KEY = "aparna_dashboard_biometric_unlocked";
@@ -72,8 +72,8 @@ export default function BiometricAuthGuard({ children }) {
       );
       setAuthError(
         err.message?.includes("cancel") || err.code === 10
-          ? "Authentication cancelled. Tap below to scan fingerprint."
-          : "Fingerprint not recognized. Tap below to retry or use device PIN.",
+          ? "Authentication cancelled. Tap sensor below to scan."
+          : "Fingerprint not recognized. Tap sensor to retry or use PIN.",
       );
     } finally {
       setIsAuthenticating(false);
@@ -101,79 +101,93 @@ export default function BiometricAuthGuard({ children }) {
 
   // Otherwise, render luxury Biometric Lock Screen
   return (
+    <BiometricLockScreenView
+      isAuthenticating={isAuthenticating}
+      authError={authError}
+      onAuthenticate={performBiometricAuth}
+      onLogout={() => {
+        sessionStorage.removeItem(SESSION_KEY);
+        logout();
+      }}
+    />
+  );
+}
+
+/**
+ * Presentational Biometric Lock Screen View with bottom fingerprint sensor & borderless card
+ */
+export function BiometricLockScreenView({
+  isAuthenticating = false,
+  authError = null,
+  onAuthenticate = () => {},
+  onLogout = () => {},
+}) {
+  return (
     <div className="biometric-lock-screen">
       <div className="biometric-lock-aura" />
       <div className="biometric-lock-card">
-        {/* Brand Header */}
-        <div className="biometric-brand-wrap">
-          <div className="biometric-logo-ring">
-            <img
-              src={ladyLogo}
-              alt="Aparna Saree Atelier"
-              className="biometric-brand-logo"
-            />
-          </div>
-          <h2 className="biometric-portal-title">Aparna Saree Pre-Pleating</h2>
-          <span className="biometric-portal-badge">
-            <SecurityOutlinedIcon className="badge-icon" />
-            Protected Management Portal
-          </span>
-        </div>
-
-        {/* Animated Scanner Visual */}
-        <div
-          className={`biometric-scanner-ring ${isAuthenticating ? "is-scanning" : ""} ${
-            authError ? "has-error" : ""
-          }`}
-          onClick={performBiometricAuth}
-          role="button"
-          tabIndex={0}
-          aria-label="Scan Fingerprint"
-        >
-          <div className="scanner-beam" />
-          <FingerprintOutlinedIcon className="fingerprint-scan-icon" />
-          <div className="scanner-pulse-halo" />
-        </div>
-
-        {/* Instruction and Feedback Text */}
-        <div className="biometric-text-wrap">
-          <h3 className="biometric-action-title">
-            <LockOutlinedIcon className="lock-mini-icon" />
-            Dashboard Locked
-          </h3>
-          <p className="biometric-subtext">
-            {authError ||
-              "Place your registered finger on the sensor or tap below to authenticate."}
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="biometric-actions-row">
-          <button
-            type="button"
-            className="biometric-cta-unlock"
-            onClick={performBiometricAuth}
-            disabled={isAuthenticating}
-          >
-            <FingerprintOutlinedIcon className="btn-ico" />
-            <span>
-              {isAuthenticating
-                ? "Scanning Sensor..."
-                : "Scan Fingerprint to Unlock"}
+        {/* Top Section: Brand & Title */}
+        <div className="biometric-top-section">
+          <div className="biometric-brand-wrap">
+            <div className="biometric-logo-wrap">
+              <img
+                src={brandLogo}
+                alt="Aparna Saree Pre-Pleating"
+                className="biometric-brand-logo"
+              />
+            </div>
+            <span className="biometric-portal-badge">
+              <SecurityOutlinedIcon className="badge-icon" />
+              Protected Management Portal
             </span>
-          </button>
+          </div>
 
-          <button
-            type="button"
-            className="biometric-cta-logout"
-            onClick={() => {
-              sessionStorage.removeItem(SESSION_KEY);
-              logout();
-            }}
+          {/* Instruction and Feedback Text */}
+          <div className="biometric-text-wrap">
+            <h3 className="biometric-action-title">
+              <LockOutlinedIcon className="lock-mini-icon" />
+              Locked
+            </h3>
+            <p className="biometric-subtext">
+              {authError || "Touch the fingerprint sensor below to unlock"}
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom Section: Fingerprint Sensor & Actions (Positioned for natural thumb reach) */}
+        <div className="biometric-bottom-section">
+          {/* Animated Scanner Visual */}
+          <div
+            className={`biometric-scanner-ring ${isAuthenticating ? "is-scanning" : ""} ${
+              authError ? "has-error" : ""
+            }`}
+            onClick={onAuthenticate}
+            role="button"
+            tabIndex={0}
+            aria-label="Scan Fingerprint"
           >
-            <LogoutOutlinedIcon className="btn-ico" />
-            <span>Logout / Switch User</span>
-          </button>
+            <div className="scanner-beam" />
+            <FingerprintOutlinedIcon className="fingerprint-scan-icon" />
+            <div className="scanner-pulse-halo" />
+          </div>
+
+          <span className="biometric-tap-hint">
+            {isAuthenticating
+              ? "Scanning Sensor..."
+              : "Tap sensor or use device fingerprint"}
+          </span>
+
+          {/* Action Buttons */}
+          <div className="biometric-actions-row">
+            <button
+              type="button"
+              className="biometric-cta-logout"
+              onClick={onLogout}
+            >
+              <LogoutOutlinedIcon className="btn-ico" />
+              <span>Logout / Switch User</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

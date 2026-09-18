@@ -4,8 +4,8 @@
     box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
   }
   70% {
-    transform: scale(1.02);
-    box-shadow: 0 0 0 16px rgba(212, 175, 55, 0);
+    transform: scale(1.04);
+    box-shadow: 0 0 0 20px rgba(212, 175, 55, 0);
   }
   100% {
     transform: scale(0.96);
@@ -20,7 +20,7 @@
   }
   50% {
     top: 75%;
-    opacity: 0.85;
+    opacity: 0.9;
   }
   100% {
     top: 5%;
@@ -33,258 +33,253 @@
   inset: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   z-index: 99999;
   background: radial-gradient(
-      circle at 50% 30%,
+      circle at 50% 25%,
       rgba(212, 175, 55, 0.12) 0%,
-      rgba(20, 16, 12, 0.96) 50%,
-      #080706 100%
+      rgba(15, 12, 9, 0.98) 55%,
+      #050403 100%
     );
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: env(safe-area-inset-top, 24px) 20px env(safe-area-inset-bottom, 24px) 20px;
   box-sizing: border-box;
 
   .biometric-lock-aura {
     position: absolute;
-    width: 320px;
-    height: 320px;
+    width: 360px;
+    height: 360px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, transparent 70%);
-    filter: blur(60px);
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.16) 0%, transparent 70%);
+    filter: blur(70px);
     pointer-events: none;
   }
 
+  /* Borderless Luxury Screen Container */
   .biometric-lock-card {
     position: relative;
     max-width: 440px;
     width: 100%;
-    background: rgba(18, 15, 12, 0.95);
-    border: 1.5px solid rgba(212, 175, 55, 0.35);
-    border-radius: 26px;
-    padding: clamp(28px, 5vw, 36px) clamp(20px, 4vw, 28px);
+    height: 100%;
+    max-height: 640px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 16px 8px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     align-items: center;
     text-align: center;
-    gap: 24px;
-    box-shadow:
-      0 24px 60px rgba(0, 0, 0, 0.9),
-      0 0 30px rgba(212, 175, 55, 0.15),
-      inset 0 1px 0 rgba(255, 240, 190, 0.2);
+    box-shadow: none;
 
-    /* Brand Top Wrap */
-    .biometric-brand-wrap {
+    /* ========================================================= */
+    /* Top Section: Brand & Heading                              */
+    /* ========================================================= */
+    .biometric-top-section {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 20px;
+      width: 100%;
+      margin-top: 50px;
 
-      .biometric-logo-ring {
-        width: 60px;
-        height: 60px;
+      .biometric-brand-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+
+        .biometric-logo-wrap {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          .biometric-brand-logo {
+            width: auto;
+            max-width: 220px;
+            height: auto;
+            max-height: 110px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 16px rgba(212, 175, 55, 0.45));
+          }
+        }
+
+        .biometric-portal-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-family: 'Plus Jakarta Sans', sans-serif !important;
+          font-size: 0.74rem;
+          font-weight: 700;
+          color: #d4af37;
+          background: rgba(212, 175, 55, 0.1);
+          border: none;
+          padding: 5px 14px;
+          border-radius: 20px;
+
+          .badge-icon {
+            font-size: 14px;
+            color: #25d366;
+          }
+        }
+      }
+
+      /* Text & Status */
+      .biometric-text-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-width: 320px;
+
+        .biometric-action-title {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          font-family: 'Plus Jakarta Sans', sans-serif !important;
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: #e6d8a3;
+          margin: 0;
+
+          .lock-mini-icon {
+            font-size: 18px;
+            color: #d4af37;
+          }
+        }
+
+        .biometric-subtext {
+          font-family: 'Plus Jakarta Sans', sans-serif !important;
+          font-size: 0.85rem;
+          color: rgba(230, 216, 163, 0.75);
+          line-height: 1.45;
+          margin: 0;
+        }
+      }
+    }
+
+    /* ========================================================= */
+    /* Bottom Section: Fingerprint Sensor & Actions              */
+    /* ========================================================= */
+    .biometric-bottom-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      margin-bottom: 8px;
+
+      /* Fingerprint Scanner Visual */
+      .biometric-scanner-ring {
+        position: relative;
+        width: 88px;
+        height: 88px;
         border-radius: 50%;
-        background: rgba(212, 175, 55, 0.1);
-        border: 1.5px solid rgba(212, 175, 55, 0.45);
+        background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(20, 16, 12, 0.9) 75%);
+        border: none;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-
-        .biometric-brand-logo {
-          width: 38px;
-          height: 38px;
-          object-fit: contain;
-          filter: drop-shadow(0 2px 6px rgba(212, 175, 55, 0.5));
-        }
-      }
-
-      .biometric-portal-title {
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: #f7eedb;
-        margin: 0;
-        letter-spacing: -0.2px;
-      }
-
-      .biometric-portal-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        font-size: 0.74rem;
-        font-weight: 700;
-        color: #d4af37;
-        background: rgba(212, 175, 55, 0.08);
-        border: 1px solid rgba(212, 175, 55, 0.25);
-        padding: 4px 12px;
-        border-radius: 20px;
-
-        .badge-icon {
-          font-size: 14px;
-          color: #25d366;
-        }
-      }
-    }
-
-    /* Fingerprint Scanner Visual */
-    .biometric-scanner-ring {
-      position: relative;
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, rgba(26, 21, 15, 0.95) 0%, rgba(14, 12, 9, 0.98) 100%);
-      border: 2px solid rgba(212, 175, 55, 0.45);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      overflow: hidden;
-      box-shadow:
-        0 10px 28px rgba(0, 0, 0, 0.7),
-        0 0 20px rgba(212, 175, 55, 0.2);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      animation: pulseGlow 3s infinite ease-in-out;
-
-      &:hover {
-        border-color: #d4af37;
-        transform: scale(1.04);
-        box-shadow:
-          0 14px 36px rgba(0, 0, 0, 0.8),
-          0 0 28px rgba(212, 175, 55, 0.4);
-      }
-
-      &.is-scanning {
-        border-color: #25d366;
-        animation: pulseGlow 1.2s infinite ease-in-out;
-
-        .scanner-beam {
-          display: block;
-        }
-      }
-
-      &.has-error {
-        border-color: #f87171;
-        box-shadow: 0 0 20px rgba(248, 113, 113, 0.3);
-      }
-
-      .fingerprint-scan-icon {
-        font-size: 52px;
-        color: #fde68a;
-        transition: color 0.3s ease;
-      }
-
-      .scanner-beam {
-        display: none;
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #25d366, transparent);
-        box-shadow: 0 0 8px #25d366;
-        animation: scanBeamSweep 1.8s infinite ease-in-out;
-      }
-    }
-
-    /* Text & Status */
-    .biometric-text-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-
-      .biometric-action-title {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: #e6d8a3;
-        margin: 0;
-
-        .lock-mini-icon {
-          font-size: 18px;
-          color: #d4af37;
-        }
-      }
-
-      .biometric-subtext {
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        font-size: 0.82rem;
-        color: rgba(230, 216, 163, 0.75);
-        line-height: 1.45;
-        margin: 0;
-      }
-    }
-
-    /* Action Buttons */
-    .biometric-actions-row {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      width: 100%;
-
-      .biometric-cta-unlock {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 13px 24px;
-        background: linear-gradient(135deg, #fde68a 0%, #d4af37 45%, #b45309 100%);
-        color: #080706 !important;
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        font-size: 0.92rem;
-        font-weight: 800;
-        border: none;
-        border-radius: 14px;
         cursor: pointer;
+        overflow: hidden;
         box-shadow:
-          0 8px 20px rgba(212, 175, 55, 0.4),
-          inset 0 1px 0 rgba(255, 255, 255, 0.4);
-        transition: all 0.25s ease;
-
-        .btn-ico {
-          font-size: 20px;
-        }
-
-        &:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 12px 26px rgba(212, 175, 55, 0.6);
-        }
-
-        &:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-        }
-      }
-
-      .biometric-cta-logout {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 11px 20px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(212, 175, 55, 0.2);
-        color: rgba(230, 216, 163, 0.8) !important;
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        font-size: 0.82rem;
-        font-weight: 600;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-
-        .btn-ico {
-          font-size: 16px;
-        }
+          0 10px 30px rgba(0, 0, 0, 0.8),
+          0 0 24px rgba(212, 175, 55, 0.25);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: pulseGlow 3s infinite ease-in-out;
+        -webkit-tap-highlight-color: transparent;
 
         &:hover {
-          background: rgba(212, 175, 55, 0.1);
-          border-color: rgba(212, 175, 55, 0.4);
-          color: #fde68a !important;
+          transform: scale(1.06);
+          box-shadow:
+            0 14px 40px rgba(0, 0, 0, 0.9),
+            0 0 32px rgba(212, 175, 55, 0.5);
+        }
+
+        &.is-scanning {
+          animation: pulseGlow 1.2s infinite ease-in-out;
+          box-shadow: 0 0 30px rgba(37, 211, 102, 0.5);
+
+          .fingerprint-scan-icon {
+            color: #25d366;
+          }
+
+          .scanner-beam {
+            display: block;
+          }
+        }
+
+        &.has-error {
+          box-shadow: 0 0 30px rgba(248, 113, 113, 0.5);
+
+          .fingerprint-scan-icon {
+            color: #f87171;
+          }
+        }
+
+        .fingerprint-scan-icon {
+          font-size: 52px;
+          color: #d4af37;
+          transition: color 0.3s ease;
+          filter: drop-shadow(0 2px 8px rgba(212, 175, 55, 0.4));
+        }
+
+        .scanner-beam {
+          display: none;
+          position: absolute;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, #25d366, transparent);
+          box-shadow: 0 0 8px #25d366;
+          animation: scanBeamSweep 1.8s infinite ease-in-out;
+        }
+      }
+
+      .biometric-tap-hint {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: rgba(212, 175, 55, 0.85);
+        letter-spacing: 0.2px;
+      }
+
+      /* Action Buttons */
+      .biometric-actions-row {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        margin-top: 4px;
+
+        .biometric-cta-logout {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 10px 22px;
+          background: rgba(255, 255, 255, 0.04);
+          border: none;
+          color: rgba(230, 216, 163, 0.7) !important;
+          font-family: 'Plus Jakarta Sans', sans-serif !important;
+          font-size: 0.82rem;
+          font-weight: 600;
+          border-radius: 20px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          .btn-ico {
+            font-size: 16px;
+          }
+
+          &:hover {
+            background: rgba(212, 175, 55, 0.12);
+            color: #fde68a !important;
+          }
         }
       }
     }

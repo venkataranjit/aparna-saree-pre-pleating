@@ -787,7 +787,7 @@ const Expenses = () => {
           icon={<AccountBalanceWalletOutlinedIcon />}
         />
         <StatCard
-          title="This Month"
+          title="Current Month"
           value={formatINR(thisMonthAmount)}
           change="Current calendar month"
           trendType="completed"

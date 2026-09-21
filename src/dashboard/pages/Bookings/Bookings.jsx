@@ -364,8 +364,20 @@ const Bookings = () => {
   }, [orders]);
 
   const activeOrdersCount = useMemo(() => {
-    return acceptedCount + pendingCount + inProgressCount + completedCount;
-  }, [acceptedCount, pendingCount, inProgressCount, completedCount]);
+    return (
+      acceptedCount +
+      pendingCount +
+      inProgressCount +
+      completedCount +
+      requestedCount
+    );
+  }, [
+    acceptedCount,
+    pendingCount,
+    inProgressCount,
+    completedCount,
+    requestedCount,
+  ]);
 
   const totalReceivedRevenue = useMemo(() => {
     return orders
@@ -621,7 +633,7 @@ const Bookings = () => {
           icon={<ReceiptLongOutlinedIcon />}
         />
         <StatCard
-          title="Orders Delivered"
+          title="Delivered / Pending"
           value={String(deliveredCount)}
           subValue={`/ ${activeOrdersCount} Active`}
           change={`${cancelledCount} Cancelled`}

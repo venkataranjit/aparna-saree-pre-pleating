@@ -8,8 +8,10 @@
     rgba(8, 8, 8, 0.98) 100%
   )) !important;
   border-bottom: 1px solid $surface-border !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: var(--header-shadow, 0 4px 20px rgba(0, 0, 0, 0.3)) !important;
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 
   // On desktop, the brand logo is located directly in the dashboard overview header
   @media (min-width: 900px) {
@@ -72,6 +74,23 @@
       box-shadow: 0 0 10px var(--surface-gold-tint, rgba(212, 175, 55, 0.35));
     }
 
+    [data-theme="light"] & {
+      background-color: #ffffff;
+      border-color: rgba(15, 23, 42, 0.12);
+      color: #1e293b;
+
+      svg {
+        color: #1e293b;
+      }
+
+      &:hover,
+      &:active {
+        background-color: #f1f5f9;
+        border-color: #0f172a;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+      }
+    }
+
     @media (max-width: 899px) {
       display: flex;
     }
@@ -107,6 +126,16 @@
       font-size: 22px;
       color: $color-gold;
       transition: $transition-fast;
+    }
+
+    [data-theme="light"] & {
+      background-color: #ffffff;
+      border-color: rgba(15, 23, 42, 0.12);
+      color: #1e293b;
+
+      svg {
+        color: #1e293b;
+      }
     }
 
     &:hover {

@@ -43,6 +43,8 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import { Capacitor } from "@capacitor/core";
+import { toast } from "react-toastify";
 import { useAuth } from "../../auth/context/AuthContext";
 import Footer from "../components/Footer/Footer";
 import brandLogo from "../../assets/logo.png";
@@ -760,6 +762,44 @@ const LandingPageNew = () => {
       handleNextGallery();
     }
     touchStartRef.current = null;
+  };
+
+  const getApkDownloadUrl = () => {
+    const isDev = import.meta.env.MODE === "dev";
+    const apkFileName = isDev
+      ? "aparna-saree-pre-pleating-dev.apk"
+      : "aparna-saree-pre-pleating-prod.apk";
+
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    if (
+      origin &&
+      !origin.includes("localhost") &&
+      !origin.startsWith("file:") &&
+      !origin.includes("capacitor://")
+    ) {
+      return `${origin.replace(/\/$/, "")}/${apkFileName}`;
+    }
+
+    const defaultHost =
+      import.meta.env.VITE_APP_URL || "https://aparnapleats-dev.vercel.app";
+    return `${defaultHost.replace(/\/$/, "")}/${apkFileName}`;
+  };
+
+  const handleApkDownload = (e) => {
+    const downloadUrl = getApkDownloadUrl();
+
+    if (Capacitor.isNativePlatform()) {
+      if (e && e.preventDefault) e.preventDefault();
+      toast.info("Opening APK download in your mobile browser...", {
+        autoClose: 3500,
+      });
+      try {
+        window.open(downloadUrl, "_system");
+      } catch (err) {
+        window.open(downloadUrl, "_blank");
+      }
+      return;
+    }
   };
 
   return (
@@ -1535,8 +1575,9 @@ const LandingPageNew = () => {
               {/* Big Prominent Download CTA */}
               <div className="app-card-cta-row">
                 <a
-                  href="/aparna-saree-pre-pleating-prod.apk"
+                  href={getApkDownloadUrl()}
                   download="Aparna-Saree-Pre-Pleating.apk"
+                  onClick={handleApkDownload}
                   className="luxury-cta-gold app-download-btn"
                 >
                   <AndroidIcon className="cta-icon-android" />

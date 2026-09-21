@@ -42,11 +42,21 @@
     transform: translateX(-100%);
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
 
+    [data-theme="light"] & {
+      box-shadow: 0 4px 24px rgba(15, 23, 42, 0.12);
+    }
+
     &.mobile-open {
       transform: translateX(0);
       box-shadow:
         0 0 40px rgba(0, 0, 0, 0.95),
         0 0 20px var(--surface-gold-tint, rgba(212, 175, 55, 0.15));
+
+      [data-theme="light"] & {
+        box-shadow:
+          0 10px 38px rgba(15, 23, 42, 0.16),
+          0 2px 10px rgba(15, 23, 42, 0.08);
+      }
     }
   }
 

@@ -77,16 +77,9 @@ try {
   }
 
   // Manage APKs in public folder:
-  // - NEVER delete prod APKs (aparna-saree-pre-pleating-prod.apk, aparna-saree-pre-pleating.apk) because they are linked to the download button
-  // - When building PROD, delete dev APK (aparna-saree-pre-pleating-dev.apk) from public
-  if (fs.existsSync(publicDir)) {
-    const devApkInPublic = path.join(publicDir, 'aparna-saree-pre-pleating-dev.apk');
-    if (mode === 'prod' && fs.existsSync(devApkInPublic)) {
-      try {
-        fs.unlinkSync(devApkInPublic);
-        console.log('[Clean] Removed dev APK from public folder');
-      } catch (e) {}
-    }
+  // - NEVER delete any APKs (dev or prod) from public directory so they are always preserved and accessible
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
   }
 
   console.log(`--- 1. Building web application for [${mode}] ---`);

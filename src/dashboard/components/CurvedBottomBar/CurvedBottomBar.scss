@@ -10,18 +10,18 @@
   display: none;
   pointer-events: auto;
   user-select: none;
-  background: #000000;
+  background: var(--bottom-bar-bg, #000000);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid $surface-border;
-  box-shadow:
-    0 -8px 30px rgba(0, 0, 0, 0.85),
-    0 -1px 3px var(--surface-gold-tint, rgba(212, 175, 55, 0.12));
+  box-shadow: var(--bottom-bar-shadow, 0 -8px 30px rgba(0, 0, 0, 0.85));
   transition:
     transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.25s ease,
     left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.25s ease,
+    border-color 0.25s ease;
 
   // Hairline accent across top edge
   &::before {
@@ -99,8 +99,8 @@
         width: 28px;
         height: 3px;
         border-radius: 9999px;
-        background: $color-gold;
-        box-shadow: 0 0 8px $color-gold;
+        background: var(--bottom-bar-active-pill, $color-gold);
+        box-shadow: var(--bottom-bar-active-pill-glow, 0 0 8px $color-gold);
         animation: pillDrop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
       }
 
@@ -130,7 +130,7 @@
           border-radius: 50%;
           background: radial-gradient(
             circle,
-            var(--surface-gold-tint, rgba(212, 175, 55, 0.28)) 0%,
+            var(--bottom-bar-spotlight, var(--surface-gold-tint, rgba(212, 175, 55, 0.28))) 0%,
             transparent 70%
           );
           pointer-events: none;
@@ -183,13 +183,13 @@
       // Active state styling
       &.is-active {
         .icon-wrapper {
-          color: $color-gold;
+          color: var(--bottom-bar-active-icon, $color-gold);
           transform: translateY(-2px) scale(1.12);
-          filter: drop-shadow(0 0 8px var(--surface-gold-tint, rgba(212, 175, 55, 0.75)));
+          filter: var(--bottom-bar-active-icon-filter, drop-shadow(0 0 8px var(--surface-gold-tint, rgba(212, 175, 55, 0.75))));
         }
 
         .nav-label {
-          color: $text-primary;
+          color: var(--bottom-bar-active-text, $text-primary);
           font-weight: 600;
           letter-spacing: 0.35px;
         }
@@ -197,11 +197,11 @@
         &:hover {
           .icon-wrapper {
             transform: translateY(-2px) scale(1.22);
-            color: $color-gold;
+            color: var(--bottom-bar-active-icon, $color-gold);
           }
 
           .nav-label {
-            color: $text-primary;
+            color: var(--bottom-bar-active-text, $text-primary);
           }
         }
       }
@@ -219,7 +219,7 @@
         border-radius: $border-radius-md;
         background: radial-gradient(
           circle,
-          var(--surface-gold-tint, rgba(212, 175, 55, 0.25)) 10%,
+          var(--bottom-bar-ripple, var(--surface-gold-tint, rgba(212, 175, 55, 0.25))) 10%,
           transparent 70%
         );
         opacity: 0;

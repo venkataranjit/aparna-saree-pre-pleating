@@ -52,6 +52,20 @@
   --nav-active-shadow:
     0 2px 10px rgba(0, 0, 0, 0.25), 0 0 8px rgba(212, 175, 55, 0.12);
   --pill-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  --header-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --bottom-bar-bg: linear-gradient(
+    180deg,
+    rgba(10, 10, 10, 0.98) 0%,
+    rgba(0, 0, 0, 0.99) 100%
+  );
+  --bottom-bar-shadow: 0 -8px 30px rgba(0, 0, 0, 0.85), 0 -1px 3px rgba(212, 175, 55, 0.12);
+  --bottom-bar-active-pill: #d4af37;
+  --bottom-bar-active-pill-glow: 0 0 8px #d4af37;
+  --bottom-bar-active-icon: #d4af37;
+  --bottom-bar-active-icon-filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.75));
+  --bottom-bar-active-text: #e6d8a3;
+  --bottom-bar-spotlight: rgba(212, 175, 55, 0.28);
+  --bottom-bar-ripple: rgba(212, 175, 55, 0.25);
   --scrollbar-thumb-color: #d4af37;
   --scrollbar-thumb-bg: linear-gradient(
     180deg,
@@ -104,6 +118,20 @@
   --table-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
   --nav-active-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   --pill-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  --header-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --bottom-bar-bg: linear-gradient(
+    180deg,
+    rgba(22, 25, 34, 0.98) 0%,
+    rgba(15, 17, 23, 0.99) 100%
+  );
+  --bottom-bar-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6), 0 -1px 2px rgba(226, 232, 240, 0.08);
+  --bottom-bar-active-pill: #f1f5f9;
+  --bottom-bar-active-pill-glow: 0 0 8px rgba(241, 245, 249, 0.6);
+  --bottom-bar-active-icon: #f1f5f9;
+  --bottom-bar-active-icon-filter: drop-shadow(0 0 8px rgba(241, 245, 249, 0.5));
+  --bottom-bar-active-text: #f1f5f9;
+  --bottom-bar-spotlight: rgba(241, 245, 249, 0.15);
+  --bottom-bar-ripple: rgba(241, 245, 249, 0.18);
   --scrollbar-thumb-color: rgba(241, 245, 249, 0.35);
   --scrollbar-thumb-bg: rgba(241, 245, 249, 0.25);
   --scrollbar-thumb-hover: rgba(241, 245, 249, 0.55);
@@ -128,8 +156,8 @@
   --card-bg-gradient: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
   --header-bg: linear-gradient(
     180deg,
-    rgba(248, 250, 252, 0.98) 0%,
-    rgba(241, 245, 249, 0.98) 100%
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(248, 250, 252, 0.98) 100%
   );
   --sidebar-bg: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
   --sidebar-item-active-bg: rgba(15, 23, 42, 0.06);
@@ -150,6 +178,20 @@
   --table-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
   --nav-active-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   --pill-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  --header-shadow: 0 1px 4px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.03);
+  --bottom-bar-bg: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(248, 250, 252, 0.98) 100%
+  );
+  --bottom-bar-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08), 0 -1px 3px rgba(15, 23, 42, 0.04);
+  --bottom-bar-active-pill: #0f172a;
+  --bottom-bar-active-pill-glow: 0 1px 4px rgba(15, 23, 42, 0.25);
+  --bottom-bar-active-icon: #0f172a;
+  --bottom-bar-active-icon-filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.12));
+  --bottom-bar-active-text: #0f172a;
+  --bottom-bar-spotlight: rgba(15, 23, 42, 0.05);
+  --bottom-bar-ripple: rgba(15, 23, 42, 0.07);
   --scrollbar-thumb-color: rgba(100, 116, 139, 0.35);
   --scrollbar-thumb-bg: rgba(100, 116, 139, 0.25);
   --scrollbar-thumb-hover: rgba(100, 116, 139, 0.6);

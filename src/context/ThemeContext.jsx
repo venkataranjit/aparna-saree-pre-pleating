@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import textLogo from '../assets/text-logo.png';
 import textLogoDark from '../assets/text-logo-dark.png';
 import textLogoLight from '../assets/text-logo-light.png';
@@ -31,15 +33,18 @@ const getStoredTheme = () => {
   return THEMES.DEFAULT;
 };
 
-const isLandingRoute = (pathname) => {
+export const isLandingRoute = (pathname) => {
+  if (typeof window === 'undefined') return false;
+  if (Capacitor.isNativePlatform()) return false;
   if (!pathname) return false;
   const p = pathname.toLowerCase();
   return p === '/' || p === '/landing' || p === '/landing-new' || p === '/landingpage' || p === '/coming-soon';
 };
 
-// Apply initial data-theme synchronously before first paint (strictly 'default' for landing page)
+// Apply initial data-theme synchronously before first paint
 if (typeof document !== 'undefined') {
-  const isLanding = typeof window !== 'undefined' && isLandingRoute(window.location.pathname);
+  const isNative = typeof window !== 'undefined' && Capacitor.isNativePlatform();
+  const isLanding = !isNative && isLandingRoute(window.location.pathname);
   const initial = isLanding ? THEMES.DEFAULT : getStoredTheme();
   document.documentElement.setAttribute('data-theme', initial);
 }
@@ -56,11 +61,21 @@ const ThemeContext = createContext({
 export const ThemeProvider = ({ children }) => {
   const [theme, setThemeState] = useState(getStoredTheme);
   const transitionTimerRef = useRef(null);
+  
+  let location;
+  try {
+    location = useLocation();
+  } catch {
+    location = null;
+  }
+
+  const isNative = Capacitor.isNativePlatform();
+  const currentPath = location?.pathname || (typeof window !== 'undefined' ? window.location.pathname : '');
+  const isLanding = !isNative && isLandingRoute(currentPath);
 
   const setTheme = (newTheme) => {
     if (!Object.values(THEMES).includes(newTheme)) return;
 
-    const isLanding = typeof window !== 'undefined' && isLandingRoute(window.location.pathname);
     const root = document.documentElement;
 
     if (!isLanding) {
@@ -99,9 +114,8 @@ export const ThemeProvider = ({ children }) => {
     }
   };
 
-  // Sync data-theme attribute on document.documentElement
+  // Sync data-theme attribute on document.documentElement whenever theme or isLanding changes
   useEffect(() => {
-    const isLanding = typeof window !== 'undefined' && isLandingRoute(window.location.pathname);
     const root = document.documentElement;
     if (isLanding) {
       root.setAttribute('data-theme', THEMES.DEFAULT);
@@ -113,7 +127,7 @@ export const ThemeProvider = ({ children }) => {
         clearTimeout(transitionTimerRef.current);
       }
     };
-  }, [theme]);
+  }, [theme, isLanding]);
 
   const value = {
     theme,

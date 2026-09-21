@@ -44,6 +44,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import { Capacitor } from "@capacitor/core";
+import { Filesystem, Directory } from "@capacitor/filesystem";
 import { toast } from "react-toastify";
 import { useAuth } from "../../auth/context/AuthContext";
 import Footer from "../components/Footer/Footer";
@@ -785,20 +786,57 @@ const LandingPageNew = () => {
     return `${defaultHost.replace(/\/$/, "")}/${apkFileName}`;
   };
 
-  const handleApkDownload = (e) => {
+  const handleApkDownload = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     const downloadUrl = getApkDownloadUrl();
+    const isDev = import.meta.env.MODE === "dev";
+    const apkFileName = isDev
+      ? "aparna-saree-pre-pleating-dev.apk"
+      : "aparna-saree-pre-pleating-prod.apk";
+
+    toast.info("Downloading APK in background...", {
+      autoClose: 4000,
+    });
 
     if (Capacitor.isNativePlatform()) {
-      if (e && e.preventDefault) e.preventDefault();
-      toast.info("Opening APK download in your mobile browser...", {
-        autoClose: 3500,
-      });
       try {
-        window.open(downloadUrl, "_system");
+        await Filesystem.downloadFile({
+          url: downloadUrl,
+          path: `Download/${apkFileName}`,
+          directory: Directory.Documents,
+        });
+        toast.success("APK downloaded to your device Downloads folder!", {
+          autoClose: 5000,
+        });
+        return;
       } catch (err) {
-        window.open(downloadUrl, "_blank");
+        console.warn("Native Filesystem download error:", err);
       }
-      return;
+    }
+
+    // Background download on Mobile & Desktop Browser (without opening any new tab/window)
+    try {
+      const hiddenAnchor = document.createElement("a");
+      hiddenAnchor.style.display = "none";
+      hiddenAnchor.href = downloadUrl;
+      hiddenAnchor.setAttribute("download", apkFileName);
+      document.body.appendChild(hiddenAnchor);
+      hiddenAnchor.click();
+      setTimeout(() => {
+        if (hiddenAnchor.parentNode) {
+          hiddenAnchor.parentNode.removeChild(hiddenAnchor);
+        }
+      }, 1000);
+    } catch (err) {
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = downloadUrl;
+      document.body.appendChild(iframe);
+      setTimeout(() => {
+        if (iframe.parentNode) {
+          iframe.parentNode.removeChild(iframe);
+        }
+      }, 5000);
     }
   };
 

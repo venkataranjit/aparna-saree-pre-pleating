@@ -6,7 +6,10 @@ import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useAuth } from "../../../auth/context/AuthContext";
+import { useTheme, getStoredTheme } from "../../../context/ThemeContext";
 import brandLogo from "../../../assets/logo.png";
+import logoDark from "../../../assets/logo-dark.png";
+import logoLight from "../../../assets/logo-light.png";
 import "./BiometricAuthGuard.scss";
 
 const SESSION_KEY = "aparna_dashboard_biometric_unlocked";
@@ -114,16 +117,40 @@ export default function BiometricAuthGuard({ children }) {
 }
 
 /**
- * Presentational Biometric Lock Screen View with bottom fingerprint sensor & borderless card
+ * Presentational Biometric Lock Screen View with bottom fingerprint sensor & 3-mode theme styling
  */
 export function BiometricLockScreenView({
   isAuthenticating = false,
   authError = null,
   onAuthenticate = () => {},
   onLogout = () => {},
+  theme: propTheme = null,
 }) {
+  let themeContext = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    themeContext = useTheme();
+  } catch {
+    // Gracefully handle if outside ThemeProvider
+  }
+
+  const currentTheme =
+    propTheme ||
+    themeContext?.theme ||
+    (typeof document !== "undefined"
+      ? document.documentElement.getAttribute("data-theme")
+      : null) ||
+    getStoredTheme();
+
+  const logoSrc =
+    currentTheme === "light"
+      ? logoLight
+      : currentTheme === "dark"
+      ? logoDark
+      : brandLogo;
+
   return (
-    <div className="biometric-lock-screen">
+    <div className="biometric-lock-screen" data-theme={currentTheme}>
       <div className="biometric-lock-aura" />
       <div className="biometric-lock-card">
         {/* Top Section: Brand & Title */}
@@ -131,9 +158,10 @@ export function BiometricLockScreenView({
           <div className="biometric-brand-wrap">
             <div className="biometric-logo-wrap">
               <img
-                src={brandLogo}
+                key={currentTheme}
+                src={logoSrc}
                 alt="Aparna Saree Pre-Pleating"
-                className="biometric-brand-logo"
+                className={`biometric-brand-logo biometric-brand-logo--${currentTheme}`}
               />
             </div>
             <span className="biometric-portal-badge">

@@ -1,4 +1,4 @@
-@keyframes pulseGlow {
+@keyframes pulseGlowDefault {
   0% {
     transform: scale(0.96);
     box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
@@ -10,6 +10,36 @@
   100% {
     transform: scale(0.96);
     box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+  }
+}
+
+@keyframes pulseGlowDark {
+  0% {
+    transform: scale(0.96);
+    box-shadow: 0 0 0 0 rgba(241, 245, 249, 0.35);
+  }
+  70% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 20px rgba(241, 245, 249, 0);
+  }
+  100% {
+    transform: scale(0.96);
+    box-shadow: 0 0 0 0 rgba(241, 245, 249, 0);
+  }
+}
+
+@keyframes pulseGlowLight {
+  0% {
+    transform: scale(0.96);
+    box-shadow: 0 0 0 0 rgba(15, 23, 42, 0.15);
+  }
+  70% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 18px rgba(15, 23, 42, 0);
+  }
+  100% {
+    transform: scale(0.96);
+    box-shadow: 0 0 0 0 rgba(15, 23, 42, 0);
   }
 }
 
@@ -29,35 +59,113 @@
 }
 
 .biometric-lock-screen {
+  // 1. DEFAULT THEME (Royal Gold / Obsidian Black)
+  --bio-bg: radial-gradient(circle at 50% 25%, rgba(212, 175, 55, 0.12) 0%, rgba(15, 12, 9, 0.98) 55%, #050403 100%);
+  --bio-aura: radial-gradient(circle, rgba(212, 175, 55, 0.16) 0%, transparent 70%);
+  --bio-badge-color: #d4af37;
+  --bio-badge-bg: rgba(212, 175, 55, 0.1);
+  --bio-badge-border: 1px solid rgba(212, 175, 55, 0.22);
+  --bio-badge-icon: #25d366;
+  --bio-title-color: #e6d8a3;
+  --bio-lock-icon: #d4af37;
+  --bio-subtext-color: rgba(230, 216, 163, 0.75);
+  --bio-ring-bg: radial-gradient(circle, rgba(212, 175, 55, 0.18) 0%, rgba(20, 16, 12, 0.92) 75%);
+  --bio-ring-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 24px rgba(212, 175, 55, 0.25);
+  --bio-ring-hover-shadow: 0 14px 40px rgba(0, 0, 0, 0.9), 0 0 32px rgba(212, 175, 55, 0.5);
+  --bio-ring-border: none;
+  --bio-ring-anim: pulseGlowDefault;
+  --bio-fingerprint-color: #d4af37;
+  --bio-fingerprint-filter: drop-shadow(0 2px 8px rgba(212, 175, 55, 0.45));
+  --bio-tap-hint-color: rgba(212, 175, 55, 0.9);
+  --bio-logout-bg: rgba(255, 255, 255, 0.04);
+  --bio-logout-color: rgba(230, 216, 163, 0.75);
+  --bio-logout-border: 1px solid rgba(212, 175, 55, 0.15);
+  --bio-logout-hover-bg: rgba(212, 175, 55, 0.14);
+  --bio-logout-hover-color: #fde68a;
+  --bio-logout-hover-border: 1px solid rgba(212, 175, 55, 0.35);
+
+  // 2. DARK THEME VARIABLES
+  &[data-theme="dark"],
+  :root[data-theme="dark"] & {
+    --bio-bg: radial-gradient(circle at 50% 25%, rgba(148, 163, 184, 0.12) 0%, #161922 55%, #0f1117 100%);
+    --bio-aura: radial-gradient(circle, rgba(226, 232, 240, 0.14) 0%, transparent 70%);
+    --bio-badge-color: #f1f5f9;
+    --bio-badge-bg: rgba(241, 245, 249, 0.08);
+    --bio-badge-border: 1px solid rgba(226, 232, 240, 0.15);
+    --bio-badge-icon: #38bdf8;
+    --bio-title-color: #f1f5f9;
+    --bio-lock-icon: #cbd5e1;
+    --bio-subtext-color: #94a3b8;
+    --bio-ring-bg: radial-gradient(circle, rgba(241, 245, 249, 0.18) 0%, rgba(30, 35, 48, 0.96) 75%);
+    --bio-ring-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 24px rgba(241, 245, 249, 0.18);
+    --bio-ring-hover-shadow: 0 14px 40px rgba(0, 0, 0, 0.8), 0 0 32px rgba(241, 245, 249, 0.35);
+    --bio-ring-border: 1px solid rgba(226, 232, 240, 0.1);
+    --bio-ring-anim: pulseGlowDark;
+    --bio-fingerprint-color: #f1f5f9;
+    --bio-fingerprint-filter: drop-shadow(0 2px 8px rgba(241, 245, 249, 0.4));
+    --bio-tap-hint-color: #cbd5e1;
+    --bio-logout-bg: rgba(255, 255, 255, 0.05);
+    --bio-logout-color: #cbd5e1;
+    --bio-logout-border: 1px solid rgba(226, 232, 240, 0.12);
+    --bio-logout-hover-bg: rgba(255, 255, 255, 0.12);
+    --bio-logout-hover-color: #ffffff;
+    --bio-logout-hover-border: 1px solid rgba(226, 232, 240, 0.28);
+  }
+
+  // 3. LIGHT THEME VARIABLES
+  &[data-theme="light"],
+  :root[data-theme="light"] & {
+    --bio-bg: radial-gradient(circle at 50% 25%, #ffffff 0%, #f8fafc 55%, #f1f5f9 100%);
+    --bio-aura: radial-gradient(circle, rgba(148, 163, 184, 0.18) 0%, transparent 70%);
+    --bio-badge-color: #0f172a;
+    --bio-badge-bg: rgba(15, 23, 42, 0.05);
+    --bio-badge-border: 1px solid rgba(15, 23, 42, 0.1);
+    --bio-badge-icon: #0284c7;
+    --bio-title-color: #0f172a;
+    --bio-lock-icon: #334155;
+    --bio-subtext-color: #64748b;
+    --bio-ring-bg: radial-gradient(circle, #ffffff 0%, #f1f5f9 65%, #e2e8f0 100%);
+    --bio-ring-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), 0 0 16px rgba(15, 23, 42, 0.04);
+    --bio-ring-hover-shadow: 0 12px 30px rgba(15, 23, 42, 0.12), 0 0 20px rgba(15, 23, 42, 0.08);
+    --bio-ring-border: 1px solid rgba(15, 23, 42, 0.1);
+    --bio-ring-anim: pulseGlowLight;
+    --bio-fingerprint-color: #1e293b;
+    --bio-fingerprint-filter: drop-shadow(0 2px 6px rgba(15, 23, 42, 0.15));
+    --bio-tap-hint-color: #475569;
+    --bio-logout-bg: #ffffff;
+    --bio-logout-color: #334155;
+    --bio-logout-border: 1px solid rgba(15, 23, 42, 0.1);
+    --bio-logout-hover-bg: #f1f5f9;
+    --bio-logout-hover-color: #0f172a;
+    --bio-logout-hover-border: 1px solid rgba(15, 23, 42, 0.2);
+  }
+
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
   height: 100dvh;
   z-index: 99999;
-  background: radial-gradient(
-      circle at 50% 25%,
-      rgba(212, 175, 55, 0.12) 0%,
-      rgba(15, 12, 9, 0.98) 55%,
-      #050403 100%
-    );
   display: flex;
   align-items: center;
   justify-content: center;
   padding: env(safe-area-inset-top, 24px) 20px env(safe-area-inset-bottom, 24px) 20px;
   box-sizing: border-box;
+  user-select: none;
+  background: var(--bio-bg);
+  transition: background 0.25s ease;
 
   .biometric-lock-aura {
     position: absolute;
     width: 360px;
     height: 360px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(212, 175, 55, 0.16) 0%, transparent 70%);
-    filter: blur(70px);
+    background: var(--bio-aura);
+    filter: blur(65px);
     pointer-events: none;
+    transition: background 0.25s ease;
   }
 
-  /* Borderless Luxury Screen Container */
   .biometric-lock-card {
     position: relative;
     max-width: 440px;
@@ -75,9 +183,6 @@
     text-align: center;
     box-shadow: none;
 
-    /* ========================================================= */
-    /* Top Section: Brand & Heading                              */
-    /* ========================================================= */
     .biometric-top-section {
       display: flex;
       flex-direction: column;
@@ -104,7 +209,18 @@
             height: auto;
             max-height: 160px;
             object-fit: contain;
-            filter: drop-shadow(0 6px 20px rgba(212, 175, 55, 0.5));
+
+            &--default {
+              filter: drop-shadow(0 6px 20px rgba(212, 175, 55, 0.5));
+            }
+
+            &--dark {
+              filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.65));
+            }
+
+            &--light {
+              filter: drop-shadow(0 2px 10px rgba(15, 23, 42, 0.12));
+            }
           }
         }
 
@@ -115,20 +231,20 @@
           font-family: 'Plus Jakarta Sans', sans-serif !important;
           font-size: 0.74rem;
           font-weight: 700;
-          color: #d4af37;
-          background: rgba(212, 175, 55, 0.1);
-          border: none;
+          color: var(--bio-badge-color) !important;
+          background: var(--bio-badge-bg) !important;
+          border: var(--bio-badge-border) !important;
           padding: 5px 14px;
           border-radius: 20px;
+          transition: all 0.25s ease;
 
           .badge-icon {
             font-size: 14px;
-            color: #25d366;
+            color: var(--bio-badge-icon) !important;
           }
         }
       }
 
-      /* Text & Status */
       .biometric-text-wrap {
         display: flex;
         flex-direction: column;
@@ -143,28 +259,28 @@
           font-family: 'Plus Jakarta Sans', sans-serif !important;
           font-size: 1.1rem;
           font-weight: 700;
-          color: #e6d8a3;
+          color: var(--bio-title-color) !important;
           margin: 0;
+          transition: color 0.25s ease;
 
           .lock-mini-icon {
             font-size: 18px;
-            color: #d4af37;
+            color: var(--bio-lock-icon) !important;
+            transition: color 0.25s ease;
           }
         }
 
         .biometric-subtext {
           font-family: 'Plus Jakarta Sans', sans-serif !important;
           font-size: 0.85rem;
-          color: rgba(230, 216, 163, 0.75);
+          color: var(--bio-subtext-color) !important;
           line-height: 1.45;
           margin: 0;
+          transition: color 0.25s ease;
         }
       }
     }
 
-    /* ========================================================= */
-    /* Bottom Section: Fingerprint Sensor & Actions              */
-    /* ========================================================= */
     .biometric-bottom-section {
       display: flex;
       flex-direction: column;
@@ -173,39 +289,34 @@
       width: 100%;
       margin-bottom: 8px;
 
-      /* Fingerprint Scanner Visual */
       .biometric-scanner-ring {
         position: relative;
         width: 88px;
         height: 88px;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(20, 16, 12, 0.9) 75%);
-        border: none;
+        background: var(--bio-ring-bg) !important;
+        border: var(--bio-ring-border) !important;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         overflow: hidden;
-        box-shadow:
-          0 10px 30px rgba(0, 0, 0, 0.8),
-          0 0 24px rgba(212, 175, 55, 0.25);
+        box-shadow: var(--bio-ring-shadow) !important;
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        animation: pulseGlow 3s infinite ease-in-out;
+        animation: var(--bio-ring-anim) 3s infinite ease-in-out;
         -webkit-tap-highlight-color: transparent;
 
         &:hover {
           transform: scale(1.06);
-          box-shadow:
-            0 14px 40px rgba(0, 0, 0, 0.9),
-            0 0 32px rgba(212, 175, 55, 0.5);
+          box-shadow: var(--bio-ring-hover-shadow) !important;
         }
 
         &.is-scanning {
-          animation: pulseGlow 1.2s infinite ease-in-out;
-          box-shadow: 0 0 30px rgba(37, 211, 102, 0.5);
+          animation: pulseGlowDefault 1.2s infinite ease-in-out;
+          box-shadow: 0 0 30px rgba(37, 211, 102, 0.5) !important;
 
           .fingerprint-scan-icon {
-            color: #25d366;
+            color: #25d366 !important;
           }
 
           .scanner-beam {
@@ -214,18 +325,18 @@
         }
 
         &.has-error {
-          box-shadow: 0 0 30px rgba(248, 113, 113, 0.5);
+          box-shadow: 0 0 30px rgba(248, 113, 113, 0.5) !important;
 
           .fingerprint-scan-icon {
-            color: #f87171;
+            color: #f87171 !important;
           }
         }
 
         .fingerprint-scan-icon {
           font-size: 52px;
-          color: #d4af37;
+          color: var(--bio-fingerprint-color) !important;
           transition: color 0.3s ease;
-          filter: drop-shadow(0 2px 8px rgba(212, 175, 55, 0.4));
+          filter: var(--bio-fingerprint-filter);
         }
 
         .scanner-beam {
@@ -244,11 +355,11 @@
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 0.78rem;
         font-weight: 600;
-        color: rgba(212, 175, 55, 0.85);
+        color: var(--bio-tap-hint-color) !important;
         letter-spacing: 0.2px;
+        transition: color 0.25s ease;
       }
 
-      /* Action Buttons */
       .biometric-actions-row {
         display: flex;
         flex-direction: column;
@@ -263,9 +374,9 @@
           justify-content: center;
           gap: 8px;
           padding: 10px 22px;
-          background: rgba(255, 255, 255, 0.04);
-          border: none;
-          color: rgba(230, 216, 163, 0.7) !important;
+          background: var(--bio-logout-bg) !important;
+          border: var(--bio-logout-border) !important;
+          color: var(--bio-logout-color) !important;
           font-family: 'Plus Jakarta Sans', sans-serif !important;
           font-size: 0.82rem;
           font-weight: 600;
@@ -278,8 +389,9 @@
           }
 
           &:hover {
-            background: rgba(212, 175, 55, 0.12);
-            color: #fde68a !important;
+            background: var(--bio-logout-hover-bg) !important;
+            color: var(--bio-logout-hover-color) !important;
+            border: var(--bio-logout-hover-border) !important;
           }
         }
       }

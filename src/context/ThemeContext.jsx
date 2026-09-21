@@ -11,7 +11,7 @@ export const THEMES = {
   LIGHT: 'light',     // Ivory Luxury Light
 };
 
-const THEME_STORAGE_KEY = 'aparna_app_theme';
+export const THEME_STORAGE_KEY = 'aparna_app_theme';
 
 // Preload logos immediately in background so image changes are instant
 if (typeof window !== 'undefined') {
@@ -21,7 +21,7 @@ if (typeof window !== 'undefined') {
   });
 }
 
-const getStoredTheme = () => {
+export const getStoredTheme = () => {
   try {
     const saved = localStorage.getItem(THEME_STORAGE_KEY);
     if (saved && Object.values(THEMES).includes(saved)) {

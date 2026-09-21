@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
 import brandLogo from '../../../assets/logo.png';
 import logoDark from '../../../assets/logo-dark.png';
 import logoLight from '../../../assets/logo-light.png';
-import { useTheme } from '../../../context/ThemeContext';
+import { useTheme, isLandingRoute, getStoredTheme } from '../../../context/ThemeContext';
 import './PageLoader.scss';
 
 const PageLoader = ({
@@ -27,22 +28,25 @@ const PageLoader = ({
     // Gracefully handle if mounted outside ThemeProvider
   }
 
-  const isLanding = typeof window !== 'undefined' && (
-    window.location.pathname === '/' ||
-    window.location.pathname.toLowerCase() === '/landing' ||
-    window.location.pathname.toLowerCase() === '/landing-new' ||
-    window.location.pathname.toLowerCase() === '/landingpage' ||
-    window.location.pathname.toLowerCase() === '/coming-soon'
-  );
+  const isNative = typeof window !== 'undefined' && Capacitor.isNativePlatform();
+  const isLanding = !isNative && typeof window !== 'undefined' && isLandingRoute(window.location.pathname);
 
   const currentTheme =
     theme ||
     (isLanding ? 'default' : (
       themeContext?.theme ||
       (typeof document !== 'undefined'
-        ? document.documentElement.getAttribute('data-theme') || 'default'
-        : 'default')
+        ? document.documentElement.getAttribute('data-theme')
+        : null) ||
+      getStoredTheme()
     ));
+
+  const logoSrc =
+    currentTheme === 'light'
+      ? logoLight
+      : currentTheme === 'dark'
+      ? logoDark
+      : brandLogo;
 
   useEffect(() => {
     if (progress !== undefined) {
@@ -98,22 +102,13 @@ const PageLoader = ({
       <div className="page-loader__backdrop-glow" />
 
       <div className="page-loader__content">
-        {/* Brand Logos: Default (Gold), Dark (Slate), Light (Charcoal) */}
+        {/* Single Theme-Matched Brand Logo: Default (Gold), Dark (Slate), Light (Charcoal) */}
         <div className="page-loader__brand">
           <img
-            src={brandLogo}
+            key={currentTheme}
+            src={logoSrc}
             alt="Aparna Saree Pre-Pleating"
-            className="page-loader__logo page-loader__logo--default"
-          />
-          <img
-            src={logoDark}
-            alt="Aparna Saree Pre-Pleating"
-            className="page-loader__logo page-loader__logo--dark"
-          />
-          <img
-            src={logoLight}
-            alt="Aparna Saree Pre-Pleating"
-            className="page-loader__logo page-loader__logo--light"
+            className={`page-loader__logo page-loader__logo--${currentTheme}`}
           />
         </div>
 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { BiometricLockScreenView } from "../../components/BiometricAuthGuard/BiometricAuthGuard";
+import { ThemeToggle } from "../../../components/common";
 import "./BiometricPreview.scss";
 
 export default function BiometricPreview() {
@@ -45,6 +46,7 @@ export default function BiometricPreview() {
       {/* Floating Preview Control Bar */}
       <div className="preview-toolbar">
         <span className="preview-label">Live Biometric UI Preview</span>
+        <ThemeToggle variant="segmented" size="sm" showLabels={false} />
         <div className="preview-btn-group">
           <button
             type="button"

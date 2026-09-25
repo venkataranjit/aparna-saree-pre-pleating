@@ -66,8 +66,6 @@ export const EXPENSE_PAYMENT_METHODS = {
   CARD: "Card",
 };
 
-
-
 /**
  * Measurement Fields (Client-provided, no hardcoded defaults)
  * Includes: pallu, shoulderToRightTight, chest, hip, firstPleatSize, noOfChestPleats
@@ -156,6 +154,7 @@ export const SERVICE_TYPES = [
   "Pleating Service",
   "Draping Service",
   "Other Service",
+  "Workshop",
 ];
 
 /**
@@ -310,7 +309,9 @@ export const createOrderModel = ({
   isOfflinePending = false,
 } = {}) => {
   const resolvedOrderId = String(orderId || id || "").trim();
-  const cleanStatus = String(status || orderStatus || ORDER_STATUS.PENDING).toLowerCase();
+  const cleanStatus = String(
+    status || orderStatus || ORDER_STATUS.PENDING,
+  ).toLowerCase();
   const clientObj = client || {
     clientId: String(clientId || "").trim(),
     username: String(username || "").trim(),
@@ -323,34 +324,69 @@ export const createOrderModel = ({
     itemId: it.itemId || `item_${idx + 1}_${Date.now()}`,
     serviceId: it.serviceId || "",
     serviceName: it.serviceName || "",
-    serviceType: String(it.serviceType || serviceType || "Pleating Service").trim(),
+    serviceType: String(
+      it.serviceType || serviceType || "Pleating Service",
+    ).trim(),
     servicePrice: Number(it.servicePrice) || 0,
     serviceDiscountedPrice: Number(it.serviceDiscountedPrice) || 0,
     serviceDescription: it.serviceDescription || it.description || "",
-    finalPrice: Number(it.finalPrice !== undefined ? it.finalPrice : it.serviceDiscountedPrice || it.servicePrice) || 0,
+    finalPrice:
+      Number(
+        it.finalPrice !== undefined
+          ? it.finalPrice
+          : it.serviceDiscountedPrice || it.servicePrice,
+      ) || 0,
     sareeType: it.sareeType || "Kanjeevaram Silk",
     includeMeasurements: it.includeMeasurements !== false,
     measurementProfile: it.measurementProfile || null,
     itemNotes: it.itemNotes || "",
   }));
 
-  const calculatedSubtotal = cleanItems.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0);
+  const calculatedSubtotal = cleanItems.reduce(
+    (acc, it) => acc + (Number(it.finalPrice) || 0),
+    0,
+  );
   const resolvedSubtotal = subtotal > 0 ? Number(subtotal) : calculatedSubtotal;
   const resolvedDeliveryCharges = Number(pickupDeliveryCharges) || 0;
   const resolvedOtherCharges = Number(otherCharges) || 0;
   const resolvedDiscount = Number(discount) || 0;
-  const calculatedTotal = Math.max(0, resolvedSubtotal + resolvedDeliveryCharges + resolvedOtherCharges - resolvedDiscount);
+  const calculatedTotal = Math.max(
+    0,
+    resolvedSubtotal +
+      resolvedDeliveryCharges +
+      resolvedOtherCharges -
+      resolvedDiscount,
+  );
   const finalTotal = totalAmount > 0 ? Number(totalAmount) : calculatedTotal;
   const resolvedAdvance = Math.min(Number(advancePayment) || 0, finalTotal);
   const resolvedPaymentStatus = String(paymentStatus || PAYMENT_STATUS.PENDING);
-  const rawPaid = Number(paidAmount) || (resolvedAdvance > 0 ? resolvedAdvance : (resolvedPaymentStatus === "paid" ? finalTotal : 0));
+  const rawPaid =
+    Number(paidAmount) ||
+    (resolvedAdvance > 0
+      ? resolvedAdvance
+      : resolvedPaymentStatus === "paid"
+        ? finalTotal
+        : 0);
   const resolvedPaid = Math.min(rawPaid, finalTotal);
-  const resolvedBalanceDue = balanceDue !== undefined && balanceDue !== null && !isNaN(Number(balanceDue))
-    ? Number(balanceDue)
-    : (resolvedPaymentStatus === "paid" ? 0 : Math.max(0, finalTotal - resolvedPaid));
-  const resolvedBalancePaid = balancePaid !== undefined && balancePaid !== null && !isNaN(Number(balancePaid)) && Number(balancePaid) > 0
-    ? Number(balancePaid)
-    : (resolvedPaymentStatus === "paid" ? (resolvedAdvance > 0 ? Math.max(0, finalTotal - resolvedAdvance) : finalTotal) : 0);
+  const resolvedBalanceDue =
+    balanceDue !== undefined &&
+    balanceDue !== null &&
+    !isNaN(Number(balanceDue))
+      ? Number(balanceDue)
+      : resolvedPaymentStatus === "paid"
+        ? 0
+        : Math.max(0, finalTotal - resolvedPaid);
+  const resolvedBalancePaid =
+    balancePaid !== undefined &&
+    balancePaid !== null &&
+    !isNaN(Number(balancePaid)) &&
+    Number(balancePaid) > 0
+      ? Number(balancePaid)
+      : resolvedPaymentStatus === "paid"
+        ? resolvedAdvance > 0
+          ? Math.max(0, finalTotal - resolvedAdvance)
+          : finalTotal
+        : 0;
 
   return {
     id: resolvedOrderId || undefined,
@@ -362,7 +398,9 @@ export const createOrderModel = ({
     email: String(clientObj.email || email || "").trim(),
     userAddress: String(clientObj.userAddress || userAddress || "").trim(),
     client: clientObj,
-    serviceType: String(serviceType || cleanItems[0]?.serviceType || "Pleating Service").trim(),
+    serviceType: String(
+      serviceType || cleanItems[0]?.serviceType || "Pleating Service",
+    ).trim(),
     items: cleanItems,
     totalItems: cleanItems.length,
     subtotal: resolvedSubtotal,
@@ -419,4 +457,3 @@ export const createExpenseModel = ({
   updatedBy: updatedBy ? String(updatedBy).trim() : null,
   updatedAt: null,
 });
-

@@ -71,7 +71,7 @@ const SERVICE_TYPE_OPTIONS = (
     "Pleating Service",
     "Draping Service",
     "Other Service",
-    "Work Shop",
+    "Workshop",
   ]
 ).map((t) => ({
   label: t,

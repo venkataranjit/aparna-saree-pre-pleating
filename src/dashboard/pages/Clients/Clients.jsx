@@ -28,8 +28,10 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import StatCard from "../../components/StatCard/StatCard";
 import CreateOrderModal from "../../components/CreateOrderModal/CreateOrderModal";
+import { openClientWhatsAppChat } from "../../components/CustomInvoiceModal/CustomInvoiceModal";
 import { useAuth } from "../../../auth/context/AuthContext";
 import {
   getAllUsers,
@@ -1267,7 +1269,22 @@ const Clients = () => {
                               </AppButton>
                             )}
 
-                            {/* 5. Create Order Button (Only when active) */}
+                            {/* 5. WhatsApp Direct Chat Button */}
+                            <AppButton
+                              variant="secondary"
+                              size="sm"
+                              square
+                              className="action-btn--whatsapp"
+                              title="Chat on WhatsApp"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openClientWhatsAppChat(user);
+                              }}
+                            >
+                              <WhatsAppIcon style={{ fontSize: 16 }} />
+                            </AppButton>
+
+                            {/* 6. Create Order Button (Only when active) */}
                             {!user.disabled && (
                               <AppButton
                                 variant="secondary"
@@ -1286,7 +1303,7 @@ const Clients = () => {
                               </AppButton>
                             )}
 
-                            {/* 6. Expand / View More Details Button */}
+                            {/* 7. Expand / View More Details Button */}
                             <AppButton
                               variant="secondary"
                               size="sm"
@@ -1613,6 +1630,16 @@ const Clients = () => {
                             )}
                           </AppButton>
                         )}
+                        <AppButton
+                          variant="secondary"
+                          size="sm"
+                          square
+                          className="action-btn--whatsapp"
+                          title="Chat on WhatsApp"
+                          onClick={() => openClientWhatsAppChat(user)}
+                        >
+                          <WhatsAppIcon style={{ fontSize: 16 }} />
+                        </AppButton>
                         {!user.disabled && (
                           <AppButton
                             variant="secondary"
@@ -2129,6 +2156,14 @@ const Clients = () => {
           <>
             <AppButton
               variant="secondary"
+              className="action-btn--whatsapp"
+              onClick={() => openClientWhatsAppChat(clientForView)}
+              startIcon={<WhatsAppIcon />}
+            >
+              WhatsApp Chat
+            </AppButton>
+            <AppButton
+              variant="secondary"
               onClick={() => {
                 setOpenViewDetailsModal(false);
                 handleOpenAddMeasure(clientForView);
@@ -2154,11 +2189,25 @@ const Clients = () => {
             <div className="details-summary-card">
               <div className="summary-item">
                 <PhoneIphoneOutlinedIcon className="summary-item-icon" />
-                <div>
-                  <div className="item-label">Phone</div>
-                  <div className="item-value">
-                    {clientForView.userMobile || "-"}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", gap: "8px" }}>
+                  <div>
+                    <div className="item-label">Phone</div>
+                    <div className="item-value">
+                      {clientForView.userMobile || "-"}
+                    </div>
                   </div>
+                  {clientForView.userMobile && (
+                    <AppButton
+                      size="sm"
+                      variant="secondary"
+                      className="action-btn--whatsapp"
+                      title="Chat on WhatsApp"
+                      onClick={() => openClientWhatsAppChat(clientForView)}
+                      startIcon={<WhatsAppIcon style={{ fontSize: 15 }} />}
+                    >
+                      Chat
+                    </AppButton>
+                  )}
                 </div>
               </div>
 

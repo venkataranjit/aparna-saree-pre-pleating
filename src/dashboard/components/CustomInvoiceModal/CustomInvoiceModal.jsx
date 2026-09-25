@@ -2305,21 +2305,21 @@ export const shareOrderPdfToWhatsApp = async (order) => {
  * Opens client's direct WhatsApp chat window.
  * If client phone number is available, launches wa.me direct chat with order greeting.
  */
-export const openClientWhatsAppChat = (order) => {
-  if (!order) {
-    toast.error("No order selected.");
+export const openClientWhatsAppChat = (orderOrClient) => {
+  if (!orderOrClient) {
+    toast.error("No client selected.");
     return;
   }
 
   const clientMobileRaw =
-    order.clientMobile ||
-    order.userMobile ||
-    order.phone ||
-    order.mobile ||
-    order.customerMobile ||
-    order.clientPhone ||
-    order.customerPhone ||
-    order.client?.mobile ||
+    orderOrClient.clientMobile ||
+    orderOrClient.userMobile ||
+    orderOrClient.phone ||
+    orderOrClient.mobile ||
+    orderOrClient.customerMobile ||
+    orderOrClient.clientPhone ||
+    orderOrClient.customerPhone ||
+    orderOrClient.client?.mobile ||
     "";
 
   const cleanDigits = String(clientMobileRaw).replace(/[^0-9]/g, "");
@@ -2332,10 +2332,11 @@ export const openClientWhatsAppChat = (order) => {
     cleanDigits.length === 10 ? `91${cleanDigits}` : cleanDigits;
 
   const clientName =
-    order.clientName ||
-    order.customerName ||
-    order.name ||
-    order.client?.name ||
+    orderOrClient.clientName ||
+    orderOrClient.customerName ||
+    orderOrClient.username ||
+    orderOrClient.name ||
+    orderOrClient.client?.name ||
     "";
 
   const message = ``;

@@ -52,6 +52,7 @@ import {
 } from "../../components/CustomInvoiceModal/CustomInvoiceModal";
 import {
   getAllOrders,
+  getAllServices,
   getLatestItemTimestamp,
   formatDateSafe,
 } from "../../../firebase/dbService";
@@ -238,16 +239,21 @@ const Bookings = () => {
   // Modals
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [services, setServices] = useState([]);
 
-  // Fetch orders
+  // Fetch orders & services
   const fetchOrders = useCallback(
     async (isManualRefresh = false) => {
       if (isClient) return;
       setLoading(true);
       if (isManualRefresh) setRefreshing(true);
       try {
-        const data = await getAllOrders();
+        const [data, servicesList] = await Promise.all([
+          getAllOrders(),
+          getAllServices(false),
+        ]);
         setOrders(data || []);
+        setServices(servicesList || []);
         if (isManualRefresh) {
           toast.success("Orders refreshed successfully!");
         }
@@ -255,7 +261,7 @@ const Bookings = () => {
         if (err?.name === "AbortError" || err?.message?.includes("aborted")) {
           return;
         }
-        console.warn("Failed to load orders:", err);
+        console.warn("Failed to load orders/services:", err);
         toast.error("Failed to load orders.");
       } finally {
         setLoading(false);
@@ -395,53 +401,47 @@ const Bookings = () => {
       .reduce((acc, o) => acc + getOrderPendingAmountNumeric(o), 0);
   }, [orders]);
 
-  // Service metrics breakdown across all booked orders
+  // Service metrics breakdown across all catalog services
   const serviceStats = useMemo(() => {
     let pleating = 0;
     let draping = 0;
     let workshop = 0;
     let other = 0;
-    let total = 0;
 
-    orders.forEach((order) => {
-      const items = getOrderItems(order);
-      items.forEach((it) => {
-        total += 1;
-        const type = String(it.serviceType || order.serviceType || "").trim();
-        const typeLower = type.toLowerCase();
-        const nameLower = String(it.serviceName || "").toLowerCase();
+    services.forEach((s) => {
+      const type = String(s.serviceType || "").trim();
+      const typeLower = type.toLowerCase();
+      const nameLower = String(s.serviceName || "").toLowerCase();
 
-        if (
-          type === "Workshop" ||
-          typeLower.includes("workshop") ||
-          typeLower.includes("work shop") ||
-          nameLower.includes("workshop") ||
-          nameLower.includes("class") ||
-          nameLower.includes("training")
-        ) {
-          workshop += 1;
-        } else if (
-          type === "Draping Service" ||
-          typeLower.includes("drap") ||
-          nameLower.includes("drap") ||
-          nameLower.includes("styling")
-        ) {
-          draping += 1;
-        } else if (
-          type === "Other Service" ||
-          typeLower.includes("other") ||
-          nameLower.includes("custom")
-        ) {
-          other += 1;
-        } else {
-          // Default to Pleating Service
-          pleating += 1;
-        }
-      });
+      if (
+        type === "Workshop" ||
+        typeLower.includes("workshop") ||
+        typeLower.includes("work shop") ||
+        nameLower.includes("workshop") ||
+        nameLower.includes("class") ||
+        nameLower.includes("training")
+      ) {
+        workshop += 1;
+      } else if (
+        type === "Draping Service" ||
+        typeLower.includes("drap") ||
+        nameLower.includes("drap") ||
+        nameLower.includes("styling")
+      ) {
+        draping += 1;
+      } else if (
+        type === "Other Service" ||
+        typeLower.includes("other") ||
+        nameLower.includes("custom")
+      ) {
+        other += 1;
+      } else {
+        pleating += 1;
+      }
     });
 
-    return { total, pleating, draping, workshop, other };
-  }, [orders]);
+    return { total: services.length, pleating, draping, workshop, other };
+  }, [services]);
 
   // Tabs configured strictly with { label, value } for AppTabs
   const orderTabs = useMemo(

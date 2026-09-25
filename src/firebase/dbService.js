@@ -2023,18 +2023,6 @@ export const setOfflineOrdersQueue = (queue) => {
   } catch {}
 };
 
-/**
- * Generate a collision-proof temporary offline order ID
- * e.g. A-TEMP-LM8X9-K4F2-SPP
- */
-export const generateOfflineTempOrderId = () => {
-  const timePart = Date.now().toString(36).toUpperCase();
-  const randPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-  const tempId = `A-TEMP-${timePart}-${randPart}-SPP`;
-  assignedOrderIds.add(tempId);
-  return tempId;
-};
-
 export const getCachedOrders = () => {
   try {
     const raw = localStorage.getItem(ORDERS_CACHE_KEY);
@@ -2063,116 +2051,53 @@ const assignedOrderIds = new Set();
 const docIdToOrderId = new Map();
 
 /**
- * Helper to get the highest existing sequential order number in the system (10001 - 19999)
- * Strictly starts at 10000 and scans localStorage, cached orders, and memory assignedOrderIds.
+ * Date-based sequential Order ID generator formatted as ddmmyyNN (e.g. 25092601, 25092602, ...)
+ * Starts from '01' for each day and increments sequentially.
+ * @param {Date|string} [date]
+ * @returns {string} Order ID in ddmmyyNN format
  */
-export const getHighestOrderSequence = () => {
-  let highest = 10000;
-  try {
-    // 1. Check localStorage saved sequence
-    const savedSeq = parseInt(
-      localStorage.getItem("aparna_last_order_seq"),
-      10,
-    );
-    if (!isNaN(savedSeq) && savedSeq >= 10001 && savedSeq < 20000) {
-      highest = Math.max(highest, savedSeq);
-    }
+export const generateOrderId = (date) => {
+  const d = date ? new Date(date) : new Date();
+  const validDate = isNaN(d.getTime()) ? new Date() : d;
+  const dd = String(validDate.getDate()).padStart(2, "0");
+  const mm = String(validDate.getMonth() + 1).padStart(2, "0");
+  const yy = String(validDate.getFullYear()).slice(-2);
+  const prefix = `${dd}${mm}${yy}`;
 
-    // 2. Scan all cached orders to discover highest actual sequential order number
-    const cached = getCachedOrders();
-    if (Array.isArray(cached)) {
-      for (const ord of cached) {
-        const idToCheck = String(ord.orderId || ord.id || "");
-        const match =
-          idToCheck.match(/^(?:A|ASPP)-(\d{5})-SPP$/i) ||
-          idToCheck.match(/^(?:A|ASPP)-(\d{5})$/i);
-        if (match && match[1]) {
-          const num = parseInt(match[1], 10);
-          if (!isNaN(num) && num >= 10001 && num < 20000) {
-            highest = Math.max(highest, num);
-          }
-        }
+  let maxSeq = 0;
+  const regex = new RegExp(`^${prefix}(\\d+)$`);
+
+  // 1. Scan memory registry of assigned IDs
+  for (const id of assignedOrderIds) {
+    const match = String(id).match(regex);
+    if (match && match[1]) {
+      const seq = parseInt(match[1], 10);
+      if (!isNaN(seq) && seq > maxSeq) {
+        maxSeq = seq;
       }
     }
-
-    // 3. Scan memory registry of assigned IDs
-    for (const assignedId of assignedOrderIds) {
-      const match =
-        String(assignedId).match(/^(?:A|ASPP)-(\d{5})-SPP$/i) ||
-        String(assignedId).match(/^(?:A|ASPP)-(\d{5})$/i);
-      if (match && match[1]) {
-        const num = parseInt(match[1], 10);
-        if (!isNaN(num) && num >= 10001 && num < 20000) {
-          highest = Math.max(highest, num);
-        }
-      }
-    }
-  } catch (err) {
-    console.warn("getHighestOrderSequence error:", err);
-  }
-  return highest;
-};
-
-/**
- * Get next atomic sequential Order ID: A-10001-SPP, A-10002-SPP, A-10003-SPP...
- * Uses a Firestore transaction on the `counters/orders` document to guarantee
- * unique sequential numbers across multiple concurrent users/devices starting at 10001.
- */
-export const getNextSequentialOrderId = async () => {
-  const counterRef = doc(db, COLLECTIONS.COUNTERS, "orders");
-  const nextNumber = await withTimeout(
-    runTransaction(db, async (transaction) => {
-      const counterDoc = await transaction.get(counterRef);
-      let current = 10000;
-      if (counterDoc.exists()) {
-        const data = counterDoc.data();
-        if (
-          typeof data.lastOrderNumber === "number" &&
-          data.lastOrderNumber >= 10000 &&
-          data.lastOrderNumber < 20000
-        ) {
-          current = data.lastOrderNumber;
-        } else {
-          current = getHighestOrderSequence();
-        }
-      } else {
-        current = getHighestOrderSequence();
-      }
-      const next = current + 1;
-      transaction.set(
-        counterRef,
-        {
-          lastOrderNumber: next,
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true },
-      );
-      return next;
-    }),
-    8000,
-  );
-
-  if (nextNumber && nextNumber >= 10001) {
-    localStorage.setItem("aparna_last_order_seq", String(nextNumber));
-    const orderIdStr = `A-${nextNumber}-SPP`;
-    assignedOrderIds.add(orderIdStr);
-    return orderIdStr;
   }
 
-  throw new Error("Failed to allocate atomic sequential order ID");
-};
+  // 2. Scan cached orders
+  const cached = getCachedOrders() || [];
+  for (const ord of cached) {
+    const idToCheck = String(ord.id || ord.orderId || "");
+    const match = idToCheck.match(regex);
+    if (match && match[1]) {
+      const seq = parseInt(match[1], 10);
+      if (!isNaN(seq) && seq > maxSeq) {
+        maxSeq = seq;
+      }
+    }
+  }
 
-/**
- * Synchronous sequential Order ID generator starting from 10001 (A-10001-SPP, A-10002-SPP, ...)
- */
-export const generateOrderId = () => {
-  const currentMax = getHighestOrderSequence();
-  let nextSeq = currentMax + 1;
-  while (assignedOrderIds.has(`A-${nextSeq}-SPP`)) {
+  let nextSeq = maxSeq + 1;
+  let candidate = `${prefix}${String(nextSeq).padStart(2, "0")}`;
+  while (assignedOrderIds.has(candidate)) {
     nextSeq++;
+    candidate = `${prefix}${String(nextSeq).padStart(2, "0")}`;
   }
-  localStorage.setItem("aparna_last_order_seq", String(nextSeq));
-  const candidate = `A-${nextSeq}-SPP`;
+
   assignedOrderIds.add(candidate);
   return candidate;
 };
@@ -2181,7 +2106,7 @@ export const generateOrderId = () => {
 let isSyncingOfflineOrders = false;
 
 /**
- * Synchronize all pending offline orders to Cloud Firestore with atomic official serial IDs
+ * Synchronize all pending offline orders to Cloud Firestore
  */
 export const syncOfflineOrders = async () => {
   if (isSyncingOfflineOrders) return 0;
@@ -2200,63 +2125,28 @@ export const syncOfflineOrders = async () => {
 
     for (const item of queue) {
       try {
-        const tempId = item.id || item.orderId;
-        const isTemporary =
-          String(tempId).startsWith("A-TEMP-") ||
-          String(tempId).startsWith("ASPP-TEMP-");
-
-        // Check if an official order has ALREADY been created for this tempId (deduplication)
-        const alreadySyncedOrder = cachedOrders.find(
-          (o) =>
-            (o.tempOrderId && o.tempOrderId === tempId) ||
-            (!String(o.id).startsWith("A-TEMP-") &&
-              !String(o.id).startsWith("ASPP-TEMP-") &&
-              o.id === item.id),
-        );
-
-        if (
-          alreadySyncedOrder &&
-          !String(alreadySyncedOrder.id).startsWith("A-TEMP-") &&
-          !String(alreadySyncedOrder.id).startsWith("ASPP-TEMP-")
-        ) {
-          console.log(
-            `Order for ${tempId} is already synced as ${alreadySyncedOrder.id}, skipping duplicate creation.`,
-          );
-          continue;
-        }
-
-        let officialOrderId = tempId;
-        if (isTemporary) {
-          officialOrderId = await getNextSequentialOrderId();
-        }
+        const orderId = item.id || item.orderId;
+        if (!orderId) continue;
 
         const updatedModel = createOrderModel({
           ...item,
-          id: officialOrderId,
-          orderId: officialOrderId,
+          id: orderId,
+          orderId: orderId,
           isOfflinePending: false,
-          tempOrderId: isTemporary ? tempId : item.tempOrderId || null,
           syncedAt: new Date().toISOString(),
         });
 
         if ("updatedAt" in updatedModel) delete updatedModel.updatedAt;
         if ("updatedBy" in updatedModel) delete updatedModel.updatedBy;
 
-        // Save to Firestore with official ID
+        // Save to Firestore with official 6-digit order ID
         await withTimeout(
-          setDoc(doc(db, COLLECTIONS.ORDERS, officialOrderId), updatedModel),
+          setDoc(doc(db, COLLECTIONS.ORDERS, orderId), updatedModel, { merge: true }),
           8000,
         );
 
-        // If it was a temporary draft document in Firestore, remove temp doc
-        if (isTemporary && tempId !== officialOrderId) {
-          try {
-            await deleteDoc(doc(db, COLLECTIONS.ORDERS, tempId));
-          } catch {}
-        }
-
         // Update cached order entry
-        const formatted = formatOrderDoc(officialOrderId, {
+        const formatted = formatOrderDoc(orderId, {
           ...updatedModel,
           createdAt: item.createdAt || new Date().toISOString(),
           rawCreatedAt: item.rawCreatedAt || new Date().toISOString(),
@@ -2264,11 +2154,7 @@ export const syncOfflineOrders = async () => {
         });
 
         const idx = cachedOrders.findIndex(
-          (o) =>
-            o.id === tempId ||
-            o.orderId === tempId ||
-            o.tempOrderId === tempId ||
-            o.id === officialOrderId,
+          (o) => o.id === orderId || o.orderId === orderId,
         );
         if (idx >= 0) {
           cachedOrders[idx] = formatted;
@@ -2327,7 +2213,7 @@ const formatOrderDoc = (id, data) => {
   // Determine unique order ID - strictly preserve the actual Firestore document ID
   const cleanId =
     String(id || data.id || data.orderId || "").trim() ||
-    `A-TEMP-${Date.now().toString(36).toUpperCase()}-SPP`;
+    generateOrderId(rawCreated);
 
   if (cleanId) {
     assignedOrderIds.add(cleanId);
@@ -2415,7 +2301,6 @@ const formatOrderDoc = (id, data) => {
     createdBy: data.createdBy || "",
     updatedBy: data.updatedBy || "",
     isOfflinePending: Boolean(data.isOfflinePending),
-    tempOrderId: data.tempOrderId || null,
   };
 };
 
@@ -2423,8 +2308,7 @@ const formatOrderDoc = (id, data) => {
 const recentOrderCreations = new Map();
 
 /**
- * Create a new order with sequential serial Order ID: A-10001-SPP, A-10002-SPP, A-10003-SPP...
- * (Or temporary offline ID A-TEMP-...-SPP if disconnected, auto-promoted to official serial upon sync)
+ * Create a new order with 6-digit random Order ID (first 2 digits date + 4 random digits)
  * @param {Object} orderData
  */
 export const createOrder = async (orderData) => {
@@ -2470,7 +2354,7 @@ export const createOrder = async (orderData) => {
   const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
   let orderId = String(orderData.id || orderData.orderId || "").trim();
-  let isOfflineOrder = false;
+  let isOfflineOrder = !isOnline;
 
   const isGenericNewId =
     !orderId ||
@@ -2481,27 +2365,7 @@ export const createOrder = async (orderData) => {
     orderId === "NEW";
 
   if (isGenericNewId) {
-    if (isOnline) {
-      try {
-        orderId = await getNextSequentialOrderId();
-      } catch (err) {
-        console.warn(
-          "Could not get online sequential order ID, generating offline temp ID:",
-          err,
-        );
-        orderId = generateOfflineTempOrderId();
-        isOfflineOrder = true;
-      }
-    } else {
-      orderId = generateOfflineTempOrderId();
-      isOfflineOrder = true;
-    }
-  } else if (
-    orderId.startsWith("A-TEMP-") ||
-    orderId.startsWith("ASPP-TEMP-")
-  ) {
-    isOfflineOrder = true;
-    assignedOrderIds.add(orderId);
+    orderId = generateOrderId(orderData.orderDate);
   } else {
     assignedOrderIds.add(orderId);
   }
@@ -2513,7 +2377,6 @@ export const createOrder = async (orderData) => {
     orderId,
     createdBy: currentUid,
     isOfflinePending: isOfflineOrder,
-    tempOrderId: isOfflineOrder ? orderId : orderData.tempOrderId || null,
   });
 
   if ("updatedAt" in model) {
@@ -2525,46 +2388,43 @@ export const createOrder = async (orderData) => {
 
   let createdId = orderId;
 
-  if (!isOfflineOrder && isOnline) {
+  if (isOnline) {
     try {
       // Check collision before writing to ensure we NEVER overwrite an existing distinct order
-      const existingDoc = await withTimeout(
-        getDoc(doc(db, COLLECTIONS.ORDERS, orderId)),
-        3000,
-        null,
-      );
-      if (existingDoc && existingDoc.exists()) {
-        console.warn(
-          `Order document ${orderId} already exists! Allocating a fresh sequential ID to prevent overwrite.`,
+      let attempts = 0;
+      while (attempts < 50) {
+        const existingDoc = await withTimeout(
+          getDoc(doc(db, COLLECTIONS.ORDERS, orderId)),
+          3000,
+          null,
         );
-        try {
-          orderId = await getNextSequentialOrderId();
-        } catch {
-          orderId = generateOfflineTempOrderId();
-          isOfflineOrder = true;
+        if (!existingDoc || !existingDoc.exists()) {
+          break;
         }
-        createdId = orderId;
-        model.id = orderId;
-        model.orderId = orderId;
-        model.isOfflinePending = isOfflineOrder;
-        model.tempOrderId = isOfflineOrder ? orderId : null;
-      }
-
-      if (!isOfflineOrder) {
-        await withTimeout(
-          setDoc(doc(db, COLLECTIONS.ORDERS, orderId), model),
-          8000,
+        console.warn(
+          `Order document ${orderId} already exists! Allocating next sequential ID.`,
         );
+        assignedOrderIds.add(orderId);
+        orderId = generateOrderId(orderData.orderDate);
+        attempts++;
       }
+      createdId = orderId;
+      model.id = orderId;
+      model.orderId = orderId;
+
+      await withTimeout(
+        setDoc(doc(db, COLLECTIONS.ORDERS, orderId), model),
+        8000,
+      );
+      model.isOfflinePending = false;
+      isOfflineOrder = false;
     } catch (err) {
       console.warn(
         "createOrder firestore note (falling back to offline queue):",
         err.message || err,
       );
-      if (!isOfflineOrder) {
-        isOfflineOrder = true;
-        model.isOfflinePending = true;
-      }
+      isOfflineOrder = true;
+      model.isOfflinePending = true;
     }
   }
 
@@ -2581,12 +2441,8 @@ export const createOrder = async (orderData) => {
   const cached = getCachedOrders() || [];
   setCachedOrders([formatted, ...cached.filter((o) => o.id !== createdId)]);
 
-  // If this was an offline temporary order, queue for background sync
-  // (Only queue true temporary orders to avoid re-syncing confirmed online orders)
-  if (
-    isOfflineOrder &&
-    (createdId.startsWith("A-TEMP-") || createdId.startsWith("ASPP-TEMP-"))
-  ) {
+  // If this was an offline order, queue for background sync
+  if (isOfflineOrder) {
     const queue = getOfflineOrdersQueue();
     setOfflineOrdersQueue([
       ...queue.filter((q) => q.id !== createdId),

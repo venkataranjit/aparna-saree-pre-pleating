@@ -1423,7 +1423,7 @@ export default function CreateOrderModal({
       }
 
       toast.success(
-        `Order ${created.id || "A-NEW-SPP"} booked successfully for ${cleanName}!`,
+        `Order #${created.id || created.orderId || ""} booked successfully for ${cleanName}!`,
       );
 
       if (onOrderCreated) {

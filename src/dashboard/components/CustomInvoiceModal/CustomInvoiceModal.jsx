@@ -155,7 +155,7 @@ export const mapOrderToInvoiceData = (order) => {
   const clientAddress =
     order.userAddress || order.client?.userAddress || order.address || "-";
 
-  const orderId = order.id || "A-NEW-SPP";
+  const orderId = String(order.id || order.orderId || "");
   const invNumber =
     order.invoiceNumber ||
     `INV-${orderId.replace(/[^0-9]/g, "") || new Date().getFullYear()}`;

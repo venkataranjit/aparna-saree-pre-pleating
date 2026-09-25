@@ -308,7 +308,6 @@ export const createOrderModel = ({
   deliveryDate = null,
   notes = "",
   createdBy = "",
-  tempOrderId = null,
   isOfflinePending = false,
 } = {}) => {
   const resolvedOrderId = String(orderId || id || "").trim();
@@ -357,7 +356,6 @@ export const createOrderModel = ({
   return {
     id: resolvedOrderId || undefined,
     orderId: resolvedOrderId || undefined,
-    tempOrderId: tempOrderId || null,
     isOfflinePending: Boolean(isOfflinePending),
     clientId: String(clientObj.clientId || clientId || "").trim(),
     username: String(clientObj.username || username || "").trim(),

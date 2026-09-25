@@ -199,7 +199,7 @@ const createEmptyItem = (idx = 1) => ({
   servicePrice: 0,
   serviceDiscountedPrice: 0,
   finalPrice: 0,
-  sareeType: "Kanjeevaram Silk (Pure Zari)",
+  sareeType: "",
   customSareeType: "",
   includeMeasurements: true,
   selectedMeasurementId: "custom",
@@ -1252,7 +1252,7 @@ export default function CreateOrderModal({
           it.finalPrice !== "" && it.finalPrice !== null
             ? Number(it.finalPrice)
             : NaN,
-        sareeType: it.sareeType || "Kanjeevaram Silk (Pure Zari)",
+        sareeType: it.sareeType || "",
         includeMeasurements,
         selectedMeasurementId: it.selectedMeasurementId || "custom",
         measurementProfile,
@@ -1809,7 +1809,9 @@ export default function CreateOrderModal({
                     <div className="form-field-wrap">
                       <AppSelect
                         label="Saree Fabric / Type"
-                        value={item.sareeType}
+                        placeholder="Select Fabric (Optional)"
+                        value={item.sareeType || ""}
+                        allowClear
                         onChange={(e) =>
                           handleItemFieldChange(
                             idx,

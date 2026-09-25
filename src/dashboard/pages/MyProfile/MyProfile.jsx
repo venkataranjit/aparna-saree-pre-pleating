@@ -183,7 +183,7 @@ const getOrderItems = (order) => {
         Number(
           String(order.amount || order.totalAmount || 0).replace(/[^0-9]/g, ""),
         ) || 0,
-      sareeType: order.sareeType || "Silk Saree",
+      sareeType: order.sareeType || "",
       itemNotes: order.notes || "",
     },
   ];
@@ -209,9 +209,9 @@ const getOrderTotalAmount = (order) => {
 
 const getOrderFabricSummary = (order) => {
   const items = getOrderItems(order);
-  if (items.length === 0) return order.sareeType || "Silk Saree";
+  if (items.length === 0) return order.sareeType || "-";
   const fabrics = items.map((it) => it.sareeType).filter(Boolean);
-  if (fabrics.length === 0) return order.sareeType || "Standard Silk";
+  if (fabrics.length === 0) return order.sareeType || "-";
   const unique = [...new Set(fabrics)];
   if (unique.length === 1) return unique[0];
   return `${unique[0]} (+${unique.length - 1})`;

@@ -74,7 +74,7 @@ export const getOrderItems = (order) => {
           String(order.amount || order.baseAmount || 0).replace(/[^0-9]/g, ""),
         ) || 0,
       finalPrice: Number(String(order.amount || 0).replace(/[^0-9]/g, "")) || 0,
-      sareeType: order.sareeType || "Silk Saree",
+      sareeType: order.sareeType || "",
       serviceDescription: order.packaging || "",
       itemNotes: order.notes || "",
     },
@@ -92,9 +92,9 @@ export const getOrderServiceSummary = (order) => {
 
 export const getOrderFabricSummary = (order) => {
   const items = getOrderItems(order);
-  if (items.length === 0) return order.sareeType || "Silk Saree";
+  if (items.length === 0) return order.sareeType || "-";
   const fabrics = items.map((it) => it.sareeType).filter(Boolean);
-  if (fabrics.length === 0) return "Standard Silk";
+  if (fabrics.length === 0) return order.sareeType || "-";
   if (fabrics.length === 1) return fabrics[0];
   const unique = [...new Set(fabrics)];
   if (unique.length === 1) return unique[0];
@@ -795,7 +795,8 @@ const OrdersTable = ({
                               <DryCleaningOutlinedIcon
                                 style={{ fontSize: 12, marginRight: 4 }}
                               />
-                              {it.serviceName} ({it.sareeType || "Saree"}) - ₹
+                              {it.serviceName}
+                              {it.sareeType ? ` (${it.sareeType})` : ""} - ₹
                               {it.finalPrice || 0}
                             </span>
                           ))}

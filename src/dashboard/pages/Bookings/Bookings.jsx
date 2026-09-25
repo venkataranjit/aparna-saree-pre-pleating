@@ -95,7 +95,7 @@ export const getOrderItems = (order) => {
         Number(
           String(order.amount || order.baseAmount || 0).replace(/[^0-9]/g, ""),
         ) || 0,
-      sareeType: order.sareeType || "Silk Saree",
+      sareeType: order.sareeType || "",
       itemNotes: order.notes || "",
     },
   ];
@@ -112,9 +112,9 @@ export const getOrderServiceSummary = (order) => {
 
 export const getOrderFabricSummary = (order) => {
   const items = getOrderItems(order);
-  if (items.length === 0) return order.sareeType || "Silk Saree";
+  if (items.length === 0) return order.sareeType || "-";
   const fabrics = items.map((it) => it.sareeType).filter(Boolean);
-  if (fabrics.length === 0) return order.sareeType || "Standard Silk";
+  if (fabrics.length === 0) return order.sareeType || "-";
   const unique = [...new Set(fabrics)];
   if (unique.length === 1) return unique[0];
   return `${unique[0]} (+${unique.length - 1})`;
@@ -399,6 +399,7 @@ const Bookings = () => {
   const serviceStats = useMemo(() => {
     let pleating = 0;
     let draping = 0;
+    let workshop = 0;
     let other = 0;
     let total = 0;
 
@@ -411,6 +412,15 @@ const Bookings = () => {
         const nameLower = String(it.serviceName || "").toLowerCase();
 
         if (
+          type === "Workshop" ||
+          typeLower.includes("workshop") ||
+          typeLower.includes("work shop") ||
+          nameLower.includes("workshop") ||
+          nameLower.includes("class") ||
+          nameLower.includes("training")
+        ) {
+          workshop += 1;
+        } else if (
           type === "Draping Service" ||
           typeLower.includes("drap") ||
           nameLower.includes("drap") ||
@@ -430,7 +440,7 @@ const Bookings = () => {
       });
     });
 
-    return { total, pleating, draping, other };
+    return { total, pleating, draping, workshop, other };
   }, [orders]);
 
   // Tabs configured strictly with { label, value } for AppTabs
@@ -652,6 +662,10 @@ const Bookings = () => {
               <span className="breakdown-divider">•</span>
               <span className="breakdown-item">
                 Draping: <strong>{serviceStats.draping}</strong>
+              </span>
+              <span className="breakdown-divider">•</span>
+              <span className="breakdown-item">
+                Workshop: <strong>{serviceStats.workshop}</strong>
               </span>
               <span className="breakdown-divider">•</span>
               <span className="breakdown-item">

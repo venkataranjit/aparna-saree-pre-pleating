@@ -217,7 +217,7 @@ const OrderDetailsModal = ({
             finalPrice:
               Number(String(order.amount || "0").replace(/[^0-9]/g, "")) ||
               1000,
-            sareeType: order.sareeType || "Silk Saree",
+            sareeType: order.sareeType || "",
             measurementProfile: {
               title: "Saved Profile",
               pallu: order.palluStyle || "Standard Pin Fold",
@@ -489,7 +489,7 @@ const OrderDetailsModal = ({
                         <DryCleaningOutlinedIcon className="spec-icon" />
                         <span className="spec-label">Saree Fabric</span>
                         <span className="spec-val highlight">
-                          {item.sareeType || "Silk"}
+                          {item.sareeType || "-"}
                         </span>
                       </div>
 

@@ -336,7 +336,7 @@ export const createOrderModel = ({
           ? it.finalPrice
           : it.serviceDiscountedPrice || it.servicePrice,
       ) || 0,
-    sareeType: it.sareeType || "Kanjeevaram Silk",
+    sareeType: it.sareeType || "",
     includeMeasurements: it.includeMeasurements !== false,
     measurementProfile: it.measurementProfile || null,
     itemNotes: it.itemNotes || "",

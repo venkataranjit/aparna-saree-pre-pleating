@@ -385,6 +385,14 @@ const Bookings = () => {
     requestedCount,
   ]);
 
+  const deliveredAndCompletedCount = useMemo(() => {
+    return deliveredCount + completedCount;
+  }, [deliveredCount, completedCount]);
+
+  const remainingOrdersCount = useMemo(() => {
+    return requestedCount + acceptedCount + pendingCount + inProgressCount;
+  }, [requestedCount, acceptedCount, pendingCount, inProgressCount]);
+
   const totalReceivedRevenue = useMemo(() => {
     return orders
       .filter(
@@ -644,8 +652,8 @@ const Bookings = () => {
         />
         <StatCard
           title="Delivered / Pending"
-          value={String(deliveredCount)}
-          subValue={`/ ${activeOrdersCount} Active`}
+          value={String(deliveredAndCompletedCount)}
+          subValue={`/ ${remainingOrdersCount} Pending`}
           change={`${cancelledCount} Cancelled`}
           trendType={cancelledCount > 0 ? "pending" : "completed"}
           icon={<LocalShippingOutlinedIcon />}
@@ -653,26 +661,9 @@ const Bookings = () => {
         <StatCard
           title="Total Services"
           value={String(serviceStats.total)}
+          change="All catalog services"
+          trendType="completed"
           icon={<DryCleaningOutlinedIcon />}
-          customFooter={
-            <div className="stat-card-breakdown-row">
-              <span className="breakdown-item">
-                Pleating: <strong>{serviceStats.pleating}</strong>
-              </span>
-              <span className="breakdown-divider">•</span>
-              <span className="breakdown-item">
-                Draping: <strong>{serviceStats.draping}</strong>
-              </span>
-              <span className="breakdown-divider">•</span>
-              <span className="breakdown-item">
-                Workshop: <strong>{serviceStats.workshop}</strong>
-              </span>
-              <span className="breakdown-divider">•</span>
-              <span className="breakdown-item">
-                Other: <strong>{serviceStats.other}</strong>
-              </span>
-            </div>
-          }
         />
         <StatCard
           title="Total Revenue"

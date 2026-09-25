@@ -1491,29 +1491,29 @@ export const buildServiceRowHtml = (s, idx) => {
     m.title
       ? `<span class="spec-pill"><span class="lbl">Profile:</span> <span class="val">${m.title}</span></span>`
       : "",
+    m.dressSize
+      ? `<span class="spec-pill"><span class="lbl">Dress Size:</span> <span class="val">${m.dressSize}</span></span>`
+      : "",
     m.pallu
-      ? `<span class="spec-pill"><span class="lbl">Pallu:</span> <span class="val">${formatInch(m.pallu)}</span></span>`
+      ? `<span class="spec-pill"><span class="lbl">Pallu Spec:</span> <span class="val">${formatInch(m.pallu)}</span></span>`
+      : "",
+    m.shoulderToRightTight || m.shoulderToTight
+      ? `<span class="spec-pill"><span class="lbl">Shoulder to Tight:</span> <span class="val">${formatInch(m.shoulderToRightTight || m.shoulderToTight)}</span></span>`
+      : "",
+    m.chest
+      ? `<span class="spec-pill"><span class="lbl">Chest Size:</span> <span class="val">${formatInch(m.chest)}</span></span>`
+      : "",
+    m.hip
+      ? `<span class="spec-pill"><span class="lbl">Hip Size:</span> <span class="val">${formatInch(m.hip)}</span></span>`
       : "",
     m.firstPleatSize
       ? `<span class="spec-pill"><span class="lbl">First Pleat:</span> <span class="val">${formatInch(m.firstPleatSize)}</span></span>`
       : "",
-    m.shoulderToRightTight || m.shoulderToTight
-      ? `<span class="spec-pill"><span class="lbl">Shoulder-Tight:</span> <span class="val">${formatInch(m.shoulderToRightTight || m.shoulderToTight)}</span></span>`
-      : "",
-    m.chest
-      ? `<span class="spec-pill"><span class="lbl">Chest:</span> <span class="val">${formatInch(m.chest)}</span></span>`
-      : "",
     m.noOfChestPleats
       ? `<span class="spec-pill"><span class="lbl">Chest Pleats:</span> <span class="val">${m.noOfChestPleats}</span></span>`
       : "",
-    m.hip
-      ? `<span class="spec-pill"><span class="lbl">Hip:</span> <span class="val">${formatInch(m.hip)}</span></span>`
-      : "",
     m.height
       ? `<span class="spec-pill"><span class="lbl">Height:</span> <span class="val">${m.height}</span></span>`
-      : "",
-    m.dressSize
-      ? `<span class="spec-pill"><span class="lbl">Dress Size:</span> <span class="val">${m.dressSize}</span></span>`
       : "",
     m.notes
       ? `<span class="spec-pill"><span class="lbl">Care Note:</span> <span class="val">${m.notes}</span></span>`

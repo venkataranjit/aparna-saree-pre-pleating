@@ -11,7 +11,6 @@ export const COLLECTIONS = {
   ORDERS: "orders",
   MEASUREMENTS: "measurements",
   EXPENSES: "expenses",
-  COUNTERS: "counters",
 };
 
 /**

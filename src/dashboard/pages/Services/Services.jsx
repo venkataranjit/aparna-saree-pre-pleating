@@ -67,7 +67,12 @@ import "./Services.scss";
 
 // Service Type Dropdown Options
 const SERVICE_TYPE_OPTIONS = (
-  SERVICE_TYPES || ["Pleating Service", "Draping Service", "Other Service"]
+  SERVICE_TYPES || [
+    "Pleating Service",
+    "Draping Service",
+    "Other Service",
+    "Work Shop",
+  ]
 ).map((t) => ({
   label: t,
   value: t,

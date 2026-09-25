@@ -506,6 +506,23 @@
           font-size: 0.95rem;
           font-weight: 600;
         }
+
+        .item-qty-multiplier-pill {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--surface-gold-tint);
+          color: var(--color-gold);
+          border: 1px solid var(--surface-border);
+          font-size: 0.75rem;
+          font-weight: 700;
+          padding: 2px 8px;
+          border-radius: 9999px;
+          letter-spacing: 0.3px;
+          line-height: 1.2;
+          box-shadow: none;
+          flex-shrink: 0;
+        }
       }
 
       .item-price-tag {
@@ -519,6 +536,13 @@
           display: flex;
           align-items: baseline;
           gap: 6px;
+        }
+
+        .item-calc-breakdown {
+          font-size: 0.85rem;
+          font-weight: 500;
+          color: var(--text-muted, #94a3b8);
+          letter-spacing: 0.2px;
         }
 
         .regular-price-strike {

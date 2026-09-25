@@ -73,6 +73,14 @@ const SAREE_FABRICS = [
 
 export const DRESS_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "Custom"];
 
+export const QUANTITY_OPTIONS = [
+  { value: "1", label: "1" },
+  { value: "2", label: "2" },
+  { value: "3", label: "3" },
+  { value: "4", label: "4" },
+  { value: "5", label: "5" },
+];
+
 // Strict numeric validator for custom measurements (numbers only, no characters or symbols)
 const numericMeasurementValidator = (label, isInteger = false) =>
   Yup.string()
@@ -135,6 +143,12 @@ const orderValidationSchema = Yup.object({
           .required("Service selection is required"),
         serviceName: Yup.string().trim().required("Service name is required"),
         sareeType: Yup.string().trim(),
+        quantity: Yup.number()
+          .typeError("Quantity must be a valid number")
+          .integer("Quantity must be a whole number")
+          .min(1, "Quantity must be at least 1")
+          .max(5, "Quantity cannot exceed 5")
+          .default(1),
         servicePrice: Yup.number()
           .typeError("Service price must be a valid number")
           .required("Service price is required")
@@ -198,6 +212,7 @@ const createEmptyItem = (idx = 1) => ({
   serviceType: "Pleating Service",
   servicePrice: 0,
   serviceDiscountedPrice: 0,
+  quantity: 1,
   finalPrice: 0,
   sareeType: "",
   customSareeType: "",
@@ -865,6 +880,10 @@ export default function CreateOrderModal({
     const foundSvc = services.find((s) => s.id === serviceId);
     setItems((prev) => {
       const next = [...prev];
+      const currentQty = Math.max(
+        1,
+        Math.min(5, parseInt(next[index]?.quantity, 10) || 1),
+      );
       if (foundSvc) {
         const regPrice =
           Number(
@@ -893,7 +912,8 @@ export default function CreateOrderModal({
           servicePrice: regPrice,
           serviceDiscountedPrice: offerPrice,
           serviceDescription: foundSvc.description || "",
-          finalPrice: offerPrice,
+          quantity: currentQty,
+          finalPrice: offerPrice * currentQty,
         };
       } else {
         next[index] = {
@@ -904,6 +924,7 @@ export default function CreateOrderModal({
           servicePrice: "",
           serviceDiscountedPrice: "",
           serviceDescription: "",
+          quantity: 1,
           finalPrice: 0,
         };
       }
@@ -914,6 +935,33 @@ export default function CreateOrderModal({
       ...prev,
       [`items[${index}].serviceId`]: undefined,
       [`items[${index}].servicePrice`]: undefined,
+      [`items[${index}].finalPrice`]: undefined,
+      [`items[${index}].quantity`]: undefined,
+    }));
+  };
+
+  const handleQuantityChange = (index, qtyValue) => {
+    const numQty = Math.max(1, Math.min(5, parseInt(qtyValue, 10) || 1));
+    setItems((prev) => {
+      const next = [...prev];
+      const item = next[index];
+      const regPrice = Number(item.servicePrice) || 0;
+      const offerPrice =
+        Number(item.serviceDiscountedPrice) > 0
+          ? Number(item.serviceDiscountedPrice)
+          : regPrice;
+      const unitPrice = offerPrice || regPrice;
+      next[index] = {
+        ...item,
+        quantity: numQty,
+        finalPrice: unitPrice * numQty,
+      };
+      return next;
+    });
+
+    setValidationErrors((prev) => ({
+      ...prev,
+      [`items[${index}].quantity`]: undefined,
       [`items[${index}].finalPrice`]: undefined,
     }));
   };
@@ -1088,14 +1136,30 @@ export default function CreateOrderModal({
   };
 
   // Real-time calculated subtotal and final total
+  const totalQuantity = useMemo(() => {
+    return items.reduce(
+      (acc, it) =>
+        acc + Math.max(1, Math.min(5, parseInt(it.quantity, 10) || 1)),
+      0,
+    );
+  }, [items]);
+
   const subtotalAmount = useMemo(() => {
     return items.reduce((acc, it) => {
+      const qty = Math.max(1, Math.min(5, parseInt(it.quantity, 10) || 1));
+      const unitPrice =
+        it.serviceDiscountedPrice !== undefined &&
+        it.serviceDiscountedPrice !== null &&
+        Number(it.serviceDiscountedPrice) > 0
+          ? Number(it.serviceDiscountedPrice)
+          : Number(it.servicePrice) || 0;
       const price =
         it.finalPrice !== "" &&
         it.finalPrice !== undefined &&
-        it.finalPrice !== null
+        it.finalPrice !== null &&
+        !isNaN(Number(it.finalPrice))
           ? Number(it.finalPrice)
-          : Number(it.serviceDiscountedPrice) || Number(it.servicePrice) || 0;
+          : unitPrice * qty;
       return acc + (Number.isNaN(price) ? 0 : price);
     }, 0);
   }, [items]);
@@ -1238,20 +1302,26 @@ export default function CreateOrderModal({
       const matchingService = services.find((s) => s.id === it.serviceId);
       const resolvedServiceType =
         it.serviceType || matchingService?.serviceType || "Pleating Service";
+      const qty = Math.max(1, Math.min(5, parseInt(it.quantity, 10) || 1));
+      const regUnitPrice = Number(it.servicePrice) || 0;
+      const offerUnitPrice =
+        Number(it.serviceDiscountedPrice) > 0
+          ? Number(it.serviceDiscountedPrice)
+          : regUnitPrice;
+      const unitPrice = offerUnitPrice || regUnitPrice;
+      const lineTotal = unitPrice * qty;
 
       return {
         itemId: it.id || `item_${idx + 1}`,
         serviceId: it.serviceId || "",
         serviceName: it.serviceName || "Saree Pre-Pleating Service",
         serviceType: resolvedServiceType,
-        servicePrice: Number(it.servicePrice) || Number(it.finalPrice) || 0,
-        serviceDiscountedPrice:
-          Number(it.serviceDiscountedPrice) || Number(it.finalPrice) || 0,
+        quantity: qty,
+        unitPrice: unitPrice,
+        servicePrice: regUnitPrice,
+        serviceDiscountedPrice: offerUnitPrice,
         serviceDescription: it.serviceDescription || "",
-        finalPrice:
-          it.finalPrice !== "" && it.finalPrice !== null
-            ? Number(it.finalPrice)
-            : NaN,
+        finalPrice: lineTotal,
         sareeType: it.sareeType || "",
         includeMeasurements,
         selectedMeasurementId: it.selectedMeasurementId || "custom",
@@ -1383,6 +1453,10 @@ export default function CreateOrderModal({
         serviceType: processedItems[0]?.serviceType || "Pleating Service",
         items: processedItems,
         totalItems: processedItems.length,
+        totalQuantity: processedItems.reduce(
+          (sum, it) => sum + (Number(it.quantity) || 1),
+          0,
+        ),
         subtotal: subtotalAmount,
         pickupDeliveryCharges: Number(pickupDeliveryCharges) || 0,
         otherCharges: Number(otherCharges) || 0,
@@ -1519,7 +1593,7 @@ export default function CreateOrderModal({
               ₹{calculatedTotal.toLocaleString("en-IN")}
             </span>
             <span className="summary-count">
-              ({items.length} {items.length === 1 ? "Service" : "Services"})
+              ({totalQuantity} {totalQuantity === 1 ? "Saree" : "Sarees"} • {items.length} {items.length === 1 ? "Service" : "Services"})
             </span>
           </div>
 
@@ -1833,6 +1907,23 @@ export default function CreateOrderModal({
                     </div>
 
                     <div className="form-field-wrap">
+                      <AppSelect
+                        label="Quantity"
+                        value={String(item.quantity || 1)}
+                        onChange={(e) =>
+                          handleQuantityChange(idx, e.target.value)
+                        }
+                        options={QUANTITY_OPTIONS}
+                        disabled={submitting}
+                        required
+                        error={Boolean(
+                          validationErrors[`items[${idx}].quantity`],
+                        )}
+                        helperText={validationErrors[`items[${idx}].quantity`]}
+                      />
+                    </div>
+
+                    <div className="form-field-wrap">
                       <AppInput
                         label="Service Price (₹) [Fixed]"
                         type="text"
@@ -1840,7 +1931,8 @@ export default function CreateOrderModal({
                         value={
                           item.finalPrice !== "" &&
                           item.finalPrice !== undefined &&
-                          item.finalPrice !== null
+                          item.finalPrice !== null &&
+                          Number(item.finalPrice) > 0
                             ? String(item.finalPrice)
                             : item.servicePrice
                               ? String(item.servicePrice)
@@ -1856,14 +1948,34 @@ export default function CreateOrderModal({
                         helperText={
                           validationErrors[`items[${idx}].servicePrice`] ||
                           validationErrors[`items[${idx}].finalPrice`] ||
-                          (Number(item.servicePrice) > 0 &&
-                          Number(item.serviceDiscountedPrice) > 0 &&
-                          Number(item.serviceDiscountedPrice) <
-                            Number(item.servicePrice)
-                            ? `Catalog Price: ₹${item.servicePrice} (Offer: ₹${item.finalPrice})`
-                            : Number(item.servicePrice) > 0
-                              ? `Catalog Price: ₹${item.servicePrice} (Protected)`
-                              : "Auto-set from service catalog")
+                          (() => {
+                            const regPrice = Number(item.servicePrice) || 0;
+                            const offerPrice =
+                              Number(item.serviceDiscountedPrice) > 0
+                                ? Number(item.serviceDiscountedPrice)
+                                : regPrice;
+                            const unitPrice = offerPrice || regPrice;
+                            const qty = Math.max(
+                              1,
+                              Math.min(
+                                5,
+                                parseInt(item.quantity, 10) || 1,
+                              ),
+                            );
+                            if (unitPrice <= 0)
+                              return "Auto-set from service catalog";
+                            if (qty > 1) {
+                              return `₹${unitPrice.toLocaleString("en-IN")} × ${qty} sarees = ₹${(unitPrice * qty).toLocaleString("en-IN")}`;
+                            }
+                            if (
+                              regPrice > 0 &&
+                              offerPrice > 0 &&
+                              offerPrice < regPrice
+                            ) {
+                              return `Catalog Price: ₹${regPrice} (Offer: ₹${offerPrice})`;
+                            }
+                            return `Catalog Price: ₹${unitPrice} (Fixed)`;
+                          })()
                         }
                       />
                     </div>

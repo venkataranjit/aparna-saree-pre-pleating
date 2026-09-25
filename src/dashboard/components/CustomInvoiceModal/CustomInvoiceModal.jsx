@@ -82,10 +82,28 @@ export const mapOrderToInvoiceData = (order) => {
       m.specialCare ||
       m.careInstructions ||
       "";
+    const qty = Math.max(1, parseInt(it.quantity, 10) || 1);
+    const regularUnitPrice = Number(it.servicePrice || it.unitPrice || 0);
+    const offerUnitPrice =
+      Number(it.serviceDiscountedPrice) > 0
+        ? Number(it.serviceDiscountedPrice)
+        : regularUnitPrice;
+    const unitPrice = offerUnitPrice || regularUnitPrice;
+    const lineTotal =
+      it.finalPrice !== undefined &&
+      it.finalPrice !== null &&
+      !Number.isNaN(Number(it.finalPrice))
+        ? Number(it.finalPrice)
+        : unitPrice * qty;
+
     return {
       id: it.itemId || it.id || `srv_${idx + 1}`,
       serviceName: it.serviceName || "Saree Pre-Pleating Service",
       fabric: it.sareeType || "",
+      quantity: qty,
+      unitPrice: unitPrice,
+      regularPrice: regularUnitPrice,
+      price: lineTotal,
       measurementProfile: {
         title: m.title || "Standard Profile",
         pallu: m.pallu || m.palluLength || "",
@@ -100,12 +118,6 @@ export const mapOrderToInvoiceData = (order) => {
         notes: m.notes || "",
       },
       specialCare,
-      regularPrice: Number(it.servicePrice) || 0,
-      price:
-        Number(it.finalPrice) !== undefined &&
-        !Number.isNaN(Number(it.finalPrice))
-          ? Number(it.finalPrice)
-          : Number(it.serviceDiscountedPrice) || Number(it.servicePrice) || 0,
     };
   });
 
@@ -1128,7 +1140,7 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     display: flex;
     justify-content: flex-end;
     align-items: flex-end;
-    margin-top: 6px;
+    margin-top: 8px;
     margin-bottom: 6px;
   }
 
@@ -1138,24 +1150,24 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 130px;
+    min-width: 180px;
   }
 
   #order-pdf-export-container .signature-wrapper img {
-    height: 34px;
+    height: 62px;
     width: auto;
-    max-width: 130px;
+    max-width: 200px;
     object-fit: contain;
     display: block;
-    margin: 0 auto 2px auto;
+    margin: 0 auto 4px auto;
   }
 
   #order-pdf-export-container .signatory-title {
-    font-size: 9.5px;
+    font-size: 10px;
     font-weight: 700;
-    color: #334155;
+    color: #1e293b;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
   }
 
   #order-pdf-export-container .pdf-tagline-strip {
@@ -1468,7 +1480,11 @@ export const formatInch = (val) => {
 
 export const buildServiceRowHtml = (s, idx) => {
   const m = s.measurementProfile || {};
+  const qty = Math.max(1, parseInt(s.quantity, 10) || 1);
   const specsHtml = [
+    qty > 1
+      ? `<span class="spec-pill" style="background:#fef9c3;color:#854d0e;border-color:#fef08a;"><span class="lbl">Qty:</span> <span class="val">${qty}</span></span>`
+      : "",
     s.fabric
       ? `<span class="spec-pill"><span class="lbl">Fabric:</span> <span class="val">${s.fabric}</span></span>`
       : "",
@@ -1523,9 +1539,11 @@ export const buildServiceRowHtml = (s, idx) => {
       </td>
       <td class="td-amt">
         ${
-          s.regularPrice > s.price && s.price > 0
-            ? `<div class="amt-combo"><span class="regular-strike">₹${Number(s.regularPrice).toLocaleString("en-IN")}</span> <span class="offer-val">₹${Number(s.price || 0).toLocaleString("en-IN")}</span></div>`
-            : `₹${Number(s.price || 0).toLocaleString("en-IN")}`
+          qty > 1
+            ? `<div class="amt-combo"><span class="regular-strike" style="text-decoration:none;color:#64748b;font-weight:600;font-size:10.5px;">₹${Number(s.unitPrice || s.regularPrice).toLocaleString("en-IN")} × ${qty}</span> <span class="offer-val">₹${Number(s.price || 0).toLocaleString("en-IN")}</span></div>`
+            : s.regularPrice > s.price && s.price > 0
+              ? `<div class="amt-combo"><span class="regular-strike">₹${Number(s.regularPrice).toLocaleString("en-IN")}</span> <span class="offer-val">₹${Number(s.price || 0).toLocaleString("en-IN")}</span></div>`
+              : `₹${Number(s.price || 0).toLocaleString("en-IN")}`
         }
       </td>
     </tr>
@@ -1618,10 +1636,14 @@ export const buildBottomGridHtml = (data = {}) => {
             <span class="total-lbl">Other Charges</span>
             <span class="total-val">₹${Number(data.financials?.otherCharges || 0).toLocaleString("en-IN")}</span>
           </div>
-          <div class="total-row discount-row ${discountAmount > 0 ? "has-discount" : ""}">
+          ${
+            discountAmount > 0
+              ? `<div class="total-row discount-row has-discount">
             <span class="total-lbl">Discount</span>
-            <span class="total-val">${discountAmount > 0 ? "-₹" + discountAmount.toLocaleString("en-IN") : "₹0"}</span>
-          </div>
+            <span class="total-val">-₹${discountAmount.toLocaleString("en-IN")}</span>
+          </div>`
+              : ""
+          }
           <div class="total-row grand-total-row">
             <span class="grand-lbl">TOTAL BILLED AMOUNT</span>
             <span class="grand-val">₹${Number(data.financials?.totalAmount || 0).toLocaleString("en-IN")}</span>
@@ -1861,8 +1883,8 @@ export const generateOrderInvoicePdf = async (
   const totalServicesHeight =
     totalServices > 0 ? 55 + rowHeights.reduce((sum, h) => sum + h, 0) : 0;
 
-  // Bottom cards: Special Notes & Payment Summary (175) + Thank You (92) + Signature (60) = 327px
-  const BOTTOM_BLOCKS_HEIGHT = 330;
+  // Bottom cards: Special Notes & Payment Summary (175) + Thank You (92) + Signature (85) = 352px
+  const BOTTOM_BLOCKS_HEIGHT = 355;
   // Available body height on Page 1 when Heading (38) + Dossier (185) are present:
   // 1344 (Legal height) - 140 (header) - 80 (footer) - 20 (padding) - 38 (heading) - 185 (dossier) = 881px
   const PAGE1_AVAILABLE_FOR_REST = 881;

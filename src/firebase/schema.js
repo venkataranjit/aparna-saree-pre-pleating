@@ -320,28 +320,45 @@ export const createOrderModel = ({
     userAddress: String(userAddress || "").trim(),
   };
 
-  const cleanItems = (Array.isArray(items) ? items : []).map((it, idx) => ({
-    itemId: it.itemId || `item_${idx + 1}_${Date.now()}`,
-    serviceId: it.serviceId || "",
-    serviceName: it.serviceName || "",
-    serviceType: String(
-      it.serviceType || serviceType || "Pleating Service",
-    ).trim(),
-    servicePrice: Number(it.servicePrice) || 0,
-    serviceDiscountedPrice: Number(it.serviceDiscountedPrice) || 0,
-    serviceDescription: it.serviceDescription || it.description || "",
-    finalPrice:
-      Number(
-        it.finalPrice !== undefined
-          ? it.finalPrice
-          : it.serviceDiscountedPrice || it.servicePrice,
-      ) || 0,
-    sareeType: it.sareeType || "",
-    includeMeasurements: it.includeMeasurements !== false,
-    measurementProfile: it.measurementProfile || null,
-    itemNotes: it.itemNotes || "",
-  }));
+  const cleanItems = (Array.isArray(items) ? items : []).map((it, idx) => {
+    const qty = Math.max(1, parseInt(it.quantity, 10) || 1);
+    const regularUnitPrice = Number(it.servicePrice) || 0;
+    const offerUnitPrice =
+      Number(it.serviceDiscountedPrice) > 0
+        ? Number(it.serviceDiscountedPrice)
+        : regularUnitPrice;
+    const unitPrice = offerUnitPrice || regularUnitPrice;
+    const lineTotal =
+      it.finalPrice !== undefined &&
+      it.finalPrice !== null &&
+      !isNaN(Number(it.finalPrice))
+        ? Number(it.finalPrice)
+        : unitPrice * qty;
 
+    return {
+      itemId: it.itemId || `item_${idx + 1}_${Date.now()}`,
+      serviceId: it.serviceId || "",
+      serviceName: it.serviceName || "",
+      serviceType: String(
+        it.serviceType || serviceType || "Pleating Service",
+      ).trim(),
+      quantity: qty,
+      unitPrice: unitPrice,
+      servicePrice: regularUnitPrice,
+      serviceDiscountedPrice: offerUnitPrice,
+      serviceDescription: it.serviceDescription || it.description || "",
+      finalPrice: lineTotal,
+      sareeType: it.sareeType || "",
+      includeMeasurements: it.includeMeasurements !== false,
+      measurementProfile: it.measurementProfile || null,
+      itemNotes: it.itemNotes || "",
+    };
+  });
+
+  const totalQuantity = cleanItems.reduce(
+    (acc, it) => acc + (Number(it.quantity) || 1),
+    0,
+  );
   const calculatedSubtotal = cleanItems.reduce(
     (acc, it) => acc + (Number(it.finalPrice) || 0),
     0,
@@ -403,6 +420,7 @@ export const createOrderModel = ({
     ).trim(),
     items: cleanItems,
     totalItems: cleanItems.length,
+    totalQuantity: totalQuantity,
     subtotal: resolvedSubtotal,
     pickupDeliveryCharges: resolvedDeliveryCharges,
     otherCharges: resolvedOtherCharges,

@@ -85,9 +85,16 @@ export const getOrderServiceSummary = (order) => {
   const items = getOrderItems(order);
   if (items.length === 0) return "-";
   if (items.length === 1) {
-    return items[0].serviceName || "Saree Service";
+    const qty = Number(items[0].quantity) || 1;
+    const name = items[0].serviceName || "Saree Service";
+    return qty > 1 ? `${name} (x${qty})` : name;
   }
-  return `${items[0].serviceName || "Service"} (+${items.length - 1} more)`;
+  const firstQty = Number(items[0].quantity) || 1;
+  const firstName =
+    firstQty > 1
+      ? `${items[0].serviceName || "Service"} (x${firstQty})`
+      : items[0].serviceName || "Service";
+  return `${firstName} (+${items.length - 1} more)`;
 };
 
 export const getOrderFabricSummary = (order) => {

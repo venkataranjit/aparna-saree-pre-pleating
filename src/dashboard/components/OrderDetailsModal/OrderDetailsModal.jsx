@@ -254,6 +254,10 @@ const OrderDetailsModal = ({
         : Math.max(0, totalCalculatedAmount - advancePaid),
   );
 
+  const totalQuantity =
+    order.totalQuantity ||
+    rawItems.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0);
+
   return (
     <AppModal
       open={open}
@@ -279,7 +283,8 @@ const OrderDetailsModal = ({
               ₹{Number(totalCalculatedAmount).toLocaleString("en-IN")}
             </span>
             <span className="summary-count">
-              ({rawItems.length}{" "}
+              ({totalQuantity} {totalQuantity === 1 ? "Saree" : "Sarees"} •{" "}
+              {rawItems.length}{" "}
               {rawItems.length === 1 ? "Service" : "Services"})
             </span>
           </div>
@@ -436,19 +441,31 @@ const OrderDetailsModal = ({
           <div className="details-card__head">
             <DryCleaningOutlinedIcon className="card-head-icon" />
             <span className="card-head-title">
-              Ordered Saree Services ({rawItems.length})
+              Services ({rawItems.length})
             </span>
           </div>
           <div className="details-card__body">
             <div className="dossier-items-list">
               {rawItems.map((item, idx) => {
                 const m = item.measurementProfile;
-                const regularPrice = Number(item.servicePrice || 0);
-                const offerPrice = Number(
-                  item.finalPrice !== undefined && item.finalPrice !== null
-                    ? item.finalPrice
-                    : item.serviceDiscountedPrice || item.servicePrice || 0,
+                const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
+                const regularPrice = Number(
+                  item.servicePrice || item.unitPrice || 0,
                 );
+                const offerPrice = Number(
+                  item.serviceDiscountedPrice !== undefined &&
+                    item.serviceDiscountedPrice !== null &&
+                    Number(item.serviceDiscountedPrice) > 0
+                    ? item.serviceDiscountedPrice
+                    : regularPrice,
+                );
+                const unitPrice = offerPrice || regularPrice;
+                const lineTotal =
+                  item.finalPrice !== undefined &&
+                  item.finalPrice !== null &&
+                  !isNaN(Number(item.finalPrice))
+                    ? Number(item.finalPrice)
+                    : unitPrice * qty;
                 const hasDiscount = regularPrice > offerPrice && offerPrice > 0;
 
                 return (
@@ -459,9 +476,23 @@ const OrderDetailsModal = ({
                         <span className="item-name-text">
                           {item.serviceName}
                         </span>
+                        {qty > 1 && (
+                          <span className="item-qty-multiplier-pill">
+                            × {qty}
+                          </span>
+                        )}
                       </div>
                       <div className="item-price-tag">
-                        {hasDiscount ? (
+                        {qty > 1 ? (
+                          <div className="item-price-combo">
+                            <span className="item-calc-breakdown">
+                              ₹{unitPrice.toLocaleString("en-IN")} × {qty} =
+                            </span>
+                            <span className="offer-price-val">
+                              ₹{lineTotal.toLocaleString("en-IN")}
+                            </span>
+                          </div>
+                        ) : hasDiscount ? (
                           <div className="item-price-combo">
                             <span className="regular-price-strike">
                               ₹{regularPrice.toLocaleString("en-IN")}

@@ -26,6 +26,7 @@ import {
   getAllServices,
   getAllClients,
   getAllUsers,
+  getAllExpenses,
   getOrdersByUserId,
   getMeasurementsByUserId,
   formatDateSafe,
@@ -95,6 +96,7 @@ const Overview = () => {
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   const [services, setServices] = useState([]);
+  const [expenses, setExpenses] = useState([]);
   const [clientsCount, setClientsCount] = useState(0);
   const [clientMeasurements, setClientMeasurements] = useState([]);
   const [openCreateModal, setOpenCreateModal] = useState(false);
@@ -132,23 +134,27 @@ const Overview = () => {
             setOrders(myOrdersData || []);
             setClientMeasurements(myMeasuresData || []);
             setServices(activeServicesData || []);
+            setExpenses([]);
           } else {
             setOrders([]);
             setClientMeasurements([]);
             setServices([]);
+            setExpenses([]);
           }
         } else {
           // Standard Admin / Staff Loader
-          const [ordersData, servicesData, clientsData, usersData] =
+          const [ordersData, servicesData, clientsData, usersData, expensesData] =
             await Promise.all([
               getAllOrders().catch(() => []),
               getAllServices(false).catch(() => []),
               getAllClients().catch(() => []),
               getAllUsers().catch(() => []),
+              getAllExpenses().catch(() => []),
             ]);
 
           setOrders(ordersData || []);
           setServices(servicesData || []);
+          setExpenses(expensesData || []);
 
           const clientIds = new Set();
           (clientsData || []).forEach((c) => {
@@ -228,6 +234,12 @@ const Overview = () => {
           : Math.max(0, total - paid);
       return sum + pending;
     }, 0);
+
+  const totalExpenses = expenses.reduce((sum, exp) => {
+    return sum + (Number(exp.amount) || 0);
+  }, 0);
+
+  const netIncome = totalReceivedRevenue - totalExpenses;
 
   // Client calculations
   const clientInProgressCount = orders.filter(
@@ -339,14 +351,10 @@ const Overview = () => {
             />
 
             <StatCard
-              title="Total Revenue"
-              value={`₹${totalReceivedRevenue.toLocaleString("en-IN")}`}
-              change={
-                totalPendingRevenue > 0
-                  ? `Pending: ₹${totalPendingRevenue.toLocaleString("en-IN")}`
-                  : "All Paid"
-              }
-              trendType={totalPendingRevenue > 0 ? "pending" : "completed"}
+              title="Net Income"
+              value={`${netIncome < 0 ? "-" : ""}₹${Math.abs(netIncome).toLocaleString("en-IN")}`}
+              change={`Rev: ₹${totalReceivedRevenue.toLocaleString("en-IN")} • Exp: ₹${totalExpenses.toLocaleString("en-IN")}`}
+              trendType={netIncome >= 0 ? "completed" : "pending"}
               icon={<CurrencyRupeeIcon />}
             />
           </div>

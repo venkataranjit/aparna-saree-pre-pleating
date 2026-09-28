@@ -1863,7 +1863,7 @@ export default function CreateOrderModal({
                     <div className="form-field-wrap">
                       <AppSelect
                         label="Select Service"
-                        placeholder="-- Choose from Catalog --"
+                        placeholder="Choose Service..."
                         value={item.serviceId}
                         onChange={(e) =>
                           handleServiceSelect(idx, e.target.value)
@@ -1883,7 +1883,7 @@ export default function CreateOrderModal({
                     <div className="form-field-wrap">
                       <AppSelect
                         label="Saree Fabric / Type"
-                        placeholder="Select Fabric (Optional)"
+                        placeholder="Select Fabric..."
                         value={item.sareeType || ""}
                         allowClear
                         onChange={(e) =>
@@ -1925,17 +1925,17 @@ export default function CreateOrderModal({
 
                     <div className="form-field-wrap">
                       <AppInput
-                        label="Service Price (₹) [Fixed]"
+                        label="Service Price (₹)"
                         type="text"
-                        placeholder="Select service..."
+                        placeholder="Auto-set (₹)"
                         value={
                           item.finalPrice !== "" &&
                           item.finalPrice !== undefined &&
                           item.finalPrice !== null &&
                           Number(item.finalPrice) > 0
-                            ? String(item.finalPrice)
+                            ? `₹${Number(item.finalPrice).toLocaleString("en-IN")}`
                             : item.servicePrice
-                              ? String(item.servicePrice)
+                              ? `₹${Number(item.servicePrice).toLocaleString("en-IN")}`
                               : ""
                         }
                         disabled={true}
@@ -1947,39 +1947,50 @@ export default function CreateOrderModal({
                         )}
                         helperText={
                           validationErrors[`items[${idx}].servicePrice`] ||
-                          validationErrors[`items[${idx}].finalPrice`] ||
-                          (() => {
-                            const regPrice = Number(item.servicePrice) || 0;
-                            const offerPrice =
-                              Number(item.serviceDiscountedPrice) > 0
-                                ? Number(item.serviceDiscountedPrice)
-                                : regPrice;
-                            const unitPrice = offerPrice || regPrice;
-                            const qty = Math.max(
-                              1,
-                              Math.min(
-                                5,
-                                parseInt(item.quantity, 10) || 1,
-                              ),
-                            );
-                            if (unitPrice <= 0)
-                              return "Auto-set from service catalog";
-                            if (qty > 1) {
-                              return `₹${unitPrice.toLocaleString("en-IN")} × ${qty} sarees = ₹${(unitPrice * qty).toLocaleString("en-IN")}`;
-                            }
-                            if (
-                              regPrice > 0 &&
-                              offerPrice > 0 &&
-                              offerPrice < regPrice
-                            ) {
-                              return `Catalog Price: ₹${regPrice} (Offer: ₹${offerPrice})`;
-                            }
-                            return `Catalog Price: ₹${unitPrice} (Fixed)`;
-                          })()
+                          validationErrors[`items[${idx}].finalPrice`]
                         }
                       />
                     </div>
                   </div>
+
+                  {item.serviceId && (
+                    <div className="service-pricing-info-row">
+                      {(() => {
+                        const regPrice = Number(item.servicePrice) || 0;
+                        const offerPrice =
+                          Number(item.serviceDiscountedPrice) > 0
+                            ? Number(item.serviceDiscountedPrice)
+                            : regPrice;
+                        const unitPrice = offerPrice || regPrice;
+                        const qty = Math.max(
+                          1,
+                          Math.min(
+                            5,
+                            parseInt(item.quantity, 10) || 1,
+                          ),
+                        );
+                        return (
+                          <div className="service-pricing-pills">
+                            {qty > 1 && (
+                              <span className="pricing-calc-pill">
+                                Rate: ₹{unitPrice.toLocaleString("en-IN")} × {qty} sarees = <strong>₹{(unitPrice * qty).toLocaleString("en-IN")}</strong>
+                              </span>
+                            )}
+                            {regPrice > 0 &&
+                              offerPrice > 0 &&
+                              offerPrice < regPrice && (
+                                <span className="pricing-offer-pill">
+                                  Catalog Offer: ₹{offerPrice} (Reg: ₹{regPrice})
+                                </span>
+                              )}
+                            <span className="pricing-catalog-pill">
+                              Auto-set from Catalog
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
 
                   {item.serviceDescription && (
                     <div className="service-desc-box">

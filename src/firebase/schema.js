@@ -378,31 +378,33 @@ export const createOrderModel = ({
   const resolvedAdvance = Math.min(Number(advancePayment) || 0, finalTotal);
   const resolvedPaymentStatus = String(paymentStatus || PAYMENT_STATUS.PENDING);
   const rawPaid =
-    Number(paidAmount) ||
-    (resolvedAdvance > 0
-      ? resolvedAdvance
-      : resolvedPaymentStatus === "paid"
-        ? finalTotal
-        : 0);
+    resolvedPaymentStatus === "paid"
+      ? finalTotal
+      : Number(paidAmount) ||
+        (resolvedAdvance > 0 ? resolvedAdvance : 0);
   const resolvedPaid = Math.min(rawPaid, finalTotal);
   const resolvedBalanceDue =
-    balanceDue !== undefined &&
-    balanceDue !== null &&
-    !isNaN(Number(balanceDue))
-      ? Number(balanceDue)
-      : resolvedPaymentStatus === "paid"
-        ? 0
+    resolvedPaymentStatus === "paid"
+      ? 0
+      : balanceDue !== undefined &&
+        balanceDue !== null &&
+        !isNaN(Number(balanceDue))
+        ? Number(balanceDue)
         : Math.max(0, finalTotal - resolvedPaid);
   const resolvedBalancePaid =
-    balancePaid !== undefined &&
-    balancePaid !== null &&
-    !isNaN(Number(balancePaid)) &&
-    Number(balancePaid) > 0
-      ? Number(balancePaid)
-      : resolvedPaymentStatus === "paid"
-        ? resolvedAdvance > 0
-          ? Math.max(0, finalTotal - resolvedAdvance)
+    resolvedPaymentStatus === "paid"
+      ? resolvedAdvance > 0
+        ? Math.max(0, finalTotal - resolvedAdvance)
+        : balancePaid !== undefined &&
+          balancePaid !== null &&
+          !isNaN(Number(balancePaid)) &&
+          Number(balancePaid) > 0
+          ? Number(balancePaid)
           : finalTotal
+      : balancePaid !== undefined &&
+        balancePaid !== null &&
+        !isNaN(Number(balancePaid))
+        ? Number(balancePaid)
         : 0;
 
   return {

@@ -118,12 +118,7 @@ const OrderDetailsModal = ({
   };
 
   const handlePaymentStatusChange = async (newPayStatus) => {
-    if (
-      currentPaymentStatus === "paid" ||
-      newPayStatus === currentPaymentStatus ||
-      updatingStatus
-    )
-      return;
+    if (newPayStatus === currentPaymentStatus || updatingStatus) return;
     setUpdatingStatus(true);
     setUpdatingTarget(`pay-${newPayStatus}`);
     try {
@@ -154,14 +149,19 @@ const OrderDetailsModal = ({
           balanceDue: 0,
           paidAmount: totalAmt,
         };
-      } else if (newPayStatus === "partial" || newPayStatus === "pending") {
-        // If advance was already paid, balance due stays (totalAmt - advancePayment)
-        // and does NOT wipe out the advance payment
+      } else if (newPayStatus === "partial") {
         updatePayload = {
           ...updatePayload,
           balancePaid: 0,
           balanceDue: advPaid > 0 ? remainingDue : totalAmt,
-          paidAmount: advPaid,
+          paidAmount: advPaid > 0 ? advPaid : 0,
+        };
+      } else if (newPayStatus === "pending") {
+        updatePayload = {
+          ...updatePayload,
+          balancePaid: 0,
+          balanceDue: totalAmt,
+          paidAmount: 0,
         };
       }
 
@@ -231,7 +231,6 @@ const OrderDetailsModal = ({
   const pickupCharges = Number(order.pickupDeliveryCharges || 0);
   const otherCharges = Number(order.otherCharges || 0);
   const discountAmount = Number(order.discount || 0);
-  const advancePaid = Number(order.advancePayment || order.paidAmount || 0);
   const subtotalAmount = Number(
     order.subtotal !== undefined && order.subtotal !== null
       ? order.subtotal
@@ -242,17 +241,34 @@ const OrderDetailsModal = ({
       ? order.totalAmount
       : order.amount || 0,
   );
-  const balanceDue =
-    currentPaymentStatus === "paid"
-      ? 0
-      : Math.max(0, totalCalculatedAmount - advancePaid);
-  const balancePaidAmount = Number(
-    order.balancePaid !== undefined && order.balancePaid !== null
-      ? order.balancePaid
-      : balanceDue > 0
-        ? balanceDue
-        : Math.max(0, totalCalculatedAmount - advancePaid),
-  );
+
+  const isPaidInFull = currentPaymentStatus === "paid";
+  const initialAdvance = Number(order.advancePayment || 0);
+  const currentPaidAmount = isPaidInFull
+    ? totalCalculatedAmount
+    : Number(
+        order.paidAmount !== undefined &&
+          order.paidAmount !== null &&
+          order.paidAmount !== ""
+          ? order.paidAmount
+          : initialAdvance,
+      );
+
+  const balanceDue = isPaidInFull
+    ? 0
+    : Math.max(0, totalCalculatedAmount - currentPaidAmount);
+
+  const balancePaidAmount = isPaidInFull
+    ? initialAdvance > 0
+      ? Math.max(0, totalCalculatedAmount - initialAdvance)
+      : totalCalculatedAmount
+    : Number(
+        order.balancePaid !== undefined &&
+          order.balancePaid !== null &&
+          !isNaN(Number(order.balancePaid))
+          ? order.balancePaid
+          : 0,
+      );
 
   const totalQuantity =
     order.totalQuantity ||
@@ -284,8 +300,8 @@ const OrderDetailsModal = ({
             </span>
             <span className="summary-count">
               ({totalQuantity} {totalQuantity === 1 ? "Saree" : "Sarees"} •{" "}
-              {rawItems.length}{" "}
-              {rawItems.length === 1 ? "Service" : "Services"})
+              {rawItems.length} {rawItems.length === 1 ? "Service" : "Services"}
+              )
             </span>
           </div>
           <div className="actions-right">
@@ -933,23 +949,60 @@ const OrderDetailsModal = ({
                 ₹{Number(totalCalculatedAmount).toLocaleString("en-IN")}
               </span>
             </div>
-            {advancePaid > 0 && (
+            {initialAdvance > 0 && initialAdvance < totalCalculatedAmount && (
               <div
                 className="pay-row"
-                style={{ marginTop: 6, color: "#10b981" }}
+                style={{ marginTop: 6, color: "#64748b" }}
               >
-                <span className="pay-label" style={{ color: "#10b981" }}>
-                  Paid Amount:
+                <span className="pay-label" style={{ color: "#64748b" }}>
+                  Advance Paid:
+                </span>
+                <span
+                  className="pay-val"
+                  style={{ color: "#64748b", fontWeight: 600 }}
+                >
+                  ₹{Number(initialAdvance).toLocaleString("en-IN")}
+                </span>
+              </div>
+            )}
+            {isPaidInFull &&
+              initialAdvance > 0 &&
+              initialAdvance < totalCalculatedAmount && (
+                <div
+                  className="pay-row"
+                  style={{ marginTop: 2, color: "#64748b" }}
+                >
+                  <span className="pay-label" style={{ color: "#64748b" }}>
+                    Balance Paid:
+                  </span>
+                  <span
+                    className="pay-val"
+                    style={{ color: "#64748b", fontWeight: 600 }}
+                  >
+                    ₹{Number(balancePaidAmount).toLocaleString("en-IN")}
+                  </span>
+                </div>
+              )}
+            {currentPaidAmount > 0 && (
+              <div
+                className="pay-row"
+                style={{ marginTop: 6, color: "#10b981", fontWeight: 700 }}
+              >
+                <span
+                  className="pay-label"
+                  style={{ color: "#10b981", fontWeight: 700 }}
+                >
+                  Total Amount Paid:
                 </span>
                 <span
                   className="pay-val"
                   style={{ color: "#10b981", fontWeight: 700 }}
                 >
-                  ₹{Number(advancePaid).toLocaleString("en-IN")}
+                  ₹{Number(currentPaidAmount).toLocaleString("en-IN")}
                 </span>
               </div>
             )}
-            {currentPaymentStatus !== "paid" && Number(balanceDue) > 0 && (
+            {!isPaidInFull && Number(balanceDue) > 0 && (
               <div
                 className="pay-row"
                 style={{ marginTop: 4, color: "#ef4444" }}

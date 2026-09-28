@@ -134,28 +134,38 @@ export const mapOrderToInvoiceData = (order) => {
       ? order.totalAmount
       : order.amount || 0,
   );
-  const advancePaid = Number(order.advancePayment || order.paidAmount || 0);
+  const isPaid =
+    String(order.paymentStatus || "").toLowerCase() === "paid" ||
+    String(order.status || "").toLowerCase() === "paid";
+  const advancePaid = Number(order.advancePayment || 0);
+  const paidAmount = isPaid
+    ? totalAmount
+    : Number(
+        order.paidAmount !== undefined &&
+        order.paidAmount !== null &&
+        order.paidAmount !== ""
+          ? order.paidAmount
+          : advancePaid,
+      );
   const rawBalanceDue = Number(order.balanceDue);
-  const balanceDue =
-    order.balanceDue !== undefined &&
-    order.balanceDue !== null &&
-    !isNaN(rawBalanceDue)
+  const balanceDue = isPaid
+    ? 0
+    : order.balanceDue !== undefined &&
+      order.balanceDue !== null &&
+      !isNaN(rawBalanceDue)
       ? rawBalanceDue
-      : order.paymentStatus === "paid"
-        ? 0
-        : Math.max(0, totalAmount - advancePaid);
+      : Math.max(0, totalAmount - paidAmount);
   const rawBalancePaid = Number(order.balancePaid);
-  const balancePaid =
-    order.balancePaid !== undefined &&
-    order.balancePaid !== null &&
-    !isNaN(rawBalancePaid) &&
-    rawBalancePaid > 0
+  const balancePaid = isPaid
+    ? advancePaid > 0
+      ? Math.max(0, totalAmount - advancePaid)
+      : totalAmount
+    : order.balancePaid !== undefined &&
+      order.balancePaid !== null &&
+      !isNaN(rawBalancePaid) &&
+      rawBalancePaid > 0
       ? rawBalancePaid
-      : order.paymentStatus === "paid"
-        ? advancePaid > 0
-          ? Math.max(0, totalAmount - advancePaid)
-          : totalAmount
-        : 0;
+      : 0;
 
   const clientName =
     order.username ||
@@ -184,9 +194,9 @@ export const mapOrderToInvoiceData = (order) => {
   const orderStatus = order.status || order.orderStatus || "in-progress";
   const paymentStatus =
     order.paymentStatus ||
-    (advancePaid >= totalAmount && totalAmount > 0
+    (isPaid || (paidAmount >= totalAmount && totalAmount > 0)
       ? "paid"
-      : advancePaid > 0
+      : advancePaid > 0 || paidAmount > 0
         ? "partial"
         : "pending");
 
@@ -217,6 +227,7 @@ export const mapOrderToInvoiceData = (order) => {
       discount,
       totalAmount,
       advancePaid,
+      paidAmount,
       balanceDue,
       balancePaid,
     },
@@ -906,9 +917,41 @@ export const INVOICE_PDF_INTERNAL_CSS = `
     font-size: 13.5px;
   }
 
-  #order-pdf-export-container .advance-paid-row {
+  #order-pdf-export-container .advance-paid-row,
+  #order-pdf-export-container .balance-paid-row {
     color: #475569;
     padding-top: 1px;
+  }
+
+  #order-pdf-export-container .advance-paid-row .total-lbl,
+  #order-pdf-export-container .balance-paid-row .total-lbl {
+    color: #475569;
+    font-weight: 500;
+    font-size: 10.5px;
+  }
+
+  #order-pdf-export-container .advance-paid-row .total-val,
+  #order-pdf-export-container .balance-paid-row .total-val {
+    color: #475569;
+    font-weight: 600;
+    font-size: 11px;
+  }
+
+  #order-pdf-export-container .total-paid-row {
+    color: #10b981;
+    padding-top: 2px;
+  }
+
+  #order-pdf-export-container .total-paid-row .total-paid-lbl {
+    font-weight: 700;
+    font-size: 11px;
+    color: #10b981;
+  }
+
+  #order-pdf-export-container .total-paid-row .total-paid-val {
+    font-weight: 700;
+    font-size: 12.5px;
+    color: #10b981;
   }
 
   #order-pdf-export-container .balance-row {
@@ -1589,15 +1632,24 @@ export const buildBottomGridHtml = (data = {}) => {
 
   const isPaid = String(data.paymentStatus || "").toLowerCase() === "paid";
   const discountAmount = Number(data.financials?.discount || 0);
-  const balanceDueAmount =
-    data.financials?.balanceDue !== undefined &&
-    Number(data.financials?.balanceDue) > 0
+  const totalAmount = Number(data.financials?.totalAmount || 0);
+  const initialAdvance = Number(data.financials?.advancePaid || 0);
+  const paidAmount = isPaid
+    ? totalAmount
+    : Number(
+        data.financials?.paidAmount !== undefined &&
+        data.financials?.paidAmount !== null &&
+        data.financials?.paidAmount !== ""
+          ? data.financials?.paidAmount
+          : initialAdvance,
+      );
+  const balanceDueAmount = isPaid
+    ? 0
+    : data.financials?.balanceDue !== undefined &&
+      data.financials?.balanceDue !== null &&
+      !isNaN(Number(data.financials?.balanceDue))
       ? Number(data.financials?.balanceDue)
-      : Math.max(
-          0,
-          Number(data.financials?.totalAmount || 0) -
-            Number(data.financials?.advancePaid || 0),
-        );
+      : Math.max(0, totalAmount - paidAmount);
 
   return `
     <div class="pdf-bottom-grid">
@@ -1646,17 +1698,44 @@ export const buildBottomGridHtml = (data = {}) => {
           }
           <div class="total-row grand-total-row">
             <span class="grand-lbl">TOTAL BILLED AMOUNT</span>
-            <span class="grand-val">₹${Number(data.financials?.totalAmount || 0).toLocaleString("en-IN")}</span>
+            <span class="grand-val">₹${totalAmount.toLocaleString("en-IN")}</span>
           </div>
+          ${
+            isPaid && initialAdvance > 0 && initialAdvance < totalAmount
+              ? `
           <div class="total-row advance-paid-row">
-            <span class="total-lbl">Paid Amount</span>
-            <span class="total-val">₹${Number(data.financials?.advancePaid || 0).toLocaleString("en-IN")}</span>
+            <span class="total-lbl">Advance Paid:</span>
+            <span class="total-val">₹${initialAdvance.toLocaleString("en-IN")}</span>
           </div>
+          <div class="total-row balance-paid-row">
+            <span class="total-lbl">Balance Paid:</span>
+            <span class="total-val">₹${(totalAmount - initialAdvance).toLocaleString("en-IN")}</span>
+          </div>
+          `
+              : !isPaid && initialAdvance > 0 && initialAdvance < totalAmount
+                ? `
+          <div class="total-row advance-paid-row">
+            <span class="total-lbl">Advance Paid:</span>
+            <span class="total-val">₹${initialAdvance.toLocaleString("en-IN")}</span>
+          </div>
+          `
+                : ""
+          }
+          ${
+            paidAmount > 0
+              ? `
+          <div class="total-row total-paid-row">
+            <span class="total-paid-lbl">${isPaid ? "Total Amount Paid:" : "Paid Amount:"}</span>
+            <span class="total-paid-val">₹${paidAmount.toLocaleString("en-IN")}</span>
+          </div>
+          `
+              : ""
+          }
           ${
             !isPaid && balanceDueAmount > 0
               ? `<div class="total-row balance-row">
-            <span class="balance-lbl">Balance Due</span>
-            <span class="balance-val">₹${Number(balanceDueAmount).toLocaleString("en-IN")}</span>
+            <span class="balance-lbl">Balance Due:</span>
+            <span class="balance-val">₹${balanceDueAmount.toLocaleString("en-IN")}</span>
           </div>`
               : ""
           }

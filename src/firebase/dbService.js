@@ -2255,8 +2255,14 @@ const formatOrderDoc = (id, data) => {
     pickupDeliveryCharges: Number(data.pickupDeliveryCharges || 0),
     otherCharges: Number(data.otherCharges || 0),
     discount: Number(data.discount || 0),
-    advancePayment: Number(data.advancePayment || data.paidAmount || 0),
-    paidAmount: Number(data.paidAmount) || Number(data.advancePayment) || 0,
+    advancePayment: Number(data.advancePayment || 0),
+    paidAmount:
+      status === "paid" || String(data.paymentStatus).toLowerCase() === "paid"
+        ? Number(data.totalAmount) ||
+          Number(data.paidAmount) ||
+          items.reduce((acc, it) => acc + (Number(it.finalPrice) || 0), 0) ||
+          0
+        : Number(data.paidAmount) || Number(data.advancePayment) || 0,
     balancePaid:
       data.balancePaid !== undefined &&
       data.balancePaid !== null &&
@@ -2271,13 +2277,13 @@ const formatOrderDoc = (id, data) => {
             )
           : 0,
     balanceDue:
-      data.balanceDue !== undefined &&
-      data.balanceDue !== null &&
-      !isNaN(Number(data.balanceDue))
-        ? Number(data.balanceDue)
-        : status === "paid" ||
-            String(data.paymentStatus).toLowerCase() === "paid"
-          ? 0
+      status === "paid" ||
+      String(data.paymentStatus).toLowerCase() === "paid"
+        ? 0
+        : data.balanceDue !== undefined &&
+          data.balanceDue !== null &&
+          !isNaN(Number(data.balanceDue))
+          ? Number(data.balanceDue)
           : Math.max(
               0,
               (Number(data.totalAmount) || 0) -

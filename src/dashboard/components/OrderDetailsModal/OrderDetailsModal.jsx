@@ -18,6 +18,16 @@ import CelebrationOutlinedIcon from "@mui/icons-material/CelebrationOutlined";
 import NotesOutlinedIcon from "@mui/icons-material/NotesOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
+import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
+import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
+import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import PendingActionsOutlinedIcon from "@mui/icons-material/PendingActionsOutlined";
 
 import { AppModal, AppButton, AppSpinner } from "../../../components/common";
 import {
@@ -668,219 +678,251 @@ const OrderDetailsModal = ({
 
         {/* 5. Payment & Status Controls / Overview */}
         <div className="payment-card">
-          <div className="payment-card__left">
-            <div className="payment-head">
-              <PaymentOutlinedIcon className="pay-icon" />
-              <span className="pay-title">
-                {canUpdate
-                  ? "Billing & Workflow Controls"
-                  : "Billing & Status Overview"}
-              </span>
+          {/* Left Panel: Workflow & Status Controls */}
+          <div className="payment-card__workflow">
+            <div className="panel-header">
+              <div className="panel-header__title">
+                <PaymentOutlinedIcon className="panel-icon" />
+                <span>
+                  {canUpdate
+                    ? "Workflow & Order Controls"
+                    : "Workflow & Order Status"}
+                </span>
+              </div>
             </div>
 
             {canUpdate ? (
-              <>
-                <div className="status-button-group">
-                  <span className="status-label">Update Order Status:</span>
-                  <div className="status-buttons">
+              <div className="controls-body">
+                <div className="status-section">
+                  <span className="section-subtitle">Update Order Status</span>
+                  <div className="status-pill-grid">
                     <button
                       type="button"
-                      className={`btn-status btn-status--requested ${currentStatus === "requested" ? "active" : ""}`}
+                      className={`status-chip status-chip--requested ${currentStatus === "requested" ? "active" : ""}`}
                       onClick={() => handleStatusChange("requested")}
                       disabled={updatingStatus}
                     >
-                      {updatingTarget === "order-requested" && (
+                      {updatingTarget === "order-requested" ? (
                         <AppSpinner
                           size="xs"
                           color="inherit"
                           style={{ marginRight: 6 }}
                         />
+                      ) : (
+                        <AssignmentOutlinedIcon className="chip-icon" />
                       )}
                       <span>Requested</span>
                     </button>
                     <button
                       type="button"
-                      className={`btn-status btn-status--accepted ${currentStatus === "accepted" ? "active" : ""}`}
+                      className={`status-chip status-chip--accepted ${currentStatus === "accepted" ? "active" : ""}`}
                       onClick={() => handleStatusChange("accepted")}
                       disabled={updatingStatus}
                     >
-                      {updatingTarget === "order-accepted" && (
+                      {updatingTarget === "order-accepted" ? (
                         <AppSpinner
                           size="xs"
                           color="inherit"
                           style={{ marginRight: 6 }}
                         />
+                      ) : (
+                        <FactCheckOutlinedIcon className="chip-icon" />
                       )}
                       <span>Accepted</span>
                     </button>
                     <button
                       type="button"
-                      className={`btn-status btn-status--pending ${currentStatus === "pending" ? "active" : ""}`}
+                      className={`status-chip status-chip--pending ${currentStatus === "pending" ? "active" : ""}`}
                       onClick={() => handleStatusChange("pending")}
                       disabled={updatingStatus}
                     >
-                      {updatingTarget === "order-pending" && (
+                      {updatingTarget === "order-pending" ? (
                         <AppSpinner
                           size="xs"
                           color="inherit"
                           style={{ marginRight: 6 }}
                         />
+                      ) : (
+                        <HourglassEmptyOutlinedIcon className="chip-icon" />
                       )}
                       <span>Pending</span>
                     </button>
                     <button
                       type="button"
-                      className={`btn-status btn-status--in-progress ${currentStatus === "in-progress" || currentStatus === "inprogress" ? "active" : ""}`}
+                      className={`status-chip status-chip--in-progress ${currentStatus === "in-progress" || currentStatus === "inprogress" ? "active" : ""}`}
                       onClick={() => handleStatusChange("in-progress")}
                       disabled={updatingStatus}
                     >
-                      {updatingTarget === "order-in-progress" && (
+                      {updatingTarget === "order-in-progress" ? (
                         <AppSpinner
                           size="xs"
                           color="inherit"
                           style={{ marginRight: 6 }}
                         />
+                      ) : (
+                        <AutorenewOutlinedIcon className="chip-icon" />
                       )}
                       <span>In-Progress</span>
                     </button>
                     <button
                       type="button"
-                      className={`btn-status btn-status--completed ${currentStatus === "completed" ? "active" : ""}`}
+                      className={`status-chip status-chip--completed ${currentStatus === "completed" ? "active" : ""}`}
                       onClick={() => handleStatusChange("completed")}
                       disabled={updatingStatus}
                     >
-                      {updatingTarget === "order-completed" && (
+                      {updatingTarget === "order-completed" ? (
                         <AppSpinner
                           size="xs"
                           color="inherit"
                           style={{ marginRight: 6 }}
                         />
+                      ) : (
+                        <TaskAltOutlinedIcon className="chip-icon" />
                       )}
                       <span>Completed</span>
                     </button>
                     <button
                       type="button"
-                      className={`btn-status btn-status--delivered ${currentStatus === "delivered" ? "active" : ""}`}
+                      className={`status-chip status-chip--delivered ${currentStatus === "delivered" ? "active" : ""}`}
                       onClick={() => handleStatusChange("delivered")}
                       disabled={updatingStatus}
                     >
-                      {updatingTarget === "order-delivered" && (
+                      {updatingTarget === "order-delivered" ? (
                         <AppSpinner
                           size="xs"
                           color="inherit"
                           style={{ marginRight: 6 }}
                         />
+                      ) : (
+                        <LocalShippingOutlinedIcon className="chip-icon" />
                       )}
                       <span>Delivered</span>
                     </button>
                     <button
                       type="button"
-                      className={`btn-status btn-status--cancelled ${currentStatus === "cancelled" ? "active" : ""}`}
+                      className={`status-chip status-chip--cancelled ${currentStatus === "cancelled" ? "active" : ""}`}
                       onClick={() => handleStatusChange("cancelled")}
                       disabled={updatingStatus}
                     >
-                      {updatingTarget === "order-cancelled" && (
+                      {updatingTarget === "order-cancelled" ? (
                         <AppSpinner
                           size="xs"
                           color="inherit"
                           style={{ marginRight: 6 }}
                         />
+                      ) : (
+                        <CancelOutlinedIcon className="chip-icon" />
                       )}
                       <span>Cancelled</span>
                     </button>
                   </div>
                 </div>
 
-                <div className="status-button-group" style={{ marginTop: 12 }}>
-                  <span className="status-label">Payment Status:</span>
+                <div className="status-section">
+                  <span className="section-subtitle">Payment Settlement</span>
                   {currentPaymentStatus === "paid" ? (
                     <div
-                      className="payment-locked-badge"
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        padding: "6px 14px",
-                        background: "rgba(16, 185, 129, 0.12)",
-                        border: "1px solid rgba(16, 185, 129, 0.35)",
-                        borderRadius: "6px",
-                        color: "#10b981",
-                        fontSize: "13px",
-                        fontWeight: 600,
-                      }}
+                      className="payment-locked-card"
                       title="Payment is settled in full and locked against further changes"
                     >
-                      <LockOutlinedIcon
-                        style={{ fontSize: 15, color: "#10b981" }}
-                      />
-                      <span>Paid in Full (Locked)</span>
+                      <div className="locked-icon-badge">
+                        <LockOutlinedIcon className="lock-svg" />
+                      </div>
+                      <div className="locked-meta">
+                        <span className="locked-headline">Paid in Full (Locked)</span>
+                        <span className="locked-caption">
+                          Settled & Verified • Read-only
+                        </span>
+                      </div>
                     </div>
                   ) : (
-                    <div className="status-buttons payment-buttons">
+                    <div className="payment-chips-grid">
                       <button
                         type="button"
-                        className={`btn-status btn-pay--paid ${currentPaymentStatus === "paid" ? "active" : ""}`}
+                        className={`pay-chip pay-chip--paid ${currentPaymentStatus === "paid" ? "active" : ""}`}
                         onClick={() => handlePaymentStatusChange("paid")}
                         disabled={updatingStatus}
                       >
-                        {updatingTarget === "pay-paid" && (
+                        {updatingTarget === "pay-paid" ? (
                           <AppSpinner
                             size="xs"
                             color="inherit"
                             style={{ marginRight: 6 }}
                           />
+                        ) : (
+                          <PaidOutlinedIcon className="chip-icon" />
                         )}
                         <span>Paid in Full</span>
                       </button>
                       <button
                         type="button"
-                        className={`btn-status btn-pay--partial ${currentPaymentStatus === "partial" ? "active" : ""}`}
+                        className={`pay-chip pay-chip--partial ${currentPaymentStatus === "partial" ? "active" : ""}`}
                         onClick={() => handlePaymentStatusChange("partial")}
                         disabled={updatingStatus}
                       >
-                        {updatingTarget === "pay-partial" && (
+                        {updatingTarget === "pay-partial" ? (
                           <AppSpinner
                             size="xs"
                             color="inherit"
                             style={{ marginRight: 6 }}
                           />
+                        ) : (
+                          <AccountBalanceWalletOutlinedIcon className="chip-icon" />
                         )}
                         <span>Partial / Advance</span>
                       </button>
                       <button
                         type="button"
-                        className={`btn-status btn-pay--pending ${currentPaymentStatus === "pending" ? "active" : ""}`}
+                        className={`pay-chip pay-chip--pending ${currentPaymentStatus === "pending" ? "active" : ""}`}
                         onClick={() => handlePaymentStatusChange("pending")}
                         disabled={updatingStatus}
                       >
-                        {updatingTarget === "pay-pending" && (
+                        {updatingTarget === "pay-pending" ? (
                           <AppSpinner
                             size="xs"
                             color="inherit"
                             style={{ marginRight: 6 }}
                           />
+                        ) : (
+                          <PendingActionsOutlinedIcon className="chip-icon" />
                         )}
                         <span>Pending Payment</span>
                       </button>
                     </div>
                   )}
                 </div>
-              </>
+              </div>
             ) : (
-              <>
-                <div className="info-row" style={{ padding: "6px 0" }}>
+              <div className="readonly-status-box">
+                <div className="info-row">
                   <span className="info-label">Workflow Status</span>
                   <span className={`status-pill ${currentStatus}`}>
-                    <span className="dot" />
+                    {currentStatus === "completed" ? (
+                      <TaskAltOutlinedIcon style={{ fontSize: 14 }} />
+                    ) : currentStatus === "delivered" ? (
+                      <LocalShippingOutlinedIcon style={{ fontSize: 14 }} />
+                    ) : currentStatus === "cancelled" ? (
+                      <CancelOutlinedIcon style={{ fontSize: 14 }} />
+                    ) : currentStatus === "in-progress" || currentStatus === "inprogress" ? (
+                      <AutorenewOutlinedIcon style={{ fontSize: 14 }} />
+                    ) : (
+                      <HourglassEmptyOutlinedIcon style={{ fontSize: 14 }} />
+                    )}
                     {currentStatus.replace("-", " ")}
                   </span>
                 </div>
-                <div className="info-row" style={{ padding: "6px 0" }}>
+                <div className="info-row">
                   <span className="info-label">Payment Status</span>
                   <span
                     className={`status-pill ${currentPaymentStatus === "paid" ? "completed" : currentPaymentStatus === "partial" ? "in-progress" : "pending"}`}
                   >
-                    <span className="dot" />
+                    {currentPaymentStatus === "paid" ? (
+                      <PaidOutlinedIcon style={{ fontSize: 14 }} />
+                    ) : currentPaymentStatus === "partial" ? (
+                      <AccountBalanceWalletOutlinedIcon style={{ fontSize: 14 }} />
+                    ) : (
+                      <PendingActionsOutlinedIcon style={{ fontSize: 14 }} />
+                    )}
                     {currentPaymentStatus === "paid"
                       ? "Paid in Full"
                       : currentPaymentStatus === "partial"
@@ -888,136 +930,122 @@ const OrderDetailsModal = ({
                         : "Pending Payment"}
                   </span>
                 </div>
-              </>
+              </div>
             )}
           </div>
 
-          <div className="payment-card__breakdown">
-            <div className="pay-row">
-              <span className="pay-label">Payment Method:</span>
-              <span className="pay-val">
-                {order.paymentMethod || "UPI / Cash"}
-              </span>
-            </div>
-            <div className="pay-row">
-              <span className="pay-label">Payment Status:</span>
-              <span
-                className="pay-val highlight"
-                style={{ textTransform: "capitalize" }}
-              >
-                {currentPaymentStatus === "paid"
-                  ? "Paid in Full"
-                  : currentPaymentStatus === "partial"
-                    ? "Advance / Partial"
-                    : "Pending Payment"}
-              </span>
-            </div>
-            <div className="pay-row">
-              <span className="pay-label">Subtotal:</span>
-              <span className="pay-val">
-                ₹{Number(subtotalAmount).toLocaleString("en-IN")}
-              </span>
+          {/* Right Panel: Financial Breakdown */}
+          <div className="payment-card__financials">
+            <div className="panel-header">
+              <div className="panel-header__title">
+                <ReceiptLongOutlinedIcon className="panel-icon" />
+                <span>Financial Breakdown</span>
+              </div>
             </div>
 
-            <div className="pay-row">
-              <span className="pay-label">Pickup & Delivery:</span>
-              <span className="pay-val">
-                ₹{Number(pickupCharges).toLocaleString("en-IN")}
-              </span>
-            </div>
-
-            <div className="pay-row">
-              <span className="pay-label">Other Charges:</span>
-              <span className="pay-val">
-                ₹{Number(otherCharges).toLocaleString("en-IN")}
-              </span>
-            </div>
-
-            <div className="pay-row" style={{ color: "#10b981" }}>
-              <span className="pay-label" style={{ color: "#10b981" }}>
-                Discount:
-              </span>
-              <span className="pay-val">
-                -₹{Number(discountAmount).toLocaleString("en-IN")}
-              </span>
-            </div>
-
-            <div className="pay-divider" />
-            <div className="pay-row total">
-              <span className="pay-total-label">Total Billed Amount:</span>
-              <span className="pay-total-val">
-                ₹{Number(totalCalculatedAmount).toLocaleString("en-IN")}
-              </span>
-            </div>
-            {initialAdvance > 0 && initialAdvance < totalCalculatedAmount && (
-              <div
-                className="pay-row"
-                style={{ marginTop: 6, color: "#64748b" }}
-              >
-                <span className="pay-label" style={{ color: "#64748b" }}>
-                  Advance Paid:
-                </span>
-                <span
-                  className="pay-val"
-                  style={{ color: "#64748b", fontWeight: 600 }}
-                >
-                  ₹{Number(initialAdvance).toLocaleString("en-IN")}
+            <div className="payment-meta-pills">
+              <div className="meta-badge">
+                <span className="meta-label">Method</span>
+                <span className="meta-value">{order.paymentMethod || "UPI / Cash"}</span>
+              </div>
+              <div className={`meta-badge status-tag status-tag--${currentPaymentStatus}`}>
+                {currentPaymentStatus === "paid" ? (
+                  <PaidOutlinedIcon className="tag-icon" />
+                ) : currentPaymentStatus === "partial" ? (
+                  <AccountBalanceWalletOutlinedIcon className="tag-icon" />
+                ) : (
+                  <PendingActionsOutlinedIcon className="tag-icon" />
+                )}
+                <span className="meta-value">
+                  {currentPaymentStatus === "paid"
+                    ? "Paid in Full"
+                    : currentPaymentStatus === "partial"
+                      ? "Advance / Partial"
+                      : "Pending Payment"}
                 </span>
               </div>
-            )}
-            {isPaidInFull &&
-              initialAdvance > 0 &&
-              initialAdvance < totalCalculatedAmount && (
-                <div
-                  className="pay-row"
-                  style={{ marginTop: 2, color: "#64748b" }}
-                >
-                  <span className="pay-label" style={{ color: "#64748b" }}>
-                    Balance Paid:
-                  </span>
-                  <span
-                    className="pay-val"
-                    style={{ color: "#64748b", fontWeight: 600 }}
-                  >
-                    ₹{Number(balancePaidAmount).toLocaleString("en-IN")}
+            </div>
+
+            <div className="financial-rows">
+              <div className="fin-row">
+                <span className="fin-label">Subtotal</span>
+                <span className="fin-val">
+                  ₹{Number(subtotalAmount).toLocaleString("en-IN")}
+                </span>
+              </div>
+
+              <div className="fin-row">
+                <span className="fin-label">Pickup & Delivery</span>
+                <span className="fin-val">
+                  ₹{Number(pickupCharges).toLocaleString("en-IN")}
+                </span>
+              </div>
+
+              {Number(otherCharges) > 0 && (
+                <div className="fin-row">
+                  <span className="fin-label">Other Charges</span>
+                  <span className="fin-val">
+                    ₹{Number(otherCharges).toLocaleString("en-IN")}
                   </span>
                 </div>
               )}
-            {currentPaidAmount > 0 && (
-              <div
-                className="pay-row"
-                style={{ marginTop: 6, color: "#10b981", fontWeight: 700 }}
-              >
-                <span
-                  className="pay-label"
-                  style={{ color: "#10b981", fontWeight: 700 }}
-                >
-                  Total Amount Paid:
-                </span>
-                <span
-                  className="pay-val"
-                  style={{ color: "#10b981", fontWeight: 700 }}
-                >
-                  ₹{Number(currentPaidAmount).toLocaleString("en-IN")}
-                </span>
+
+              {Number(discountAmount) > 0 && (
+                <div className="fin-row fin-row--discount">
+                  <span className="fin-label">Discount</span>
+                  <span className="fin-val">
+                    -₹{Number(discountAmount).toLocaleString("en-IN")}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="total-highlight-banner">
+              <div className="banner-label-group">
+                <span className="banner-title">TOTAL BILLED AMOUNT</span>
+                <span className="banner-sub">Inclusive of all items & charges</span>
               </div>
-            )}
-            {!isPaidInFull && Number(balanceDue) > 0 && (
-              <div
-                className="pay-row"
-                style={{ marginTop: 4, color: "#ef4444" }}
-              >
-                <span className="pay-label" style={{ color: "#ef4444" }}>
-                  Balance Due:
-                </span>
-                <span
-                  className="pay-val"
-                  style={{ color: "#ef4444", fontWeight: 700 }}
-                >
-                  ₹{Number(balanceDue).toLocaleString("en-IN")}
-                </span>
-              </div>
-            )}
+              <span className="banner-amount">
+                ₹{Number(totalCalculatedAmount).toLocaleString("en-IN")}
+              </span>
+            </div>
+
+            <div className="settlement-breakdown">
+              {initialAdvance > 0 && initialAdvance < totalCalculatedAmount && (
+                <div className="fin-row fin-row--advance">
+                  <span className="fin-label">Advance Paid</span>
+                  <span className="fin-val">
+                    ₹{Number(initialAdvance).toLocaleString("en-IN")}
+                  </span>
+                </div>
+              )}
+              {isPaidInFull &&
+                initialAdvance > 0 &&
+                initialAdvance < totalCalculatedAmount && (
+                  <div className="fin-row fin-row--balance-paid">
+                    <span className="fin-label">Balance Paid</span>
+                    <span className="fin-val">
+                      ₹{Number(balancePaidAmount).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                )}
+              {currentPaidAmount > 0 && (
+                <div className="fin-row fin-row--total-paid">
+                  <span className="fin-label">Total Amount Paid</span>
+                  <span className="fin-val">
+                    ₹{Number(currentPaidAmount).toLocaleString("en-IN")}
+                  </span>
+                </div>
+              )}
+              {!isPaidInFull && Number(balanceDue) > 0 && (
+                <div className="fin-row fin-row--balance-due">
+                  <span className="fin-label">Balance Due</span>
+                  <span className="fin-val">
+                    ₹{Number(balanceDue).toLocaleString("en-IN")}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -725,354 +725,993 @@
     }
   }
 
-  // Billing & Payment Summary Card
+  // Billing & Workflow Controls / Financial Summary Card
   .payment-card {
-    background: var(--bg-card);
-    border: 1px solid var(--surface-border);
-    border-radius: 12px;
-    padding: 16px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     gap: 16px;
-    box-shadow: var(--card-shadow, none);
+    align-items: stretch;
+    width: 100%;
+    margin-top: 4px;
 
-    @media (max-width: 768px) {
-      flex-direction: column;
-      align-items: stretch;
+    @media (max-width: 860px) {
+      grid-template-columns: 1fr;
       gap: 14px;
-      padding: 14px 16px;
-      border-radius: 10px;
     }
 
-    &__left {
-      min-width: 0;
+    // Shared Panel Header
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.18);
 
-      .payment-head {
+      &__title {
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 4px;
+        color: #d4af37;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
 
-        .pay-icon {
-          color: var(--color-gold);
+        .panel-icon {
           font-size: 1.25rem;
-        }
-
-        .pay-title {
-          color: var(--color-gold);
-          font-size: 0.85rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.8px;
-
-          @media (max-width: 600px) {
-            font-size: 0.78rem;
-          }
+          color: #d4af37;
         }
       }
+    }
 
-      .status-button-group {
+    // ==========================================================
+    // LEFT PANEL: WORKFLOW & STATUS CONTROLS (DEFAULT GOLD THEME)
+    // ==========================================================
+    &__workflow {
+      background: var(--bg-card, #0f0f0f);
+      border: 1px solid var(--surface-border, rgba(212, 175, 55, 0.22));
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+
+      @media (max-width: 600px) {
+        padding: 14px;
+        border-radius: 12px;
+      }
+
+      .controls-body {
         display: flex;
         flex-direction: column;
-        gap: 6px;
-        margin-top: 8px;
+        gap: 14px;
+      }
 
-        .status-label {
-          color: var(--text-muted);
-          font-size: 0.75rem;
-          font-weight: 600;
+      .status-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .section-subtitle {
+          color: var(--text-muted, #e6d8a3);
+          font-size: 0.72rem;
+          font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.6px;
         }
 
-        .status-buttons {
+        .status-pill-grid {
           display: grid;
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(3, 1fr);
           gap: 8px;
-          width: 100%;
 
-          &.payment-buttons {
-            grid-template-columns: repeat(3, 1fr);
-
-            @media (max-width: 600px) {
-              grid-template-columns: repeat(2, 1fr);
-
-              .btn-pay--pending {
-                grid-column: span 2;
-              }
-            }
+          @media (max-width: 600px) {
+            grid-template-columns: repeat(2, 1fr);
           }
 
-          .btn-status {
+          .status-chip {
             width: 100%;
             padding: 8px 10px;
             border-radius: 8px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 600;
             cursor: pointer;
-            border: 1px solid var(--surface-border);
-            background: rgba(255, 255, 255, 0.04);
-            color: var(--text-muted, #e6d8a3);
-            transition: all 0.2s ease;
+            border: 1px solid rgba(212, 175, 55, 0.18);
+            background: rgba(212, 175, 55, 0.04);
+            color: #e6d8a3;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             touch-action: manipulation;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-height: 38px;
+            gap: 6px;
+            min-height: 36px;
             text-align: center;
 
+            .chip-icon {
+              font-size: 1.05rem !important;
+              flex-shrink: 0;
+              color: inherit;
+              opacity: 0.9;
+              transition: transform 0.2s ease;
+            }
+
             &:hover:not(:disabled) {
-              background: var(--surface-border-hover);
-              color: var(--text-primary);
-              border-color: var(--color-gold);
+              background: rgba(212, 175, 55, 0.12);
+              color: #fef08a;
+              border-color: #d4af37;
               transform: translateY(-1px);
+
+              .chip-icon {
+                opacity: 1;
+                color: #fef08a;
+              }
             }
 
             &:disabled {
-              opacity: 0.6;
+              opacity: 0.55;
               cursor: not-allowed;
             }
 
-            // Status Buttons Dark Mode Active States
+            // Gold Theme Active States
             &--requested.active {
-              background: rgba(56, 189, 248, 0.22);
+              background: rgba(56, 189, 248, 0.18);
               border-color: #38bdf8;
               color: #38bdf8;
               box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
               font-weight: 700;
+              .chip-icon { color: #38bdf8; opacity: 1; filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.6)); }
             }
 
             &--accepted.active {
-              background: rgba(168, 85, 247, 0.22);
+              background: rgba(168, 85, 247, 0.18);
               border-color: #c084fc;
               color: #c084fc;
               box-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
               font-weight: 700;
+              .chip-icon { color: #c084fc; opacity: 1; filter: drop-shadow(0 0 4px rgba(168, 85, 247, 0.6)); }
             }
 
             &--pending.active {
-              background: rgba(239, 68, 68, 0.22);
+              background: rgba(239, 68, 68, 0.18);
               border-color: #f87171;
               color: #f87171;
               box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
               font-weight: 700;
+              .chip-icon { color: #f87171; opacity: 1; filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6)); }
             }
 
-            &--in-progress.active,
-            &--inprogress.active {
-              background: rgba(249, 115, 22, 0.22);
-              border-color: #fb923c;
-              color: #fb923c;
-              box-shadow: 0 0 12px rgba(249, 115, 22, 0.35);
+            &--in-progress.active {
+              background: rgba(212, 175, 55, 0.22);
+              border-color: #d4af37;
+              color: #fef08a;
+              box-shadow: 0 0 14px rgba(212, 175, 55, 0.4);
               font-weight: 700;
+              .chip-icon {
+                color: #fef08a;
+                opacity: 1;
+                filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.7));
+              }
             }
 
             &--completed.active {
-              background: rgba(34, 197, 94, 0.22);
+              background: rgba(34, 197, 94, 0.18);
               border-color: #4ade80;
               color: #4ade80;
               box-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
               font-weight: 700;
+              .chip-icon { color: #4ade80; opacity: 1; filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.6)); }
             }
 
             &--delivered.active {
-              background: rgba(45, 212, 191, 0.22);
+              background: rgba(45, 212, 191, 0.18);
               border-color: #2dd4bf;
               color: #2dd4bf;
               box-shadow: 0 0 12px rgba(45, 212, 191, 0.35);
               font-weight: 700;
+              .chip-icon { color: #2dd4bf; opacity: 1; filter: drop-shadow(0 0 4px rgba(45, 212, 191, 0.6)); }
             }
 
             &--cancelled {
-              grid-column: span 2;
-
               &.active {
-                background: rgba(148, 163, 184, 0.22);
+                background: rgba(148, 163, 184, 0.18);
                 border-color: #94a3b8;
                 color: #cbd5e1;
-                box-shadow: 0 0 12px rgba(148, 163, 184, 0.25);
+                box-shadow: 0 0 10px rgba(148, 163, 184, 0.25);
                 font-weight: 700;
+                .chip-icon { color: #cbd5e1; opacity: 1; filter: drop-shadow(0 0 4px rgba(148, 163, 184, 0.5)); }
               }
-            }
-
-            // Payment Buttons Dark Mode Active States
-            &.btn-pay--paid.active {
-              background: rgba(34, 197, 94, 0.22);
-              border-color: #4ade80;
-              color: #4ade80;
-              box-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
-              font-weight: 700;
-            }
-
-            &.btn-pay--partial.active {
-              background: rgba(234, 179, 8, 0.22);
-              border-color: #facc15;
-              color: #facc15;
-              box-shadow: 0 0 12px rgba(234, 179, 8, 0.35);
-              font-weight: 700;
-            }
-
-            &.btn-pay--pending.active {
-              background: rgba(239, 68, 68, 0.22);
-              border-color: #f87171;
-              color: #f87171;
-              box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
-              font-weight: 700;
             }
           }
         }
 
-        // ==========================================================
-        // LIGHT MODE OVERRIDES
-        // ==========================================================
-        [data-theme="light"] & {
-          .status-buttons .btn-status {
+        // Locked Payment Badge
+        .payment-locked-card {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 10px 14px;
+          background: rgba(16, 185, 129, 0.12);
+          border: 1px solid rgba(16, 185, 129, 0.35);
+          border-radius: 10px;
+          box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+
+          .locked-icon-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(16, 185, 129, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+
+            .lock-svg {
+              font-size: 1.1rem;
+              color: #10b981;
+            }
+          }
+
+          .locked-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+
+            .locked-headline {
+              color: #10b981;
+              font-size: 0.84rem;
+              font-weight: 700;
+              letter-spacing: 0.3px;
+            }
+
+            .locked-caption {
+              color: rgba(230, 216, 163, 0.7);
+              font-size: 0.72rem;
+            }
+          }
+        }
+
+        // Payment Chips Action Grid
+        .payment-chips-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+
+          @media (max-width: 600px) {
+            grid-template-columns: 1fr;
+          }
+
+          .pay-chip {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid rgba(212, 175, 55, 0.18);
+            background: rgba(212, 175, 55, 0.04);
+            color: #e6d8a3;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            touch-action: manipulation;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 36px;
+            text-align: center;
+
+            .chip-icon {
+              font-size: 1.05rem !important;
+              flex-shrink: 0;
+              color: inherit;
+              opacity: 0.9;
+            }
+
+            &:hover:not(:disabled) {
+              background: rgba(212, 175, 55, 0.12);
+              color: #fef08a;
+              border-color: #d4af37;
+              transform: translateY(-1px);
+
+              .chip-icon {
+                color: #fef08a;
+                opacity: 1;
+              }
+            }
+
+            &:disabled {
+              opacity: 0.55;
+              cursor: not-allowed;
+            }
+
+            &--paid.active {
+              background: rgba(34, 197, 94, 0.18);
+              border-color: #4ade80;
+              color: #4ade80;
+              box-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
+              font-weight: 700;
+              .chip-icon { color: #4ade80; opacity: 1; filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.6)); }
+            }
+
+            &--partial.active {
+              background: rgba(212, 175, 55, 0.22);
+              border-color: #d4af37;
+              color: #facc15;
+              box-shadow: 0 0 14px rgba(212, 175, 55, 0.4);
+              font-weight: 700;
+              .chip-icon { color: #facc15; opacity: 1; filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.7)); }
+            }
+
+            &--pending.active {
+              background: rgba(239, 68, 68, 0.18);
+              border-color: #f87171;
+              color: #f87171;
+              box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
+              font-weight: 700;
+              .chip-icon { color: #f87171; opacity: 1; filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6)); }
+            }
+          }
+        }
+      }
+
+      .readonly-status-box {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding-top: 4px;
+
+        .info-row {
+          .info-label {
+            color: rgba(230, 216, 163, 0.7);
+          }
+        }
+      }
+    }
+
+    // ==========================================================
+    // RIGHT PANEL: FINANCIAL BREAKDOWN (DEFAULT GOLD THEME)
+    // ==========================================================
+    &__financials {
+      background: var(--bg-card, #0f0f0f);
+      border: 1px solid var(--surface-border, rgba(212, 175, 55, 0.22));
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+
+      @media (max-width: 600px) {
+        padding: 14px;
+        border-radius: 12px;
+      }
+
+      .payment-meta-pills {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+
+        .meta-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 10px;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          background: rgba(212, 175, 55, 0.05);
+          border: 1px solid rgba(212, 175, 55, 0.18);
+          color: #e6d8a3;
+
+          .meta-label {
+            color: rgba(230, 216, 163, 0.7);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+          }
+
+          .meta-value {
+            color: #e6d8a3;
+            font-weight: 700;
+          }
+
+          .tag-icon {
+            font-size: 0.95rem !important;
+            flex-shrink: 0;
+          }
+
+          &.status-tag--paid {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.35);
+            color: #10b981;
+          }
+
+          &.status-tag--partial {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: rgba(212, 175, 55, 0.4);
+            color: #facc15;
+          }
+
+          &.status-tag--pending {
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.35);
+            color: #f87171;
+          }
+        }
+      }
+
+      .financial-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+
+      .fin-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.82rem;
+
+        .fin-label {
+          color: rgba(230, 216, 163, 0.7);
+        }
+
+        .fin-val {
+          color: #e6d8a3;
+          font-weight: 600;
+        }
+
+        &--discount {
+          .fin-label, .fin-val {
+            color: #10b981;
+            font-weight: 600;
+          }
+        }
+      }
+
+      .total-highlight-banner {
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.05) 100%);
+        border: 1px solid rgba(212, 175, 55, 0.4);
+        border-radius: 10px;
+        padding: 10px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin: 4px 0 10px 0;
+        box-shadow: 0 2px 8px rgba(212, 175, 55, 0.12);
+
+        .banner-label-group {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+
+          .banner-title {
+            color: #d4af37;
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+          }
+
+          .banner-sub {
+            color: rgba(230, 216, 163, 0.7);
+            font-size: 0.68rem;
+          }
+        }
+
+        .banner-amount {
+          color: #d4af37;
+          font-size: 1.35rem;
+          font-weight: 800;
+          letter-spacing: -0.3px;
+
+          @media (max-width: 600px) {
+            font-size: 1.2rem;
+          }
+        }
+      }
+
+      .settlement-breakdown {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        border-top: 1px dashed rgba(212, 175, 55, 0.2);
+        padding-top: 10px;
+
+        .fin-row--advance,
+        .fin-row--balance-paid {
+          .fin-label {
+            color: rgba(230, 216, 163, 0.7);
+          }
+          .fin-val {
+            color: #e6d8a3;
+            font-weight: 600;
+          }
+        }
+
+        .fin-row--total-paid {
+          .fin-label, .fin-val {
+            color: #10b981;
+            font-size: 0.86rem;
+            font-weight: 700;
+          }
+        }
+
+        .fin-row--balance-due {
+          .fin-label, .fin-val {
+            color: #ef4444;
+            font-size: 0.86rem;
+            font-weight: 700;
+          }
+        }
+      }
+    }
+
+    // ==========================================================
+    // DARK MODE (MIDNIGHT SLATE / CHARCOAL - NO GOLD)
+    // ==========================================================
+    [data-theme="dark"] & {
+      &__workflow,
+      &__financials {
+        background: #1a1e29;
+        border: 1px solid rgba(226, 232, 240, 0.12);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+
+        .panel-header {
+          border-bottom: 1px solid rgba(226, 232, 240, 0.1);
+
+          &__title {
+            color: #f1f5f9;
+            .panel-icon { color: #f1f5f9; }
+          }
+        }
+      }
+
+      &__workflow {
+        .status-section {
+          .section-subtitle {
+            color: #94a3b8;
+          }
+
+          .status-pill-grid .status-chip {
+            background: #141721;
+            border-color: rgba(226, 232, 240, 0.12);
+            color: #cbd5e1;
+
+            .chip-icon {
+              color: #94a3b8;
+            }
+
+            &:hover:not(:disabled) {
+              background: #222736;
+              color: #ffffff;
+              border-color: #f1f5f9;
+
+              .chip-icon {
+                color: #ffffff;
+              }
+            }
+
+            &--requested.active {
+              background: rgba(56, 189, 248, 0.18) !important;
+              border-color: #38bdf8 !important;
+              color: #38bdf8 !important;
+              box-shadow: 0 0 12px rgba(56, 189, 248, 0.3) !important;
+              .chip-icon { color: #38bdf8 !important; filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.6)); }
+            }
+
+            &--accepted.active {
+              background: rgba(168, 85, 247, 0.18) !important;
+              border-color: #c084fc !important;
+              color: #c084fc !important;
+              box-shadow: 0 0 12px rgba(168, 85, 247, 0.3) !important;
+              .chip-icon { color: #c084fc !important; filter: drop-shadow(0 0 4px rgba(168, 85, 247, 0.6)); }
+            }
+
+            &--pending.active {
+              background: rgba(239, 68, 68, 0.18) !important;
+              border-color: #f87171 !important;
+              color: #f87171 !important;
+              box-shadow: 0 0 12px rgba(239, 68, 68, 0.3) !important;
+              .chip-icon { color: #f87171 !important; filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6)); }
+            }
+
+            &--in-progress.active {
+              background: rgba(249, 115, 22, 0.18) !important;
+              border-color: #fb923c !important;
+              color: #fb923c !important;
+              box-shadow: 0 0 12px rgba(249, 115, 22, 0.3) !important;
+              .chip-icon { color: #fb923c !important; filter: drop-shadow(0 0 4px rgba(249, 115, 22, 0.6)); }
+            }
+
+            &--completed.active {
+              background: rgba(34, 197, 94, 0.18) !important;
+              border-color: #4ade80 !important;
+              color: #4ade80 !important;
+              box-shadow: 0 0 12px rgba(34, 197, 94, 0.3) !important;
+              .chip-icon { color: #4ade80 !important; filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.6)); }
+            }
+
+            &--delivered.active {
+              background: rgba(45, 212, 191, 0.18) !important;
+              border-color: #2dd4bf !important;
+              color: #2dd4bf !important;
+              box-shadow: 0 0 12px rgba(45, 212, 191, 0.3) !important;
+              .chip-icon { color: #2dd4bf !important; filter: drop-shadow(0 0 4px rgba(45, 212, 191, 0.6)); }
+            }
+
+            &--cancelled.active {
+              background: rgba(148, 163, 184, 0.18) !important;
+              border-color: #94a3b8 !important;
+              color: #cbd5e1 !important;
+              box-shadow: 0 0 12px rgba(148, 163, 184, 0.25) !important;
+              .chip-icon { color: #94a3b8 !important; filter: drop-shadow(0 0 4px rgba(148, 163, 184, 0.5)); }
+            }
+          }
+
+          .payment-locked-card {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.35);
+
+            .locked-icon-badge {
+              background: rgba(16, 185, 129, 0.2);
+              .lock-svg { color: #10b981; }
+            }
+
+            .locked-meta {
+              .locked-headline { color: #10b981; }
+              .locked-caption { color: #94a3b8; }
+            }
+          }
+
+          .payment-chips-grid .pay-chip {
+            background: #141721;
+            border-color: rgba(226, 232, 240, 0.12);
+            color: #cbd5e1;
+
+            .chip-icon {
+              color: #94a3b8;
+            }
+
+            &:hover:not(:disabled) {
+              background: #222736;
+              color: #ffffff;
+              border-color: #f1f5f9;
+
+              .chip-icon {
+                color: #ffffff;
+              }
+            }
+
+            &--paid.active {
+              background: rgba(34, 197, 94, 0.18) !important;
+              border-color: #4ade80 !important;
+              color: #4ade80 !important;
+              .chip-icon { color: #4ade80 !important; filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.6)); }
+            }
+
+            &--partial.active {
+              background: rgba(234, 179, 8, 0.18) !important;
+              border-color: #facc15 !important;
+              color: #facc15 !important;
+              .chip-icon { color: #facc15 !important; filter: drop-shadow(0 0 4px rgba(234, 179, 8, 0.6)); }
+            }
+
+            &--pending.active {
+              background: rgba(239, 68, 68, 0.18) !important;
+              border-color: #f87171 !important;
+              color: #f87171 !important;
+              .chip-icon { color: #f87171 !important; filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6)); }
+            }
+          }
+        }
+      }
+
+      &__financials {
+        .payment-meta-pills {
+          .meta-badge {
+            background: #141721;
+            border-color: rgba(226, 232, 240, 0.12);
+            color: #cbd5e1;
+            .meta-label { color: #94a3b8; }
+            .meta-value { color: #f1f5f9; }
+
+            &.status-tag--paid {
+              background: rgba(16, 185, 129, 0.12);
+              border-color: rgba(16, 185, 129, 0.35);
+              color: #10b981;
+              .tag-icon { color: #10b981; }
+            }
+            &.status-tag--partial {
+              background: rgba(234, 179, 8, 0.12);
+              border-color: rgba(234, 179, 8, 0.35);
+              color: #facc15;
+              .tag-icon { color: #facc15; }
+            }
+            &.status-tag--pending {
+              background: rgba(239, 68, 68, 0.12);
+              border-color: rgba(239, 68, 68, 0.35);
+              color: #f87171;
+              .tag-icon { color: #f87171; }
+            }
+          }
+        }
+
+        .fin-row {
+          .fin-label { color: #94a3b8; }
+          .fin-val { color: #f1f5f9; }
+
+          &--discount {
+            .fin-label, .fin-val { color: #34d399; }
+          }
+        }
+
+        .total-highlight-banner {
+          background: linear-gradient(135deg, rgba(241, 245, 249, 0.08) 0%, rgba(241, 245, 249, 0.02) 100%);
+          border: 1px solid rgba(241, 245, 249, 0.16);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+          .banner-label-group {
+            .banner-title { color: #f1f5f9; }
+            .banner-sub { color: #94a3b8; }
+          }
+
+          .banner-amount { color: #f1f5f9; }
+        }
+
+        .settlement-breakdown {
+          border-top-color: rgba(226, 232, 240, 0.1);
+
+          .fin-row--advance,
+          .fin-row--balance-paid {
+            .fin-label { color: #94a3b8; }
+            .fin-val { color: #cbd5e1; }
+          }
+
+          .fin-row--total-paid {
+            .fin-label, .fin-val { color: #34d399; }
+          }
+
+          .fin-row--balance-due {
+            .fin-label, .fin-val { color: #f87171; }
+          }
+        }
+      }
+    }
+
+    // ==========================================================
+    // LIGHT MODE (SOFT SLATE MIST - NO GOLD)
+    // ==========================================================
+    [data-theme="light"] & {
+      &__workflow,
+      &__financials {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+
+        .panel-header {
+          border-bottom-color: #e2e8f0;
+          
+          &__title {
+            color: #0f172a;
+            .panel-icon { color: #0f172a; }
+          }
+        }
+      }
+
+      &__workflow {
+        .status-section {
+          .section-subtitle {
+            color: #64748b;
+          }
+
+          .status-pill-grid .status-chip {
             background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            color: #475569;
+            border-color: #cbd5e1;
+            color: #334155;
+
+            .chip-icon {
+              color: #64748b;
+            }
 
             &:hover:not(:disabled) {
               background: #f1f5f9;
               color: #0f172a;
               border-color: #94a3b8;
+
+              .chip-icon {
+                color: #0f172a;
+              }
             }
 
             &--requested.active {
-              background: #0284c7 !important;
-              border-color: #0369a1 !important;
-              color: #ffffff !important;
-              box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35) !important;
+              background: #e0f2fe !important;
+              border-color: #0284c7 !important;
+              color: #0369a1 !important;
+              box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25) !important;
+              .chip-icon { color: #0284c7 !important; filter: none; }
             }
 
             &--accepted.active {
-              background: #9333ea !important;
-              border-color: #7e22ce !important;
-              color: #ffffff !important;
-              box-shadow: 0 2px 8px rgba(147, 51, 234, 0.35) !important;
+              background: #f3e8ff !important;
+              border-color: #9333ea !important;
+              color: #7e22ce !important;
+              box-shadow: 0 2px 8px rgba(147, 51, 234, 0.25) !important;
+              .chip-icon { color: #9333ea !important; filter: none; }
             }
 
             &--pending.active {
-              background: #dc2626 !important;
-              border-color: #b91c1c !important;
-              color: #ffffff !important;
-              box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35) !important;
+              background: #fee2e2 !important;
+              border-color: #dc2626 !important;
+              color: #b91c1c !important;
+              box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25) !important;
+              .chip-icon { color: #dc2626 !important; filter: none; }
             }
 
-            &--in-progress.active,
-            &--inprogress.active {
-              background: #ea580c !important;
-              border-color: #c2410c !important;
-              color: #ffffff !important;
-              box-shadow: 0 2px 8px rgba(234, 88, 12, 0.35) !important;
+            &--in-progress.active {
+              background: #ffedd5 !important;
+              border-color: #ea580c !important;
+              color: #c2410c !important;
+              box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25) !important;
+              .chip-icon { color: #ea580c !important; filter: none; }
             }
 
             &--completed.active {
-              background: #16a34a !important;
-              border-color: #15803d !important;
-              color: #ffffff !important;
-              box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35) !important;
+              background: #dcfce7 !important;
+              border-color: #16a34a !important;
+              color: #15803d !important;
+              box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25) !important;
+              .chip-icon { color: #16a34a !important; filter: none; }
             }
 
             &--delivered.active {
-              background: #0d9488 !important;
-              border-color: #0f766e !important;
-              color: #ffffff !important;
-              box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35) !important;
+              background: #ccfbf1 !important;
+              border-color: #0d9488 !important;
+              color: #0f766e !important;
+              box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25) !important;
+              .chip-icon { color: #0d9488 !important; filter: none; }
             }
 
             &--cancelled.active {
-              background: #475569 !important;
-              border-color: #334155 !important;
-              color: #ffffff !important;
-              box-shadow: 0 2px 8px rgba(71, 85, 105, 0.35) !important;
-            }
-
-            &.btn-pay--paid.active {
-              background: #16a34a !important;
-              border-color: #15803d !important;
-              color: #ffffff !important;
-            }
-
-            &.btn-pay--partial.active {
-              background: #d97706 !important;
-              border-color: #b45309 !important;
-              color: #ffffff !important;
-            }
-
-            &.btn-pay--pending.active {
-              background: #dc2626 !important;
-              border-color: #b91c1c !important;
-              color: #ffffff !important;
-            }
-          }
-        }
-      }
-    }
-
-    &__breakdown {
-      min-width: 220px;
-
-      @media (max-width: 768px) {
-        min-width: 0;
-        width: 100%;
-        border-top: 1px solid var(--surface-border);
-        padding-top: 10px;
-      }
-
-      .pay-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        font-size: 0.83rem;
-        margin-bottom: 4px;
-
-        @media (max-width: 600px) {
-          font-size: 0.78rem;
-        }
-
-        .pay-label {
-          color: var(--text-muted);
-        }
-
-        .pay-val {
-          color: var(--text-primary);
-          font-weight: 600;
-        }
-
-        &.total {
-          margin-top: 8px;
-          margin-bottom: 0;
-
-          .pay-total-label {
-            color: var(--color-gold);
-            font-size: 0.95rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-
-            @media (max-width: 600px) {
-              font-size: 0.85rem;
+              background: #f1f5f9 !important;
+              border-color: #64748b !important;
+              color: #334155 !important;
+              box-shadow: 0 2px 8px rgba(71, 85, 105, 0.25) !important;
+              .chip-icon { color: #475569 !important; filter: none; }
             }
           }
 
-          .pay-total-val {
-            color: var(--color-gold);
-            font-size: 1.35rem;
-            font-weight: 700;
+          .payment-locked-card {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
 
-            @media (max-width: 600px) {
-              font-size: 1.2rem;
+            .locked-icon-badge {
+              background: #d1fae5;
+              .lock-svg { color: #059669; }
+            }
+
+            .locked-meta {
+              .locked-headline { color: #059669; }
+              .locked-caption { color: #64748b; }
+            }
+          }
+
+          .payment-chips-grid .pay-chip {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #334155;
+
+            .chip-icon {
+              color: #64748b;
+            }
+
+            &:hover:not(:disabled) {
+              background: #f1f5f9;
+              color: #0f172a;
+              border-color: #94a3b8;
+
+              .chip-icon {
+                color: #0f172a;
+              }
+            }
+
+            &--paid.active {
+              background: #dcfce7 !important;
+              border-color: #16a34a !important;
+              color: #15803d !important;
+              .chip-icon { color: #16a34a !important; filter: none; }
+            }
+
+            &--partial.active {
+              background: #fef3c7 !important;
+              border-color: #d97706 !important;
+              color: #b45309 !important;
+              .chip-icon { color: #d97706 !important; filter: none; }
+            }
+
+            &--pending.active {
+              background: #fee2e2 !important;
+              border-color: #dc2626 !important;
+              color: #b91c1c !important;
+              .chip-icon { color: #dc2626 !important; filter: none; }
             }
           }
         }
       }
 
-      .pay-divider {
-        border-color: var(--surface-border) !important;
-        margin: 6px 0 !important;
+      &__financials {
+        .payment-meta-pills {
+          .meta-badge {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            color: #334155;
+            .meta-label { color: #64748b; }
+            .meta-value { color: #0f172a; }
+
+            &.status-tag--paid {
+              background: #ecfdf5;
+              border-color: #a7f3d0;
+              color: #059669;
+              .tag-icon { color: #059669; }
+            }
+            &.status-tag--partial {
+              background: #fffbeb;
+              border-color: #fde68a;
+              color: #d97706;
+              .tag-icon { color: #d97706; }
+            }
+            &.status-tag--pending {
+              background: #fef2f2;
+              border-color: #fecaca;
+              color: #dc2626;
+              .tag-icon { color: #dc2626; }
+            }
+          }
+        }
+
+        .fin-row {
+          .fin-label { color: #64748b; }
+          .fin-val { color: #0f172a; }
+
+          &--discount {
+            .fin-label, .fin-val { color: #16a34a; }
+          }
+        }
+
+        .total-highlight-banner {
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-color: #cbd5e1;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+
+          .banner-label-group {
+            .banner-title { color: #0f172a; }
+            .banner-sub { color: #64748b; }
+          }
+
+          .banner-amount { color: #0f172a; }
+        }
+
+        .settlement-breakdown {
+          border-top-color: #e2e8f0;
+
+          .fin-row--advance,
+          .fin-row--balance-paid {
+            .fin-label { color: #64748b; }
+            .fin-val { color: #334155; }
+          }
+
+          .fin-row--total-paid {
+            .fin-label, .fin-val { color: #16a34a; }
+          }
+
+          .fin-row--balance-due {
+            .fin-label, .fin-val { color: #dc2626; }
+          }
+        }
       }
     }
   }

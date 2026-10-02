@@ -476,7 +476,7 @@
 
   .services-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 16px;
 
     @media (max-width: 600px) {
@@ -630,27 +630,48 @@
     }
 
     .card-footer {
-      padding: 10px 16px;
+      padding: 10px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 12px;
 
       .card-date {
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
         color: $text-muted;
         font-size: 0.78rem;
+        min-width: 0;
 
         svg {
           color: $color-gold;
-          opacity: 0.8;
+          opacity: 0.85;
+          font-size: 14px;
+          flex-shrink: 0;
         }
       }
 
       .action-btns {
         display: flex;
-        gap: 6px;
+        align-items: center;
+        gap: 5px;
+        flex-wrap: wrap;
+        margin-left: auto;
+        justify-content: flex-end;
+
+        .app-btn {
+          width: 32px !important;
+          height: 32px !important;
+          min-width: 32px !important;
+          padding: 0 !important;
+          border-radius: 6px !important;
+
+          svg {
+            font-size: 16px !important;
+          }
+        }
       }
     }
   }

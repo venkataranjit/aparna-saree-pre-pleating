@@ -1287,6 +1287,7 @@ const Expenses = () => {
 
                     return (
                       <div key={exp.id} className="expense-grid-card">
+                        <div className="card-top-accent" />
                         <div className="card-top">
                           <div className="card-header-row">
                             <AppBadge

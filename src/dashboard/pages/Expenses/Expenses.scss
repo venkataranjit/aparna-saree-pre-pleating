@@ -71,12 +71,13 @@
   /* 4 StatCards Grid matching Dashboard Overview */
   &__stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
     margin-bottom: 24px;
+    width: 100%;
 
-    @media (max-width: 1200px) {
-      grid-template-columns: repeat(2, 1fr);
+    @media (max-width: 1100px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     @media (max-width: 600px) {
@@ -588,7 +589,6 @@
 
     @media (max-width: 600px) {
       grid-template-columns: 1fr;
-      gap: 14px;
     }
   }
 
@@ -599,14 +599,35 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: var(--card-shadow, 0 4px 16px rgba(0, 0, 0, 0.25));
+    position: relative;
     overflow: hidden;
+    box-shadow: var(--card-shadow, 0 4px 18px rgba(0, 0, 0, 0.4));
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover {
-      transform: translateY(-2px);
+      transform: translateY(-3px);
       border-color: var(--surface-border-hover);
-      box-shadow: var(--card-shadow-hover, 0 6px 24px rgba(0, 0, 0, 0.35));
+      box-shadow: var(--card-shadow-hover, 0 8px 24px rgba(0, 0, 0, 0.6));
+
+      .card-top-accent {
+        opacity: 1;
+      }
+    }
+
+    .card-top-accent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        var(--color-gold),
+        transparent
+      );
+      opacity: 0.4;
+      transition: opacity 0.25s ease;
     }
 
     .card-top {
@@ -681,23 +702,49 @@
     }
 
     .card-footer {
-      padding: 10px 16px;
+      padding: 10px 14px;
       background-color: var(--surface-gold-tint);
       border-top: 1px solid var(--surface-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 12px;
 
       .card-date {
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
         color: $text-muted;
         font-size: 0.76rem;
+        min-width: 0;
 
         svg {
           color: $color-gold;
-          opacity: 0.8;
+          opacity: 0.85;
+          font-size: 14px;
+          flex-shrink: 0;
+        }
+      }
+
+      .action-btns {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex-wrap: wrap;
+        margin-left: auto;
+        justify-content: flex-end;
+
+        .app-btn {
+          width: 32px !important;
+          height: 32px !important;
+          min-width: 32px !important;
+          padding: 0 !important;
+          border-radius: 6px !important;
+
+          svg {
+            font-size: 16px !important;
+          }
         }
       }
     }

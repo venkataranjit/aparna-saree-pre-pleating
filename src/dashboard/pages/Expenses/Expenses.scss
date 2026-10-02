@@ -783,8 +783,8 @@
   padding: 4px 0;
 
   .dossier-hero {
-    background: rgba(212, 175, 55, 0.08);
-    border: 1px solid rgba(212, 175, 55, 0.25);
+    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.08));
+    border: 1px solid var(--surface-border, rgba(212, 175, 55, 0.25));
     border-radius: 10px;
     padding: 18px 20px;
     display: flex;
@@ -797,7 +797,7 @@
       font-size: 0.76rem;
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      color: $text-muted;
+      color: var(--text-muted, #94a3b8);
       margin-bottom: 2px;
     }
 
@@ -826,8 +826,8 @@
     }
 
     .dossier-item {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid $surface-border;
+      background: var(--bg-card, rgba(15, 15, 15, 0.7));
+      border: 1px solid var(--surface-border);
       border-radius: 8px;
       padding: 12px 14px;
       display: flex;
@@ -835,7 +835,7 @@
       gap: 10px;
 
       .dossier-icon {
-        color: $color-gold;
+        color: var(--color-gold, #d4af37);
         font-size: 18px;
         margin-top: 2px;
         flex-shrink: 0;
@@ -849,14 +849,14 @@
 
         .dossier-label {
           font-size: 0.74rem;
-          color: $text-muted;
+          color: var(--text-muted, #94a3b8);
           text-transform: uppercase;
           letter-spacing: 0.6px;
         }
 
         .dossier-val {
           font-size: 0.9rem;
-          color: $text-primary;
+          color: var(--text-primary);
           font-weight: 500;
         }
       }
@@ -864,8 +864,8 @@
   }
 
   .dossier-text-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid $surface-border;
+    background: var(--bg-card, rgba(15, 15, 15, 0.7));
+    border: 1px solid var(--surface-border);
     border-radius: 8px;
     padding: 14px 16px;
     display: flex;
@@ -874,7 +874,7 @@
 
     .box-label {
       font-size: 0.74rem;
-      color: $color-gold;
+      color: var(--color-gold, #d4af37);
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.6px;
@@ -889,7 +889,7 @@
 
     .box-text {
       font-size: 0.9rem;
-      color: $text-primary;
+      color: var(--text-primary);
       line-height: 1.5;
       white-space: pre-wrap;
     }
@@ -898,8 +898,8 @@
 
 /* Delete Confirmation Card */
 .delete-confirm-box {
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: var(--surface-gold-tint, rgba(239, 68, 68, 0.08));
+  border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 8px;
   padding: 16px;
   margin-top: 12px;
@@ -909,7 +909,7 @@
 
   .delete-item-title {
     font-weight: 600;
-    color: $text-primary;
+    color: var(--text-primary);
     font-size: 0.95rem;
   }
 
@@ -917,10 +917,10 @@
     display: flex;
     gap: 12px;
     font-size: 0.82rem;
-    color: $text-muted;
+    color: var(--text-muted, #94a3b8);
 
     .delete-amount {
-      color: #f87171;
+      color: #ef4444;
       font-weight: 700;
     }
   }

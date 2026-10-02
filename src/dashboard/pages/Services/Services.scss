@@ -542,6 +542,28 @@
           font-size: 20px;
         }
       }
+
+      .service-order-pill {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 2px !important;
+        min-width: auto !important;
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: $color-gold;
+        letter-spacing: 0.3px;
+      }
+
+      .service-type-tag {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: $text-muted;
+        letter-spacing: 0.2px;
+        line-height: 1.2;
+      }
     }
 
     .card-body {
@@ -1021,6 +1043,18 @@
         background: linear-gradient(90deg, transparent, rgba(226, 232, 240, 0.4), transparent) !important;
       }
 
+      .service-order-pill {
+        background: transparent !important;
+        border: none !important;
+        color: #94a3b8 !important;
+      }
+
+      .service-type-tag {
+        background: transparent !important;
+        border: none !important;
+        color: #94a3b8 !important;
+      }
+
       .card-pricing {
         background-color: rgba(15, 17, 23, 0.5) !important;
         border-color: rgba(226, 232, 240, 0.1) !important;
@@ -1032,6 +1066,18 @@
     }
 
     .service-detailed-card {
+      .service-order-pill {
+        background: transparent !important;
+        border: none !important;
+        color: #94a3b8 !important;
+      }
+
+      .service-type-tag {
+        background: transparent !important;
+        border: none !important;
+        color: #94a3b8 !important;
+      }
+
       .meta-tile {
         background-color: rgba(15, 17, 23, 0.5) !important;
         border-color: rgba(226, 232, 240, 0.1) !important;
@@ -1134,6 +1180,18 @@
         background: linear-gradient(90deg, transparent, rgba(15, 23, 42, 0.25), transparent) !important;
       }
 
+      .service-order-pill {
+        background: transparent !important;
+        border: none !important;
+        color: #64748b !important;
+      }
+
+      .service-type-tag {
+        background: transparent !important;
+        border: none !important;
+        color: #64748b !important;
+      }
+
       .card-pricing {
         background-color: #f8fafc !important;
         border-color: rgba(15, 23, 42, 0.08) !important;
@@ -1160,6 +1218,18 @@
       &:hover {
         border-color: rgba(15, 23, 42, 0.18) !important;
         box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important;
+      }
+
+      .service-order-pill {
+        background: transparent !important;
+        border: none !important;
+        color: #64748b !important;
+      }
+
+      .service-type-tag {
+        background: transparent !important;
+        border: none !important;
+        color: #64748b !important;
       }
 
       .meta-tile {

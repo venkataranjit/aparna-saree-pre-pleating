@@ -13,6 +13,7 @@ export default function AppModal({
   maxWidth = 'md',
   className = '',
   bodyClassName = '',
+  closeOnBackdropClick = false,
 }) {
   useEffect(() => {
     if (open) {
@@ -31,7 +32,7 @@ export default function AppModal({
     <div
       className="app-modal-backdrop"
       onClick={(e) => {
-        if (e.target === e.currentTarget && onClose) {
+        if (closeOnBackdropClick && e.target === e.currentTarget && onClose) {
           onClose();
         }
       }}
@@ -40,6 +41,7 @@ export default function AppModal({
         className={`app-modal-container app-modal-container--${maxWidth} ${className}`.trim()}
         role="dialog"
         aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
       >
         {(title || onClose) && (
           <div className="app-modal-header">

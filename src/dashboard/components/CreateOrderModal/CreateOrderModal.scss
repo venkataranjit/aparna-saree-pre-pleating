@@ -164,39 +164,117 @@
   }
 }
 
-/* Service Item Card */
+/* Section Header Actions */
+.section-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  @media (max-width: 600px) {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .accordion-toggle-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--surface-gold-tint, rgba(212, 175, 55, 0.06));
+    border: 1px solid $surface-border;
+    color: $text-muted;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: $transition-fast;
+
+    &:hover {
+      background: var(--surface-border-hover, rgba(212, 175, 55, 0.16));
+      color: $text-primary;
+      border-color: $color-gold;
+    }
+
+    svg {
+      color: $color-gold;
+    }
+  }
+}
+
+/* Service Item Card (Collapsible Accordion) */
 .service-items-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .service-item-card {
   background: var(--bg-secondary, rgba(14, 14, 14, 0.9));
   border: 1px solid $surface-border;
   border-radius: 10px;
-  padding: 14px 16px;
   box-shadow: var(--pill-shadow, 0 2px 10px rgba(0, 0, 0, 0.4));
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  overflow: hidden;
 
-  @media (max-width: 600px) {
-    padding: 12px;
+  &.is-collapsed {
+    padding: 0;
+
+    .item-card-header {
+      margin-bottom: 0;
+      border-bottom: none;
+      padding: 12px 14px;
+    }
+  }
+
+  &.is-expanded {
+    padding: 14px 16px;
+    border-color: rgba(212, 175, 55, 0.35);
+
+    @media (max-width: 600px) {
+      padding: 12px;
+    }
+
+    .item-card-header {
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+      border-bottom: 1px dashed $surface-border;
+    }
+  }
+
+  &.has-errors {
+    border-color: rgba(239, 68, 68, 0.6) !important;
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3) !important;
   }
 
   .item-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px dashed $surface-border;
-    flex-wrap: wrap;
-    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+    gap: 10px;
 
-    .item-badge-wrap {
+    &:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .item-card-header-left {
       display: flex;
       align-items: center;
       gap: 10px;
+      flex: 1;
+      min-width: 0;
       flex-wrap: wrap;
+
+      .accordion-chevron {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: $color-gold;
+        flex-shrink: 0;
+      }
 
       .item-number-badge {
         background: $surface-gold-tint;
@@ -207,44 +285,157 @@
         padding: 3px 8px;
         border-radius: 6px;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.4px;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
 
-      .item-service-title {
-        color: $text-primary;
-        font-size: 0.92rem;
-        font-weight: 600;
+      .item-header-titles {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        min-width: 0;
 
-        @media (max-width: 600px) {
-          font-size: 0.84rem;
+        .item-service-title {
+          color: $text-primary;
+          font-size: 0.92rem;
+          font-weight: 600;
+          white-space: nowrap;
+
+          @media (max-width: 600px) {
+            font-size: 0.86rem;
+          }
+        }
+      }
+
+      .item-quick-summary-chips {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+
+        .quick-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          font-size: 0.72rem;
+          font-weight: 500;
+          padding: 2px 7px;
+          border-radius: 4px;
+          white-space: nowrap;
+
+          svg {
+            flex-shrink: 0;
+          }
+
+          &--fabric {
+            background: rgba(148, 163, 184, 0.12);
+            color: #cbd5e1;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+          }
+
+          &--price {
+            background: rgba(16, 185, 129, 0.12);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-weight: 700;
+          }
+
+          &--error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            font-weight: 600;
+          }
+        }
+
+        .item-qty-stepper {
+          display: inline-flex;
+          align-items: center;
+          gap: 2px;
+          background: var(--surface-gold-tint, rgba(212, 175, 55, 0.08));
+          border: 1px solid var(--surface-border, rgba(212, 175, 55, 0.28));
+          border-radius: 6px;
+          padding: 2px 3px;
+
+          .qty-step-btn {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            background: rgba(212, 175, 55, 0.12);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: $text-primary;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+            transition: background 0.15s ease, border-color 0.15s ease;
+
+            &:hover:not(:disabled) {
+              background: rgba(212, 175, 55, 0.3);
+              border-color: $color-gold;
+              color: #ffffff;
+            }
+
+            &:disabled {
+              opacity: 0.35;
+              cursor: not-allowed;
+            }
+          }
+
+          .qty-val-badge {
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: $text-primary;
+            padding: 0 5px;
+            white-space: nowrap;
+            user-select: none;
+          }
         }
       }
     }
 
-    .remove-item-btn {
+    .item-card-header-actions {
       display: flex;
       align-items: center;
-      gap: 4px;
-      background: transparent;
-      border: 1px solid rgba(239, 68, 68, 0.35);
-      color: #f87171;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.76rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: $transition-fast;
+      gap: 6px;
+      flex-shrink: 0;
 
-      &:hover {
-        background: rgba(239, 68, 68, 0.15);
-        border-color: #ef4444;
+      .item-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: $transition-fast;
+
+        &.remove-item-btn {
+          width: 28px;
+          height: 28px;
+          padding: 0;
+          border: 1px solid rgba(239, 68, 68, 0.35);
+          color: #f87171;
+
+          &:hover:not(:disabled) {
+            background: rgba(239, 68, 68, 0.18);
+            border-color: #ef4444;
+            color: #ef4444;
+          }
+        }
       }
     }
   }
 
+  .item-card-body {
+    padding-top: 2px;
+  }
+
   .item-fields-grid {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 0.85fr) minmax(0, 1.25fr);
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1fr);
     gap: 12px;
     align-items: start;
     width: 100%;
@@ -685,7 +876,9 @@
   }
 }
 
-// Light Mode Overrides for Create Order Modal (Soft Slate Mist)
+// ============================================================================
+// Light Mode Overrides (Ivory Luxury / Soft Slate Mist)
+// ============================================================================
 [data-theme="light"] {
   .form-section-card {
     background: #ffffff !important;
@@ -713,35 +906,158 @@
     }
   }
 
-  .service-item-card {
-    background: #f8fafc !important;
-    border: 1px solid rgba(15, 23, 42, 0.09) !important;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+  .section-header-actions {
+    .accordion-toggle-all-btn {
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #334155 !important;
 
-    .item-card-header {
-      border-bottom-color: rgba(15, 23, 42, 0.1) !important;
+      svg {
+        color: #475569 !important;
+      }
 
-      .item-badge-wrap {
-        .item-number-badge {
-          background: #e2e8f0 !important;
-          color: #0f172a !important;
-          border-color: rgba(15, 23, 42, 0.1) !important;
-        }
+      &:hover {
+        background: #e2e8f0 !important;
+        border-color: #94a3b8 !important;
+        color: #0f172a !important;
 
-        .item-service-title {
+        svg {
           color: #0f172a !important;
         }
       }
+    }
+  }
 
-      .remove-item-btn {
-        border-color: rgba(220, 38, 38, 0.25) !important;
-        color: #dc2626 !important;
+  .service-item-card {
+    background: #f8fafc !important;
+    border: 1px solid rgba(15, 23, 42, 0.09) !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
 
-        &:hover {
-          background: rgba(220, 38, 38, 0.08) !important;
-          border-color: #dc2626 !important;
-          color: #b91c1c !important;
+    &.is-expanded {
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+
+      .item-card-header {
+        border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+      }
+    }
+
+    &.has-errors {
+      border-color: rgba(220, 38, 38, 0.5) !important;
+      box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.25) !important;
+    }
+
+    .item-card-header {
+      &:hover {
+        background: rgba(15, 23, 42, 0.02) !important;
+      }
+
+      .item-card-header-left {
+        .accordion-chevron {
+          color: #64748b !important;
         }
+
+        .item-number-badge {
+          background: #e2e8f0 !important;
+          color: #0f172a !important;
+          border: 1px solid rgba(15, 23, 42, 0.12) !important;
+        }
+
+        .item-header-titles {
+          .item-service-title {
+            color: #0f172a !important;
+            font-weight: 600 !important;
+          }
+        }
+
+        .item-quick-summary-chips {
+          .quick-chip {
+            &--fabric {
+              background: #f1f5f9 !important;
+              color: #475569 !important;
+              border: 1px solid #cbd5e1 !important;
+            }
+
+            &--price {
+              background: #ecfdf5 !important;
+              color: #047857 !important;
+              border: 1px solid #a7f3d0 !important;
+              font-weight: 700 !important;
+            }
+
+            &--error {
+              background: #fef2f2 !important;
+              color: #dc2626 !important;
+              border: 1px solid #fecaca !important;
+              font-weight: 600 !important;
+            }
+          }
+
+          .item-qty-stepper {
+            background: #eff6ff !important;
+            border: 1px solid #bfdbfe !important;
+
+            .qty-step-btn {
+              background: #dbeafe !important;
+              border: 1px solid #93c5fd !important;
+              color: #1d4ed8 !important;
+
+              &:hover:not(:disabled) {
+                background: #2563eb !important;
+                border-color: #1d4ed8 !important;
+                color: #ffffff !important;
+              }
+
+              &:disabled {
+                opacity: 0.4 !important;
+                background: #e2e8f0 !important;
+                border-color: #cbd5e1 !important;
+                color: #94a3b8 !important;
+              }
+            }
+
+            .qty-val-badge {
+              color: #1d4ed8 !important;
+              font-weight: 700 !important;
+            }
+          }
+        }
+      }
+
+      .item-card-header-actions {
+        .remove-item-btn {
+          background: #ffffff !important;
+          border: 1px solid rgba(220, 38, 38, 0.25) !important;
+          color: #dc2626 !important;
+
+          &:hover:not(:disabled) {
+            background: #fee2e2 !important;
+            border-color: #dc2626 !important;
+            color: #b91c1c !important;
+          }
+        }
+      }
+    }
+
+    .service-pricing-info-row {
+      .pricing-calc-pill {
+        background: #ecfdf5 !important;
+        color: #047857 !important;
+        border: 1px solid #a7f3d0 !important;
+        font-weight: 600 !important;
+      }
+
+      .pricing-offer-pill {
+        background: #fefce8 !important;
+        color: #854d0e !important;
+        border: 1px solid #fde047 !important;
+        font-weight: 600 !important;
+      }
+
+      .pricing-catalog-pill {
+        background: #f1f5f9 !important;
+        color: #475569 !important;
+        border: 1px solid #e2e8f0 !important;
       }
     }
 
@@ -767,6 +1083,20 @@
           svg {
             color: #334155 !important;
           }
+        }
+
+        .meas-switch-wrapper {
+          border-color: #cbd5e1 !important;
+        }
+      }
+
+      .measure-skipped-banner {
+        background: #f8fafc !important;
+        border: 1px dashed #cbd5e1 !important;
+        color: #475569 !important;
+
+        svg {
+          color: #64748b !important;
         }
       }
 
@@ -805,6 +1135,7 @@
 
       .summary-val {
         color: #0f172a !important;
+        font-weight: 700 !important;
       }
 
       .summary-count {
@@ -836,7 +1167,285 @@
   }
 }
 
-// Final Price Read-only Input Styling (Default Obsidian Gold Theme)
+// ============================================================================
+// Dark Mode Explicit Overrides (Midnight Slate / Charcoal Dark)
+// ============================================================================
+[data-theme="dark"] {
+  .form-section-card {
+    background: #1a1e29 !important;
+    border: 1px solid rgba(226, 232, 240, 0.12) !important;
+
+    .section-header {
+      border-bottom-color: rgba(226, 232, 240, 0.1) !important;
+
+      .section-title-wrap {
+        .section-icon {
+          color: #f1f5f9 !important;
+        }
+
+        .section-title {
+          color: #f1f5f9 !important;
+        }
+
+        .section-subtitle {
+          color: #94a3b8 !important;
+        }
+      }
+    }
+  }
+
+  .section-header-actions {
+    .accordion-toggle-all-btn {
+      background: #161922 !important;
+      border: 1px solid rgba(226, 232, 240, 0.14) !important;
+      color: #cbd5e1 !important;
+
+      svg {
+        color: #94a3b8 !important;
+      }
+
+      &:hover {
+        background: #222736 !important;
+        border-color: rgba(226, 232, 240, 0.28) !important;
+        color: #ffffff !important;
+
+        svg {
+          color: #f1f5f9 !important;
+        }
+      }
+    }
+  }
+
+  .service-item-card {
+    background: #161922 !important;
+    border: 1px solid rgba(226, 232, 240, 0.12) !important;
+
+    &.is-expanded {
+      background: #141721 !important;
+      border-color: rgba(226, 232, 240, 0.24) !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+
+      .item-card-header {
+        border-bottom-color: rgba(226, 232, 240, 0.1) !important;
+      }
+    }
+
+    &.has-errors {
+      border-color: rgba(239, 68, 68, 0.6) !important;
+      box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3) !important;
+    }
+
+    .item-card-header {
+      &:hover {
+        background: rgba(255, 255, 255, 0.02) !important;
+      }
+
+      .item-card-header-left {
+        .accordion-chevron {
+          color: #94a3b8 !important;
+        }
+
+        .item-number-badge {
+          background: rgba(241, 245, 249, 0.08) !important;
+          color: #f1f5f9 !important;
+          border: 1px solid rgba(226, 232, 240, 0.16) !important;
+        }
+
+        .item-header-titles {
+          .item-service-title {
+            color: #f1f5f9 !important;
+          }
+        }
+
+        .item-quick-summary-chips {
+          .quick-chip {
+            &--fabric {
+              background: rgba(148, 163, 184, 0.12) !important;
+              color: #cbd5e1 !important;
+              border: 1px solid rgba(148, 163, 184, 0.22) !important;
+            }
+
+            &--price {
+              background: rgba(16, 185, 129, 0.12) !important;
+              color: #34d399 !important;
+              border: 1px solid rgba(16, 185, 129, 0.3) !important;
+            }
+
+            &--error {
+              background: rgba(239, 68, 68, 0.15) !important;
+              color: #f87171 !important;
+              border: 1px solid rgba(239, 68, 68, 0.35) !important;
+            }
+          }
+
+          .item-qty-stepper {
+            background: #141721 !important;
+            border: 1px solid rgba(226, 232, 240, 0.14) !important;
+
+            .qty-step-btn {
+              background: #1e2330 !important;
+              border: 1px solid rgba(226, 232, 240, 0.18) !important;
+              color: #cbd5e1 !important;
+
+              &:hover:not(:disabled) {
+                background: #2b3244 !important;
+                border-color: rgba(226, 232, 240, 0.35) !important;
+                color: #ffffff !important;
+              }
+
+              &:disabled {
+                opacity: 0.35 !important;
+                cursor: not-allowed !important;
+              }
+            }
+
+            .qty-val-badge {
+              color: #f1f5f9 !important;
+              font-weight: 700 !important;
+            }
+          }
+        }
+      }
+
+      .item-card-header-actions {
+        .remove-item-btn {
+          background: rgba(239, 68, 68, 0.08) !important;
+          border: 1px solid rgba(239, 68, 68, 0.3) !important;
+          color: #f87171 !important;
+
+          &:hover:not(:disabled) {
+            background: rgba(239, 68, 68, 0.2) !important;
+            border-color: #ef4444 !important;
+            color: #ef4444 !important;
+          }
+        }
+      }
+    }
+
+    .service-pricing-info-row {
+      .pricing-calc-pill {
+        background: rgba(16, 185, 129, 0.12) !important;
+        color: #34d399 !important;
+        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+      }
+
+      .pricing-offer-pill {
+        background: rgba(234, 179, 8, 0.12) !important;
+        color: #facc15 !important;
+        border: 1px solid rgba(234, 179, 8, 0.3) !important;
+      }
+
+      .pricing-catalog-pill {
+        background: #141721 !important;
+        color: #94a3b8 !important;
+        border: 1px solid rgba(226, 232, 240, 0.12) !important;
+      }
+    }
+
+    .service-desc-box {
+      background: #141721 !important;
+      border: 1px solid rgba(226, 232, 240, 0.1) !important;
+      color: #94a3b8 !important;
+
+      svg {
+        color: #94a3b8 !important;
+      }
+    }
+
+    .item-measurement-section {
+      background: #141721 !important;
+      border: 1px solid rgba(226, 232, 240, 0.1) !important;
+
+      .measurement-header-row {
+        .sub-title {
+          color: #f1f5f9 !important;
+
+          svg {
+            color: #94a3b8 !important;
+          }
+        }
+
+        .meas-switch-wrapper {
+          border-color: rgba(226, 232, 240, 0.14) !important;
+        }
+      }
+
+      .measure-skipped-banner {
+        background: rgba(226, 232, 240, 0.04) !important;
+        border: 1px dashed rgba(226, 232, 240, 0.14) !important;
+        color: #94a3b8 !important;
+
+        svg {
+          color: #94a3b8 !important;
+        }
+      }
+
+      .measure-summary-chips {
+        .measure-chip {
+          background: #161922 !important;
+          border: 1px solid rgba(226, 232, 240, 0.12) !important;
+          color: #f1f5f9 !important;
+
+          strong {
+            color: #f1f5f9 !important;
+          }
+
+          &--note {
+            background: #141721 !important;
+            border-color: rgba(226, 232, 240, 0.1) !important;
+            color: #94a3b8 !important;
+          }
+        }
+      }
+
+      .measure-missing-warning {
+        color: #f59e0b !important;
+      }
+    }
+  }
+
+  .create-order-actions-bar {
+    .order-summary-pill {
+      background: #161922 !important;
+      border: 1px solid rgba(226, 232, 240, 0.14) !important;
+
+      .summary-label {
+        color: #94a3b8 !important;
+        font-size: 0.84rem;
+        font-weight: 500;
+      }
+
+      .summary-val {
+        color: #f1f5f9 !important;
+        font-size: 1.15rem;
+        font-weight: 700 !important;
+      }
+
+      .summary-count {
+        color: #94a3b8 !important;
+        font-size: 0.78rem;
+      }
+    }
+
+    .actions-right {
+      .order-modal-cancel-btn {
+        background: #161922 !important;
+        border: 1px solid rgba(226, 232, 240, 0.16) !important;
+        color: #cbd5e1 !important;
+
+        &:hover:not(:disabled) {
+          background: #222736 !important;
+          border-color: rgba(226, 232, 240, 0.35) !important;
+          color: #f1f5f9 !important;
+        }
+      }
+    }
+  }
+}
+
+// ============================================================================
+// Final Price Read-only Input Styling Across Themes
+// ============================================================================
 .final-price-readonly-input {
   .app-input-wrapper {
     background: var(--input-bg, #0d0d0d) !important;
@@ -861,7 +1470,6 @@
   }
 }
 
-// Dark Mode Explicit Overrides for Final Price Field (Midnight Slate)
 [data-theme="dark"] {
   .final-price-readonly-input {
     .app-input-wrapper {
@@ -888,7 +1496,6 @@
   }
 }
 
-// Light Mode Overrides for Final Price Field (Soft Slate Mist)
 [data-theme="light"] {
   .final-price-readonly-input {
     .app-input-wrapper {

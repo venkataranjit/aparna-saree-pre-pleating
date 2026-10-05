@@ -25,6 +25,13 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import PaymentOutlinedIcon from "@mui/icons-material/PaymentOutlined";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import UnfoldMoreOutlinedIcon from "@mui/icons-material/UnfoldMoreOutlined";
+import UnfoldLessOutlinedIcon from "@mui/icons-material/UnfoldLessOutlined";
+import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 
 import {
   AppModal,
@@ -206,7 +213,7 @@ const orderValidationSchema = Yup.object({
 });
 
 const createEmptyItem = (idx = 1) => ({
-  itemId: `item_${Date.now()}_${idx}`,
+  itemId: `item_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 7)}`,
   serviceId: "",
   serviceName: "",
   serviceType: "Pleating Service",
@@ -261,8 +268,38 @@ export default function CreateOrderModal({
     userAddress: "",
   });
 
-  // Multi-service items
+  // Multi-service items & Accordion expansion state
   const [items, setItems] = useState([createEmptyItem(1)]);
+  const [expandedItemIds, setExpandedItemIds] = useState({});
+
+  const isItemExpanded = useCallback(
+    (item, idx) => {
+      if (item && item.itemId && expandedItemIds[item.itemId] !== undefined) {
+        return Boolean(expandedItemIds[item.itemId]);
+      }
+      return idx === 0;
+    },
+    [expandedItemIds],
+  );
+
+  const toggleItemExpanded = useCallback((itemId, idx) => {
+    setExpandedItemIds((prev) => {
+      const current = prev[itemId] !== undefined ? prev[itemId] : idx === 0;
+      return {
+        ...prev,
+        [itemId]: !current,
+      };
+    });
+  }, []);
+
+  const handleToggleExpandAll = useCallback(() => {
+    const allExpanded = items.every((it, idx) => isItemExpanded(it, idx));
+    const next = {};
+    items.forEach((it) => {
+      if (it.itemId) next[it.itemId] = !allExpanded;
+    });
+    setExpandedItemIds(next);
+  }, [items, isItemExpanded]);
 
   // Order timeline & parameters
   const todayStr = new Date().toISOString().split("T")[0];
@@ -931,13 +968,14 @@ export default function CreateOrderModal({
       return next;
     });
 
-    setValidationErrors((prev) => ({
-      ...prev,
-      [`items[${index}].serviceId`]: undefined,
-      [`items[${index}].servicePrice`]: undefined,
-      [`items[${index}].finalPrice`]: undefined,
-      [`items[${index}].quantity`]: undefined,
-    }));
+    setValidationErrors((prev) => {
+      const copy = { ...prev };
+      delete copy[`items[${index}].serviceId`];
+      delete copy[`items[${index}].servicePrice`];
+      delete copy[`items[${index}].finalPrice`];
+      delete copy[`items[${index}].quantity`];
+      return copy;
+    });
   };
 
   const handleQuantityChange = (index, qtyValue) => {
@@ -959,11 +997,12 @@ export default function CreateOrderModal({
       return next;
     });
 
-    setValidationErrors((prev) => ({
-      ...prev,
-      [`items[${index}].quantity`]: undefined,
-      [`items[${index}].finalPrice`]: undefined,
-    }));
+    setValidationErrors((prev) => {
+      const copy = { ...prev };
+      delete copy[`items[${index}].quantity`];
+      delete copy[`items[${index}].finalPrice`];
+      return copy;
+    });
   };
 
   const handlePriceChange = (index, newPrice) => {
@@ -1105,24 +1144,72 @@ export default function CreateOrderModal({
     });
   };
 
+  const getItemErrorsCount = useCallback(
+    (idx) => {
+      const prefix = `items[${idx}]`;
+      return Object.keys(validationErrors).filter(
+        (k) => k.startsWith(prefix) && Boolean(validationErrors[k]),
+      ).length;
+    },
+    [validationErrors],
+  );
+
+  const handleDuplicateItem = useCallback(
+    (index, e) => {
+      if (e && e.stopPropagation) e.stopPropagation();
+      const sourceItem = items[index];
+      if (!sourceItem) return;
+
+      const newItemId = `item_${Date.now()}_${items.length + 1}_${Math.random().toString(36).substring(2, 7)}`;
+      const duplicatedItem = {
+        ...sourceItem,
+        itemId: newItemId,
+        customMeasurement: {
+          ...sourceItem.customMeasurement,
+        },
+      };
+
+      setItems((prev) => [...prev, duplicatedItem]);
+      setExpandedItemIds((prev) => ({
+        ...prev,
+        [newItemId]: true,
+      }));
+      toast.info(
+        `Duplicated Saree #${index + 1} (${sourceItem.serviceName || "Service"}) as Saree #${items.length + 1}`,
+      );
+    },
+    [items],
+  );
+
   const handleAddItem = () => {
     const newItemIndex = items.length + 1;
     const defaultMeasureId =
       clientSavedMeasures.length > 0 ? clientSavedMeasures[0].id : "custom";
-    setItems((prev) => [
+    const newItem = {
+      ...createEmptyItem(newItemIndex),
+      selectedMeasurementId: defaultMeasureId,
+    };
+    setItems((prev) => [...prev, newItem]);
+    setExpandedItemIds((prev) => ({
       ...prev,
-      {
-        ...createEmptyItem(newItemIndex),
-        selectedMeasurementId: defaultMeasureId,
-      },
-    ]);
+      [newItem.itemId]: true,
+    }));
   };
 
-  const handleRemoveItem = (index) => {
+  const handleRemoveItem = (index, e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
     if (items.length <= 1) {
       return;
     }
+    const itemToRemove = items[index];
     setItems((prev) => prev.filter((_, idx) => idx !== index));
+    if (itemToRemove?.itemId) {
+      setExpandedItemIds((prev) => {
+        const next = { ...prev };
+        delete next[itemToRemove.itemId];
+        return next;
+      });
+    }
     // Clear removed item errors
     setValidationErrors((prev) => {
       const copy = { ...prev };
@@ -1199,6 +1286,7 @@ export default function CreateOrderModal({
       });
     }
     setItems([createEmptyItem(1)]);
+    setExpandedItemIds({});
     setOrderDate(todayStr);
     setDeliveryDate(defaultDeliveryStr);
     setOccasion("Party");
@@ -1403,12 +1491,27 @@ export default function CreateOrderModal({
       setSubmitting(false);
       if (yupErr.inner && yupErr.inner.length > 0) {
         const errMap = {};
+        const expandedErrUpdates = {};
         yupErr.inner.forEach((err) => {
           if (!errMap[err.path]) {
             errMap[err.path] = err.message;
           }
+          const match = err.path ? String(err.path).match(/^items\[(\d+)\]/) : null;
+          if (match && match[1]) {
+            const errIdx = parseInt(match[1], 10);
+            const it = processedItems[errIdx] || items[errIdx];
+            if (it?.itemId) {
+              expandedErrUpdates[it.itemId] = true;
+            }
+          }
         });
         setValidationErrors(errMap);
+        if (Object.keys(expandedErrUpdates).length > 0) {
+          setExpandedItemIds((prev) => ({
+            ...prev,
+            ...expandedErrUpdates,
+          }));
+        }
 
         // Smoothly scroll to the first invalid input element
         setTimeout(() => {
@@ -1593,7 +1696,7 @@ export default function CreateOrderModal({
               ₹{calculatedTotal.toLocaleString("en-IN")}
             </span>
             <span className="summary-count">
-              ({totalQuantity} {totalQuantity === 1 ? "Saree" : "Sarees"} • {items.length} {items.length === 1 ? "Service" : "Services"})
+              ({totalQuantity} {totalQuantity === 1 ? "Service" : "Services"})
             </span>
           </div>
 
@@ -1817,579 +1920,755 @@ export default function CreateOrderModal({
                 </div>
               </div>
 
-              <AppButton
-                type="button"
-                variant="secondary"
-                size="sm"
-                startIcon={<AddCircleOutlineIcon />}
-                onClick={handleAddItem}
-                disabled={submitting}
-              >
-                Add Another Service
-              </AppButton>
+              <div className="section-header-actions">
+                {items.length > 1 && (
+                  <button
+                    type="button"
+                    className="accordion-toggle-all-btn"
+                    onClick={handleToggleExpandAll}
+                    title={
+                      items.every((it, idx) => isItemExpanded(it, idx))
+                        ? "Collapse All"
+                        : "Expand All"
+                    }
+                  >
+                    {items.every((it, idx) => isItemExpanded(it, idx)) ? (
+                      <>
+                        <UnfoldLessOutlinedIcon style={{ fontSize: 16 }} />
+                        <span>Collapse All</span>
+                      </>
+                    ) : (
+                      <>
+                        <UnfoldMoreOutlinedIcon style={{ fontSize: 16 }} />
+                        <span>Expand All</span>
+                      </>
+                    )}
+                  </button>
+                )}
+                <AppButton
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  startIcon={<AddCircleOutlineIcon />}
+                  onClick={handleAddItem}
+                  disabled={submitting}
+                >
+                  Add Another Service
+                </AppButton>
+              </div>
             </div>
 
             <div className="service-items-list">
-              {items.map((item, idx) => (
-                <div key={item.id} className="service-item-card">
-                  <div className="item-card-header">
-                    <div className="item-badge-wrap">
-                      <span className="item-number-badge">
-                        Service #{idx + 1}
-                      </span>
-                      {item.serviceName && (
-                        <span className="item-service-title">
-                          {item.serviceName}
+              {items.map((item, idx) => {
+                const expanded = isItemExpanded(item, idx);
+                const hasItemErrors = getItemErrorsCount(idx) > 0;
+                const unitPrice =
+                  Number(item.serviceDiscountedPrice) > 0
+                    ? Number(item.serviceDiscountedPrice)
+                    : Number(item.servicePrice) || 0;
+                const currentFinalPrice =
+                  Number(item.finalPrice) > 0
+                    ? Number(item.finalPrice)
+                    : unitPrice * (parseInt(item.quantity, 10) || 1);
+
+                return (
+                  <div
+                    key={item.itemId || `item_${idx}`}
+                    className={`service-item-card ${expanded ? "is-expanded" : "is-collapsed"} ${hasItemErrors ? "has-errors" : ""}`}
+                  >
+                    {/* Collapsible Accordion Header */}
+                    <div
+                      className="item-card-header"
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={expanded}
+                      onClick={() => toggleItemExpanded(item.itemId, idx)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          toggleItemExpanded(item.itemId, idx);
+                        }
+                      }}
+                    >
+                      <div className="item-card-header-left">
+                        <span className="accordion-chevron" aria-hidden="true">
+                          {expanded ? (
+                            <ExpandLessIcon style={{ fontSize: 20 }} />
+                          ) : (
+                            <ExpandMoreIcon style={{ fontSize: 20 }} />
+                          )}
                         </span>
-                      )}
-                    </div>
 
-                    {items.length > 1 && (
-                      <button
-                        type="button"
-                        className="remove-item-btn"
-                        title="Remove this service"
-                        onClick={() => handleRemoveItem(idx)}
-                        disabled={submitting}
-                      >
-                        <DeleteOutlineIcon style={{ fontSize: 16 }} />
-                        <span>Remove</span>
-                      </button>
-                    )}
-                  </div>
+                        <span className="item-number-badge">
+                          Service #{idx + 1}
+                        </span>
 
-                  {/* Service Selection & Pricing Row */}
-                  <div className="item-fields-grid">
-                    <div className="form-field-wrap">
-                      <AppSelect
-                        label="Select Service"
-                        placeholder="Choose Service..."
-                        value={item.serviceId}
-                        onChange={(e) =>
-                          handleServiceSelect(idx, e.target.value)
-                        }
-                        options={serviceSelectOptions}
-                        startAdornment={<DryCleaningOutlinedIcon />}
-                        disabled={submitting}
-                        searchable
-                        required
-                        error={Boolean(
-                          validationErrors[`items[${idx}].serviceId`],
-                        )}
-                        helperText={validationErrors[`items[${idx}].serviceId`]}
-                      />
-                    </div>
+                        <div className="item-header-titles">
+                          {item.serviceName && (
+                            <span className="item-service-title">
+                              {item.serviceName}
+                            </span>
+                          )}
 
-                    <div className="form-field-wrap">
-                      <AppSelect
-                        label="Saree Fabric / Type"
-                        placeholder="Select Fabric..."
-                        value={item.sareeType || ""}
-                        allowClear
-                        onChange={(e) =>
-                          handleItemFieldChange(
-                            idx,
-                            "sareeType",
-                            e.target.value,
-                          )
-                        }
-                        options={SAREE_FABRICS.map((f) => ({
-                          value: f,
-                          label: f,
-                        }))}
-                        startAdornment={<LayersOutlinedIcon />}
-                        disabled={submitting}
-                        error={Boolean(
-                          validationErrors[`items[${idx}].sareeType`],
-                        )}
-                        helperText={validationErrors[`items[${idx}].sareeType`]}
-                      />
-                    </div>
+                          {/* Quick summary chips & inline quantity stepper */}
+                          <div className="item-quick-summary-chips">
+                            {/* Inline Quantity Stepper with + and - buttons */}
+                            <div
+                              className="item-qty-stepper"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                type="button"
+                                className="qty-step-btn qty-step-btn--minus"
+                                title="Decrease quantity"
+                                aria-label="Decrease quantity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const current =
+                                    parseInt(item.quantity, 10) || 1;
+                                  if (current > 1) {
+                                    handleQuantityChange(idx, current - 1);
+                                  }
+                                }}
+                                disabled={
+                                  submitting ||
+                                  (parseInt(item.quantity, 10) || 1) <= 1
+                                }
+                              >
+                                <RemoveIcon style={{ fontSize: 13 }} />
+                              </button>
+                              <span className="qty-val-badge">
+                                Qty: {item.quantity || 1}
+                              </span>
+                              <button
+                                type="button"
+                                className="qty-step-btn qty-step-btn--plus"
+                                title="Increase quantity"
+                                aria-label="Increase quantity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const current =
+                                    parseInt(item.quantity, 10) || 1;
+                                  if (current < 5) {
+                                    handleQuantityChange(idx, current + 1);
+                                  }
+                                }}
+                                disabled={
+                                  submitting ||
+                                  (parseInt(item.quantity, 10) || 1) >= 5
+                                }
+                              >
+                                <AddIcon style={{ fontSize: 13 }} />
+                              </button>
+                            </div>
 
-                    <div className="form-field-wrap">
-                      <AppSelect
-                        label="Quantity"
-                        value={String(item.quantity || 1)}
-                        onChange={(e) =>
-                          handleQuantityChange(idx, e.target.value)
-                        }
-                        options={QUANTITY_OPTIONS}
-                        disabled={submitting}
-                        required
-                        error={Boolean(
-                          validationErrors[`items[${idx}].quantity`],
-                        )}
-                        helperText={validationErrors[`items[${idx}].quantity`]}
-                      />
-                    </div>
-
-                    <div className="form-field-wrap">
-                      <AppInput
-                        label="Service Price (₹)"
-                        type="text"
-                        placeholder="Auto-set (₹)"
-                        value={
-                          item.finalPrice !== "" &&
-                          item.finalPrice !== undefined &&
-                          item.finalPrice !== null &&
-                          Number(item.finalPrice) > 0
-                            ? `₹${Number(item.finalPrice).toLocaleString("en-IN")}`
-                            : item.servicePrice
-                              ? `₹${Number(item.servicePrice).toLocaleString("en-IN")}`
-                              : ""
-                        }
-                        disabled={true}
-                        startAdornment={<CurrencyRupeeIcon />}
-                        required
-                        error={Boolean(
-                          validationErrors[`items[${idx}].servicePrice`] ||
-                          validationErrors[`items[${idx}].finalPrice`],
-                        )}
-                        helperText={
-                          validationErrors[`items[${idx}].servicePrice`] ||
-                          validationErrors[`items[${idx}].finalPrice`]
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {item.serviceId && (
-                    <div className="service-pricing-info-row">
-                      {(() => {
-                        const regPrice = Number(item.servicePrice) || 0;
-                        const offerPrice =
-                          Number(item.serviceDiscountedPrice) > 0
-                            ? Number(item.serviceDiscountedPrice)
-                            : regPrice;
-                        const unitPrice = offerPrice || regPrice;
-                        const qty = Math.max(
-                          1,
-                          Math.min(
-                            5,
-                            parseInt(item.quantity, 10) || 1,
-                          ),
-                        );
-                        return (
-                          <div className="service-pricing-pills">
-                            {qty > 1 && (
-                              <span className="pricing-calc-pill">
-                                Rate: ₹{unitPrice.toLocaleString("en-IN")} × {qty} sarees = <strong>₹{(unitPrice * qty).toLocaleString("en-IN")}</strong>
+                            {currentFinalPrice > 0 && (
+                              <span className="quick-chip quick-chip--price">
+                                ₹{currentFinalPrice.toLocaleString("en-IN")}
                               </span>
                             )}
-                            {regPrice > 0 &&
-                              offerPrice > 0 &&
-                              offerPrice < regPrice && (
-                                <span className="pricing-offer-pill">
-                                  Catalog Offer: ₹{offerPrice} (Reg: ₹{regPrice})
-                                </span>
-                              )}
-                            <span className="pricing-catalog-pill">
-                              Auto-set from Catalog
-                            </span>
+
+                            {hasItemErrors && (
+                              <span className="quick-chip quick-chip--error">
+                                <WarningAmberOutlinedIcon
+                                  style={{ fontSize: 13 }}
+                                />
+                                Incomplete Fields
+                              </span>
+                            )}
                           </div>
-                        );
-                      })()}
-                    </div>
-                  )}
-
-                  {item.serviceDescription && (
-                    <div className="service-desc-box">
-                      <InfoOutlinedIcon style={{ fontSize: 14 }} />
-                      <span>{item.serviceDescription}</span>
-                    </div>
-                  )}
-
-                  {/* Measurement Profile Linking */}
-                  <div className="item-measurement-section">
-                    <div className="measurement-header-row">
-                      <div className="sub-title-with-toggle">
-                        <div className="sub-title">
-                          <StraightenOutlinedIcon style={{ fontSize: 16 }} />
-                          <span>Measurement Profile:</span>
                         </div>
+                      </div>
 
-                        <div className="meas-switch-wrapper">
-                          <label
-                            className="meas-toggle-switch"
-                            title={
-                              item.includeMeasurements !== false
-                                ? "Turn Off Measurements for this Service"
-                                : "Turn On Measurements for this Service"
-                            }
+                      {/* Header Actions */}
+                      <div
+                        className="item-card-header-actions"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {items.length > 1 && (
+                          <button
+                            type="button"
+                            className="item-action-btn remove-item-btn"
+                            title="Remove this service"
+                            aria-label="Remove this service"
+                            onClick={(e) => handleRemoveItem(idx, e)}
+                            disabled={submitting}
                           >
-                            <input
-                              type="checkbox"
-                              checked={item.includeMeasurements !== false}
-                              onChange={(e) => {
-                                const checked = e.target.checked;
+                            <DeleteOutlineIcon style={{ fontSize: 17 }} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Accordion Content Body */}
+                    {expanded && (
+                      <div className="item-card-body">
+                        {/* Service Selection & Pricing Row */}
+                        <div className="item-fields-grid">
+                          <div className="form-field-wrap">
+                            <AppSelect
+                              label="Select Service"
+                              placeholder="Choose Service..."
+                              value={item.serviceId}
+                              onChange={(e) =>
+                                handleServiceSelect(idx, e.target.value)
+                              }
+                              options={serviceSelectOptions}
+                              startAdornment={<DryCleaningOutlinedIcon />}
+                              disabled={submitting}
+                              searchable
+                              required
+                              error={Boolean(
+                                validationErrors[`items[${idx}].serviceId`],
+                              )}
+                              helperText={
+                                validationErrors[`items[${idx}].serviceId`]
+                              }
+                            />
+                          </div>
+
+                          <div className="form-field-wrap">
+                            <AppSelect
+                              label="Saree Fabric / Type"
+                              placeholder="Select Fabric..."
+                              value={item.sareeType || ""}
+                              allowClear
+                              onChange={(e) =>
                                 handleItemFieldChange(
                                   idx,
-                                  "includeMeasurements",
-                                  checked,
-                                );
-                              }}
+                                  "sareeType",
+                                  e.target.value,
+                                )
+                              }
+                              options={SAREE_FABRICS.map((f) => ({
+                                value: f,
+                                label: f,
+                              }))}
+                              startAdornment={<LayersOutlinedIcon />}
                               disabled={submitting}
+                              error={Boolean(
+                                validationErrors[`items[${idx}].sareeType`],
+                              )}
+                              helperText={
+                                validationErrors[`items[${idx}].sareeType`]
+                              }
                             />
-                            <span className="switch-slider" />
-                          </label>
-                          <span
-                            className={`meas-switch-label ${
-                              item.includeMeasurements !== false ? "on" : "off"
-                            }`}
-                          ></span>
-                        </div>
-                      </div>
+                          </div>
 
-                      {item.includeMeasurements !== false && (
-                        <div className="measure-picker-inline">
-                          <AppSelect
-                            size="sm"
-                            placeholder={
-                              !selectedClientId || selectedClientId === "new"
-                                ? "-- Enter Custom Pleat Sizing --"
-                                : clientSavedMeasures.length > 0
-                                  ? "-- Choose Profile --"
-                                  : "-- Custom Sizing (No Saved Profiles) --"
-                            }
-                            value={item.selectedMeasurementId || "custom"}
-                            onChange={(e) =>
-                              handleItemFieldChange(
-                                idx,
-                                "selectedMeasurementId",
-                                e.target.value,
-                              )
-                            }
-                            options={[
-                              {
-                                value: "custom",
-                                label: "Custom Sizing for this Order",
-                                subtitle:
-                                  selectedClientId &&
-                                  selectedClientId !== "new" &&
-                                  clientSavedMeasures.length === 0
-                                    ? "No saved profiles for this client • Enter custom pleat dimensions below"
-                                    : "Enter custom pleat dimensions below",
-                              },
-                              ...clientSavedMeasures.map((m) => ({
-                                value: m.id,
-                                label: m.title || "Saved Profile",
-                                subtitle: `Pallu: ${m.pallu || "-"} | Pleats: ${m.noOfChestPleats || "-"}`,
-                              })),
-                            ]}
-                            startAdornment={<StraightenOutlinedIcon />}
-                            disabled={submitting}
-                            className="inline-measure-select"
-                          />
+                          <div className="form-field-wrap">
+                            <AppInput
+                              label="Service Price (₹)"
+                              type="text"
+                              placeholder="₹0"
+                              value={
+                                item.finalPrice !== "" &&
+                                item.finalPrice !== undefined &&
+                                item.finalPrice !== null &&
+                                Number(item.finalPrice) > 0
+                                  ? `₹${Number(item.finalPrice).toLocaleString("en-IN")}`
+                                  : item.servicePrice
+                                    ? `₹${Number(item.servicePrice).toLocaleString("en-IN")}`
+                                    : ""
+                              }
+                              disabled={true}
+                              startAdornment={<CurrencyRupeeIcon />}
+                              required
+                              error={Boolean(
+                                validationErrors[`items[${idx}].servicePrice`] ||
+                                  validationErrors[`items[${idx}].finalPrice`],
+                              )}
+                              helperText={
+                                validationErrors[`items[${idx}].servicePrice`] ||
+                                  validationErrors[`items[${idx}].finalPrice`]
+                              }
+                            />
+                          </div>
                         </div>
-                      )}
-                    </div>
 
-                    {item.includeMeasurements === false ? (
-                      <div className="measure-skipped-banner">
-                        <InfoOutlinedIcon style={{ fontSize: 16 }} />
-                        <span>
-                          No measurements required for this service (e.g.
-                          Ironing, Standard Fold, or Dry Cleaning). You can
-                          still enter custom notes below if needed.
-                        </span>
-                      </div>
-                    ) : item.selectedMeasurementId &&
-                      item.selectedMeasurementId !== "custom" ? (
-                      (() => {
-                        const m = clientSavedMeasures.find(
-                          (x) => x.id === item.selectedMeasurementId,
-                        );
-                        if (!m) return null;
-                        return (
-                          <div className="measure-summary-chips">
-                            <span className="measure-chip">
-                              <strong>Profile:</strong>{" "}
-                              {m.title || "Saved Profile"}
-                            </span>
-                            <span className="measure-chip">
-                              <strong>Pallu:</strong>{" "}
-                              {m.pallu ? `${m.pallu}"` : "-"}
-                            </span>
-                            <span className="measure-chip">
-                              <strong>Shoulder to Tight:</strong>{" "}
-                              {m.shoulderToRightTight
-                                ? `${m.shoulderToRightTight}"`
-                                : "-"}
-                            </span>
-                            <span className="measure-chip">
-                              <strong>Chest:</strong>{" "}
-                              {m.chest ? `${m.chest}"` : "-"}
-                            </span>
-                            <span className="measure-chip">
-                              <strong>Hip:</strong> {m.hip ? `${m.hip}"` : "-"}
-                            </span>
-                            <span className="measure-chip">
-                              <strong>1st Pleat:</strong>{" "}
-                              {m.firstPleatSize ? `${m.firstPleatSize}"` : "-"}
-                            </span>
-                            <span className="measure-chip">
-                              <strong>Chest Pleats:</strong>{" "}
-                              {m.noOfChestPleats || "-"}
-                            </span>
-                            <span className="measure-chip">
-                              <strong>Height:</strong> {m.height || "-"}
-                            </span>
-                            <span className="measure-chip">
-                              <strong>Dress Size:</strong> {m.dressSize || "-"}
-                            </span>
-                            {m.notes && (
-                              <span className="measure-chip measure-chip--note">
-                                <strong>Note:</strong> {m.notes}
-                              </span>
+                        {item.serviceId && (
+                          <div className="service-pricing-info-row">
+                            {(() => {
+                              const regPrice = Number(item.servicePrice) || 0;
+                              const offerPrice =
+                                Number(item.serviceDiscountedPrice) > 0
+                                  ? Number(item.serviceDiscountedPrice)
+                                  : regPrice;
+                              const unitPrice = offerPrice || regPrice;
+                              const qty = Math.max(
+                                1,
+                                Math.min(
+                                  5,
+                                  parseInt(item.quantity, 10) || 1,
+                                ),
+                              );
+                              return (
+                                <div className="service-pricing-pills">
+                                  {qty > 1 && (
+                                    <span className="pricing-calc-pill">
+                                      Rate: ₹{unitPrice.toLocaleString("en-IN")}{" "}
+                                      × {qty} ={" "}
+                                      <strong>
+                                        ₹{(unitPrice * qty).toLocaleString("en-IN")}
+                                      </strong>
+                                    </span>
+                                  )}
+                                  {regPrice > 0 &&
+                                    offerPrice > 0 &&
+                                    offerPrice < regPrice && (
+                                      <span className="pricing-offer-pill">
+                                        Catalog Offer: ₹{offerPrice} (Reg: ₹
+                                        {regPrice})
+                                      </span>
+                                    )}
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        )}
+
+                        {item.serviceDescription && (
+                          <div className="service-desc-box">
+                            <InfoOutlinedIcon style={{ fontSize: 14 }} />
+                            <span>{item.serviceDescription}</span>
+                          </div>
+                        )}
+
+                        {/* Measurement Profile Linking */}
+                        <div className="item-measurement-section">
+                          <div className="measurement-header-row">
+                            <div className="sub-title-with-toggle">
+                              <div className="sub-title">
+                                <StraightenOutlinedIcon
+                                  style={{ fontSize: 16 }}
+                                />
+                                <span>Measurement Profile:</span>
+                              </div>
+
+                              <div className="meas-switch-wrapper">
+                                <label
+                                  className="meas-toggle-switch"
+                                  title={
+                                    item.includeMeasurements !== false
+                                      ? "Turn Off Measurements for this Service"
+                                      : "Turn On Measurements for this Service"
+                                  }
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={item.includeMeasurements !== false}
+                                    onChange={(e) => {
+                                      const checked = e.target.checked;
+                                      handleItemFieldChange(
+                                        idx,
+                                        "includeMeasurements",
+                                        checked,
+                                      );
+                                    }}
+                                    disabled={submitting}
+                                  />
+                                  <span className="switch-slider" />
+                                </label>
+                                <span
+                                  className={`meas-switch-label ${
+                                    item.includeMeasurements !== false
+                                      ? "on"
+                                      : "off"
+                                  }`}
+                                ></span>
+                              </div>
+                            </div>
+
+                            {item.includeMeasurements !== false && (
+                              <div className="measure-picker-inline">
+                                <AppSelect
+                                  size="sm"
+                                  placeholder={
+                                    !selectedClientId ||
+                                    selectedClientId === "new"
+                                      ? "-- Enter Custom Pleat Sizing --"
+                                      : clientSavedMeasures.length > 0
+                                        ? "-- Choose Profile --"
+                                        : "-- Custom Sizing (No Saved Profiles) --"
+                                  }
+                                  value={
+                                    item.selectedMeasurementId || "custom"
+                                  }
+                                  onChange={(e) =>
+                                    handleItemFieldChange(
+                                      idx,
+                                      "selectedMeasurementId",
+                                      e.target.value,
+                                    )
+                                  }
+                                  options={[
+                                    {
+                                      value: "custom",
+                                      label: "Custom Sizing for this Order",
+                                      subtitle:
+                                        selectedClientId &&
+                                        selectedClientId !== "new" &&
+                                        clientSavedMeasures.length === 0
+                                          ? "No saved profiles for this client • Enter custom pleat dimensions below"
+                                          : "Enter custom pleat dimensions below",
+                                    },
+                                    ...clientSavedMeasures.map((m) => ({
+                                      value: m.id,
+                                      label: m.title || "Saved Profile",
+                                      subtitle: `Pallu: ${m.pallu || "-"} | Pleats: ${m.noOfChestPleats || "-"}`,
+                                    })),
+                                  ]}
+                                  startAdornment={<StraightenOutlinedIcon />}
+                                  disabled={submitting}
+                                  className="inline-measure-select"
+                                />
+                              </div>
                             )}
                           </div>
-                        );
-                      })()
-                    ) : (
-                      <div className="custom-measure-grid">
-                        <AppInput
-                          label="Pallu Length (in)"
-                          placeholder="e.g. 42"
-                          inputMode="decimal"
-                          onKeyDown={(e) => handleNumericKeyDown(e, true)}
-                          value={item.customMeasurement.pallu}
-                          onChange={(e) =>
-                            handleCustomMeasurementChange(
-                              idx,
-                              "pallu",
-                              e.target.value,
-                            )
-                          }
-                          disabled={submitting}
-                          required
-                          error={Boolean(
-                            validationErrors[
-                              `items[${idx}].measurementProfile.pallu`
-                            ] || validationErrors[`items[${idx}].pallu`],
+
+                          {item.includeMeasurements === false ? (
+                            <div className="measure-skipped-banner">
+                              <InfoOutlinedIcon style={{ fontSize: 16 }} />
+                              <span>
+                                No measurements required for this service (e.g.
+                                Ironing, Standard Fold, or Dry Cleaning). You
+                                can still enter custom notes below if needed.
+                              </span>
+                            </div>
+                          ) : item.selectedMeasurementId &&
+                            item.selectedMeasurementId !== "custom" ? (
+                            (() => {
+                              const m = clientSavedMeasures.find(
+                                (x) => x.id === item.selectedMeasurementId,
+                              );
+                              if (!m) return null;
+                              return (
+                                <div className="measure-summary-chips">
+                                  <span className="measure-chip">
+                                    <strong>Profile:</strong>{" "}
+                                    {m.title || "Saved Profile"}
+                                  </span>
+                                  <span className="measure-chip">
+                                    <strong>Pallu:</strong>{" "}
+                                    {m.pallu ? `${m.pallu}"` : "-"}
+                                  </span>
+                                  <span className="measure-chip">
+                                    <strong>Shoulder to Tight:</strong>{" "}
+                                    {m.shoulderToRightTight
+                                      ? `${m.shoulderToRightTight}"`
+                                      : "-"}
+                                  </span>
+                                  <span className="measure-chip">
+                                    <strong>Chest:</strong>{" "}
+                                    {m.chest ? `${m.chest}"` : "-"}
+                                  </span>
+                                  <span className="measure-chip">
+                                    <strong>Hip:</strong>{" "}
+                                    {m.hip ? `${m.hip}"` : "-"}
+                                  </span>
+                                  <span className="measure-chip">
+                                    <strong>1st Pleat:</strong>{" "}
+                                    {m.firstPleatSize
+                                      ? `${m.firstPleatSize}"`
+                                      : "-"}
+                                  </span>
+                                  <span className="measure-chip">
+                                    <strong>Chest Pleats:</strong>{" "}
+                                    {m.noOfChestPleats || "-"}
+                                  </span>
+                                  <span className="measure-chip">
+                                    <strong>Height:</strong> {m.height || "-"}
+                                  </span>
+                                  <span className="measure-chip">
+                                    <strong>Dress Size:</strong>{" "}
+                                    {m.dressSize || "-"}
+                                  </span>
+                                  {m.notes && (
+                                    <span className="measure-chip measure-chip--note">
+                                      <strong>Note:</strong> {m.notes}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })()
+                          ) : (
+                            <div className="custom-measure-grid">
+                              <AppInput
+                                label="Pallu Length (in)"
+                                placeholder="e.g. 42"
+                                inputMode="decimal"
+                                onKeyDown={(e) =>
+                                  handleNumericKeyDown(e, true)
+                                }
+                                value={item.customMeasurement.pallu}
+                                onChange={(e) =>
+                                  handleCustomMeasurementChange(
+                                    idx,
+                                    "pallu",
+                                    e.target.value,
+                                  )
+                                }
+                                disabled={submitting}
+                                required
+                                error={Boolean(
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.pallu`
+                                  ] || validationErrors[`items[${idx}].pallu`],
+                                )}
+                                helperText={
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.pallu`
+                                  ] || validationErrors[`items[${idx}].pallu`]
+                                }
+                              />
+                              <AppInput
+                                label="Shoulder to Thigh (in)"
+                                placeholder="e.g. 52"
+                                inputMode="decimal"
+                                onKeyDown={(e) =>
+                                  handleNumericKeyDown(e, true)
+                                }
+                                value={
+                                  item.customMeasurement.shoulderToRightTight
+                                }
+                                onChange={(e) =>
+                                  handleCustomMeasurementChange(
+                                    idx,
+                                    "shoulderToRightTight",
+                                    e.target.value,
+                                  )
+                                }
+                                disabled={submitting}
+                                required
+                                error={Boolean(
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.shoulderToRightTight`
+                                  ] ||
+                                    validationErrors[
+                                      `items[${idx}].shoulderToRightTight`
+                                    ],
+                                )}
+                                helperText={
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.shoulderToRightTight`
+                                  ] ||
+                                    validationErrors[
+                                      `items[${idx}].shoulderToRightTight`
+                                    ]
+                                }
+                              />
+                              <AppInput
+                                label="Chest Size (in)"
+                                placeholder="e.g. 14"
+                                inputMode="decimal"
+                                onKeyDown={(e) =>
+                                  handleNumericKeyDown(e, true)
+                                }
+                                value={item.customMeasurement.chest}
+                                onChange={(e) =>
+                                  handleCustomMeasurementChange(
+                                    idx,
+                                    "chest",
+                                    e.target.value,
+                                  )
+                                }
+                                disabled={submitting}
+                                required
+                                error={Boolean(
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.chest`
+                                  ] || validationErrors[`items[${idx}].chest`],
+                                )}
+                                helperText={
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.chest`
+                                  ] || validationErrors[`items[${idx}].chest`]
+                                }
+                              />
+                              <AppInput
+                                label="Hip Size (in)"
+                                placeholder="e.g. 52"
+                                inputMode="decimal"
+                                onKeyDown={(e) =>
+                                  handleNumericKeyDown(e, true)
+                                }
+                                value={item.customMeasurement.hip}
+                                onChange={(e) =>
+                                  handleCustomMeasurementChange(
+                                    idx,
+                                    "hip",
+                                    e.target.value,
+                                  )
+                                }
+                                disabled={submitting}
+                                required
+                                error={Boolean(
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.hip`
+                                  ] || validationErrors[`items[${idx}].hip`],
+                                )}
+                                helperText={
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.hip`
+                                  ] || validationErrors[`items[${idx}].hip`]
+                                }
+                              />
+                              <AppInput
+                                label="First Pleat Width (in)"
+                                placeholder="e.g. 4"
+                                inputMode="decimal"
+                                onKeyDown={(e) =>
+                                  handleNumericKeyDown(e, true)
+                                }
+                                value={item.customMeasurement.firstPleatSize}
+                                onChange={(e) =>
+                                  handleCustomMeasurementChange(
+                                    idx,
+                                    "firstPleatSize",
+                                    e.target.value,
+                                  )
+                                }
+                                disabled={submitting}
+                                required
+                                error={Boolean(
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.firstPleatSize`
+                                  ] ||
+                                    validationErrors[
+                                      `items[${idx}].firstPleatSize`
+                                    ],
+                                )}
+                                helperText={
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.firstPleatSize`
+                                  ] ||
+                                    validationErrors[
+                                      `items[${idx}].firstPleatSize`
+                                    ]
+                                }
+                              />
+                              <AppInput
+                                label="Chest Pleats (count)"
+                                placeholder="e.g. 7"
+                                inputMode="numeric"
+                                onKeyDown={(e) =>
+                                  handleNumericKeyDown(e, false)
+                                }
+                                value={item.customMeasurement.noOfChestPleats}
+                                onChange={(e) =>
+                                  handleCustomMeasurementChange(
+                                    idx,
+                                    "noOfChestPleats",
+                                    e.target.value,
+                                  )
+                                }
+                                disabled={submitting}
+                                required
+                                error={Boolean(
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.noOfChestPleats`
+                                  ] ||
+                                    validationErrors[
+                                      `items[${idx}].noOfChestPleats`
+                                    ],
+                                )}
+                                helperText={
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.noOfChestPleats`
+                                  ] ||
+                                    validationErrors[
+                                      `items[${idx}].noOfChestPleats`
+                                    ]
+                                }
+                              />
+                              <AppInput
+                                label="Client Height (ft)"
+                                placeholder="e.g. 5.2"
+                                inputMode="decimal"
+                                onKeyDown={(e) =>
+                                  handleNumericKeyDown(e, true)
+                                }
+                                value={item.customMeasurement.height}
+                                onChange={(e) =>
+                                  handleCustomMeasurementChange(
+                                    idx,
+                                    "height",
+                                    e.target.value,
+                                  )
+                                }
+                                disabled={submitting}
+                                required
+                                error={Boolean(
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.height`
+                                  ] ||
+                                    validationErrors[`items[${idx}].height`],
+                                )}
+                                helperText={
+                                  validationErrors[
+                                    `items[${idx}].measurementProfile.height`
+                                  ] || validationErrors[`items[${idx}].height`]
+                                }
+                              />
+                              <div className="form-field-wrap">
+                                <AppSelect
+                                  label="Dress Size"
+                                  placeholder="Select Dress Size"
+                                  value={
+                                    item.customMeasurement.dressSize || ""
+                                  }
+                                  onChange={(e) =>
+                                    handleCustomMeasurementChange(
+                                      idx,
+                                      "dressSize",
+                                      e.target.value,
+                                    )
+                                  }
+                                  options={DRESS_SIZES.map((sz) => ({
+                                    value: sz,
+                                    label: sz,
+                                  }))}
+                                  disabled={submitting}
+                                  required
+                                  error={Boolean(
+                                    validationErrors[
+                                      `items[${idx}].measurementProfile.dressSize`
+                                    ] ||
+                                      validationErrors[
+                                        `items[${idx}].dressSize`
+                                      ],
+                                  )}
+                                  helperText={
+                                    validationErrors[
+                                      `items[${idx}].measurementProfile.dressSize`
+                                    ] ||
+                                    validationErrors[`items[${idx}].dressSize`]
+                                  }
+                                />
+                              </div>
+                            </div>
                           )}
-                          helperText={
-                            validationErrors[
-                              `items[${idx}].measurementProfile.pallu`
-                            ] || validationErrors[`items[${idx}].pallu`]
-                          }
-                        />
-                        <AppInput
-                          label="Shoulder to Thigh (in)"
-                          placeholder="e.g. 52"
-                          inputMode="decimal"
-                          onKeyDown={(e) => handleNumericKeyDown(e, true)}
-                          value={item.customMeasurement.shoulderToRightTight}
-                          onChange={(e) =>
-                            handleCustomMeasurementChange(
-                              idx,
-                              "shoulderToRightTight",
-                              e.target.value,
-                            )
-                          }
-                          disabled={submitting}
-                          required
-                          error={Boolean(
-                            validationErrors[
-                              `items[${idx}].measurementProfile.shoulderToRightTight`
-                            ] ||
-                            validationErrors[
-                              `items[${idx}].shoulderToRightTight`
-                            ],
-                          )}
-                          helperText={
-                            validationErrors[
-                              `items[${idx}].measurementProfile.shoulderToRightTight`
-                            ] ||
-                            validationErrors[
-                              `items[${idx}].shoulderToRightTight`
-                            ]
-                          }
-                        />
-                        <AppInput
-                          label="Chest Size (in)"
-                          placeholder="e.g. 14"
-                          inputMode="decimal"
-                          onKeyDown={(e) => handleNumericKeyDown(e, true)}
-                          value={item.customMeasurement.chest}
-                          onChange={(e) =>
-                            handleCustomMeasurementChange(
-                              idx,
-                              "chest",
-                              e.target.value,
-                            )
-                          }
-                          disabled={submitting}
-                          required
-                          error={Boolean(
-                            validationErrors[
-                              `items[${idx}].measurementProfile.chest`
-                            ] || validationErrors[`items[${idx}].chest`],
-                          )}
-                          helperText={
-                            validationErrors[
-                              `items[${idx}].measurementProfile.chest`
-                            ] || validationErrors[`items[${idx}].chest`]
-                          }
-                        />
-                        <AppInput
-                          label="Hip Size (in)"
-                          placeholder="e.g. 52"
-                          inputMode="decimal"
-                          onKeyDown={(e) => handleNumericKeyDown(e, true)}
-                          value={item.customMeasurement.hip}
-                          onChange={(e) =>
-                            handleCustomMeasurementChange(
-                              idx,
-                              "hip",
-                              e.target.value,
-                            )
-                          }
-                          disabled={submitting}
-                          required
-                          error={Boolean(
-                            validationErrors[
-                              `items[${idx}].measurementProfile.hip`
-                            ] || validationErrors[`items[${idx}].hip`],
-                          )}
-                          helperText={
-                            validationErrors[
-                              `items[${idx}].measurementProfile.hip`
-                            ] || validationErrors[`items[${idx}].hip`]
-                          }
-                        />
-                        <AppInput
-                          label="First Pleat Width (in)"
-                          placeholder="e.g. 4"
-                          inputMode="decimal"
-                          onKeyDown={(e) => handleNumericKeyDown(e, true)}
-                          value={item.customMeasurement.firstPleatSize}
-                          onChange={(e) =>
-                            handleCustomMeasurementChange(
-                              idx,
-                              "firstPleatSize",
-                              e.target.value,
-                            )
-                          }
-                          disabled={submitting}
-                          required
-                          error={Boolean(
-                            validationErrors[
-                              `items[${idx}].measurementProfile.firstPleatSize`
-                            ] ||
-                            validationErrors[`items[${idx}].firstPleatSize`],
-                          )}
-                          helperText={
-                            validationErrors[
-                              `items[${idx}].measurementProfile.firstPleatSize`
-                            ] ||
-                            validationErrors[`items[${idx}].firstPleatSize`]
-                          }
-                        />
-                        <AppInput
-                          label="Chest Pleats (count)"
-                          placeholder="e.g. 7"
-                          inputMode="numeric"
-                          onKeyDown={(e) => handleNumericKeyDown(e, false)}
-                          value={item.customMeasurement.noOfChestPleats}
-                          onChange={(e) =>
-                            handleCustomMeasurementChange(
-                              idx,
-                              "noOfChestPleats",
-                              e.target.value,
-                            )
-                          }
-                          disabled={submitting}
-                          required
-                          error={Boolean(
-                            validationErrors[
-                              `items[${idx}].measurementProfile.noOfChestPleats`
-                            ] ||
-                            validationErrors[`items[${idx}].noOfChestPleats`],
-                          )}
-                          helperText={
-                            validationErrors[
-                              `items[${idx}].measurementProfile.noOfChestPleats`
-                            ] ||
-                            validationErrors[`items[${idx}].noOfChestPleats`]
-                          }
-                        />
-                        <AppInput
-                          label="Client Height (ft)"
-                          placeholder="e.g. 5.2"
-                          inputMode="decimal"
-                          onKeyDown={(e) => handleNumericKeyDown(e, true)}
-                          value={item.customMeasurement.height}
-                          onChange={(e) =>
-                            handleCustomMeasurementChange(
-                              idx,
-                              "height",
-                              e.target.value,
-                            )
-                          }
-                          disabled={submitting}
-                          required
-                          error={Boolean(
-                            validationErrors[
-                              `items[${idx}].measurementProfile.height`
-                            ] || validationErrors[`items[${idx}].height`],
-                          )}
-                          helperText={
-                            validationErrors[
-                              `items[${idx}].measurementProfile.height`
-                            ] || validationErrors[`items[${idx}].height`]
-                          }
-                        />
-                        <div className="form-field-wrap">
-                          <AppSelect
-                            label="Dress Size"
-                            placeholder="Select Dress Size"
-                            value={item.customMeasurement.dressSize || ""}
-                            onChange={(e) =>
-                              handleCustomMeasurementChange(
-                                idx,
-                                "dressSize",
-                                e.target.value,
-                              )
-                            }
-                            options={DRESS_SIZES.map((sz) => ({
-                              value: sz,
-                              label: sz,
-                            }))}
-                            disabled={submitting}
-                            required
-                            error={Boolean(
-                              validationErrors[
-                                `items[${idx}].measurementProfile.dressSize`
-                              ] || validationErrors[`items[${idx}].dressSize`],
-                            )}
-                            helperText={
-                              validationErrors[
-                                `items[${idx}].measurementProfile.dressSize`
-                              ] || validationErrors[`items[${idx}].dressSize`]
-                            }
-                          />
+
+                          <div style={{ marginTop: 8 }}>
+                            <AppInput
+                              label="Measurement Notes (optional)"
+                              placeholder="e.g. Handle antique zari border with extra care, add pins at 30 in waist"
+                              value={item.itemNotes}
+                              onChange={(e) =>
+                                handleItemFieldChange(
+                                  idx,
+                                  "itemNotes",
+                                  e.target.value,
+                                )
+                              }
+                              disabled={submitting}
+                            />
+                          </div>
                         </div>
                       </div>
                     )}
-
-                    <div style={{ marginTop: 8 }}>
-                      <AppInput
-                        label="Measurement Notes (optional)"
-                        placeholder="e.g. Handle antique zari border with extra care, add pins at 30 in waist"
-                        value={item.itemNotes}
-                        onChange={(e) =>
-                          handleItemFieldChange(
-                            idx,
-                            "itemNotes",
-                            e.target.value,
-                          )
-                        }
-                        disabled={submitting}
-                      />
-                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

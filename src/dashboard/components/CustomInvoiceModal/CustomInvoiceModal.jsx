@@ -1322,6 +1322,390 @@ export const INVOICE_PDF_INTERNAL_CSS = `
   }
 `;
 
+const MOBILE_INVOICE_PDF_INTERNAL_CSS = `
+  #order-pdf-export-container.mobile-pdf-export {
+    display: block !important;
+    width: 375px !important;
+    min-width: 375px !important;
+    max-width: 375px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .invoice-pdf-page {
+    width: 375px !important;
+    min-width: 375px !important;
+    max-width: 375px !important;
+    height: var(--mobile-page-height, 667px) !important;
+    min-height: var(--mobile-page-height, 667px) !important;
+    max-height: var(--mobile-page-height, 667px) !important;
+    flex: none;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .mobile-pdf-page-window {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .mobile-pdf-document {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 375px;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+    box-sizing: border-box;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .mobile-pdf-footer-group {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    width: 100%;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .pdf-content-body {
+    flex: none;
+    min-height: 0;
+    height: auto;
+    padding: 8px 12px 6px;
+    gap: 7px;
+    justify-content: flex-start;
+    overflow: visible;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .mobile-pdf-document .pdf-content-body > * {
+    flex: 0 0 auto;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .pdf-main-heading-wrap {
+    gap: 8px;
+    margin: 2px 0 3px;
+    flex: none;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .pdf-content-body > .pdf-dossier-grid,
+  #order-pdf-export-container.mobile-pdf-export .pdf-content-body > .pdf-services-card,
+  #order-pdf-export-container.mobile-pdf-export .pdf-content-body > .pdf-panel-card,
+  #order-pdf-export-container.mobile-pdf-export .pdf-content-body > .thankyou-banner-card,
+  #order-pdf-export-container.mobile-pdf-export .pdf-content-body > .signature-section {
+    flex: 0 0 auto !important;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .pdf-main-heading {
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .order-info-panel,
+  #order-pdf-export-container.mobile-pdf-export .special-notes-panel {
+    background-color: #f6f6fc !important;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .order-info-panel .panel-header,
+  #order-pdf-export-container.mobile-pdf-export .special-notes-panel .panel-header {
+    background-color: #e4f1fb !important;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .order-info-panel .panel-body,
+  #order-pdf-export-container.mobile-pdf-export .special-notes-panel .panel-body {
+    background-color: #f6f6fc !important;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .pdf-dossier-grid,
+  #order-pdf-export-container.mobile-pdf-export .pdf-bottom-grid {
+    grid-template-columns: 1fr;
+    gap: 7px;
+    margin: 0;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .pdf-bottom-grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .pdf-panel-card,
+  #order-pdf-export-container.mobile-pdf-export .special-notes-panel,
+  #order-pdf-export-container.mobile-pdf-export .payment-summary-panel {
+    height: auto;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .panel-header {
+    padding: 6px 9px;
+    font-size: 10px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .panel-body,
+  #order-pdf-export-container.mobile-pdf-export .special-notes-panel .panel-body,
+  #order-pdf-export-container.mobile-pdf-export .payment-summary-panel .panel-body {
+    flex: none;
+    padding: 6px 9px;
+    justify-content: flex-start;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .info-kv-table .kv-key {
+    width: 38%;
+    white-space: normal;
+    padding-right: 5px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .info-kv-table tr td {
+    font-size: 10px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .panel-footer-row {
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .footer-label-text {
+    font-size: 9px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .pay-pill {
+    font-size: 8px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .pdf-services-card {
+    margin: 0;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .services-header-bar {
+    padding: 6px 9px;
+    font-size: 10px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .services-table {
+    table-layout: fixed;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .services-table th {
+    padding: 5px 4px;
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .services-table th.th-num,
+  #order-pdf-export-container.mobile-pdf-export .td-num {
+    width: 27px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .services-table th.th-amt,
+  #order-pdf-export-container.mobile-pdf-export .td-amt {
+    width: 70px;
+    padding-right: 6px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .service-row td {
+    padding: 6px 4px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .num-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .service-name {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .specs-wrap {
+    gap: 3px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .spec-pill {
+    padding: 2px 4px;
+    font-size: 8px;
+    gap: 2px;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .care-box {
+    display: block;
+    font-size: 9px;
+    line-height: 1.35;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .care-box .care-lbl {
+    display: block;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .td-amt,
+  #order-pdf-export-container.mobile-pdf-export .td-amt .offer-val {
+    font-size: 12px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .td-amt .regular-strike {
+    font-size: 8px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .notes-list {
+    font-size: 9px;
+    line-height: 1.35;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .notes-list li {
+    margin-bottom: 3px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .total-row .total-lbl,
+  #order-pdf-export-container.mobile-pdf-export .total-row .total-val {
+    font-size: 9px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .grand-total-row .grand-lbl {
+    font-size: 10px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .grand-total-row .grand-val {
+    font-size: 12px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .total-paid-row .total-paid-lbl,
+  #order-pdf-export-container.mobile-pdf-export .balance-row .balance-lbl {
+    font-size: 9px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .total-paid-row .total-paid-val,
+  #order-pdf-export-container.mobile-pdf-export .balance-row .balance-val {
+    font-size: 10px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .thankyou-banner-card {
+    flex-direction: column;
+    gap: 6px;
+    min-height: 0;
+    margin: 0;
+    padding: 8px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .thankyou-content-center {
+    flex: none;
+    padding: 0 4px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .thankyou-script-img {
+    height: 34px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .thankyou-for-choosing {
+    font-size: 11px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .thankyou-tradition {
+    font-size: 9px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .thankyou-vert-divider {
+    display: none;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .thankyou-right-col {
+    gap: 8px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .thankyou-qr-img {
+    width: 48px;
+    height: 48px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .cta-share-text {
+    font-size: 10px;
+    white-space: normal;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .cta-stars {
+    font-size: 12px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .cta-review-btn {
+    padding: 5px 9px;
+    font-size: 9px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .thankyou-follow-row {
+    margin-top: 2px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .signature-section {
+    margin: 0;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .signature-wrapper {
+    min-width: 130px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .signature-wrapper img {
+    height: 42px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .signatory-title {
+    font-size: 8px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .pdf-tagline-strip {
+    gap: 6px;
+    padding: 4px 10px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .tagline-text {
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .pdf-luxury-footer {
+    flex: none;
+    margin: 0;
+    padding: 7px 10px;
+    gap: 5px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .footer-row-contacts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-content: initial;
+    gap: 5px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .footer-item {
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .footer-icon svg {
+    width: 11px;
+    height: 11px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .footer-text {
+    font-size: 7px;
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .footer-row-address {
+    text-align: left;
+  }
+`;
+
 /**
  * Modular HTML Builders for Invoice Components
  */
@@ -1891,14 +2275,315 @@ export const buildInvoiceHtmlSnippet = (data = {}) => {
   `;
 };
 
+const generateMobileOrderInvoicePdf = async ({
+  data,
+  orderId,
+  clientName,
+  formattedPhone,
+  whatsappMessage,
+  toastId,
+}) => {
+  const pageWidth = 375;
+  const pageHeight = 667;
+  const pageWidthMm = 95.25;
+  const pageFormat = [pageWidthMm, (pageHeight / pageWidth) * pageWidthMm];
+  const container = document.createElement("div");
+  container.id = "order-pdf-export-container";
+  container.className = "mobile-pdf-export";
+  container.style.position = "fixed";
+  container.style.left = "0px";
+  container.style.top = "0px";
+  container.style.width = `${pageWidth}px`;
+  container.style.height = "auto";
+  container.style.background = "#ffffff";
+  container.style.zIndex = "-9999";
+  container.style.opacity = "1";
+  container.style.pointerEvents = "none";
+  container.style.margin = "0";
+  container.style.padding = "0";
+  container.style.boxSizing = "border-box";
+
+  const inlineStyles = document.createElement("style");
+  inlineStyles.innerHTML = `${INVOICE_PDF_INTERNAL_CSS}\n${MOBILE_INVOICE_PDF_INTERNAL_CSS}`;
+  container.appendChild(inlineStyles);
+
+  const summaryGrid = document.createElement("div");
+  summaryGrid.innerHTML = buildBottomGridHtml(data);
+  const paymentSummary = summaryGrid.querySelector(".payment-summary-panel");
+  const specialNotes = summaryGrid.querySelector(".special-notes-panel");
+
+  if (!paymentSummary || !specialNotes) {
+    throw new Error("Unable to build mobile payment and care details.");
+  }
+
+  const serviceRowsHtml = (data.services || [])
+    .map((service, index) => buildServiceRowHtml(service, index))
+    .join("");
+  const firstSectionHtml = [
+    buildMainHeadingHtml("ORDER DETAILS"),
+    buildDossierGridHtml(data),
+    serviceRowsHtml ? buildServicesTableHtml(serviceRowsHtml, false) : "",
+    paymentSummary.outerHTML,
+  ].join("");
+  const finalSectionHtml = [
+    specialNotes.outerHTML,
+    buildThankYouBannerHtml(),
+    buildSignatureSectionHtml(),
+  ].join("");
+
+  const mobileDocument = document.createElement("div");
+  mobileDocument.className = "mobile-pdf-document";
+  mobileDocument.innerHTML = `
+    ${buildHeaderBannerHtml()}
+    <div class="pdf-content-body">${firstSectionHtml}</div>
+  `;
+
+  const mobileFinalDocument = document.createElement("div");
+  mobileFinalDocument.className = "mobile-pdf-document";
+  mobileFinalDocument.innerHTML = `
+    <div class="pdf-content-body">${finalSectionHtml}</div>
+    <div class="mobile-pdf-footer-group">${buildLuxuryFooterHtml()}</div>
+  `;
+
+  document.body.appendChild(container);
+
+  try {
+    container.appendChild(mobileDocument);
+    container.appendChild(mobileFinalDocument);
+    await Promise.all(
+      Array.from(container.querySelectorAll("img")).map(
+        (img) =>
+          new Promise((resolve) => {
+            if (img.complete && img.naturalHeight !== 0) {
+              resolve();
+              return;
+            }
+            img.onload = resolve;
+            img.onerror = resolve;
+            setTimeout(resolve, 800);
+          }),
+      ),
+    );
+
+    let mobilePaymentDocument = null;
+    const paymentSummaryInDocument = mobileDocument.querySelector(
+      ".payment-summary-panel",
+    );
+    if (!paymentSummaryInDocument) {
+      throw new Error("Unable to place the mobile payment summary.");
+    }
+
+    const firstDocumentTop = mobileDocument.getBoundingClientRect().top;
+    const paymentSummaryTop =
+      paymentSummaryInDocument.getBoundingClientRect().top - firstDocumentTop;
+    const paymentSummaryHeight =
+      paymentSummaryInDocument.getBoundingClientRect().height;
+    const paymentSummaryPageRemainder = paymentSummaryTop % pageHeight;
+    if (paymentSummaryHeight > pageHeight) {
+      throw new Error("The mobile payment summary exceeds one PDF page.");
+    }
+    if (
+      paymentSummaryPageRemainder > 0.5 &&
+      paymentSummaryPageRemainder + paymentSummaryHeight > pageHeight
+    ) {
+      paymentSummaryInDocument.remove();
+      mobilePaymentDocument = document.createElement("div");
+      mobilePaymentDocument.className = "mobile-pdf-document";
+      mobilePaymentDocument.innerHTML = `
+        <div class="pdf-content-body">${paymentSummary.outerHTML}</div>
+      `;
+      container.insertBefore(mobilePaymentDocument, mobileFinalDocument);
+    }
+
+    const thankYou = mobileFinalDocument.querySelector(
+      ".thankyou-banner-card",
+    );
+    const signature = mobileFinalDocument.querySelector(".signature-section");
+    const footerGroup = mobileFinalDocument.querySelector(
+      ".mobile-pdf-footer-group",
+    );
+    if (!thankYou || !signature || !footerGroup) {
+      throw new Error("Unable to place the mobile final-section blocks.");
+    }
+
+    const footerGroupHeight = footerGroup.getBoundingClientRect().height;
+    const updatedThankYouTop =
+      thankYou.getBoundingClientRect().top -
+      mobileFinalDocument.getBoundingClientRect().top;
+    const signatureBottom =
+      signature.getBoundingClientRect().bottom -
+      mobileFinalDocument.getBoundingClientRect().top;
+    const thankYouAndSignatureHeight = signatureBottom - updatedThankYouTop;
+    const thankYouSectionHeight =
+      thankYouAndSignatureHeight + footerGroupHeight;
+    if (thankYouSectionHeight > pageHeight) {
+      throw new Error(
+        "The mobile thank-you section, signature, and footer exceed one page.",
+      );
+    }
+
+    const thankYouRemainingPageHeight =
+      pageHeight - (updatedThankYouTop % pageHeight || 0);
+    if (thankYouSectionHeight > thankYouRemainingPageHeight) {
+      thankYou.style.marginTop = `${thankYouRemainingPageHeight}px`;
+    }
+
+    const firstSectionHeight = Math.ceil(
+      Math.max(
+        mobileDocument.scrollHeight,
+        mobileDocument.getBoundingClientRect().height,
+      ),
+    );
+    const finalSectionHeight = Math.ceil(
+      Math.max(
+        mobileFinalDocument.scrollHeight,
+        mobileFinalDocument.getBoundingClientRect().height,
+      ),
+    );
+    if (!firstSectionHeight || !finalSectionHeight) {
+      throw new Error("The mobile order PDF has no content to render.");
+    }
+
+    const sectionDocuments = [
+      mobileDocument,
+      ...(mobilePaymentDocument ? [mobilePaymentDocument] : []),
+      mobileFinalDocument,
+    ];
+    const sectionPageCounts = sectionDocuments.map((sectionDocument) =>
+      Math.ceil(
+        Math.max(
+          sectionDocument.scrollHeight,
+          sectionDocument.getBoundingClientRect().height,
+        ) / pageHeight,
+      ),
+    );
+    const pageCount = sectionPageCounts.reduce(
+      (total, sectionPageCount) => total + sectionPageCount,
+      0,
+    );
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: pageFormat,
+    });
+
+    const pages = sectionPageCounts.flatMap((sectionPageCount, sectionIdx) =>
+      Array.from({ length: sectionPageCount }, (_, sectionPageIdx) => ({
+        sectionDocument: sectionDocuments[sectionIdx],
+        pageOffset: sectionPageIdx * pageHeight,
+      })),
+    );
+
+    for (let pageIdx = 0; pageIdx < pageCount; pageIdx++) {
+      const { sectionDocument, pageOffset } = pages[pageIdx];
+      const page = document.createElement("div");
+      page.className = "invoice-pdf-page mobile-pdf-page";
+      page.style.setProperty("--mobile-page-height", `${pageHeight}px`);
+
+      const pageWindow = document.createElement("div");
+      pageWindow.className = "mobile-pdf-page-window";
+      const pageDocument = sectionDocument.cloneNode(true);
+      pageDocument.style.position = "absolute";
+      pageDocument.style.top = `${-pageOffset}px`;
+      pageDocument.style.left = "0";
+      const pageFooterGroup = pageDocument.querySelector(
+        ".mobile-pdf-footer-group",
+      );
+      if (pageFooterGroup) {
+        if (pageIdx === pageCount - 1) {
+          pageFooterGroup.style.position = "absolute";
+          pageFooterGroup.style.top = `${
+            pageOffset + pageHeight - footerGroupHeight
+          }px`;
+          pageFooterGroup.style.left = "0";
+          pageFooterGroup.style.width = "100%";
+          pageFooterGroup.style.margin = "0";
+        } else {
+          pageFooterGroup.remove();
+        }
+      }
+      pageWindow.appendChild(pageDocument);
+      page.appendChild(pageWindow);
+      container.appendChild(page);
+
+      const canvas = await html2canvas(page, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        scrollX: 0,
+        scrollY: 0,
+        width: pageWidth,
+        height: pageHeight,
+        windowWidth: pageWidth,
+        windowHeight: pageHeight,
+      });
+
+      if (pageIdx > 0) {
+        pdf.addPage(pageFormat, "portrait");
+      }
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      pdf.addImage(
+        canvas.toDataURL("image/jpeg", 0.96),
+        "JPEG",
+        0,
+        0,
+        pdfWidth,
+        pdfHeight,
+      );
+
+      const pageRect = page.getBoundingClientRect();
+      if (pageRect.width > 0 && pageRect.height > 0) {
+        Array.from(pageDocument.querySelectorAll("a")).forEach((anchor) => {
+          if (!anchor.href) return;
+          const linkRect = anchor.getBoundingClientRect();
+          const left = Math.max(linkRect.left, pageRect.left);
+          const top = Math.max(linkRect.top, pageRect.top);
+          const right = Math.min(linkRect.right, pageRect.right);
+          const bottom = Math.min(linkRect.bottom, pageRect.bottom);
+          if (right <= left || bottom <= top) return;
+
+          const x = ((left - pageRect.left) / pageRect.width) * pdfWidth;
+          const y = ((top - pageRect.top) / pageRect.height) * pdfHeight;
+          const width = ((right - left) / pageRect.width) * pdfWidth;
+          const height = ((bottom - top) / pageRect.height) * pdfHeight;
+          pdf.link(x, y, width, height, { url: anchor.href });
+        });
+      }
+
+      page.remove();
+    }
+
+    return {
+      pdf,
+      data,
+      orderId,
+      fileName: `Order-Details-${orderId}.pdf`,
+      clientName,
+      formattedPhone,
+      whatsappMessage,
+      toastId,
+    };
+  } catch (error) {
+    if (toastId) toast.dismiss(toastId);
+    throw error;
+  } finally {
+    if (document.body.contains(container)) {
+      container.remove();
+    }
+  }
+};
+
 /**
  * Unified Core PDF Generator
- * Dynamically computes component heights, intelligently packs intact containers across A4 pages,
+ * Dynamically packs intact components across print-sized pages,
  * and renders high-definition multi-page jsPDF instance without breaking any containers.
  */
 export const generateOrderInvoicePdf = async (
   order,
-  { progressMessage = null } = {},
+  { progressMessage = null, layout = "print" } = {},
 ) => {
   if (!order) {
     toast.error("No order selected for invoice generation.");
@@ -1933,6 +2618,17 @@ export const generateOrderInvoicePdf = async (
   const toastId = progressMessage
     ? toast.info(progressMessage, { autoClose: false })
     : null;
+
+  if (layout === "mobile") {
+    return generateMobileOrderInvoicePdf({
+      data,
+      orderId,
+      clientName,
+      formattedPhone,
+      whatsappMessage,
+      toastId,
+    });
+  }
 
   const totalServices = (data.services || []).length;
 
@@ -2199,6 +2895,7 @@ export const generateOrderInvoicePdf = async (
       fileName,
       clientName,
       formattedPhone,
+      whatsappMessage,
       toastId,
     };
   } finally {
@@ -2272,6 +2969,7 @@ export const shareOrderPdfToWhatsApp = async (order) => {
   try {
     const result = await generateOrderInvoicePdf(order, {
       progressMessage: `Preparing Order PDF for ${orderId}...`,
+      layout: "mobile",
     });
     if (!result) return;
 

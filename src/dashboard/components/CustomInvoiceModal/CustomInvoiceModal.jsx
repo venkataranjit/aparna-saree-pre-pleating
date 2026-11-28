@@ -751,11 +751,25 @@ export const INVOICE_PDF_INTERNAL_CSS = `
   }
 
   #order-pdf-export-container .td-amt .regular-strike {
+    position: relative;
+    display: inline-block;
     font-size: 11px;
     font-weight: 500;
     color: #94a3b8;
-    text-decoration: line-through;
+    text-decoration: none;
     line-height: 1.2;
+  }
+
+  #order-pdf-export-container .td-amt .regular-strike::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    height: 1px;
+    background: currentColor;
+    transform: translateY(-50%);
+    pointer-events: none;
   }
 
   #order-pdf-export-container .td-amt .offer-val {
@@ -1437,6 +1451,15 @@ const MOBILE_INVOICE_PDF_INTERNAL_CSS = `
     flex-direction: column;
   }
 
+  #order-pdf-export-container.mobile-pdf-export .payment-summary-panel {
+    order: 1;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .special-notes-panel {
+    order: 2;
+    margin-top: 40px;
+  }
+
   #order-pdf-export-container.mobile-pdf-export .pdf-panel-card,
   #order-pdf-export-container.mobile-pdf-export .special-notes-panel,
   #order-pdf-export-container.mobile-pdf-export .payment-summary-panel {
@@ -1555,6 +1578,10 @@ const MOBILE_INVOICE_PDF_INTERNAL_CSS = `
     font-size: 8px;
   }
 
+  #order-pdf-export-container.mobile-pdf-export .td-amt .regular-strike::after {
+    top: 60%;
+  }
+
   #order-pdf-export-container.mobile-pdf-export .notes-list {
     font-size: 9px;
     line-height: 1.35;
@@ -1562,6 +1589,13 @@ const MOBILE_INVOICE_PDF_INTERNAL_CSS = `
 
   #order-pdf-export-container.mobile-pdf-export .notes-list li {
     margin-bottom: 3px;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .notes-list li::before {
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
   }
 
   #order-pdf-export-container.mobile-pdf-export .total-row .total-lbl,
@@ -1591,7 +1625,7 @@ const MOBILE_INVOICE_PDF_INTERNAL_CSS = `
     flex-direction: column;
     gap: 6px;
     min-height: 0;
-    margin: 0;
+    margin: 20px 0 0;
     padding: 8px;
   }
 
@@ -1644,7 +1678,7 @@ const MOBILE_INVOICE_PDF_INTERNAL_CSS = `
   }
 
   #order-pdf-export-container.mobile-pdf-export .signature-section {
-    margin: 0;
+    margin: 20px 0;
   }
 
   #order-pdf-export-container.mobile-pdf-export .signature-wrapper {
@@ -1678,15 +1712,19 @@ const MOBILE_INVOICE_PDF_INTERNAL_CSS = `
 
   #order-pdf-export-container.mobile-pdf-export .footer-row-contacts {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     justify-content: initial;
-    gap: 5px;
+    gap: 7px;
   }
 
   #order-pdf-export-container.mobile-pdf-export .footer-item {
-    align-items: flex-start;
+    align-items: center;
     gap: 4px;
     min-width: 0;
+  }
+
+  #order-pdf-export-container.mobile-pdf-export .footer-icon {
+    top: 0;
   }
 
   #order-pdf-export-container.mobile-pdf-export .footer-icon svg {
@@ -1967,7 +2005,7 @@ export const buildServiceRowHtml = (s, idx) => {
       <td class="td-amt">
         ${
           qty > 1
-            ? `<div class="amt-combo"><span class="regular-strike" style="text-decoration:none;color:#64748b;font-weight:600;font-size:10.5px;">₹${Number(s.unitPrice || s.regularPrice).toLocaleString("en-IN")} × ${qty}</span> <span class="offer-val">₹${Number(s.price || 0).toLocaleString("en-IN")}</span></div>`
+            ? `<div class="amt-combo"><span class="regular-price-label" style="color:#64748b;font-weight:600;font-size:10.5px;">₹${Number(s.unitPrice || s.regularPrice).toLocaleString("en-IN")} × ${qty}</span> <span class="offer-val">₹${Number(s.price || 0).toLocaleString("en-IN")}</span></div>`
             : s.regularPrice > s.price && s.price > 0
               ? `<div class="amt-combo"><span class="regular-strike">₹${Number(s.regularPrice).toLocaleString("en-IN")}</span> <span class="offer-val">₹${Number(s.price || 0).toLocaleString("en-IN")}</span></div>`
               : `₹${Number(s.price || 0).toLocaleString("en-IN")}`
@@ -2284,9 +2322,7 @@ const generateMobileOrderInvoicePdf = async ({
   toastId,
 }) => {
   const pageWidth = 375;
-  const pageHeight = 667;
   const pageWidthMm = 95.25;
-  const pageFormat = [pageWidthMm, (pageHeight / pageWidth) * pageWidthMm];
   const container = document.createElement("div");
   container.id = "order-pdf-export-container";
   container.className = "mobile-pdf-export";
@@ -2307,49 +2343,30 @@ const generateMobileOrderInvoicePdf = async ({
   inlineStyles.innerHTML = `${INVOICE_PDF_INTERNAL_CSS}\n${MOBILE_INVOICE_PDF_INTERNAL_CSS}`;
   container.appendChild(inlineStyles);
 
-  const summaryGrid = document.createElement("div");
-  summaryGrid.innerHTML = buildBottomGridHtml(data);
-  const paymentSummary = summaryGrid.querySelector(".payment-summary-panel");
-  const specialNotes = summaryGrid.querySelector(".special-notes-panel");
-
-  if (!paymentSummary || !specialNotes) {
-    throw new Error("Unable to build mobile payment and care details.");
-  }
-
   const serviceRowsHtml = (data.services || [])
     .map((service, index) => buildServiceRowHtml(service, index))
     .join("");
-  const firstSectionHtml = [
-    buildMainHeadingHtml("ORDER DETAILS"),
-    buildDossierGridHtml(data),
-    serviceRowsHtml ? buildServicesTableHtml(serviceRowsHtml, false) : "",
-    paymentSummary.outerHTML,
-  ].join("");
-  const finalSectionHtml = [
-    specialNotes.outerHTML,
-    buildThankYouBannerHtml(),
-    buildSignatureSectionHtml(),
-  ].join("");
-
-  const mobileDocument = document.createElement("div");
-  mobileDocument.className = "mobile-pdf-document";
-  mobileDocument.innerHTML = `
+  const mobileDocumentHtml = `
     ${buildHeaderBannerHtml()}
-    <div class="pdf-content-body">${firstSectionHtml}</div>
-  `;
-
-  const mobileFinalDocument = document.createElement("div");
-  mobileFinalDocument.className = "mobile-pdf-document";
-  mobileFinalDocument.innerHTML = `
-    <div class="pdf-content-body">${finalSectionHtml}</div>
+    <div class="pdf-content-body">
+      ${buildMainHeadingHtml("ORDER DETAILS")}
+      ${buildDossierGridHtml(data)}
+      ${serviceRowsHtml ? buildServicesTableHtml(serviceRowsHtml, false) : ""}
+      ${buildBottomGridHtml(data)}
+      ${buildThankYouBannerHtml()}
+      ${buildSignatureSectionHtml()}
+    </div>
     <div class="mobile-pdf-footer-group">${buildLuxuryFooterHtml()}</div>
   `;
 
   document.body.appendChild(container);
 
   try {
+    const mobileDocument = document.createElement("div");
+    mobileDocument.className = "mobile-pdf-document";
+    mobileDocument.innerHTML = mobileDocumentHtml;
     container.appendChild(mobileDocument);
-    container.appendChild(mobileFinalDocument);
+
     await Promise.all(
       Array.from(container.querySelectorAll("img")).map(
         (img) =>
@@ -2365,195 +2382,68 @@ const generateMobileOrderInvoicePdf = async ({
       ),
     );
 
-    let mobilePaymentDocument = null;
-    const paymentSummaryInDocument = mobileDocument.querySelector(
-      ".payment-summary-panel",
-    );
-    if (!paymentSummaryInDocument) {
-      throw new Error("Unable to place the mobile payment summary.");
-    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
-    const firstDocumentTop = mobileDocument.getBoundingClientRect().top;
-    const paymentSummaryTop =
-      paymentSummaryInDocument.getBoundingClientRect().top - firstDocumentTop;
-    const paymentSummaryHeight =
-      paymentSummaryInDocument.getBoundingClientRect().height;
-    const paymentSummaryPageRemainder = paymentSummaryTop % pageHeight;
-    if (paymentSummaryHeight > pageHeight) {
-      throw new Error("The mobile payment summary exceeds one PDF page.");
-    }
-    if (
-      paymentSummaryPageRemainder > 0.5 &&
-      paymentSummaryPageRemainder + paymentSummaryHeight > pageHeight
-    ) {
-      paymentSummaryInDocument.remove();
-      mobilePaymentDocument = document.createElement("div");
-      mobilePaymentDocument.className = "mobile-pdf-document";
-      mobilePaymentDocument.innerHTML = `
-        <div class="pdf-content-body">${paymentSummary.outerHTML}</div>
-      `;
-      container.insertBefore(mobilePaymentDocument, mobileFinalDocument);
-    }
-
-    const thankYou = mobileFinalDocument.querySelector(
-      ".thankyou-banner-card",
-    );
-    const signature = mobileFinalDocument.querySelector(".signature-section");
-    const footerGroup = mobileFinalDocument.querySelector(
-      ".mobile-pdf-footer-group",
-    );
-    if (!thankYou || !signature || !footerGroup) {
-      throw new Error("Unable to place the mobile final-section blocks.");
-    }
-
-    const footerGroupHeight = footerGroup.getBoundingClientRect().height;
-    const updatedThankYouTop =
-      thankYou.getBoundingClientRect().top -
-      mobileFinalDocument.getBoundingClientRect().top;
-    const signatureBottom =
-      signature.getBoundingClientRect().bottom -
-      mobileFinalDocument.getBoundingClientRect().top;
-    const thankYouAndSignatureHeight = signatureBottom - updatedThankYouTop;
-    const thankYouSectionHeight =
-      thankYouAndSignatureHeight + footerGroupHeight;
-    if (thankYouSectionHeight > pageHeight) {
-      throw new Error(
-        "The mobile thank-you section, signature, and footer exceed one page.",
-      );
-    }
-
-    const thankYouRemainingPageHeight =
-      pageHeight - (updatedThankYouTop % pageHeight || 0);
-    if (thankYouSectionHeight > thankYouRemainingPageHeight) {
-      thankYou.style.marginTop = `${thankYouRemainingPageHeight}px`;
-    }
-
-    const firstSectionHeight = Math.ceil(
+    const documentHeight = Math.ceil(
       Math.max(
-        mobileDocument.scrollHeight,
-        mobileDocument.getBoundingClientRect().height,
+      mobileDocument.scrollHeight,
+      mobileDocument.getBoundingClientRect().height,
       ),
     );
-    const finalSectionHeight = Math.ceil(
-      Math.max(
-        mobileFinalDocument.scrollHeight,
-        mobileFinalDocument.getBoundingClientRect().height,
-      ),
-    );
-    if (!firstSectionHeight || !finalSectionHeight) {
+    if (!documentHeight) {
       throw new Error("The mobile order PDF has no content to render.");
     }
 
-    const sectionDocuments = [
-      mobileDocument,
-      ...(mobilePaymentDocument ? [mobilePaymentDocument] : []),
-      mobileFinalDocument,
-    ];
-    const sectionPageCounts = sectionDocuments.map((sectionDocument) =>
-      Math.ceil(
-        Math.max(
-          sectionDocument.scrollHeight,
-          sectionDocument.getBoundingClientRect().height,
-        ) / pageHeight,
-      ),
-    );
-    const pageCount = sectionPageCounts.reduce(
-      (total, sectionPageCount) => total + sectionPageCount,
-      0,
-    );
+    const canvas = await html2canvas(mobileDocument, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: "#ffffff",
+      scrollX: 0,
+      scrollY: 0,
+      width: pageWidth,
+      height: documentHeight,
+      windowWidth: pageWidth,
+      windowHeight: documentHeight,
+    });
+
+    const pageHeightMm = (documentHeight / pageWidth) * pageWidthMm;
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "mm",
-      format: pageFormat,
+      format: [pageWidthMm, pageHeightMm],
     });
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    const pages = sectionPageCounts.flatMap((sectionPageCount, sectionIdx) =>
-      Array.from({ length: sectionPageCount }, (_, sectionPageIdx) => ({
-        sectionDocument: sectionDocuments[sectionIdx],
-        pageOffset: sectionPageIdx * pageHeight,
-      })),
+    pdf.addImage(
+      canvas.toDataURL("image/jpeg", 0.98),
+      "JPEG",
+      0,
+      0,
+      pdfWidth,
+      pdfHeight,
     );
 
-    for (let pageIdx = 0; pageIdx < pageCount; pageIdx++) {
-      const { sectionDocument, pageOffset } = pages[pageIdx];
-      const page = document.createElement("div");
-      page.className = "invoice-pdf-page mobile-pdf-page";
-      page.style.setProperty("--mobile-page-height", `${pageHeight}px`);
+    const documentRect = mobileDocument.getBoundingClientRect();
+    if (documentRect.width > 0 && documentRect.height > 0) {
+      Array.from(mobileDocument.querySelectorAll("a")).forEach((anchor) => {
+      if (!anchor.href) return;
+      const linkRect = anchor.getBoundingClientRect();
+      const left = Math.max(linkRect.left, documentRect.left);
+      const top = Math.max(linkRect.top, documentRect.top);
+      const right = Math.min(linkRect.right, documentRect.right);
+      const bottom = Math.min(linkRect.bottom, documentRect.bottom);
+      if (right <= left || bottom <= top) return;
 
-      const pageWindow = document.createElement("div");
-      pageWindow.className = "mobile-pdf-page-window";
-      const pageDocument = sectionDocument.cloneNode(true);
-      pageDocument.style.position = "absolute";
-      pageDocument.style.top = `${-pageOffset}px`;
-      pageDocument.style.left = "0";
-      const pageFooterGroup = pageDocument.querySelector(
-        ".mobile-pdf-footer-group",
-      );
-      if (pageFooterGroup) {
-        if (pageIdx === pageCount - 1) {
-          pageFooterGroup.style.position = "absolute";
-          pageFooterGroup.style.top = `${
-            pageOffset + pageHeight - footerGroupHeight
-          }px`;
-          pageFooterGroup.style.left = "0";
-          pageFooterGroup.style.width = "100%";
-          pageFooterGroup.style.margin = "0";
-        } else {
-          pageFooterGroup.remove();
-        }
-      }
-      pageWindow.appendChild(pageDocument);
-      page.appendChild(pageWindow);
-      container.appendChild(page);
-
-      const canvas = await html2canvas(page, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        scrollX: 0,
-        scrollY: 0,
-        width: pageWidth,
-        height: pageHeight,
-        windowWidth: pageWidth,
-        windowHeight: pageHeight,
+      const x = ((left - documentRect.left) / documentRect.width) * pdfWidth;
+      const y = ((top - documentRect.top) / documentRect.height) * pdfHeight;
+      const width =
+        ((right - left) / documentRect.width) * pdfWidth;
+      const height =
+        ((bottom - top) / documentRect.height) * pdfHeight;
+      pdf.link(x, y, width, height, { url: anchor.href });
       });
-
-      if (pageIdx > 0) {
-        pdf.addPage(pageFormat, "portrait");
-      }
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      pdf.addImage(
-        canvas.toDataURL("image/jpeg", 0.96),
-        "JPEG",
-        0,
-        0,
-        pdfWidth,
-        pdfHeight,
-      );
-
-      const pageRect = page.getBoundingClientRect();
-      if (pageRect.width > 0 && pageRect.height > 0) {
-        Array.from(pageDocument.querySelectorAll("a")).forEach((anchor) => {
-          if (!anchor.href) return;
-          const linkRect = anchor.getBoundingClientRect();
-          const left = Math.max(linkRect.left, pageRect.left);
-          const top = Math.max(linkRect.top, pageRect.top);
-          const right = Math.min(linkRect.right, pageRect.right);
-          const bottom = Math.min(linkRect.bottom, pageRect.bottom);
-          if (right <= left || bottom <= top) return;
-
-          const x = ((left - pageRect.left) / pageRect.width) * pdfWidth;
-          const y = ((top - pageRect.top) / pageRect.height) * pdfHeight;
-          const width = ((right - left) / pageRect.width) * pdfWidth;
-          const height = ((bottom - top) / pageRect.height) * pdfHeight;
-          pdf.link(x, y, width, height, { url: anchor.href });
-        });
-      }
-
-      page.remove();
     }
 
     return {
